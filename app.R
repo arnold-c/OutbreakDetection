@@ -38,14 +38,14 @@ ui <- fluidPage(
       sliderInput(
         inputId = "gs_sens",
         label = "Choose the sensitivity (%) of the Gold Standard test:",
-        value = 80,
+        value = 98.1,
         min = 0,
         max = 100
         ),
       sliderInput(
         inputId = "gs_spec",
         label = "Choose the specificity (%) of the Gold Standard test:",
-        value = 80,
+        value = 97.3,
         min = 0,
         max = 100
         ),
@@ -54,14 +54,14 @@ ui <- fluidPage(
       sliderInput(
         inputId = "rdt_sens",
         label = "Choose the sensitivity (%) of the Rapid Diagnostic test:",
-        value = 80,
+        value = 90.0,
         min = 0,
         max = 100
         ),
       sliderInput(
         inputId = "rdt_spec",
         label = "Choose the specificity (%) of the Rapid Diagnostic test:",
-        value = 80,
+        value = 96.2,
         min = 0,
         max = 100
         ),
@@ -72,6 +72,13 @@ ui <- fluidPage(
     # Main panel for displaying outputs ----
     mainPanel(
       
+      p("
+      Hiebert et al. 2021 evaluated the accuracy of 8 commerically available assays for measles-IgM detection (https://journals.asm.org/doi/10.1128/JCM.03161-20) and noted that the most accurate assay (Clin-Tech Microimmune ELISA) has a sensitivity of 98.1% and specificity of 97.3% (when treating equivocal as positive). This was one of three methods to exceed the Enzygnost EIA benchmark, so was chosen as the gold standard default values.
+      "),
+      br(),      
+      p("
+      Warrener et al. 2011 evaluated the performance of a lateral flow rapid point-of-care measles IgM test (https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3165981/), which can be performed in < 30 minutes and with a serum or oral fluid sample, demonstarting a sensitivity of 90.0% and specificity of 96.2%.
+      "),
       tabsetPanel(
         # Output: Plot of results ----
         tabPanel(
@@ -219,9 +226,26 @@ server <- function(input, output) {
 
   output$test_pos_plot <- renderPlot({
 
+    input_data <- tibble(
+      gs_sens = input$gs_sens / 100,
+      gs_spec = input$gs_spec / 100,
+      rdt_sens = input$rdt_sens / 100,
+      rdt_spec = input$rdt_spec / 100
+    )
+
     gen_plot_data() %>%
-      ggplot(aes(x = sens, y = spec, z = test_pos)) +
-      geom_contour_filled() +
+      ggplot() +
+      geom_contour_filled(aes(x = sens, y = spec, z = test_pos)) +
+      geom_point(
+        data = input_data, 
+        aes(x = gs_sens, y = gs_spec), 
+        shape = 21, size = 2, color = "black", fill = "gold"
+        ) +
+      geom_point(
+        data = input_data,
+        aes(x = rdt_sens, y = rdt_spec),
+        shape = 21, size = 2, color = "white", fill = "black"
+        ) +
       scale_fill_manual(values = met.brewer("OKeeffe2", 10)) +
       labs(
         title = "Number of Positive Tests by Sensitivity and Specificity",
@@ -234,10 +258,27 @@ server <- function(input, output) {
   })
 
   output$ppv_plot <- renderPlot({
+    
+    input_data <- tibble(
+      gs_sens = input$gs_sens / 100,
+      gs_spec = input$gs_spec / 100,
+      rdt_sens = input$rdt_sens / 100,
+      rdt_spec = input$rdt_spec / 100
+    )
 
     gen_plot_data() %>%
-      ggplot(aes(x = sens, y = spec, z = ppv)) +
-      geom_contour_filled() +
+      ggplot() +
+      geom_contour_filled(aes(x = sens, y = spec, z = ppv)) +
+      geom_point(
+        data = input_data, 
+        aes(x = gs_sens, y = gs_spec), 
+        shape = 21, size = 2, color = "black", fill = "gold"
+        ) +
+      geom_point(
+        data = input_data,
+        aes(x = rdt_sens, y = rdt_spec),
+        shape = 21, size = 2, color = "white", fill = "black"
+        ) +
       scale_fill_manual(values = met.brewer("Hokusai2", 10)) +
       labs(
         title = "PPV by Sensitivity and Specificity",
