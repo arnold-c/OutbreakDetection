@@ -17,7 +17,7 @@ ui <- fluidPage(
     sidebarPanel(
 
       # Input: Selector for tested cases ----
-      numericInput(
+      sliderInput(
         inputId = "num_tested",
         label = "Choose the number of individuals tested:",
         value = 100,
@@ -26,7 +26,7 @@ ui <- fluidPage(
         ),
 
       # Input: Selector for Prevalence ----
-      numericInput(
+      sliderInput(
         inputId = "prev",
         label = "Choose the underlying prevalence (%) of measles:",
         value = 5,
@@ -35,14 +35,14 @@ ui <- fluidPage(
         ),
 
       # Input: Selector for GS ----
-      numericInput(
+      sliderInput(
         inputId = "gs_sens",
         label = "Choose the sensitivity (%) of the Gold Standard test:",
         value = 80,
         min = 0,
         max = 100
         ),
-      numericInput(
+      sliderInput(
         inputId = "gs_spec",
         label = "Choose the specificity (%) of the Gold Standard test:",
         value = 80,
@@ -51,14 +51,14 @@ ui <- fluidPage(
         ),
 
       # Input: Selector for RDT ----
-      numericInput(
+      sliderInput(
         inputId = "rdt_sens",
         label = "Choose the sensitivity (%) of the Rapid Diagnostic test:",
         value = 80,
         min = 0,
         max = 100
         ),
-      numericInput(
+      sliderInput(
         inputId = "rdt_spec",
         label = "Choose the specificity (%) of the Rapid Diagnostic test:",
         value = 80,
@@ -76,11 +76,10 @@ ui <- fluidPage(
         # Output: Plot of results ----
         tabPanel(
           "Test Positive Plot",
-          plotOutput("test_pos_plot")
-        ),
-        tabPanel(
-          "PPV Plot",
-          plotOutput("ppv_plot")
+          splitLayout(
+            plotOutput("test_pos_plot"),
+            plotOutput("ppv_plot")
+          )
         ),
 
         # Output: Table of results ----
