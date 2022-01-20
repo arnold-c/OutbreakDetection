@@ -13,7 +13,7 @@ output:
 knitr::opts_chunk$set(echo = TRUE, fig.dim = c(10, 8), fig.align = "center")
 ```
 
-# Initial Look {.tabset .tabset-pills}
+# Disease Positive -> Test Positive  {.tabset .tabset-pills}
 
 ```{r, message=FALSE, warning=FALSE}
 library(tidyverse)
@@ -24,6 +24,8 @@ library(lubridate)
 library(purrr)
 library(glue)
 library(MetBrewer)
+library(future)
+library(furrr)
 ```
 
 ```{r}
@@ -36,6 +38,8 @@ spec_range <- seq(0, 1, 0.05)
 data <- tidyr::crossing(sens_range, spec_range)
 ```
 
+## Deterministic
+
 ```{r}
 prev <- 0.05
 tot <- 100
@@ -45,35 +49,34 @@ dis_neg <- tot * (1 - prev)
 ```
 
 ```{r}
-test <- map2_dfr(
-  .x = data$sens_range,
-  .y = data$spec_range,
-  .f = function(.x, .y){
-    true_pos <- dis_pos * .x
-    true_neg <- dis_neg * .y
-    false_pos <- dis_neg * (1 - .y)
-    false_neg <- dis_pos * (1 - .x)
+test <- pmap_dfr(
+    .l = list(sens = data$sens_range, spec = data$spec_range),
+    .f = function(sens, spec){
+      true_pos <- dis_pos * sens
+      true_neg <- dis_neg * spec
+      false_pos <- dis_neg * (1 - spec)
+      false_neg <- dis_pos * (1 - sens)
 
-    test_pos <- true_pos + false_pos
-    test_neg <- true_neg + false_neg
+      test_pos <- true_pos + false_pos
+      test_neg <- true_neg + false_neg
 
-    ppv <- true_pos / test_pos
-    npv <- true_neg / test_neg
+      ppv <- true_pos / test_pos
+      npv <- true_neg / test_neg
 
-    tibble(
-      sens = .x,
-      spec = .y,
-      true_pos = true_pos,
-      true_neg = true_neg,
-      false_pos = false_pos,
-      false_neg = false_neg,
-      test_pos = test_pos,
-      test_neg = test_neg,
-      ppv = ppv,
-      npv = npv
-    )
-  }
-)
+      tibble(
+        sens = sens,
+        spec = spec,
+        true_pos = true_pos,
+        true_neg = true_neg,
+        false_pos = false_pos,
+        false_neg = false_neg,
+        test_pos = test_pos,
+        test_neg = test_neg,
+        ppv = ppv,
+        npv = npv
+      )
+    }
+  )
 ```
 
 ```{r}
@@ -103,3 +106,207 @@ ggplot(test, aes(x = sens, y = spec, z = ppv)) +
   ) +
   theme(legend.position = "bottom")
 ```
+
+## Uncertainty
+
+```{r}
+plan(multisession)
+```
+
+```{r}
+set.seed(1234)
+
+stoch_dis_pos_neg <- tibble(
+  tot = tot,
+  pos = rbinom(n = 1e2, size = tot, prob = dis_pos/100)
+  ) %>%
+  mutate(neg = tot - pos)
+```
+
+```{r}
+ggplot(stoch_dis_pos_neg, aes(x = pos)) +
+  geom_bar() +
+  labs(
+    title = "Distribution of Disease Positives",
+    subtitle = glue("Prevalence = {prev}, Total Tests = {tot}")
+  )
+```
+
+```{r}
+stoch_test <- future_pmap_dfr(
+  .l = list(
+    iter = 1:nrow(stoch_dis_pos_neg),
+    dis_pos = stoch_dis_pos_neg$pos,
+    dis_neg = stoch_dis_pos_neg$neg
+    ),
+  .f = function(iter, dis_pos, dis_neg){
+    future_pmap_dfr(
+      .l = list(
+        sens_spec_comb = 1:nrow(data),
+        sens = data$sens_range,
+        spec = data$spec_range
+        ),
+      .f = function(sens_spec_comb, sens, spec){
+        true_pos <- dis_pos * sens
+        true_neg <- dis_neg * spec
+        false_pos <- dis_neg * (1 - spec)
+        false_neg <- dis_pos * (1 - sens)
+
+        test_pos <- true_pos + false_pos
+        test_neg <- true_neg + false_neg
+
+        ppv <- true_pos / test_pos
+        npv <- true_neg / test_neg
+
+        tibble(
+          iter = iter,
+          sens_spec_comb = sens_spec_comb,
+          sens = sens,
+          spec = spec,
+          dis_pos = dis_pos,
+          dis_neg = dis_neg,
+          true_pos = true_pos,
+          true_neg = true_neg,
+          false_pos = false_pos,
+          false_neg = false_neg,
+          test_pos = test_pos,
+          test_neg = test_neg,
+          ppv = ppv,
+          npv = npv
+        )
+      },
+      .options = furrr_options(seed = 12345)
+    )
+  },
+  .options = furrr_options(seed = 12345)
+)
+```
+
+```{r}
+stoch_test %>%
+  filter(sens_spec_comb == 1) %>%
+  ggplot() +
+  geom_bar(aes(x = dis_pos), fill = "black") +
+  geom_bar(aes(x = test_pos), fill = "blue") +
+  labs(
+    title = "Example Distributions of Disease and Test Positives",
+    subtitle = glue("Prevalence = {prev}, Total Tests = {tot}"),
+    x = "Number of Positives",
+    caption = "Blue = Test Positives, Black = Disease Positives"
+  )
+```
+
+```{r}
+stoch_test2 <- stoch_test %>%
+  mutate(
+    test_dis_pos_diff = test_pos - dis_pos
+  )
+```
+
+```{r}
+stoch_test2 %>%
+  filter(sens_spec_comb == 1) %>%
+  ggplot(aes(x = test_dis_pos_diff)) +
+  geom_bar() +
+  labs(
+    title = "Example Difference in Test Positives and Disease Positives",
+    subtitle = glue("Prevalence = {prev}, Total Tests = {tot}"),
+    x = "Difference in Test Positives and Disease Positives",
+    caption = glue("Using sensitivity = {filter(stoch_test2, sens_spec_comb == 1)$sens}, specificity = {filter(stoch_test2, sens_spec_comb == 1)$spec}")
+  )
+```
+
+```{r}
+stoch_test2 %>%
+  filter(sens_spec_comb == 100) %>%
+  ggplot(aes(x = test_dis_pos_diff)) +
+  geom_bar() +
+  labs(
+    title = "Example Difference in Test Positives and Disease Positives",
+    subtitle = glue("Prevalence = {prev}, Total Tests = {tot}"),
+    x = "Difference in Test Positives and Disease Positives",
+    caption = glue("Using sensitivity = {filter(stoch_test2, sens_spec_comb == 100)$sens}, specificity = {filter(stoch_test2, sens_spec_comb == 100)$spec}")
+  )
+```
+
+```{r}
+stoch_test3 <- future_map_dfr(
+  .x = unique(stoch_test2$sens_spec_comb),
+  .f = function(.x){
+    stoch_test2 %>%
+      filter(sens_spec_comb == .x) %>%
+      summarize(
+        sens_spec_comb = .x,
+        sens = unique(sens),
+        spec = unique(spec),
+        mean_test_dis_pos_diff = mean(test_dis_pos_diff),
+        sd_test_dis_pos_diff = sd(test_dis_pos_diff),
+        med_test_dis_pos_diff = median(test_dis_pos_diff),
+        min_test_dis_pos_diff = min(test_dis_pos_diff),
+        max_test_dis_pos_diff = max(test_dis_pos_diff),
+        quantile_10 = quantile(test_dis_pos_diff, .10),
+        quantile_25 = quantile(test_dis_pos_diff, .25),
+        quantile_50 = quantile(test_dis_pos_diff, .50),
+        quantile_75 = quantile(test_dis_pos_diff, .75),
+        quantile_90 = quantile(test_dis_pos_diff, .90)
+        )
+  },
+  .options = furrr_options(seed = 12345)
+)
+```
+
+```{r}
+stoch_test3 %>%
+  ggplot() +
+  geom_contour_filled(aes(x = sens, y = spec, z = min_test_dis_pos_diff)) +
+  scale_fill_manual(values = met.brewer("Robert", 11)) +
+  labs(
+    title = "Minimum Difference in Test Positives and Disease Positives",
+    subtitle = glue("Prevalence = {prev}, Total Tests = {tot}")
+  )
+```
+
+```{r}
+stoch_test3 %>%
+  ggplot() +
+  geom_contour_filled(aes(x = sens, y = spec, z = quantile_10)) +
+  scale_fill_manual(values = met.brewer("Robert", 11)) +
+  labs(
+    title = "10% Quantile Difference in Test Positives and Disease Positives",
+    subtitle = glue("Prevalence = {prev}, Total Tests = {tot}")
+  )
+```
+
+```{r}
+stoch_test3 %>%
+  ggplot() +
+  geom_contour_filled(aes(x = sens, y = spec, z = mean_test_dis_pos_diff)) +
+  scale_fill_manual(values = met.brewer("OKeeffe2", 11)) +
+  labs(
+    title = "Mean Difference in Test Positives and Disease Positives",
+    subtitle = glue("Prevalence = {prev}, Total Tests = {tot}")
+  )
+```
+
+```{r}
+stoch_test3 %>%
+  ggplot() +
+  geom_contour_filled(aes(x = sens, y = spec, z = quantile_90)) +
+  scale_fill_manual(values = met.brewer("Peru2", 11)) +
+  labs(
+    title = "90% Quantile Difference in Test Positives and Disease Positives",
+    subtitle = glue("Prevalence = {prev}, Total Tests = {tot}")
+  )
+```
+
+```{r}
+stoch_test3 %>%
+  ggplot() +
+  geom_contour_filled(aes(x = sens, y = spec, z = max_test_dis_pos_diff)) +
+  scale_fill_manual(values = met.brewer("Peru2", 11)) +
+  labs(
+    title = "Maximum Difference in Test Positives and Disease Positives",
+    subtitle = glue("Prevalence = {prev}, Total Tests = {tot}")
+  )
+```
+
