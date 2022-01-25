@@ -1,7 +1,7 @@
 library(shiny)
 library(tidyverse)
 library(rlang)
-library(MetBrewer)
+library(paletteer)
 
 
 selection_tabs <- tabsetPanel(
@@ -310,7 +310,7 @@ server <- function(input, output) {
         aes(x = rdt_sens, y = rdt_spec),
         shape = 21, size = 2, color = "white", fill = "black"
         ) +
-      scale_fill_manual(values = met.brewer("OKeeffe2", 10)) +
+      scale_fill_paletteer_d("cartography::sand.pal", dynamic = TRUE) +
       labs(
         title = "Number of Positive Tests by Sensitivity and Specificity",
         subtitle = glue("Prior Probability = {input$prior_prob}%, Total Tests = {input$num_tested}, Disease Positives = {dis_pos()}"),
@@ -336,7 +336,7 @@ server <- function(input, output) {
         aes(x = rdt_sens, y = rdt_spec),
         shape = 21, size = 2, color = "white", fill = "black"
         ) +
-      scale_fill_manual(values = met.brewer("Hokusai2", 10)) +
+      scale_fill_paletteer_d("cartography::harmo.pal", dynamic = TRUE) +
       labs(
         title = "PPV by Sensitivity and Specificity",
         subtitle = glue("Prior Probability = {input$prior_prob}%, Total Tests = {input$num_tested}, Disease Positives = {dis_pos()}"),
@@ -394,7 +394,7 @@ server <- function(input, output) {
           1
           )
       ) +
-      scale_fill_gradientn(colors = rev(met.brewer("Greek"))) +
+      scale_fill_gradient(low = "#fbe3c2", high = "#92351e") +
       labs(
         title = glue("PMF of Tests Required to Return {input$pos_tested} Positive Tests"),
         subtitle = glue("Test Sensitivity = {input$rdt_sens}%, {input$percentile_pos}-th Percentile"),
@@ -428,7 +428,7 @@ server <- function(input, output) {
           1
           )
       ) +
-      scale_fill_gradientn(colors = met.brewer("Hokusai2")) +
+      scale_fill_gradient(low = "#abc9c8", high = "#0a3351") +
       labs(
         title = glue("CDF of Tests Required to Return {input$pos_tested} Positive Tests"),
         subtitle = glue("Test Sensitivity = {input$rdt_sens}%, {input$percentile_pos}-th Percentile"),
