@@ -4,6 +4,72 @@ library(rlang)
 library(MetBrewer)
 
 
+selection_tabs <- tabsetPanel(
+  id = "selection_tabs",
+  type = "hidden",
+  tabPanel(
+    "Total",
+    # Input: Selector for tested cases ----
+    sliderInput(
+      inputId = "num_tested",
+      label = "Choose the number of individuals tested:",
+      value = 100,
+      min = 0,
+      max = 100
+      ),
+    # Input: Selector for Prior Probability ----
+    sliderInput(
+      inputId = "prior_prob",
+      label = "Choose the prior probability (%) of a positive measles test:",
+      value = 60,
+      min = 0,
+      max = 100
+      ),
+    # Input: Selector for GS ----
+    sliderInput(
+      inputId = "gs_spec",
+      label = "Choose the specificity (%) of the Gold Standard test:",
+      value = 97.3,
+      min = 0,
+      max = 100
+      ),
+    sliderInput(
+      inputId = "gs_sens",
+      label = "Choose the sensitivity (%) of the Gold Standard test:",
+      value = 98.1,
+      min = 0,
+      max = 100
+      ),
+    # Input: Selector for RDT ----
+    sliderInput(
+      inputId = "rdt_spec",
+      label = "Choose the specificity (%) of the Rapid Diagnostic test:",
+      value = 96.2,
+      min = 0,
+      max = 100
+      )
+  ),
+  tabPanel(
+    "Positive", 
+    # Input: Selector for positive cases ----
+    sliderInput(
+      inputId = "pos_tested",
+      label = "Choose the number of positive cases identified by the Gold Standard:",
+      value = 3,
+      min = 0,
+      max = 20
+      ),
+    # Input: Selector for Quantile ----
+    sliderInput(
+      inputId = "percentile_pos",
+      label = "Choose the percentile of test distribution to return the desired number of true positive cases:",
+      value = 50,
+      min = 0,
+      max = 100
+      )
+  )
+)
+
 # Define UI for dataset viewer app ----
 ui <- fluidPage(
 
@@ -15,53 +81,27 @@ ui <- fluidPage(
 
     # Sidebar panel for inputs ----
     sidebarPanel(
+      # Input: Select whether to input number of gold standard positives or
+      # total individuals tested
+      radioButtons(
+        inputId = "pos_or_total",
+        label = "Do you want to input the number of gold standard positives or the total number of individuals tested?",
+        selected = "Positive",
+        choices = list(
+          "Positive",
+          "Total"
+        )
+      ),
+      # Input: Selection tabs based on user input about postive vs total cases
+      # being computed
+      selection_tabs,
 
-      # Input: Selector for tested cases ----
-      sliderInput(
-        inputId = "num_tested",
-        label = "Choose the number of individuals tested:",
-        value = 100,
-        min = 0,
-        max = 100
-        ),
-
-      # Input: Selector for Prevalence ----
-      sliderInput(
-        inputId = "prev",
-        label = "Choose the underlying prevalence (%) of measles:",
-        value = 5,
-        min = 0,
-        max = 100
-        ),
-
-      # Input: Selector for GS ----
-      sliderInput(
-        inputId = "gs_sens",
-        label = "Choose the sensitivity (%) of the Gold Standard test:",
-        value = 98.1,
-        min = 0,
-        max = 100
-        ),
-      sliderInput(
-        inputId = "gs_spec",
-        label = "Choose the specificity (%) of the Gold Standard test:",
-        value = 97.3,
-        min = 0,
-        max = 100
-        ),
 
       # Input: Selector for RDT ----
       sliderInput(
         inputId = "rdt_sens",
         label = "Choose the sensitivity (%) of the Rapid Diagnostic test:",
         value = 90.0,
-        min = 0,
-        max = 100
-        ),
-      sliderInput(
-        inputId = "rdt_spec",
-        label = "Choose the specificity (%) of the Rapid Diagnostic test:",
-        value = 96.2,
         min = 0,
         max = 100
         ),
@@ -79,38 +119,61 @@ ui <- fluidPage(
       p("
       Warrener et al. 2011 evaluated the performance of a lateral flow rapid point-of-care measles IgM test (https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3165981/), which can be performed in < 30 minutes and with a serum or oral fluid sample, demonstarting a sensitivity of 90.0% and specificity of 96.2%.
       "),
-      tabsetPanel(
-        # Output: Plot of results ----
-        tabPanel(
-          "Test Positive Plot",
-          splitLayout(
-            plotOutput("test_pos_plot"),
-            plotOutput("ppv_plot")
-          )
-        ),
-
-        # Output: Table of results ----
-        tabPanel(
-          "Table",
-          tableOutput("table")
+      conditionalPanel(
+        # Conditional: Show the plots and table for total case calculations
+        condition = "input.pos_or_total == 'Total'",
+        tabsetPanel(
+          tabPanel(
+            "Plots",
+              # Output: Plot of results ----
+              splitLayout(
+                plotOutput("test_pos_plot"),
+                plotOutput("ppv_plot")
+              )
+            ),
+          tabPanel(
+            # Output: Table of results ----
+            "Table",
+            tableOutput("table")
+            )
         )
       ),
-
+      conditionalPanel(
+        # Conditional: Show the plots and table for positive case calculations
+        condition = "input.pos_or_total == 'Positive'",
+        tabPanel(
+          "Negative Binomial",
+          splitLayout(
+            plotOutput("test_dist_dens_plot"),
+            plotOutput("test_dist_cum_prob_plot"),
+            # tableOutput("test_dist_table")
+          )
+        )
+      )
+          
+      
+      
+      )
     )
   )
-)
 
 
 # Define server logic to summarize and view selected dataset ----
 server <- function(input, output) {
 
+  observeEvent(input$pos_or_total, {
+    updateTabsetPanel(
+      inputId = "selection_tabs", selected = input$pos_or_total
+      )
+  })
+
   # General values ----
   dis_pos <- reactive({
-    input$num_tested * (input$prev / 100)
+    input$num_tested * (input$prior_prob / 100)
   })
 
   dis_neg <- reactive({
-    input$num_tested * (1 - (input$prev / 100))
+    input$num_tested * (1 - (input$prior_prob / 100))
   })
 
   # General functions ----
@@ -223,33 +286,34 @@ server <- function(input, output) {
     )
   })
 
-
-  output$test_pos_plot <- renderPlot({
-
-    input_data <- tibble(
+  input_data <- reactive({
+    tibble(
       gs_sens = input$gs_sens / 100,
       gs_spec = input$gs_spec / 100,
       rdt_sens = input$rdt_sens / 100,
       rdt_spec = input$rdt_spec / 100
     )
+  })
+
+  output$test_pos_plot <- renderPlot({
 
     gen_plot_data() %>%
       ggplot() +
       geom_contour_filled(aes(x = sens, y = spec, z = test_pos)) +
       geom_point(
-        data = input_data, 
+        data = input_data(),
         aes(x = gs_sens, y = gs_spec), 
         shape = 21, size = 2, color = "black", fill = "gold"
         ) +
       geom_point(
-        data = input_data,
+        data = input_data(),
         aes(x = rdt_sens, y = rdt_spec),
         shape = 21, size = 2, color = "white", fill = "black"
         ) +
       scale_fill_manual(values = met.brewer("OKeeffe2", 10)) +
       labs(
         title = "Number of Positive Tests by Sensitivity and Specificity",
-        subtitle = glue("Prevalence = {prev}, Total Tests = {tot}, Disease Positives = {dis_pos()}"),
+        subtitle = glue("Prior Probability = {input$prior_prob}%, Total Tests = {input$num_tested}, Disease Positives = {dis_pos()}"),
         x = "Sensitivity",
         y = "Specificity",
         fill = "Number of Positive Tests"
@@ -258,36 +322,121 @@ server <- function(input, output) {
   })
 
   output$ppv_plot <- renderPlot({
-    
-    input_data <- tibble(
-      gs_sens = input$gs_sens / 100,
-      gs_spec = input$gs_spec / 100,
-      rdt_sens = input$rdt_sens / 100,
-      rdt_spec = input$rdt_spec / 100
-    )
 
     gen_plot_data() %>%
       ggplot() +
       geom_contour_filled(aes(x = sens, y = spec, z = ppv)) +
       geom_point(
-        data = input_data, 
+        data = input_data(), 
         aes(x = gs_sens, y = gs_spec), 
         shape = 21, size = 2, color = "black", fill = "gold"
         ) +
       geom_point(
-        data = input_data,
+        data = input_data(),
         aes(x = rdt_sens, y = rdt_spec),
         shape = 21, size = 2, color = "white", fill = "black"
         ) +
       scale_fill_manual(values = met.brewer("Hokusai2", 10)) +
       labs(
         title = "PPV by Sensitivity and Specificity",
-        subtitle = glue("Prevalence = {prev}, Total Tests = {tot}, Disease Positives = {dis_pos()}"),
+        subtitle = glue("Prior Probability = {input$prior_prob}%, Total Tests = {input$num_tested}, Disease Positives = {dis_pos()}"),
         x = "Sensitivity",
         y = "Specificity",
         fill = "PPV"
       ) +
       theme(legend.position = "bottom")
+  })
+
+  
+  quantile_tested <- reactive({
+    input$pos_tested + 
+      qnbinom(p = input$percentile_pos/100, size = input$pos_tested, prob = input$rdt_sens/100)
+    })
+
+  failures_vec <- reactive({seq(0, quantile_tested() - input$pos_tested, 1)})
+
+  # Determine how many failures should be included in the plots (dependent on
+  # where the vertical line indicating the number of tests would lie on the axes)
+  total_test_dist <- reactive({
+    if (quantile_tested() > input$pos_tested + 10) {
+      data <- tibble(failures = failures_vec())
+    } else if(
+        dnbinom(5, input$pos_tested, input$rdt_sens/100) < 0.05 & 
+          quantile_tested() <= input$pos_tested + 5
+        ) {
+      data <- tibble(failures = 0:5)
+    } else {
+      data <- tibble(failures = 0:10)
+    }
+    
+    data %>%
+      mutate(
+        total = failures + input$pos_tested,
+        dens = dnbinom(failures, input$pos_tested, prob = input$rdt_sens/100),
+        cum_prob = pnbinom(failures, input$pos_tested, prob = input$rdt_sens/100)
+      ) 
+  })
+
+  output$test_dist_dens_plot <- renderPlot({
+    total_test_dist() %>%
+      ggplot() +
+      geom_col(aes(x = total, y = dens, fill = dens)) +
+      geom_vline(
+        xintercept = quantile_tested(), 
+        color = "grey80",
+        size = 1.5,
+        linetype = "dashed"
+        ) +
+      scale_x_continuous(
+        breaks = seq(
+          min(total_test_dist()$total), 
+          max(total_test_dist()$total), 
+          1
+          )
+      ) +
+      scale_fill_gradientn(colors = rev(met.brewer("Greek"))) +
+      labs(
+        title = glue("PMF of Tests Required to Return {input$pos_tested} Positive Tests"),
+        subtitle = glue("Test Sensitivity = {input$rdt_sens}%, {input$percentile_pos}-th Percentile"),
+        x = "Total Tests",
+        y = "Probability Density",
+        caption = glue("The {input$percentile_pos}-th percentile of tests required to return at least {input$pos_tested} positive tests is shown as a vertical line")
+      ) +
+      theme(legend.position = "none")
+  })
+
+  output$test_dist_cum_prob_plot <- renderPlot({
+    total_test_dist() %>%
+      ggplot() +
+      geom_col(aes(x = total, y = cum_prob, fill = cum_prob)) +
+      geom_hline(
+        yintercept = input$percentile_pos/100,
+        color = "grey80",
+        size = 1.5,
+        linetype = "dashed"
+        ) +
+      geom_vline(
+        xintercept = quantile_tested(),
+        color = "grey80",
+        size = 1.5,
+        linetype = "dashed"
+        ) +
+      scale_x_continuous(
+        breaks = seq(
+          min(total_test_dist()$total), 
+          max(total_test_dist()$total), 
+          1
+          )
+      ) +
+      scale_fill_gradientn(colors = met.brewer("Hokusai2")) +
+      labs(
+        title = glue("CDF of Tests Required to Return {input$pos_tested} Positive Tests"),
+        subtitle = glue("Test Sensitivity = {input$rdt_sens}%, {input$percentile_pos}-th Percentile"),
+        x = "Total Tests",
+        y = "Cumulative Probability",
+        caption = glue("The {input$percentile_pos}-th percentile of tests required to return at least {input$pos_tested} positive tests is shown as a vertical line,\nwith the horizontal line showing the associated cumulative probability ({input$percentile_pos}%)")
+      ) +
+      theme(legend.position = "none")
   })
 
 }

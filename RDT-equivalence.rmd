@@ -310,3 +310,86 @@ stoch_test3 %>%
   )
 ```
 
+# Test Positive (Discounting Testing Rate)
+
+Here, we're going to assume that the reference test is 100% sensitive and 100% specific. We're also going to discount the testing rate and the prevalence. The questions we're going to ask is:
+
+1. If there are x disease positives, what is the distribution of test positives, given a certain sensitivity and specificity?
+2. Given x disease positives, and the above distribution of test positives, how many additional test positives would be required such that y% of the distribution of positives was $\ge$ x?
+  - **Is this just the negative binomial distribution?**
+
+We'll start with the example of 3 disease positives, and a test of 80% sensitivity and 80% specificity.
+
+```{r}
+sens <- 0.8
+spec <- 0.8
+
+dis_pos <- 3
+```
+
+```{r}
+test_pos <- tibble(positives = rbinom(1e5, dis_pos + 4, sens))
+```
+
+```{r}
+ggplot(test_pos) +
+  geom_bar(aes(x = positives))
+```
+
+```{r}
+test_pos %>%
+  summarize(
+    mean = mean(positives),
+    sd = sd(positives),
+    min = min(positives),
+    quantile_10 = quantile(positives, .10),
+    quantile_25 = quantile(positives, .25),
+    quantile_50 = quantile(positives, .50),
+    quantile_75 = quantile(positives, .75),
+    quantile_90 = quantile(positives, .90),
+    max = max(positives)
+  )
+```
+
+We can use the negative binomial to examine the number of tests required to achieve a certain level of disease positives. In the example below, we'll use the same sensitivity (80%) and disease positives (3).
+
+```{r}
+quant <- 0.95
+
+total_test_dist <- tibble(
+  failures = seq(0, qnbinom(p = quant, size = 3, prob = 0.4), 1),
+  total = failures + dis_pos,
+  dens = dnbinom(failures, 3, prob = 0.4),
+  cum_prob = pnbinom(failures, 3, prob = 0.4)
+  ) 
+```
+
+```{r}
+
+
+qnbinom(p = quant, size = 3, prob = 0.8)
+```
+
+```{r}
+total_test_dist %>%
+  ggplot(aes(x = total, y = dens, fill = dens)) +
+  geom_col()+
+  scale_x_continuous(
+    breaks = seq(min(total_test_dist$total), max(total_test_dist$total), 1)
+    ) +
+  geom_vline(xintercept = dis_pos + qnbinom(p = quant, size = 3, prob = 0.4)) +
+  scale_fill_gradientn(colors = rev(met.brewer("Greek")))
+```
+
+```{r}
+total_test_dist %>%
+  ggplot() +
+  geom_col(aes(x = total, y = cum_prob, fill = total)) +
+  scale_x_continuous(
+    breaks = seq(min(total_test_dist$total), max(total_test_dist$total), 1)
+    ) +
+  geom_hline(yintercept = quant) +
+  geom_vline(xintercept = dis_pos + qnbinom(p = quant, size = 3, prob = 0.8)) +
+  scale_fill_gradientn(colors = met.brewer("Hokusai2"))
+```
+
