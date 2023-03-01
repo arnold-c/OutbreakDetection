@@ -27,20 +27,30 @@ quickactivate(@__DIR__, "OutbreakDetection")
 ```
 
 ```{julia}
-using JumpProcesses, StochasticDiffEq, Random, Statistics, LinearAlgebra
-using DataFrames, CairoMakie, ProgressMeter
+using JumpProcesses, StochasticDiffEq, DifferentialEquations, LinearAlgebra
+using Catalyst, Random, Statistics, DataFrames, CairoMakie, ProgressMeter
 
 CairoMakie.activate!()
 ```
 
 ```{julia}
-β = 0.1 / 1000.0
-ν = 0.01;
-p = (β, ν)
+X = 450
+Y = 50
+Z = 0
+N = X + Y + Z
+u₀ = [X, Y, Z, N]
 ```
 
 ```{julia}
-tmax = 250.0
+R₀ = 12
+γ = 1/8
+μ = 1 / (365 * 62.5)
+β = R₀ * (γ + μ)
+p = (; β, γ, μ)
+```
+
+```{julia}
+tmax = 100 * 365
 δt = 0.001
 tspan = (0.0, tmax)
 tlength = length(tspan[1]:δt:tspan[2])
@@ -48,58 +58,77 @@ Random.seed!(1234);
 ```
 
 ```{julia}
-function rate(out, u, p, t)
-    out[1] = p[1] * u[1] * u[2]   # β * S * I
-    out[2] = p[2] * u[2]          # ν * I
+rate1(u, p, t) = p.β * u[1] * u[2] / u[4]  # β*X*Y / N
+
+function affect1!(integrator)
+    integrator.u[1] -= 1         # X -> X - 1
+    integrator.u[2] += 1         # Y -> Y + 1
     nothing
 end
+
+jump = ConstantRateJump(rate1, affect1!)
 ```
 
 ```{julia}
-c = zeros(3, 2)
-# S + I --> I
-c[1, 1] = -1    # S -> S - 1
-c[2, 1] = 1     # I -> I + 1
+rate2(u, p, t) = p.γ * u[2]         # γ*Y
 
-# I --> R
-c[2, 2] = -1    # I -> I - 1
-c[3, 2] = 1     # R -> R + 1
-```
-
-```{julia}
-function change(du, u, p, t, counts, mark)
-    mul!(du, c, counts)
+function affect2!(integrator)
+    integrator.u[2] -= 1        # Y -> Y - 1
+    integrator.u[3] += 1        # Z -> Z + 1
     nothing
 end
+
+jump2 = ConstantRateJump(rate2, affect2!)
 ```
 
 ```{julia}
-rj = RegularJump(rate, change, 2)
+birth_rate(u, p, t) = p.μ * u[4]    # μ * N
 
-u₀ = [1000.0, 50.0, 0.0]
+function birth_affect!(integrator)
+    integrator.u[1] += 1
+    integrator.u[4] += 1
+    nothing
+end
+
+birth_jump = ConstantRateJump(birth_rate, birth_affect!)
+```
+
+```{julia}
+death_rate(u, p, t) = p.μ * u[4]    # μ * N
+
+function death_affect!(integrator)
+    map!(
+        i -> ifelse(integrator[i] > 0, integrator.u[i] - 1, integrator.u[i]),
+        integrator.u,
+        eachindex(integrator.u)
+    )
+
+end
+
+death_jump = ConstantRateJump(death_rate, death_affect!)
+```
+
+```{julia}
 prob = DiscreteProblem(u₀, tspan, p)
-jump_prob = JumpProblem(prob, Direct(), rj)
+jump_prob = JumpProblem(prob, Direct(), jump, jump2, birth_jump, death_jump)
+sol = solve(jump_prob, SSAStepper())
 
-sol = solve(jump_prob, TauLeaping(); dt = δt)
+sol_array = Array(sol)
 ```
-
-```{julia}
-sir_array = zeros(Float64, 4, tlength) 
-sir_array[1:3, :] = Array(sol)
-sir_array[4, :] = sol.t
-```
-
 ```{julia}
 f = Figure()
 ax = Axis(
     f[1, 1],
     xlabel = "Time",
     ylabel = "Number"
-    )
+)
 
-lines!(ax, sir_array[4, :], sir_array[1, :])
-lines!(ax, sir_array[4, :], sir_array[2, :])
-lines!(ax, sir_array[4, :], sir_array[3, :])
+lines!(ax, sol.t, sol_array[1, :], linewidth = 3, label = "X(t)")
+lines!(ax, sol.t, sol_array[2, :], linewidth = 3, label = "Y(t)")
+lines!(ax, sol.t, sol_array[3, :], linewidth = 3, label = "Z(t)")
+lines!(ax, sol.t, sol_array[4, :], linewidth = 3, label = "N(t)")
+
+axislegend(ax)
 
 f
 ```
