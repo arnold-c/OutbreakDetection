@@ -34,15 +34,14 @@ CairoMakie.activate!()
 ```
 
 ```{julia}
-X = 450
-Y = 50
-Z = 0
-N = X + Y + Z
-u₀ = [X, Y, Z, N]
+X = 800
+Y = 20
+Z = 800
+u₀ = [X, Y, Z]
 ```
 
 ```{julia}
-R₀ = 12
+R₀ = 16
 γ = 1/8
 μ = 1 / (365 * 62.5)
 β = R₀ * (γ + μ)
@@ -50,7 +49,7 @@ p = (; β, γ, μ)
 ```
 
 ```{julia}
-tmax = 100 * 365
+tmax = 250
 δt = 0.001
 tspan = (0.0, tmax)
 tlength = length(tspan[1]:δt:tspan[2])
@@ -58,62 +57,87 @@ Random.seed!(1234);
 ```
 
 ```{julia}
-rate1(u, p, t) = p.β * u[1] * u[2] / u[4]  # β*X*Y / N
+infection_rate(u, p, t) = p.β * u[1] * u[2] / (u[1] + u[2] + u[3])      # β*X*Y / N
 
-function affect1!(integrator)
+function infection_affect!(integrator)
     integrator.u[1] -= 1         # X -> X - 1
     integrator.u[2] += 1         # Y -> Y + 1
     nothing
 end
 
-jump = ConstantRateJump(rate1, affect1!)
+infection_jump = ConstantRateJump(infection_rate, infection_affect!)
 ```
 
 ```{julia}
-rate2(u, p, t) = p.γ * u[2]         # γ*Y
+recovery_rate(u, p, t) = p.γ * u[2]     # γ*Y
 
-function affect2!(integrator)
+function recovery_affect!(integrator)
     integrator.u[2] -= 1        # Y -> Y - 1
     integrator.u[3] += 1        # Z -> Z + 1
     nothing
 end
 
-jump2 = ConstantRateJump(rate2, affect2!)
+recovery_jump = ConstantRateJump(recovery_rate, recovery_affect!)
 ```
 
 ```{julia}
-birth_rate(u, p, t) = p.μ * u[4]    # μ * N
+birth_rate(u, p, t) = p.μ * (u[1] + u[2] + u[3])        # μ * N
 
 function birth_affect!(integrator)
     integrator.u[1] += 1
-    integrator.u[4] += 1
+    # integrator.u[4] += 1
     nothing
 end
 
 birth_jump = ConstantRateJump(birth_rate, birth_affect!)
 ```
 
+
 ```{julia}
-death_rate(u, p, t) = p.μ * u[4]    # μ * N
+X_death_rate(u, p, t) = p.μ * u[1]       # μ * X
 
-function death_affect!(integrator)
-    map!(
-        i -> ifelse(integrator[i] > 0, integrator.u[i] - 1, integrator.u[i]),
-        integrator.u,
-        eachindex(integrator.u)
-    )
-
+function X_death_affect!(integrator)
+    integrator.u[1] -= 1
+    nothing
 end
 
-death_jump = ConstantRateJump(death_rate, death_affect!)
+X_death_jump = ConstantRateJump(X_death_rate, X_death_affect!)
+```
+
+```{julia}
+Y_death_rate(u, p, t) = p.μ * u[2]       # μ * Y
+
+function Y_death_affect!(integrator)
+    integrator.u[2] -= 1
+    nothing
+end
+
+Y_death_jump = ConstantRateJump(Y_death_rate, Y_death_affect!)
+```
+
+```{julia}
+Z_death_rate(u, p, t) = p.μ * u[3]       # μ * R
+
+function Z_death_affect!(integrator)
+    integrator.u[3] -= 1
+    nothing
+end
+
+Z_death_jump = ConstantRateJump(Z_death_rate, Z_death_affect!)
+```
+
+```{julia}
+jumps = [infection_jump, recovery_jump, birth_jump, X_death_jump, Y_death_jump, Z_death_jump]
 ```
 
 ```{julia}
 prob = DiscreteProblem(u₀, tspan, p)
-jump_prob = JumpProblem(prob, Direct(), jump, jump2, birth_jump, death_jump)
+jump_prob = JumpProblem(prob, Diredt(), jumps...)
 sol = solve(jump_prob, SSAStepper())
 
-sol_array = Array(sol)
+sol_array = zeros(4, length(sol))
+sol_array[1:3, :] = Array(sol)
+sol_array[4, :] = sum(sol_array[1:3, :], dims = 1);
 ```
 ```{julia}
 f = Figure()
