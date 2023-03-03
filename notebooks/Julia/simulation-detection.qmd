@@ -34,29 +34,6 @@ CairoMakie.activate!()
 ```
 
 ```{julia}
-X = 800
-Y = 20
-Z = 800
-u₀ = [X, Y, Z]
-```
-
-```{julia}
-R₀ = 16
-γ = 1/8
-μ = 1 / (365 * 62.5)
-β = R₀ * (γ + μ)
-p = (β, γ, μ)
-```
-
-```{julia}
-tmax = 250.0
-δt = 0.001
-tspan = (0.0, tmax)
-tlength = length(tspan[1]:δt:tspan[2])
-Random.seed!(1234);
-```
-
-```{julia}
 function rate(out, u, p, t)
     out[1] = p[1] * u[1] * u[2] / u[4]      # β * X * Y / N
     out[2] = p[2] * u[2]                    # ν * Y
@@ -105,13 +82,25 @@ rj = RegularJump(rate, change!, 6)
 ```
 
 ```{julia}
-u₀ = [800, 20, 800, NaN]
-u₀[4] = sum(u₀[1:3])
+tmax = 250.0
+δt = 0.001
+tspan = (0.0, tmax)
+tlength = length(tspan[1]:δt:tspan[2])
+Random.seed!(1234);
+```
+
+```{julia}
 R₀ = 16
 γ = 1/8
-μ = 20 / (365 * 62.5)
+μ = 1 / (365 * 62.5)
 β = R₀ * (γ + μ)
 p = (β, γ, μ)
+
+u₀ = [800, 20, 800, NaN]
+u₀[4] = sum(u₀[1:3])
+```
+
+```{julia}
 prob = DiscreteProblem(u₀, tspan, p)
 jump_prob = JumpProblem(prob, Direct(), rj)
 sol = solve(jump_prob, TauLeaping(); dt = δt)
@@ -135,108 +124,6 @@ lines!(ax, sol.t, sol_array[2, :], linewidth = 3, label = "Y(t)")
 lines!(ax, sol.t, sol_array[3, :], linewidth = 3, label = "Z(t)")
 lines!(ax, sol.t, sol_array[4, :], linewidth = 3, label = "N(t) jump")
 lines!(ax, sol.t, sol_array[5, :], linewidth = 3, label = "N(t) calc")
-
-axislegend(ax)
-
-f
-```
-
-
-```{julia}
-infection_rate(u, p, t) = p[1] * u[1] * u[2] / (u[1] + u[2] + u[3])      # β*X*Y / N
-
-function infection_affect!(integrator)
-    integrator.u[1] -= 1         # X -> X - 1
-    integrator.u[2] += 1         # Y -> Y + 1
-    nothing
-end
-
-infection_jump = ConstantRateJump(infection_rate, infection_affect!)
-```
-
-```{julia}
-recovery_rate(u, p, t) = p[2] * u[2]     # γ*Y
-
-function recovery_affect!(integrator)
-    integrator.u[2] -= 1        # Y -> Y - 1
-    integrator.u[3] += 1        # Z -> Z + 1
-    nothing
-end
-
-recovery_jump = ConstantRateJump(recovery_rate, recovery_affect!)
-```
-
-```{julia}
-birth_rate(u, p, t) = p[3] * (u[1] + u[2] + u[3])        # μ * N
-
-function birth_affect!(integrator)
-    integrator.u[1] += 1
-    # integrator.u[4] += 1
-    nothing
-end
-
-birth_jump = ConstantRateJump(birth_rate, birth_affect!)
-```
-
-
-```{julia}
-X_death_rate(u, p, t) = p[3] * u[1]       # μ * X
-
-function X_death_affect!(integrator)
-    integrator.u[1] -= 1
-    nothing
-end
-
-X_death_jump = ConstantRateJump(X_death_rate, X_death_affect!)
-```
-
-```{julia}
-Y_death_rate(u, p, t) = p[3] * u[2]       # μ * Y
-
-function Y_death_affect!(integrator)
-    integrator.u[2] -= 1
-    nothing
-end
-
-Y_death_jump = ConstantRateJump(Y_death_rate, Y_death_affect!)
-```
-
-```{julia}
-Z_death_rate(u, p, t) = p[3] * u[3]       # μ * R
-
-function Z_death_affect!(integrator)
-    integrator.u[3] -= 1
-    nothing
-end
-
-Z_death_jump = ConstantRateJump(Z_death_rate, Z_death_affect!)
-```
-
-```{julia}
-jumps = [infection_jump, recovery_jump, birth_jump, X_death_jump, Y_death_jump, Z_death_jump]
-```
-
-```{julia}
-prob = DiscreteProblem(u₀, tspan, p)
-jump_prob = JumpProblem(prob, Direct(), jumps...)
-sol = solve(jump_prob, SSAStepper())
-
-sol_array = zeros(4, length(sol))
-sol_array[1:4, :] = Array(sol)
-sol_array[4, :] = sum(sol_array[1:3, :], dims = 1);
-```
-```{julia}
-f = Figure()
-ax = Axis(
-    f[1, 1],
-    xlabel = "Time",
-    ylabel = "Number"
-)
-
-lines!(ax, sol.t, sol_array[1, :], linewidth = 3, label = "X(t)")
-lines!(ax, sol.t, sol_array[2, :], linewidth = 3, label = "Y(t)")
-lines!(ax, sol.t, sol_array[3, :], linewidth = 3, label = "Z(t)")
-lines!(ax, sol.t, sol_array[4, :], linewidth = 3, label = "N(t)")
 
 axislegend(ax)
 
