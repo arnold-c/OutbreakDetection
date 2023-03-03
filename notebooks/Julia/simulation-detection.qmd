@@ -45,11 +45,11 @@ R₀ = 16
 γ = 1/8
 μ = 1 / (365 * 62.5)
 β = R₀ * (γ + μ)
-p = (; β, γ, μ)
+p = (β, γ, μ)
 ```
 
 ```{julia}
-tmax = 250
+tmax = 250.0
 δt = 0.001
 tspan = (0.0, tmax)
 tlength = length(tspan[1]:δt:tspan[2])
@@ -57,7 +57,93 @@ Random.seed!(1234);
 ```
 
 ```{julia}
-infection_rate(u, p, t) = p.β * u[1] * u[2] / (u[1] + u[2] + u[3])      # β*X*Y / N
+function rate(out, u, p, t)
+    out[1] = p[1] * u[1] * u[2] / u[4]      # β * X * Y / N
+    out[2] = p[2] * u[2]                    # ν * Y
+    out[3] = p[3] * u[4]                    # μ * N
+    out[4] = p[3] * u[1]                    # μ * X
+    out[5] = p[3] * u[2]                    # μ * Y
+    out[6] = p[3] * u[3]                    # μ * Z
+    nothing
+end
+```
+
+```{julia}
+c = zeros(4, 6)
+# X + Y --> Y
+c[1, 1] = -1        # X -> X - 1
+c[2, 1] = 1         # Y -> Y + 1
+
+# Y --> Z
+c[2, 2] = -1        # Y -> Y - 1
+c[3, 2] = 1         # Z -> Z + 1
+
+# X --> 2X
+c[1, 3] = 1         # X -> X + 1
+c[4, 3] = 1         # N -> N + 1
+
+# X --> 0X
+c[1, 4] = -1        # X -> X - 1
+c[4, 4] = -1        # N -> N - 1
+
+# Y --> 0Y
+c[2, 5] = -1        # Y -> Y - 1
+c[4, 5] = -1        # N -> N - 1
+
+# Z --> 0Z
+c[3, 6] = -1        # Z -> Z - 1
+c[4, 6] = -1        # N -> N - 1
+
+function change!(du, u, p, t, counts, mark)
+    mul!(du, c, counts)
+    nothing
+end
+```
+
+```{julia}
+rj = RegularJump(rate, change!, 6)
+```
+
+```{julia}
+u₀ = [800, 20, 800, NaN]
+u₀[4] = sum(u₀[1:3])
+R₀ = 16
+γ = 1/8
+μ = 20 / (365 * 62.5)
+β = R₀ * (γ + μ)
+p = (β, γ, μ)
+prob = DiscreteProblem(u₀, tspan, p)
+jump_prob = JumpProblem(prob, Direct(), rj)
+sol = solve(jump_prob, TauLeaping(); dt = δt)
+sol_array = zeros(5, length(sol))
+sol_array[1:4, :] = Array(sol)
+sol_array[5, :] = sum(sol_array[1:3, :], dims = 1);
+
+sol_array[4, :] == sol_array[5, :]
+```
+
+```{julia}
+f = Figure()
+ax = Axis(
+    f[1, 1],
+    xlabel = "Time",
+    ylabel = "Number"
+)
+
+lines!(ax, sol.t, sol_array[1, :], linewidth = 3, label = "X(t)")
+lines!(ax, sol.t, sol_array[2, :], linewidth = 3, label = "Y(t)")
+lines!(ax, sol.t, sol_array[3, :], linewidth = 3, label = "Z(t)")
+lines!(ax, sol.t, sol_array[4, :], linewidth = 3, label = "N(t) jump")
+lines!(ax, sol.t, sol_array[5, :], linewidth = 3, label = "N(t) calc")
+
+axislegend(ax)
+
+f
+```
+
+
+```{julia}
+infection_rate(u, p, t) = p[1] * u[1] * u[2] / (u[1] + u[2] + u[3])      # β*X*Y / N
 
 function infection_affect!(integrator)
     integrator.u[1] -= 1         # X -> X - 1
@@ -69,7 +155,7 @@ infection_jump = ConstantRateJump(infection_rate, infection_affect!)
 ```
 
 ```{julia}
-recovery_rate(u, p, t) = p.γ * u[2]     # γ*Y
+recovery_rate(u, p, t) = p[2] * u[2]     # γ*Y
 
 function recovery_affect!(integrator)
     integrator.u[2] -= 1        # Y -> Y - 1
@@ -81,7 +167,7 @@ recovery_jump = ConstantRateJump(recovery_rate, recovery_affect!)
 ```
 
 ```{julia}
-birth_rate(u, p, t) = p.μ * (u[1] + u[2] + u[3])        # μ * N
+birth_rate(u, p, t) = p[3] * (u[1] + u[2] + u[3])        # μ * N
 
 function birth_affect!(integrator)
     integrator.u[1] += 1
@@ -94,7 +180,7 @@ birth_jump = ConstantRateJump(birth_rate, birth_affect!)
 
 
 ```{julia}
-X_death_rate(u, p, t) = p.μ * u[1]       # μ * X
+X_death_rate(u, p, t) = p[3] * u[1]       # μ * X
 
 function X_death_affect!(integrator)
     integrator.u[1] -= 1
@@ -105,7 +191,7 @@ X_death_jump = ConstantRateJump(X_death_rate, X_death_affect!)
 ```
 
 ```{julia}
-Y_death_rate(u, p, t) = p.μ * u[2]       # μ * Y
+Y_death_rate(u, p, t) = p[3] * u[2]       # μ * Y
 
 function Y_death_affect!(integrator)
     integrator.u[2] -= 1
@@ -116,7 +202,7 @@ Y_death_jump = ConstantRateJump(Y_death_rate, Y_death_affect!)
 ```
 
 ```{julia}
-Z_death_rate(u, p, t) = p.μ * u[3]       # μ * R
+Z_death_rate(u, p, t) = p[3] * u[3]       # μ * R
 
 function Z_death_affect!(integrator)
     integrator.u[3] -= 1
@@ -132,11 +218,11 @@ jumps = [infection_jump, recovery_jump, birth_jump, X_death_jump, Y_death_jump, 
 
 ```{julia}
 prob = DiscreteProblem(u₀, tspan, p)
-jump_prob = JumpProblem(prob, Diredt(), jumps...)
+jump_prob = JumpProblem(prob, Direct(), jumps...)
 sol = solve(jump_prob, SSAStepper())
 
 sol_array = zeros(4, length(sol))
-sol_array[1:3, :] = Array(sol)
+sol_array[1:4, :] = Array(sol)
 sol_array[4, :] = sum(sol_array[1:3, :], dims = 1);
 ```
 ```{julia}
