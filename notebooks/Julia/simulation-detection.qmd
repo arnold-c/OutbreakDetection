@@ -130,6 +130,102 @@ axislegend(ax)
 f
 ```
 
+
+```{julia}
+function rate(out, u, p, t)
+    out[1] = p[1] * u[1] * u[2] / (u[1] + u[2] + u[3] + u[4])         # β * S * I / N
+    out[2] = p[2] * u[2]                        # σ * E
+    out[3] = p[3] * u[3]                        # γ * I
+    out[4] = p[4] * (u[1] + u[2] + u[3] + u[4])        # μ * N
+    out[5] = p[4] * u[1]                        # μ * S
+    out[6] = p[4] * u[2]                        # μ * E
+    out[7] = p[4] * u[3]                        # μ * I
+    out[8] = p[4] * u[4]                        # μ * R
+    nothing
+end
+
+c = zeros(4, 8)
+# S + I --> E
+c[1, 1] = -1        # S -> S - 1
+c[2, 1] = 1         # E -> E + 1
+
+# E --> I
+c[2, 2] = -1        # E -> E - 1
+c[3, 2] = 1         # I -> I + 1
+
+# I --> R
+c[3, 3] = -1        # I -> I - 1
+c[4, 3] = 1         # R -> R + 1
+
+# S --> 2S
+c[1, 4] = 1         # S -> S + 1
+
+# S --> 0S
+c[1, 5] = -1        # S -> S - 1
+
+# E --> 0E
+c[2, 6] = -1        # S -> S - 1
+
+# I --> 0I
+c[3, 7] = -1        # I -> I - 1
+
+# R --> 0R
+c[4, 8] = -1        # R -> R - 1
+
+function change!(du, u, p, t, counts, mark)
+    mul!(du, c, counts)
+    nothing
+end
+
+rj = RegularJump(rate, change!, 8)
+
+tmax = 2.0
+δt = 0.1/365
+tspan = (0.0, tmax)
+tlength = length(tspan[1]:δt:tspan[2])
+Random.seed!(1234);
+
+
+u₀ = [999.0, 10.0, 0.0, 0.0]
+
+μ = 1
+β = 1000
+σ = 365/8
+γ = 365/5
+p = (β, σ, γ, μ)
+
+forcing!(du,u,p,t) = (du .= 0)
+noise!(du,u,p,t) = (du .= 0)
+W = WienerProcess(0.0,0.0,0.0)
+
+prob = SDEProblem(forcing!, noise!, u₀, tspan, p, noise = W)
+jump_prob = JumpProblem(prob, Direct(), rj)
+sol = solve(jump_prob, EM(), dt = δt, maxiters = 1e5)
+sol_array = zeros(5, length(sol))
+sol_array[1:4, :] = Array(sol)
+sol_array[5, :] = sum(sol_array[1:4, :], dims = 1)
+
+fig = Figure()
+ax = Axis(
+    fig[1, 1],
+    xlabel = "Time",
+    ylabel = "Number"
+)
+
+lines!(ax, sol.t, sol_array[1, :], linewidth = 3, label = "S(t)")
+lines!(ax, sol.t, sol_array[2, :], linewidth = 3, label = "E(t)")
+lines!(ax, sol.t, sol_array[3, :], linewidth = 3, label = "I(t)")
+lines!(ax, sol.t, sol_array[4, :], linewidth = 3, label = "R(t)")
+lines!(ax, sol.t, sol_array[5, :], linewidth = 3, label = "N(t)")
+
+axislegend(ax)
+
+fig
+
+min(sol_array[1:5, :]...)
+# min(sol_array[4, :]...)
+```
+
 ```{julia}
 function run_sir_sim(; u₀, tspan, p)
     prob = DiscreteProblem(u₀, tspan, p)
