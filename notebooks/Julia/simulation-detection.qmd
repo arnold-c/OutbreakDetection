@@ -35,41 +35,37 @@ CairoMakie.activate!()
 
 ```{julia}
 function rate(out, u, p, t)
-    out[1] = p[1] * u[1] * u[2] / u[4]      # β * X * Y / N
-    out[2] = p[2] * u[2]                    # ν * Y
-    out[3] = p[3] * u[4]                    # μ * N
-    out[4] = p[3] * u[1]                    # μ * X
-    out[5] = p[3] * u[2]                    # μ * Y
-    out[6] = p[3] * u[3]                    # μ * Z
+    out[1] = p[1] * u[1] * u[2] / (u[1] + u[2] + u[3])           # β * S * I
+    out[2] = p[2] * u[2]                      # ν * I
+    # out[3] = p[3] * u[1]                    # μ * N
+    # out[4] = p[3] * u[1]                    # μ * S
+    # out[5] = p[3] * u[2]                    # μ * I
+    # out[6] = p[3] * u[3]                    # μ * R
     nothing
 end
 ```
 
 ```{julia}
-c = zeros(4, 6)
-# X + Y --> Y
-c[1, 1] = -1        # X -> X - 1
-c[2, 1] = 1         # Y -> Y + 1
+c = zeros(3, 2)
+# S + I --> I
+c[1, 1] = -1        # S -> S - 1
+c[2, 1] = 1         # I -> I + 1
 
-# Y --> Z
-c[2, 2] = -1        # Y -> Y - 1
-c[3, 2] = 1         # Z -> Z + 1
+# I --> R
+c[2, 2] = -1        # I -> I - 1
+c[3, 2] = 1         # R -> R + 1
 
-# X --> 2X
-c[1, 3] = 1         # X -> X + 1
-c[4, 3] = 1         # N -> N + 1
+# S --> 2X
+# c[1, 3] = 1         # S -> S + 1
 
-# X --> 0X
-c[1, 4] = -1        # X -> X - 1
-c[4, 4] = -1        # N -> N - 1
+# # S --> 0X
+# c[1, 4] = -1        # S -> S - 1
 
-# Y --> 0Y
-c[2, 5] = -1        # Y -> Y - 1
-c[4, 5] = -1        # N -> N - 1
+# # I --> 0Y
+# c[2, 5] = -1        # I -> I - 1
 
-# Z --> 0Z
-c[3, 6] = -1        # Z -> Z - 1
-c[4, 6] = -1        # N -> N - 1
+# # R --> 0Z
+# c[3, 6] = -1        # R -> R - 1
 
 function change!(du, u, p, t, counts, mark)
     mul!(du, c, counts)
@@ -78,11 +74,11 @@ end
 ```
 
 ```{julia}
-rj = RegularJump(rate, change!, 6)
+rj = RegularJump(rate, change!, 2)
 ```
 
 ```{julia}
-tmax = 250.0
+tmax = 100.0
 δt = 0.001
 tspan = (0.0, tmax)
 tlength = length(tspan[1]:δt:tspan[2])
@@ -90,25 +86,30 @@ Random.seed!(1234);
 ```
 
 ```{julia}
-R₀ = 16
-γ = 1/8
-μ = 1 / (365 * 62.5)
-β = R₀ * (γ + μ)
+# R₀ = 2
+# γ = 1/8
+μ = 0.001
+# β = R₀ * (γ + μ)
+# ζ = 0.001
+# p = (β, γ, μ, ζ)
+
+
+u₀ = [1000.0, 50.0, 0.0]
+
+β = 0.1/1000.0
+γ = 0.01
+μ = 0.001
 p = (β, γ, μ)
 
-u₀ = [800, 20, 800, NaN]
-u₀[4] = sum(u₀[1:3])
 ```
 
 ```{julia}
 prob = DiscreteProblem(u₀, tspan, p)
 jump_prob = JumpProblem(prob, Direct(), rj)
 sol = solve(jump_prob, TauLeaping(); dt = δt)
-sol_array = zeros(5, length(sol))
-sol_array[1:4, :] = Array(sol)
-sol_array[5, :] = sum(sol_array[1:3, :], dims = 1);
-
-sol_array[4, :] == sol_array[5, :]
+sol_array = zeros(4, length(sol))
+sol_array[1:3, :] = Array(sol)
+sol_array[4, :] = sum(sol_array[1:3, :], dims = 1)
 ```
 
 ```{julia}
@@ -119,11 +120,10 @@ ax = Axis(
     ylabel = "Number"
 )
 
-lines!(ax, sol.t, sol_array[1, :], linewidth = 3, label = "X(t)")
-lines!(ax, sol.t, sol_array[2, :], linewidth = 3, label = "Y(t)")
-lines!(ax, sol.t, sol_array[3, :], linewidth = 3, label = "Z(t)")
-lines!(ax, sol.t, sol_array[4, :], linewidth = 3, label = "N(t) jump")
-lines!(ax, sol.t, sol_array[5, :], linewidth = 3, label = "N(t) calc")
+lines!(ax, sol.t, sol_array[1, :], linewidth = 3, label = "S(t)")
+lines!(ax, sol.t, sol_array[2, :], linewidth = 3, label = "I(t)")
+lines!(ax, sol.t, sol_array[3, :], linewidth = 3, label = "R(t)")
+lines!(ax, sol.t, sol_array[4, :], linewidth = 3, label = "N(t)")
 
 axislegend(ax)
 
