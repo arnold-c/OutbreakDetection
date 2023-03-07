@@ -28,10 +28,11 @@ quickactivate(@__DIR__, "OutbreakDetection")
 
 ```{julia}
 using JumpProcesses, StochasticDiffEq, DifferentialEquations, LinearAlgebra
-using Catalyst, Random, Statistics, DataFrames, CairoMakie, ProgressMeter
-using BenchmarkTools
+using Catalyst, Random, Statistics, DataFrames, CairoMakie, AlgebraOfGraphics
+using BenchmarkTools, ProgressMeter
 
 CairoMakie.activate!()
+set_aog_theme!()
 ```
 
 ```{julia}
@@ -116,28 +117,29 @@ gillespie_jumps = [
 prob = DiscreteProblem(u₀, tspan, p)
 jump_prob = JumpProblem(prob, Direct(), gillespie_jumps...)
 sol = solve(jump_prob, SSAStepper())
-sol_array = zeros(5, length(sol))
+sol_array = zeros(6, length(sol))
 sol_array[1:4, :] = Array(sol)
 sol_array[5, :] = sum(sol_array[1:4, :], dims = 1)
+sol_array[6, :] = sol.t;
 ```
 
 ```{julia}
-fig = Figure()
-ax = Axis(
-    fig[1, 1],
-    xlabel = "Time",
-    ylabel = "Number"
-)
+sol_df = DataFrame(Tables.table(sol_array'))
 
-lines!(ax, sol.t, sol_array[1, :], linewidth = 3, label = "S(t)")
-lines!(ax, sol.t, sol_array[2, :], linewidth = 3, label = "E(t)")
-lines!(ax, sol.t, sol_array[3, :], linewidth = 3, label = "I(t)")
-lines!(ax, sol.t, sol_array[4, :], linewidth = 3, label = "R(t)")
-lines!(ax, sol.t, sol_array[5, :], linewidth = 3, label = "N(t)")
+rename!(sol_df, :Column1 => :S, :Column2 => :E, :Column3 => :I, :Column4 => :R, :Column5 => :N, :Column6 => :time)
 
-axislegend(ax)
+stacked_df = stack(sol_df, [:S, :E, :I, :R, :N])
+```
 
-fig
+```{julia}
+colors = ["dodgerblue4", "firebrick3", "chocolate2", "green", "purple"]
+sir_plot = data(stacked_df) *
+    mapping(
+        :time => "Time (Years)", :value => "Number",
+        color = :variable => sorter("S", "E", "I", "R", "N") => "State"
+    ) *
+    visual(Lines, linewidth = 4)
+draw(sir_plot; palettes = (; color = colors))
 ```
 
 ```{julia}
