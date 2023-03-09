@@ -55,8 +55,7 @@ p = (β, σ, γ, μ, ε)
 
 ```{julia}
 x = 0:0.1:10
-# 0.5 .* (sin.(2π .* x) .+ 1)
-fig = lines(x, 0.5 .* (sin.(pi .* x ./ 2) .+ 1))
+fig = lines(x, 0.5 .* (sin.(2pi .* x) .+ 1))
 vlines!(collect(0:1:10); color = (:red, 0.5), linestyle = :dash)
 fig
 ```
@@ -72,12 +71,13 @@ end
 
 # We require that rate1(u,p,s) <= urate(u,p,s)
 # for t <= s <= t + rateinterval(u,p,t)
-rateinterval(u, p, t) = typemax(t)
 urate(u, p, t) = p[1] * u[1] * u[2]/ (u[1] + u[2] + u[3] + u[4]) 
-
 # Optionally, we can give a lower bound over the same interval.
 # This may boost computational performance.
-lrate(u, p, t) = p[1] * u[1] * u[2]/ (u[1] + u[2] + u[3] + u[4]) 
+lrate(u, p, t) = 0 
+
+# rateinterval needs to be between lrate <= ri <= urate
+rateinterval(u, p, t) = 1 / (2 * urate(u, p, t))
 
 # now we construct the bounded VariableRateJump
 expose_jump = VariableRateJump(expose_rate, expose_affect!; lrate, urate, rateinterval)
@@ -145,8 +145,14 @@ gillespie_jumps = [
 ```{julia}
 # Constant jumps are ordered ahead of VariableJumps, but otherwise retain the ordering
 dep_graph = [
-    [1], [2], [3], [4], [5], [6], [7],
-    [1, 2, 3, 4, 5, 6, 7, 8] # Exposure jump
+    [1, 8],    # infec depends on states changed by itself and exposure jump
+    [2],    # recov depends on states changed by itself
+    [3],    # birth depends on states changed by itself
+    [4, 8],    # S_death depends on states changed by itself and exposure jump
+    [5, 8],    # E_death depends on states changed by itself and exposure jump
+    [6],    # I_death depends on states changed by itself
+    [7],    # R_death depends on states changed by itself and exposure jump
+    [1, 3, 4, 5, 8]    # Exposure jump depends on states changed by itself, birth, S_death, E_death, and infection jumps
     ]
 
 prob = DiscreteProblem(u₀, tspan, p)
@@ -192,11 +198,6 @@ function run_sir_sim(; u₀, tspan, p)
     jump_sol = solve(jump_prob, SSAStepper(), saveat = δt)
     return jump_sol;
 end
-```
-
-```{julia}
-out_jump = run_sir_sim(u₀ = u₀, tspan = tspan, p = p)
-Array(out_jump)
 ```
 
 ```{julia}
