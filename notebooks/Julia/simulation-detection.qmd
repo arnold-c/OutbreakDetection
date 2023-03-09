@@ -54,9 +54,9 @@ p = (β, σ, γ, μ, ε)
 ```
 
 ```{julia}
-x = 0:0.1:10
+x = 0:0.01:2
 fig = lines(x, 0.5 .* (sin.(2pi .* x) .+ 1))
-vlines!(collect(0:1:10); color = (:red, 0.5), linestyle = :dash)
+vlines!(collect(0:1:2); color = (:red, 0.5), linestyle = :dash)
 fig
 ```
 
