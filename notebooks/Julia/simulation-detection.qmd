@@ -28,7 +28,8 @@ quickactivate(@__DIR__, "OutbreakDetection")
 
 ```{julia}
 using JumpProcesses, StochasticDiffEq, DifferentialEquations, LinearAlgebra
-using Catalyst, Random, Statistics, DataFrames, CairoMakie, AlgebraOfGraphics
+using Catalyst, Random, Statistics, DataFrames, DataFramesMeta
+using CairoMakie, AlgebraOfGraphics
 using BenchmarkTools, ProgressMeter
 
 CairoMakie.activate!()
@@ -36,7 +37,7 @@ set_aog_theme!()
 ```
 
 ```{julia}
-tmax = 2.0
+tmax = 10.0
 δt = 0.1/365
 tspan = (0.0, tmax)
 tlength = length(tspan[1]:δt:tspan[2])
@@ -48,17 +49,45 @@ u₀ = [999.0, 10.0, 0.0, 0.0]
 β = 1000
 σ = 365/8
 γ = 365/5
-p = (β, σ, γ, μ)
+ε = 100
+p = (β, σ, γ, μ, ε)
 ```
 
 ```{julia}
-expose_rate(u, p, t) = p[1] * u[1] * u[2] / (u[1] + u[2] + u[3] + u[4])  # β * S * I / N
+x = 0:0.1:10
+# 0.5 .* (sin.(2π .* x) .+ 1)
+fig = lines(x, 0.5 .* (sin.(pi .* x ./ 2) .+ 1))
+vlines!(collect(0:1:10); color = (:red, 0.5), linestyle = :dash)
+fig
+```
+
+```{julia}
+# 0.5 .* (sin.(2π .* x) .+ 1)
+expose_rate(u, p, t) = p[1] * 0.5 * (sin(2π * t) + 1) * u[1] * u[2]/ (u[1] + u[2] + u[3] + u[4])  # β * ϕ * S * I / N
 function expose_affect!(integrator)
     integrator.u[1] -= 1         # S -> S - 1
     integrator.u[2] += 1         # E -> E + 1
     nothing
 end
-expose_jump = ConstantRateJump(expose_rate, expose_affect!)
+
+# We require that rate1(u,p,s) <= urate(u,p,s)
+# for t <= s <= t + rateinterval(u,p,t)
+rateinterval(u, p, t) = typemax(t)
+urate(u, p, t) = p[1] * u[1] * u[2]/ (u[1] + u[2] + u[3] + u[4]) 
+
+# Optionally, we can give a lower bound over the same interval.
+# This may boost computational performance.
+lrate(u, p, t) = p[1] * u[1] * u[2]/ (u[1] + u[2] + u[3] + u[4]) 
+
+# now we construct the bounded VariableRateJump
+expose_jump = VariableRateJump(expose_rate, expose_affect!; lrate, urate, rateinterval)
+
+# import_expose_rate(u, p, t) = p[5]
+# function import_expose_affect!(integrator)
+#     integrator.u[3] += 1         # I -> I + 1
+#     nothing
+# end
+# import_expose_jump = ConstantRateJump(import_expose_rate, import_expose_affect!)
 
 infec_rate(u, p, t) = p[2] * u[2]   # σ * E
 function infec_affect!(integrator)
@@ -114,13 +143,19 @@ gillespie_jumps = [
 ```
 
 ```{julia}
+# Constant jumps are ordered ahead of VariableJumps, but otherwise retain the ordering
+dep_graph = [
+    [1], [2], [3], [4], [5], [6], [7],
+    [1, 2, 3, 4, 5, 6, 7, 8] # Exposure jump
+    ]
+
 prob = DiscreteProblem(u₀, tspan, p)
-jump_prob = JumpProblem(prob, Direct(), gillespie_jumps...)
+jump_prob = JumpProblem(prob, Coevolve(), gillespie_jumps...; dep_graph)
 sol = solve(jump_prob, SSAStepper())
 sol_array = zeros(6, length(sol))
-sol_array[1:4, :] = Array(sol)
+sol_array[1:4, :] = Array(sol)[1:4, :]
 sol_array[5, :] = sum(sol_array[1:4, :], dims = 1)
-sol_array[6, :] = sol.t;
+sol_array[6, :] = sol.t
 ```
 
 ```{julia}
@@ -139,13 +174,21 @@ sir_plot = data(stacked_df) *
         color = :variable => sorter("S", "E", "I", "R", "N") => "State"
     ) *
     visual(Lines, linewidth = 4)
-draw(sir_plot; palettes = (; color = colors))
+
+draw(
+    sir_plot;
+    palettes = (; color = colors),
+    axis = (; limits = ((0.0, 2.0), nothing))
+    )
 ```
 
 ```{julia}
 function run_sir_sim(; u₀, tspan, p)
     prob = DiscreteProblem(u₀, tspan, p)
-    jump_prob = JumpProblem(prob, Direct(), gillespie_jumps..., save_positions = (false, false))
+    jump_prob = JumpProblem(
+        prob, Coevolve(), gillespie_jumps..., save_positions = (false, false);
+        dep_graph
+        )
     jump_sol = solve(jump_prob, SSAStepper(), saveat = δt)
     return jump_sol;
 end
@@ -205,7 +248,7 @@ lines!(ax, sir_array[6, :], sim_means[3, :], linewidth = 3, color = "chocolate2"
 lines!(ax, sir_array[6, :], sim_means[4, :], linewidth = 3, color = "green", label = "R(t)")
 lines!(ax, sir_array[6, :], sim_means[5, :], linewidth = 3, color = "purple", label = "N(t)")
 
-axislegend(ax)
+Legend(sir_sim_plot[1, 2], ax, "State")
 
 sir_sim_plot
 ```
