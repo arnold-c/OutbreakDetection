@@ -16,6 +16,23 @@ set_aog_theme!()
 u₀ = [999, 1, 0]
 tspan = (0.0, 250.0)
 
+"""
+    calculateR0(β, γ, μ, 𝐂, pop_matrix)
+
+Calculate the basic reproduction number R₀ for a given set of parameters and contact matrix.
+
+```jldoctest
+julia> calculateR0(0.00025, 1/8, 0.0, ones(1, 1), [1000])
+2.0
+```
+
+---
+
+**TODO** Currently only works when the populations are the same size as each other, and doesn't account for an exposed state.
+
+---
+
+"""
 function calculateR0(
         β::AbstractFloat,
         γ::AbstractFloat,
@@ -39,8 +56,25 @@ function calculateR0(
     return R₀
 end
 
-calculateR0(0.00025, 1/8, 0.0, ones(1, 1), [500])
+calculateR0(0.00025, 1/8, 0.0, ones(1, 1), [1000])
 
+"""
+    calculate_beta(R₀, γ, μ, 𝐂, pop_matrix)
+
+Calculate the value β for a given set of parameters and contact matrix.
+
+```jldoctest
+julia> calculate_beta(2.0, 1/8, 0.0, ones(1, 1), [1000])
+0.00025
+```
+
+---
+
+**TODO** Currently only works when the populations are the same size as each other, and doesn't account for an exposed state.
+
+---
+
+"""
 function calculate_beta(
         R₀::AbstractFloat,
         γ::AbstractFloat,
