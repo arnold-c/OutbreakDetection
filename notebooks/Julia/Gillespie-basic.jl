@@ -16,6 +16,22 @@ set_aog_theme!()
 u₀ = [999, 1, 0]
 tspan = (0.0, 250.0)
 
+function calculateR0(β, γ, 𝐂, pop_matrix)
+    𝚩 = β * 𝐂
+    
+    𝐅 = 𝚩 .* pop_matrix
+    𝐕 = Diagonal(repeat([γ + μ], size(𝐂, 1)))
+
+    𝐅𝐕⁻¹ = 𝐅 * inv(𝐕)
+    R₀ = maximum(eigvals(𝐅𝐕⁻¹))
+    
+    return R₀
+end
+
+calculateR0(0.00025, 1/8, [1 1; 1 1], [500; 500])
+
+
+
 function calculatebeta(R₀, 𝐂, γ, μ, totalPop)
     # compute the eignevalues of -F*V^(-1)
     n1, n2 = size(𝐂)
@@ -26,23 +42,23 @@ function calculatebeta(R₀, 𝐂, γ, μ, totalPop)
     N = sum(totalPop)
 
     for jvals in 1:n1
-        𝐅[jvals, :] = (𝐂[jvals, :]) * totalPop[jvals]
+        𝐅[jvals, :] = 𝐂[jvals, :] * totalPop[jvals]
     end
 
-    𝐅𝐕⁻¹ = -𝐅 * inv(𝐕)
+    𝐅𝐕⁻¹ = 𝐅 * inv(𝐕)
 
-    myEig = eigvals(𝐅𝐕⁻¹)
+    myEig = eigvals(-𝐅𝐕⁻¹)
     largestEig = maximum(myEig)
 
     # @assert largestEig.imag == 0.0 "largest eigenvalue is not real"
     β = R₀ / largestEig
     return β
 end
+calculatebeta(R₀, ones(2, 2), ν, μ, sum(u₀))
 
 R₀ = 2
 ν = 1/8
 μ = 0
-
 
 calculatebeta(R₀, ones(1, 1), ν, μ, sum(u₀)) == R₀ * ν / sum(u₀)
 β = calculatebeta(R₀, ones(1, 1), ν, μ, sum(u₀))
