@@ -37,8 +37,8 @@ function calculateR0(
         β::T,
         γ::T,
         μ::T,
-        𝐂::Matrix{T},
-        pop_matrix::Vector{T}
+        𝐂::Array{T},
+        pop_matrix::Array{T}
     ) where {T<:AbstractFloat}
     size(𝐂, 1) == size(𝐂, 2) ? nothing : error("𝐂 must be square")
     size(𝐂, 1) == size(pop_matrix, 1) ? nothing : error("𝐂 and pop_matrix must have the same number of rows")
@@ -55,6 +55,24 @@ function calculateR0(
     
     return R₀
 end
+
+function calculateR0(β, γ, μ, 𝐂, pop_matrix)
+    calculateR0(
+        convert(Float64, β),
+        convert(Float64, γ),
+        convert(Float64, μ),
+        convert(Array{Float64}, [𝐂]),
+        convert(Array{Float64}, [pop_matrix])
+    )
+end
+
+calculateR0(1/4000, 1/8, 0, 1, 1000)
+
+convert(Array{Float64}, [1])
+
+convert(Array{Float64}, [1])
+
+Matrix{Float64}(undef, 1, 1)
 
 calculateR0(0.00025, 1/8, 0.0, ones(1, 1), [1000.0])
 
@@ -79,8 +97,8 @@ function calculate_beta(
         R₀::T,
         γ::T,
         μ::T,
-        𝐂::Matrix{T},
-        pop_matrix::Vector{T}
+        𝐂::Array{T},
+        pop_matrix::Array{T}
     ) where {T<:AbstractFloat}
     size(𝐂, 1) == size(𝐂, 2) ? nothing : error("𝐂 must be square")
     size(𝐂, 1) == size(pop_matrix, 1) ? nothing : error("𝐂 and pop_matrix must have the same number of rows")
@@ -95,13 +113,23 @@ function calculate_beta(
     return β
 end
 
+function calculate_beta(R₀, γ, μ, 𝐂, pop_matrix)
+    calculate_beta(
+        convert(Float64, R₀),
+        convert(Float64, γ),
+        convert(Float64, μ),
+        convert(Array{Float64}, [𝐂]),
+        convert(Array{Float64}, [pop_matrix])
+    )
+end
+
 calculate_beta(2.0, 1/8, 0.0, ones(1, 1), [1000.0])
 
 R₀ = 2.0
 γ = 1/8
 μ = 0.0
 
-β = calculate_beta(R₀, γ, μ, ones(1, 1), [sum(u₀)])
+β = calculate_beta(R₀, γ, μ, 1, sum(u₀))
 p = (β, γ)
 
 infec_rate(u, p, t) = p[1] * u[1] * u[2]  # β*S*I
