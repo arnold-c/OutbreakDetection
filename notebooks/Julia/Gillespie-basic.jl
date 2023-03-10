@@ -23,14 +23,27 @@ function calculateR0(β, γ, 𝐂, pop_matrix)
     𝐕 = Diagonal(repeat([γ + μ], size(𝐂, 1)))
 
     𝐅𝐕⁻¹ = 𝐅 * inv(𝐕)
-    R₀ = maximum(eigvals(𝐅𝐕⁻¹))
+    eigenvals, eigenvectors = eigen(𝐅𝐕⁻¹)
+    
+    R₀ = maximum(real(eigenvals))
     
     return R₀
 end
 
-calculateR0(0.00025, 1/8, [1 1; 1 1], [500; 500])
+calculateR0(0.00025, 1/8, 1, 1000)
 
+function calculate_beta_scaling(R₀, γ, 𝐂, pop_matrix)
+    𝐅 = 𝐂 .* pop_matrix
+    𝐕 = Diagonal(repeat([γ + μ], size(𝐂, 1)))
 
+    𝐅𝐕⁻¹ = 𝐅 * inv(𝐕)
+    eigenvals, eigenvectors = eigen(𝐅𝐕⁻¹)
+    β = R₀ / maximum(real(eigenvals))
+    
+    return β
+end
+
+calculate_beta_scaling(2.0, 1/8, [1 1; 1 1], [500; 500])
 
 function calculatebeta(R₀, 𝐂, γ, μ, totalPop)
     # compute the eignevalues of -F*V^(-1)
