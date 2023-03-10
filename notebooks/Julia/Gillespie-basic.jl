@@ -16,7 +16,16 @@ set_aog_theme!()
 u₀ = [999, 1, 0]
 tspan = (0.0, 250.0)
 
-function calculateR0(β, γ, 𝐂, pop_matrix)
+function calculateR0(
+        β::AbstractFloat,
+        γ::AbstractFloat,
+        μ::AbstractFloat,
+        𝐂::Matrix,
+        pop_matrix::Vector
+    )
+    size(𝐂, 1) == size(𝐂, 2) ? nothing : error("𝐂 must be square")
+    size(𝐂, 1) == size(pop_matrix, 1) ? nothing : error("𝐂 and pop_matrix must have the same number of rows")
+
     𝚩 = β * 𝐂
     
     𝐅 = 𝚩 .* pop_matrix
@@ -30,9 +39,18 @@ function calculateR0(β, γ, 𝐂, pop_matrix)
     return R₀
 end
 
-calculateR0(0.00025, 1/8, 1, 1000)
+calculateR0(0.00025, 1/8, 0.0, ones(1, 1), [500])
 
-function calculate_beta_scaling(R₀, γ, 𝐂, pop_matrix)
+function calculate_beta(
+        R₀::AbstractFloat,
+        γ::AbstractFloat,
+        μ::AbstractFloat,
+        𝐂::Matrix,
+        pop_matrix::Vector
+    )
+    size(𝐂, 1) == size(𝐂, 2) ? nothing : error("𝐂 must be square")
+    size(𝐂, 1) == size(pop_matrix, 1) ? nothing : error("𝐂 and pop_matrix must have the same number of rows")
+
     𝐅 = 𝐂 .* pop_matrix
     𝐕 = Diagonal(repeat([γ + μ], size(𝐂, 1)))
 
@@ -43,39 +61,14 @@ function calculate_beta_scaling(R₀, γ, 𝐂, pop_matrix)
     return β
 end
 
-calculate_beta_scaling(2.0, 1/8, [1 1; 1 1], [500; 500])
+calculate_beta(2.0, 1/8, 0.0, ones(1, 1), [1000])
 
-function calculatebeta(R₀, 𝐂, γ, μ, totalPop)
-    # compute the eignevalues of -F*V^(-1)
-    n1, n2 = size(𝐂)
+R₀ = 2.0
+γ = 1/8
+μ = 0.0
 
-    # create F (transmission matrix) and V (transition matrix)
-    𝐅 = zeros(n1, n1)
-    𝐕 = Diagonal(repeat([-(ν + μ)], n1))
-    N = sum(totalPop)
-
-    for jvals in 1:n1
-        𝐅[jvals, :] = 𝐂[jvals, :] * totalPop[jvals]
-    end
-
-    𝐅𝐕⁻¹ = 𝐅 * inv(𝐕)
-
-    myEig = eigvals(-𝐅𝐕⁻¹)
-    largestEig = maximum(myEig)
-
-    # @assert largestEig.imag == 0.0 "largest eigenvalue is not real"
-    β = R₀ / largestEig
-    return β
-end
-calculatebeta(R₀, ones(2, 2), ν, μ, sum(u₀))
-
-R₀ = 2
-ν = 1/8
-μ = 0
-
-calculatebeta(R₀, ones(1, 1), ν, μ, sum(u₀)) == R₀ * ν / sum(u₀)
-β = calculatebeta(R₀, ones(1, 1), ν, μ, sum(u₀))
-p = (β, ν)
+β = calculate_beta(R₀, γ, μ, ones(1, 1), [sum(u₀)])
+p = (β, γ)
 
 infec_rate(u, p, t) = p[1] * u[1] * u[2]  # β*S*I
 function infec_affect!(integrator)
