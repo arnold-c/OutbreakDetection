@@ -34,12 +34,12 @@ julia> calculateR0(0.00025, 1/8, 0.0, ones(1, 1), [1000])
 
 """
 function calculateR0(
-        β::AbstractFloat,
-        γ::AbstractFloat,
-        μ::AbstractFloat,
-        𝐂::Matrix,
-        pop_matrix::Vector
-    )
+        β::T,
+        γ::T,
+        μ::T,
+        𝐂::Matrix{T},
+        pop_matrix::Vector{T}
+    ) where {T<:AbstractFloat}
     size(𝐂, 1) == size(𝐂, 2) ? nothing : error("𝐂 must be square")
     size(𝐂, 1) == size(pop_matrix, 1) ? nothing : error("𝐂 and pop_matrix must have the same number of rows")
 
@@ -56,7 +56,7 @@ function calculateR0(
     return R₀
 end
 
-calculateR0(0.00025, 1/8, 0.0, ones(1, 1), [1000])
+calculateR0(0.00025, 1/8, 0.0, ones(1, 1), [1000.0])
 
 """
     calculate_beta(R₀, γ, μ, 𝐂, pop_matrix)
@@ -76,12 +76,12 @@ julia> calculate_beta(2.0, 1/8, 0.0, ones(1, 1), [1000])
 
 """
 function calculate_beta(
-        R₀::AbstractFloat,
-        γ::AbstractFloat,
-        μ::AbstractFloat,
-        𝐂::Matrix,
-        pop_matrix::Vector
-    )
+        R₀::T,
+        γ::T,
+        μ::T,
+        𝐂::Matrix{T},
+        pop_matrix::Vector{T}
+    ) where {T<:AbstractFloat}
     size(𝐂, 1) == size(𝐂, 2) ? nothing : error("𝐂 must be square")
     size(𝐂, 1) == size(pop_matrix, 1) ? nothing : error("𝐂 and pop_matrix must have the same number of rows")
 
@@ -95,7 +95,7 @@ function calculate_beta(
     return β
 end
 
-calculate_beta(2.0, 1/8, 0.0, ones(1, 1), [1000])
+calculate_beta(2.0, 1/8, 0.0, ones(1, 1), [1000.0])
 
 R₀ = 2.0
 γ = 1/8
