@@ -20,7 +20,7 @@ includet(srcdir("Julia/cleaning-functions.jl"))
 u₀ = [999, 1, 0]
 tspan = (0.0, 250)
 
-R₀ = 2.0
+R₀ = 10.0
 γ = 1/8
 μ = 1/(62 * 365)
 
@@ -61,13 +61,36 @@ R_death_jump = ConstantRateJump(R_death_rate, R_death_affect!)
 
 jumps = [birth_jump, infec_jump, recov_jump, S_death_jump, I_death_jump, R_death_jump]
 
-prob = DiscreteProblem(u₀, tspan, p)
+gill_prob = DiscreteProblem(u₀, tspan, p)
 
-jump_prob = JumpProblem(prob, Direct(), jumps...)
-sol = solve(jump_prob, SSAStepper())
+gill_jump_prob = JumpProblem(gill_prob, Direct(), jumps...)
+gill_sol = solve(gill_jump_prob, SSAStepper())
 
-sol_df = create_sir_df(sol)
+gill_sol_df = create_sir_df(gill_sol)
 
 colors = ["dodgerblue4", "firebrick3", "chocolate2", "purple"]
 
-create_sir_plot(sol_df, colors = colors)
+create_sir_plot(gill_sol_df, colors = colors)
+
+nsims = 1000
+
+sir_array = zeros(5, tlength)
+
+all_sims_array = fill(NaN, 5, tlength, nsims)
+
+quantiles = [0.025, 0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.975]
+
+sim_quantiles = zeros(Float64, length(quantiles), tlength, 4)
+
+gill_jump_prob = JumpProblem(
+    gill_prob, Direct(), jumps...; save_positions = (false, false)
+    )
+
+
+create_sir_all_sims_array!(;
+    nsims = nsims, prob = gill_jump_prob, alg = SSAStepper(), δt = δt
+    )
+
+create_sir_all_sim_quantiles!(quantiles = quantiles)
+
+create_sir_quantiles_plot!(lower = 0.1, upper = 0.9, quantiles = quantiles)
