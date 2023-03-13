@@ -93,18 +93,18 @@ dep_graph = [
     [6, 1, 2, 3, 4]     # Infection, birth, recovery, S death, I death
     ]
 
-t_dep_infec_prob = DiscreteProblem(u₀, tspan, p)
+season_infec_prob = DiscreteProblem(u₀, tspan, p)
 # Bounded VariableJumpRate problems require the Coevolve() algorithm
-t_dep_infec_jump_prob = JumpProblem(
-    t_dep_infec_prob, Coevolve(), jumps...; dep_graph
+season_infec_jump_prob = JumpProblem(
+    season_infec_prob, Coevolve(), jumps...; dep_graph
     )
-t_dep_infec_sol = solve(t_dep_infec_jump_prob, SSAStepper())
+season_infec_sol = solve(season_infec_jump_prob, SSAStepper())
 
-t_dep_infec_sol_df = create_sir_df(t_dep_infec_sol)
+season_infec_sol_df = create_sir_df(season_infec_sol)
 
 colors = ["dodgerblue4", "firebrick3", "chocolate2", "purple"]
 
-create_sir_plot(t_dep_infec_sol_df; colors = colors)
+create_sir_plot(season_infec_sol_df; colors = colors)
 
 # Visualize seasonal changes in the infection rate
 # t = 0:0.01:720
@@ -125,13 +125,13 @@ quantiles = [0.025, 0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.975]
 
 sim_quantiles = zeros(Float64, length(quantiles), tlength, 4)
 
-t_dep_infec_jump_prob = JumpProblem(
-    t_dep_infec_prob, Coevolve(), jumps...; dep_graph, save_positions = (false, false)
+season_infec_jump_prob = JumpProblem(
+    season_infec_prob, Coevolve(), jumps...; dep_graph, save_positions = (false, false)
     )
 
 
 create_sir_all_sims_array!(;
-    nsims = nsims, prob = t_dep_infec_jump_prob, alg = SSAStepper(), δt = δt
+    nsims = nsims, prob = season_infec_jump_prob, alg = SSAStepper(), δt = δt
     )
 
 create_sir_all_sim_quantiles!(quantiles = quantiles)

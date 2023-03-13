@@ -18,7 +18,11 @@ includet(srcdir("Julia/plotting-functions.jl"))
 includet(srcdir("Julia/cleaning-functions.jl"))
 
 u₀ = [999, 1, 0]
-tspan = (0.0, 250)
+δt = 0.005
+tlower = 0.0
+tmax = 250.0
+tspan = (tlower, tmax)
+tlength = length(tlower:δt:tmax)
 
 R₀ = 10.0
 γ = 1/8

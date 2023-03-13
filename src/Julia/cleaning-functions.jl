@@ -27,7 +27,7 @@ end
 
 function create_sir_all_sim_quantiles!(; quantiles)
     for time in 1:size(all_sims_array, 2)
-        sim_means[:, time] = mean(all_sims_array[1:4, time, :], dims = 2)
+        # sim_means[:, time] = mean(all_sims_array[1:4, time, :], dims = 2)
     
         for state in 1:4
             sim_quantiles[:, time, state] = quantile(skipmissing(all_sims_array[state, time, :]), quantiles)
