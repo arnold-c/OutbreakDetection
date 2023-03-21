@@ -23,9 +23,9 @@ tspan = (0.0, 250)
 
 dur_inf = 8
 R₀ = 2.0
-γ = 1/dur_inf
-μ = 1/(62 * 365)
-α =  calculate_beta(R₀, γ, μ, 1, sum(u₀))
+γ = 1 / dur_inf
+μ = 1 / (62 * 365)
+α = calculate_beta(R₀, γ, μ, 1, sum(u₀))
 β₁ = α / 1000
 ν = 0.05 # Decay rate
 p = (β₁, γ, μ, α, ν)
@@ -42,7 +42,7 @@ function recov_affect!(integrator)
     integrator.u[2] -= 1
     integrator.u[3] += 1
     length(H) > 0 && deleteat!(H, rand(1:length(H)))
-    nothing
+    return nothing
 end
 recov_jump = ConstantRateJump(recov_rate, recov_affect!)
 
@@ -61,7 +61,7 @@ R_death_jump = ConstantRateJump(R_death_rate, R_death_affect!)
 # Place infection at the end as it is a VariableRateJump, which is ordered after ConstantRateJumps in the dependency graph.
 function infec_rate(u, p, t)
     # β₁*S*I + α*S*∑ₜ exp(-ν(t - tᵢ))
-    p[1] * u[1] * u[2] + p[4] * u[1] * sum(exp(-p[5] * (t - _t)) for _t in H)
+    return p[1] * u[1] * u[2] + p[4] * u[1] * sum(exp(-p[5] * (t - _t)) for _t in H)
 end
 
 # Lower bound on infection rate
@@ -75,7 +75,7 @@ function infec_affect!(integrator)
     integrator.u[1] -= 1     # S -> S - 1
     integrator.u[2] += 1     # I -> I + 1
     push!(H, integrator.t)
-    nothing
+    return nothing
 end
 infec_jump = VariableRateJump(infec_rate, infec_affect!; lrate, urate, rateinterval)
 
@@ -89,21 +89,19 @@ dep_graph = [
     [3, 1, 6],          # S death, birth, infection
     [4, 1, 2, 6],       # I death, birth, recovery, infection
     [5, 1, 2, 6],       # R death, birth, recovery, infection
-    [6, 1, 2, 3, 4]     # Infection, birth, recovery, S death, I death
-    ]
+    [6, 1, 2, 3, 4],     # Infection, birth, recovery, S death, I death
+]
 
 t_dep_infec_prob = DiscreteProblem(u₀, tspan, p)
 # Bounded VariableJumpRate problems require the Coevolve() algorithm
-t_dep_infec_jump_prob = JumpProblem(
-    t_dep_infec_prob, Coevolve(), jumps...; dep_graph
-    )
+t_dep_infec_jump_prob = JumpProblem(t_dep_infec_prob, Coevolve(), jumps...; dep_graph)
 t_dep_infec_sol = solve(t_dep_infec_jump_prob, SSAStepper())
 
 t_dep_infec_sol_df = create_sir_df(t_dep_infec_sol)
 
 colors = ["dodgerblue4", "firebrick3", "chocolate2", "purple"]
 
-create_sir_plot(t_dep_infec_sol_df; colors = colors)
+create_sir_plot(t_dep_infec_sol_df; colors=colors)
 
 nsims = 1000
 
@@ -117,14 +115,13 @@ quantiles = [0.025, 0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.975]
 sim_quantiles = zeros(Float64, length(quantiles), tlength, 4)
 
 t_dep_infec_jump_prob = JumpProblem(
-    t_dep_infec_prob, Coevolve(), jumps...; dep_graph, save_positions = (false, false)
-    )
-
+    t_dep_infec_prob, Coevolve(), jumps...; dep_graph, save_positions=(false, false)
+)
 
 create_sir_all_sims_array!(;
-    nsims = nsims, prob = t_dep_infec_jump_prob, alg = SSAStepper(), δt = δt
-    )
+    nsims=nsims, prob=t_dep_infec_jump_prob, alg=SSAStepper(), δt=δt
+)
 
-create_sir_all_sim_quantiles!(quantiles = quantiles)
+create_sir_all_sim_quantiles!(; quantiles=quantiles)
 
-create_sir_quantiles_plot!(lower = 0.1, upper = 0.9, quantiles = quantiles)
+create_sir_quantiles_plot!(; lower=0.1, upper=0.9, quantiles=quantiles)
