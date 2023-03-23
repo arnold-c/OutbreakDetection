@@ -102,7 +102,7 @@ season_infec_sol_df = create_sir_df(season_infec_sol)
 
 colors = ["dodgerblue4", "firebrick3", "chocolate2", "purple"]
 
-create_sir_plot(season_infec_sol_df; colors=colors)
+create_sir_plot(season_infec_sol_df; colors = colors)
 
 # Visualize seasonal changes in the infection rate
 # t = 0:0.01:720
@@ -124,13 +124,13 @@ quantiles = [0.025, 0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.975]
 sim_quantiles = zeros(Float64, length(quantiles), tlength, 4)
 
 season_infec_jump_prob = JumpProblem(
-    season_infec_prob, Coevolve(), jumps...; dep_graph, save_positions=(false, false)
+    season_infec_prob, Coevolve(), jumps...; dep_graph, save_positions = (false, false)
 )
 
 create_sir_all_sims_array!(;
-    nsims=nsims, prob=season_infec_jump_prob, alg=SSAStepper(), δt=δt
+    nsims = nsims, prob = season_infec_jump_prob, alg = SSAStepper(), δt = δt
 )
 
-create_sir_all_sim_quantiles!(; quantiles=quantiles)
+create_sir_all_sim_quantiles!(; quantiles = quantiles)
 
-create_sir_quantiles_plot!(; lower=0.1, upper=0.9, quantiles=quantiles)
+create_sir_quantiles_plot!(; lower = 0.1, upper = 0.9, quantiles = quantiles)

@@ -58,14 +58,14 @@ jumps = [infec_jump, recov_jump, birth_jump, S_death_jump, I_death_jump, R_death
 @named js = JumpSystem(jumps, t, [S, I, R], [β, γ, μ])
 
 gill_dis_prob = DiscreteProblem(js, u₀, tspan, p)
-gill_jump_prob = JumpProblem(js, gill_dis_prob, Direct(); jac=true)
+gill_jump_prob = JumpProblem(js, gill_dis_prob, Direct(); jac = true)
 gill_sol = solve(gill_jump_prob, SSAStepper())
 
 gill_sol_df = create_sir_df(gill_sol)
 
 colors = ["dodgerblue4", "firebrick3", "chocolate2", "purple"]
 
-create_sir_plot(gill_sol_df; colors=colors)
+create_sir_plot(gill_sol_df; colors = colors)
 
 nsims = 1000
 
@@ -77,10 +77,12 @@ quantiles = [0.025, 0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.975]
 
 sim_quantiles = zeros(Float64, length(quantiles), tlength, 4)
 
-gill_jump_prob = JumpProblem(js, gill_dis_prob, Direct(); save_positions=(false, false))
+gill_jump_prob = JumpProblem(js, gill_dis_prob, Direct(); save_positions = (false, false))
 
-create_sir_all_sims_array!(; nsims=nsims, prob=gill_jump_prob, alg=SSAStepper(), δt=δt)
+create_sir_all_sims_array!(;
+    nsims = nsims, prob = gill_jump_prob, alg = SSAStepper(), δt = δt
+)
 
-create_sir_all_sim_quantiles!(; quantiles=quantiles)
+create_sir_all_sim_quantiles!(; quantiles = quantiles)
 
-create_sir_quantiles_plot!(; lower=0.1, upper=0.9, quantiles=quantiles)
+create_sir_quantiles_plot!(; lower = 0.1, upper = 0.9, quantiles = quantiles)

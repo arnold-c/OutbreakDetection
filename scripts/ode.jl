@@ -32,10 +32,10 @@ R₀ = 2
 p = [β, γ, μ]
 
 ode_prob = ODEProblem(sir!, u₀, tspan, p)
-ode_sol = solve(ode_prob; saveat=0.1)
+ode_sol = solve(ode_prob; saveat = 0.1)
 
 ode_sol_df = create_sir_df(ode_sol)
 
 colors = ["dodgerblue4", "firebrick3", "chocolate2", "purple"]
 
-create_sir_plot(ode_sol_df; colors=colors)
+create_sir_plot(ode_sol_df; colors = colors)
