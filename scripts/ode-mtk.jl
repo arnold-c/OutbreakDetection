@@ -60,54 +60,11 @@ colors = ["dodgerblue4", "firebrick3", "chocolate2", "purple"]
 
 create_sir_plot(ode_sol_df; colors = colors)
 
-#%%
-function calculateR0(
-    ; ode::A, nic::B, nac::B, param::Dict{Num,C}, S⁺::C
-) where {A<:ODESystem,B<:Int,C<:AbstractFloat}
-    Jac = calculate_jacobian(ode)[(nac + 1):(nac + nic * nac),
-        (nac + 1):(nac + nic * nac)]
-
-    F = substitute(Jac, Dict(γ => 0.0, μ => 0.0))
-    V = substitute(Jac, Dict(β => 0.0))
-    FV⁻¹ = F * -inv(V)
-    all_eigenvals =
-        convert.(
-            Float64, Symbolics.value.(eigvals(eigen(substitute(FV⁻¹, Dict(S => S⁺, p...)))))
-        )
-    R0 = maximum(real(all_eigenvals))
-
-    return R0
-end
 
 #%%
 calculateR0(; ode = de_simple, nic = 1, nac = 1, param = p, S⁺ = 1000.0)
 
 
-#%%
-function calculate_beta(
-    ; ode::ODESystem, nic::Int, nac::Int, R₀::T, param::Dict{Num,T}, C::Array{T},
-    pop_matrix::Array{T},
-) where {T<:AbstractFloat}
-    size(C, 1) == size(C, 2) ? nothing : error("𝐂 must be square")
-    if size(C, 1) == size(pop_matrix, 1)
-        nothing
-    else
-        error("C and pop_matrix must have the same number of rows")
-    end
-
-    Jac = calculate_jacobian(ode)[(nac + 1):(nac + nic * nac),
-        (nac + 1):(nac + nic * nac)]
-
-    F = C .* pop_matrix
-    # F = substitute(Jac, Dict(γ => 0.0, μ => 0.0))
-    V = substitute(Jac, Dict(β => 0.0))
-    FV⁻¹ = F * -inv(V)
-    eigenvals =
-        convert.(Float64, Symbolics.value.(eigvals(eigen(substitute(FV⁻¹, Dict(p...))))))
-    beta = R0 / maximum(real(Symbolics.value.(eigenvals)))
-
-    return beta
-end
 
 #%%
 nic = 1 # number of infective compartments
