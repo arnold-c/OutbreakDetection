@@ -64,7 +64,7 @@ function calculate_beta(
     FV⁻¹ = F * -inv(V)
     eigenvals =
         convert.(Float64, Symbolics.value.(eigvals(eigen(substitute(FV⁻¹, Dict(p...))))))
-    beta = R0 / maximum(real(Symbolics.value.(eigenvals)))
+    beta = R₀ / maximum(real(Symbolics.value.(eigenvals)))
 
     return beta
 end
