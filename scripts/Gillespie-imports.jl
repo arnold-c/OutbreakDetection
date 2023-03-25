@@ -85,4 +85,4 @@ create_sir_all_sims_array!(;
 
 create_sir_all_sim_quantiles!(; quantiles = quantiles)
 
-create_sir_quantiles_plot!(; lower = 0.1, upper = 0.9, quantiles = quantiles)
+create_sir_quantiles_plot(; lower = 0.1, upper = 0.9, quantiles = quantiles)

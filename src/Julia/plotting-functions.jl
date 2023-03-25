@@ -11,7 +11,7 @@ function create_sir_plot(
     return draw(sir_plot; palettes=(; color=colors))
 end
 
-function create_sir_quantiles_plot!(sim_quantiles = sim_quantiles; lower, upper, quantiles, δt = δt)
+function create_sir_quantiles_plot(sim_quantiles = sim_quantiles; lower, upper, quantiles, δt = δt)
     fig = Figure()
     ax = Axis(fig[1, 1])
 

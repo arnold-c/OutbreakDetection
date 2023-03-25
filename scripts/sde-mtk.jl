@@ -78,16 +78,6 @@ all_sims_array = fill(NaN, 5, tlength, nsims)
 quantiles = [0.025, 0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.975]
 sim_quantiles = zeros(Float64, length(quantiles), tlength, 4)
 
-#%%
-sde_ens_prob = SDEProblem(sde, u₀, tspan, p)
-
-create_sir_all_sims_array!(;
-    nsims = nsims, prob = sde_ens_prob, alg = SOSRI(), δt = δt
-)
-
-create_sir_all_sim_quantiles!(; quantiles = quantiles)
-
-create_sir_quantiles_plot!(; lower = 0.1, upper = 0.9, quantiles = quantiles)
 
 #%%
 ensemble_prob = EnsembleProblem(sde_prob)
@@ -128,4 +118,4 @@ end
 
 create_sir_ensemble_array!(ensemble_summ; lower = 0.025, upper = 0.975, quantiles = quantiles)
 
-create_sir_quantiles_plot!(perm_sim_quantiles; lower = 0.025, upper = 0.975, quantiles = quantiles, δt = 1.0)
+create_sir_quantiles_plot(perm_sim_quantiles; lower = 0.025, upper = 0.975, quantiles = quantiles, δt = 1.0)
