@@ -45,9 +45,9 @@ function calculate_beta(R₀, γ, μ, C, pop_matrix)
 end
 
 function calculate_beta(
-    ; ode::ODESystem, nic::Int, nac::Int, R₀::T, param::Dict{Num,T}, C::Array{T},
-    pop_matrix::Array{T},
-) where {T<:AbstractFloat}
+    ode::S, nic::T, nac::T, R₀::U, param::Dict{Num,U}, C::Array{U},
+    pop_matrix::Array{U}
+) where {S<:ODESystem,T<:Int,U<:AbstractFloat}
     size(C, 1) == size(C, 2) ? nothing : error("C must be square")
     if size(C, 1) == size(pop_matrix, 1)
         nothing
@@ -63,10 +63,21 @@ function calculate_beta(
     V = substitute(Jac, Dict(β => 0.0))
     FV⁻¹ = F * -inv(V)
     eigenvals =
-        convert.(Float64, Symbolics.value.(eigvals(eigen(substitute(FV⁻¹, Dict(param...))))))
+        convert.(
+            Float64, Symbolics.value.(eigvals(eigen(substitute(FV⁻¹, Dict(param...)))))
+        )
     beta = R₀ / maximum(real(Symbolics.value.(eigenvals)))
 
     return beta
+end
+
+function calculate_beta(
+    ode::S, nic::T, nac::T, R₀::U, param::Vector{Pair{Num,U}}, C::Array{U},
+    pop_matrix::Array{U},
+) where {S<:ODESystem,T<:Int,U<:AbstractFloat}
+    return calculate_beta(
+        ode, nic, nac, R₀, Dict(param), C, pop_matrix
+    )
 end
 
 """
@@ -119,8 +130,8 @@ function calculateR0(β, γ, μ, C, pop_matrix)
 end
 
 function calculateR0(
-    ; ode::A, nic::B, nac::B, param::Dict{Num,C}, S⁺::C
-) where {A<:ODESystem,B<:Int,C<:AbstractFloat}
+    ode::S, nic::T, nac::T, param::Dict{Num,U}, S⁺::U
+) where {S<:ODESystem,T<:Int,U<:AbstractFloat}
     Jac = calculate_jacobian(ode)[(nac + 1):(nac + nic * nac),
         (nac + 1):(nac + nic * nac)]
 
@@ -129,9 +140,18 @@ function calculateR0(
     FV⁻¹ = F * -inv(V)
     all_eigenvals =
         convert.(
-            Float64, Symbolics.value.(eigvals(eigen(substitute(FV⁻¹, Dict(S => S⁺, param...)))))
+            Float64,
+            Symbolics.value.(eigvals(eigen(substitute(FV⁻¹, Dict(S => S⁺, param...))))),
         )
     R0 = maximum(real(all_eigenvals))
 
     return R0
+end
+
+function calculateR0(
+    ode::S, nic::T, nac::T, param::Vector{Pair{Num,U}}, S⁺::U
+) where {S<:ODESystem,T<:Int,U<:AbstractFloat}
+    return ngmR0(
+        ode, nic, nac, Dict(param), S⁺
+    )
 end
