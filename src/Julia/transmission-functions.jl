@@ -63,7 +63,7 @@ function calculate_beta(
     V = substitute(Jac, Dict(β => 0.0))
     FV⁻¹ = F * -inv(V)
     eigenvals =
-        convert.(Float64, Symbolics.value.(eigvals(eigen(substitute(FV⁻¹, Dict(p...))))))
+        convert.(Float64, Symbolics.value.(eigvals(eigen(substitute(FV⁻¹, Dict(param...))))))
     beta = R₀ / maximum(real(Symbolics.value.(eigenvals)))
 
     return beta
@@ -129,7 +129,7 @@ function calculateR0(
     FV⁻¹ = F * -inv(V)
     all_eigenvals =
         convert.(
-            Float64, Symbolics.value.(eigvals(eigen(substitute(FV⁻¹, Dict(S => S⁺, p...)))))
+            Float64, Symbolics.value.(eigvals(eigen(substitute(FV⁻¹, Dict(S => S⁺, param...)))))
         )
     R0 = maximum(real(all_eigenvals))
 
