@@ -25,6 +25,14 @@ function create_sir_all_sims_array!(; nsims, prob, alg, δt)
     end
 end
 
+function create_sir_all_sims_array!(ensemble_sol::EnsembleSolution, nsims::Int)
+    for i in 1:nsims
+        all_sims_array[1:3, :, i] = Array(ensemble_sol.u[i])
+    end
+
+    all_sims_array[4, :, :] = sum(all_sims_array[1:3, :, :], dims = 1)
+end
+
 function create_sir_all_sim_quantiles!(; quantiles)
     for time in 1:size(all_sims_array, 2)
         # sim_means[:, time] = mean(all_sims_array[1:4, time, :], dims = 2)
@@ -36,3 +44,4 @@ function create_sir_all_sim_quantiles!(; quantiles)
         end
     end
 end
+
