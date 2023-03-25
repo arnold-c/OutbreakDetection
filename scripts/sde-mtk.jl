@@ -39,9 +39,9 @@ eqs = [D(S) ~ -β * S * I + μ * (I + R), D(I) ~ β * S * I - γ * I - μ * I,
     D(R) ~ γ * I - μ * R]
 
 noise_eqs = [
-    0.01 * S,
-    0.1 * I,
-    0.01 * R,
+    0.5 + 0.01 * S,
+    0.5 + 0.01 * I,
+    0.5 + 0.01 * R,
 ]
 
 #%%
@@ -70,4 +70,62 @@ colors = ["dodgerblue4", "firebrick3", "chocolate2", "purple"]
 create_sir_plot(sde_sol_df; colors = colors)
 
 #%%
-calculateR0(ode_simple, 1, 1, p, 1000.0)
+nsims = 1000
+
+sir_array = zeros(5, tlength)
+all_sims_array = fill(NaN, 5, tlength, nsims)
+
+quantiles = [0.025, 0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.975]
+sim_quantiles = zeros(Float64, length(quantiles), tlength, 4)
+
+#%%
+sde_ens_prob = SDEProblem(sde, u₀, tspan, p)
+
+create_sir_all_sims_array!(;
+    nsims = nsims, prob = sde_ens_prob, alg = SOSRI(), δt = δt
+)
+
+create_sir_all_sim_quantiles!(; quantiles = quantiles)
+
+create_sir_quantiles_plot!(; lower = 0.1, upper = 0.9, quantiles = quantiles)
+
+#%%
+ensemble_prob = EnsembleProblem(sde_prob)
+ensemble_sol = solve(ensemble_prob, EnsembleThreads(); trajectories = nsims, saveat = δt)
+
+ensemble_summ = EnsembleSummary(ensemble_sol, tlower:1:tmax; quantiles = [0.025, 0.975])
+
+create_sir_plot(create_sir_df(ensemble_summ.qhigh))
+
+function create_sir_ensemble_df(ensemble::EnsembleSummary, quantiles::Vector{Float64})
+    med_df = transform!(create_sir_df(ensemble.med), y -> (y = "median"))
+    low_df = transform!(create_sir_df(ensemble.qlow), y -> (y = "lower"))
+    high_df = transform!(create_sir_df(ensemble.qhigh), y -> (y = "upper"))
+
+    return vcat(med_df, low_df, high_df)
+end
+
+sim_quantiles = zeros(4, length(ensemble_summ.med), length(quantiles))
+perm_sim_quantiles = permutedims(sim_quantiles, (3, 2, 1))
+
+
+function create_sir_ensemble_array!(
+    ensemble::EnsembleSummary; lower::T, upper::T, quantiles::Vector{Float64}
+) where {(T <: AbstractFloat)}
+    med_index = findfirst(isequal(0.5), quantiles)
+    lower_index = findfirst(isequal(lower), quantiles)
+    upper_index = findfirst(isequal(upper), quantiles)
+
+    sim_quantiles[1:3, :, med_index] .= Array(ensemble.med)
+    sim_quantiles[1:3, :, lower_index] = Array(ensemble.qlow)
+    sim_quantiles[1:3, :, upper_index] = Array(ensemble.qhigh)
+
+    sim_quantiles[4, :, :] = sum(sim_quantiles[1:3, :, :]; dims=1)
+    permutedims!(perm_sim_quantiles, sim_quantiles, (3, 2, 1))
+    
+    return perm_sim_quantiles
+end
+
+create_sir_ensemble_array!(ensemble_summ; lower = 0.025, upper = 0.975, quantiles = quantiles)
+
+create_sir_quantiles_plot!(perm_sim_quantiles; lower = 0.025, upper = 0.975, quantiles = quantiles, δt = 1.0)
