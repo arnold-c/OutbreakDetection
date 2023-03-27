@@ -1,6 +1,6 @@
 """
 This is a stochastic differential equation SIR model using the ModelingToolkit interface.
-The final section of code calculates the R₀ value, as well as the β parameter, for the model, using the Next Generation Matrix method.
+The noise is diagonal (i.e., every function in the system gets a different random number) and the noise is added to the S, I and R variables.
 """
 #%%
 using DrWatson
@@ -38,6 +38,7 @@ nac = 1 # number of age classes
 eqs = [D(S) ~ -β * S * I + μ * (I + R), D(I) ~ β * S * I - γ * I - μ * I,
     D(R) ~ γ * I - μ * R]
 
+# Noise is sampled from a normal distribution with mean 0 and standard deviation of δt time-step, and multiplied by the value specified in the noise equation, e.g., 0.5 + 0.01 * S * 𝒩(0, δt)
 noise_eqs = [
     0.5 + 0.01 * S,
     0.5 + 0.01 * I,
@@ -78,15 +79,12 @@ all_sims_array = fill(NaN, 4, tlength, nsims)
 quantiles = [0.025, 0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.975]
 sim_quantiles = zeros(Float64, length(quantiles), tlength, 4)
 
-
 #%%
 ensemble_prob = EnsembleProblem(sde_prob)
 ensemble_sol = solve(ensemble_prob, EnsembleThreads(); trajectories = nsims, saveat = δt)
 
-sim_quantiles = zeros(Float64, length(quantiles), tlength, 4)
-
 create_sir_all_sims_array!(ensemble_sol, nsims)
 
-create_sir_all_sim_quantiles!(quantiles = quantiles)
+create_sir_all_sim_quantiles!(; quantiles = quantiles)
 
 create_sir_quantiles_plot(; lower = 0.025, upper = 0.975, quantiles = quantiles)
