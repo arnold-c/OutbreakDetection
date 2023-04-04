@@ -69,7 +69,7 @@ push!(u₀, log(β))
 #%%
 sde_prob = SDEProblem(sir_mod!, noise!, u₀, tspan, p)
 sde_sol = solve(sde_prob, SOSRI(); saveat = δt)
-sde_sol_df, sde_sol_beta = create_sir_df(sde_sol; β = true)
+sde_sol_df, sde_sol_beta = create_sir_betas_df(sde_sol)
 sde_sol_beta.beta = exp.(sde_sol_beta.beta)
 
 #%%
@@ -85,25 +85,25 @@ colors = ["dodgerblue4", "firebrick3", "chocolate2", "purple", "green"]
 
 create_sir_plot(sde_sol_df; colors = colors)
 
+
 #%%
 nsims = 1000
-
-sir_array = zeros(5, tlength)
-all_sims_array = fill(NaN, 5, tlength, nsims)
-
-quantiles = [0.025, 0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.975]
-
-#%%
 ensemble_prob = EnsembleProblem(sde_prob)
 ensemble_sol = solve(ensemble_prob, EnsembleThreads(); trajectories = nsims, saveat = δt)
 
+#%%
+all_sims_array = fill(NaN, 5, tlength, nsims)
 create_sir_all_sims_array!(ensemble_sol, nsims; β = true)
 
 all_sims_array[5, :, :] = exp.(all_sims_array[5, :, :])
 
+#%%
+quantiles = [0.025, 0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.975]
 sim_quantiles = zeros(Float64, length(quantiles), tlength, 5)
 create_sir_all_sim_quantiles!(; quantiles = quantiles)
 
+#%%
 create_sir_quantiles_plot(; lower = 0.025, upper = 0.975, quantiles = quantiles)
 
+#%%
 create_beta_quantiles_plot(; lower = 0.025, upper = 0.975, quantiles = quantiles)

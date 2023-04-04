@@ -8,10 +8,23 @@ function create_sir_df(sol)
     end
 end
 
+function create_sir_df(sol::RODESolution)
+   create_sir_df(sol)
+end
+
+function create_sir_beta_dfs(sol)
+    state_df = create_sir_df(sol)
+    
+    beta_df = select(state_df, [:time, :Column4])
+    rename!(beta_df, :Column4 => :beta)
+
+    return state_df, beta_df
+end
+
+
 function create_sir_sim_array!(; jump_sol)
     sir_array[1:3, :] = Array(jump_sol)
     sir_array[4, :] = sum(sir_array[1:3, :]; dims = 1)
-    sir_array[5, :] .= jump_sol.t
 
     return nothing
 end
@@ -36,14 +49,30 @@ function create_sir_all_sims_array!(ensemble_sol::EnsembleSolution, nsims::Int)
 
     all_sims_array[4, :, :] = sum(all_sims_array[1:3, :, :]; dims = 1)
 
-    return all_sims_array
+    return nothing
+end
+
+function create_sir_all_sims_array!(ensemble_sol::EnsembleSolution, nsims::Int; β = true)
+    for i in 1:nsims
+        if size(ensemble_sol.u[i], 2) != size(all_sims_array, 2)
+            skip
+        else
+            all_sims_array[1:3, :, i] = Array(ensemble_sol.u[i])[1:3, :]
+            all_sims_array[5, :, i] = Array(ensemble_sol.u[i])[4, :]
+        end
+    end
+
+    all_sims_array[4, :, :] = sum(all_sims_array[1:3, :, :]; dims = 1)
+
+    return nothing
 end
 
 function create_sir_all_sim_quantiles!(; quantiles)
     for time in 1:size(all_sims_array, 2)
-        for state in 1:4
+        for state in 1:size(all_sims_array, 1)
             sim_quantiles[:, time, state] = quantile(
-                skipmissing(replace(all_sims_array[state, time, :], NaN => missing)), quantiles
+                skipmissing(replace(all_sims_array[state, time, :], NaN => missing)),
+                quantiles,
             )
         end
     end

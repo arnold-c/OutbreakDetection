@@ -1,10 +1,10 @@
 function create_sir_plot(
-    sol_df; colors=["dodgerblue4", "firebrick3", "chocolate2", "purple"]
+    sol_df; colors=["dodgerblue4", "firebrick3", "chocolate2", "purple", "green"]
 )
     sir_plot =
         data(sol_df) *
         mapping(
-            :time => "Time (days)", :Number; color=:State => sorter("S", "I", "R", "N")
+            :time => "Time (days)", :Number; color=:State => sorter("S", "I", "R", "N", "β")
         ) *
         visual(Lines; linewidth=4)
 
@@ -84,6 +84,40 @@ function create_sir_quantiles_plot(sim_quantiles = sim_quantiles; lower, upper, 
     )
 
     Legend(fig[1, 2], ax, "State")
+
+    return fig
+end
+
+
+function create_beta_quantiles_plot(sim_quantiles = sim_quantiles; lower, upper, quantiles, δt = δt)
+    fig = Figure()
+    ax = Axis(fig[1, 1])
+
+    med_index = findfirst(isequal(0.5), quantiles)
+    lower_index = findfirst(isequal(lower), quantiles)
+    upper_index = findfirst(isequal(upper), quantiles)
+
+    # Medians
+    lines!(
+        ax,
+        tlower:δt:tmax,
+        sim_quantiles[med_index, :, 5];
+        color=colors[1],
+        linewidth=2,
+        label="β",
+    )
+
+    # User-specified quantiles
+    band!(
+        ax,
+        tlower:δt:tmax,
+        sim_quantiles[lower_index, :, 5],
+        sim_quantiles[upper_index, :, 5];
+        color=("green", 0.5),
+    )
+    
+
+    Legend(fig[1, 2], ax, "Parameter")
 
     return fig
 end

@@ -67,7 +67,7 @@ push!(u₀, β => calculate_beta(R₀, p[γ], p[μ], ones(1, 1), [sum(values(u�
 #%%
 sde_prob = SDEProblem(sde, u₀, tspan, p; check_length = false)
 sde_sol = solve(sde_prob, SOSRI(); saveat = δt)
-sde_sol_df, sde_sol_beta = create_sir_df(sde_sol; β = true)
+sde_sol_df, sde_sol_beta = create_sir_betas_df(sde_sol)
 sde_sol_beta.beta = exp.(sde_sol_beta.beta)
 
 #%%
