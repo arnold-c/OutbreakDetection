@@ -80,7 +80,16 @@ function calculate_beta(
     )
 end
 
-"""
+function calculate_beta(
+    ode::S, nic::T, nac::T, R₀::U, param::Dict{Num,U}, C::Array{U},
+    pop_matrix::Array{T},
+) where {S<:ODESystem,T<:Int,U<:AbstractFloat}
+    return calculate_beta(
+        ode, nic, nac, R₀, Dict(param), C, convert.(Float64, pop_matrix)
+    )
+end
+
+""
     calculateR0(β, γ, μ, C, pop_matrix)
 
 Calculate the basic reproduction number R₀ for a given set of parameters and contact matrix.
