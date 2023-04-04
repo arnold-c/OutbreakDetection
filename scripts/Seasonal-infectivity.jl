@@ -84,7 +84,9 @@ function infec_affect!(integrator)
 end
 infec_jump = VariableRateJump(infec_rate, infec_affect!; lrate, urate, rateinterval)
 
-jumps = JumpSet(birth_jump, recov_jump, S_death_jump, I_death_jump, R_death_jump, infec_jump)
+jumps = JumpSet(
+    birth_jump, recov_jump, S_death_jump, I_death_jump, R_death_jump, infec_jump
+)
 
 # ConstantRateJumps are ordered before VariableRateJumps in the dependency graph, otherwise within the same ordering presented to the JumpProblem, i.e., birth, recovery ...
 # Each row of the dependency graph is a list of rates that must be recalculated when the row's jump is executed, as it affects the underlying states each of the rates depends on.
@@ -116,10 +118,10 @@ t = 0:0.01:720
 y = Vector{Float64}(undef, length(t))
 y_scale = similar(y)
 @. y = 0.5 * (cos(2pi * t / 365) + 1)
-@. y_scale = (0.5 * (cos(2pi * t / 365) + 1)) * 1/A_scale + (A_scale - 1)/A_scale
-fig = lines(t, y, color = "black", linewidth = 2)
-lines!(t, y_scale, color = "green", linewidth = 2)
-vlines!(0:365:720, color = (:red, 0.5), linestyle = :dash, linewidth = 2)
+@. y_scale = (0.5 * (cos(2pi * t / 365) + 1)) * 1 / A_scale + (A_scale - 1) / A_scale
+fig = lines(t, y; color = "black", linewidth = 2)
+lines!(t, y_scale; color = "green", linewidth = 2)
+vlines!(0:365:720; color = (:red, 0.5), linestyle = :dash, linewidth = 2)
 hlines!([0.0, 0.5, 1.0])
 fig
 
@@ -130,7 +132,8 @@ sir_array = zeros(4, tlength)
 all_sims_array = fill(NaN, 4, tlength, nsims)
 
 season_infec_jump_prob = JumpProblem(
-    season_infec_prob, Coevolve(), jumps...; dep_graph, save_positions = (false, false)
+    season_infec_prob, Coevolve(), jumps; dep_graph = dep_graph,
+    save_positions = (false, false),
 )
 
 create_sir_all_sims_array!(;
