@@ -22,9 +22,9 @@ includet(srcdir("Julia/cleaning-functions.jl"))
 
 #%%
 u₀ = [999, 1, 0]
-δt = 0.005
+δt = 0.5
 tlower = 0.0
-tmax = 250.0
+tmax = 365.0 * 100
 tspan = (tlower, tmax)
 tlength = length(tlower:δt:tmax)
 
@@ -35,7 +35,8 @@ R₀ = 10.0
 β = calculate_beta(R₀, γ, μ, 1, sum(u₀))
 # Adjust the scale of the seasonal variation in infectivity i.e. A_scale scales the amplitude of cosine function to 1/A_scale. The maximum infectivity is β
 A_scale = 2.0
-p = (β, γ, μ, A_scale)
+σ = 1 / (365 * 1)
+p = (β, γ, μ, A_scale, σ)
 
 #%%
 birth_rate(u, p, t) = p[3] * (u[1] + u[2] + u[3])  # μ*N
@@ -62,6 +63,14 @@ R_death_rate(u, p, t) = p[3] * u[3]  # μ*R
 R_death_affect!(integrator) = integrator.u[3] -= 1  # S -> S + 1
 R_death_jump = ConstantRateJump(R_death_rate, R_death_affect!)
 
+import_rate(u, p, t) = p[5] # σ
+import_affect!(integrator) = integrator.u[2] += 1  # I -> I + 1
+import_jump = ConstantRateJump(import_rate, import_affect!)
+
+export_rate(u, p, t) = p[5]
+export_affect!(integrator) = integrator.u[3] -= 1  # R -> R - 1
+export_jump = ConstantRateJump(export_rate, export_affect!)
+
 # Place infection at the end as it is a VariableRateJump, which is ordered after ConstantRateJumps in the dependency graph.
 # Amplitude = 0.5 * (cos(2pi * t / 365) + 1)) * 1/scale + (scale - 1)/scale
 function infec_rate(u, p, t)
@@ -85,18 +94,22 @@ end
 infec_jump = VariableRateJump(infec_rate, infec_affect!; lrate, urate, rateinterval)
 
 jumps = JumpSet(
-    birth_jump, recov_jump, S_death_jump, I_death_jump, R_death_jump, infec_jump
+    birth_jump, recov_jump, S_death_jump, I_death_jump, R_death_jump,
+    import_jump, export_jump,
+    infec_jump,
 )
 
 # ConstantRateJumps are ordered before VariableRateJumps in the dependency graph, otherwise within the same ordering presented to the JumpProblem, i.e., birth, recovery ...
 # Each row of the dependency graph is a list of rates that must be recalculated when the row's jump is executed, as it affects the underlying states each of the rates depends on.
 dep_graph = [
-    [1, 3, 6],          # Birth, S death, infection
-    [2, 1, 4, 5, 6],    # Recovery, birth, I death, R death, infection
-    [3, 1, 6],          # S death, birth, infection
-    [4, 1, 2, 6],       # I death, birth, recovery, infection
-    [5, 1, 2, 6],       # R death, birth, recovery, infection
-    [6, 1, 2, 3, 4],     # Infection, birth, recovery, S death, I death
+    [1, 3, 8],          # Birth, S death, infection
+    [2, 1, 4, 5, 8],    # Recovery, birth, I death, R death, infection
+    [3, 1, 8],          # S death, birth, infection
+    [4, 1, 2, 8],       # I death, birth, recovery, infection
+    [5, 1, 2, 8],       # R death, birth, recovery, infection
+    [6, 2],             # Import
+    [7, 3],             # Export
+    [8, 1, 2, 3, 4],    # Infection, birth, recovery, S death, I death
 ]
 
 #%%
@@ -141,7 +154,7 @@ create_sir_all_sims_array!(;
 )
 
 #%%
-quantiles = [0.025, 0.05, 0.1, 0.2, 0.25, 0.5, 0.75, 0.8, 0.9, 0.95, 0.975]
+quantiles = [0.025, 0.05, 0.1, 0.2, 0.25, 0.4, 0.5, 0.6, 0.75, 0.8, 0.9, 0.95, 0.975]
 sim_quantiles = zeros(Float64, length(quantiles), tlength, 4)
 
 #%%
