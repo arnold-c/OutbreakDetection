@@ -21,7 +21,7 @@ includet(srcdir("Julia/cleaning-functions.jl"))
 #%%
 δt = 0.005
 tlower = 0.0
-tmax = 250.0
+tmax = 365.0 * 100.0
 tspan = (tlower, tmax)
 tlength = length(tlower:δt:tmax)
 
@@ -48,10 +48,10 @@ end
 
 #%%
 de_prob = DiscreteProblem(sir_model, u₀, tspan, p)
-jump_prob = JumpProblem(sir_model, de_prob, Direct())
+jump_prob = JumpProblem(sir_model, de_prob, Direct(); savepositions = (false, false))
 
 #%%
-jump_sol = solve(jump_prob, SSAStepper(); saveat = δt)
+jump_sol = solve(jump_prob, SSAStepper(); saveat = 1.0)
 jump_sol_df = create_sir_df(jump_sol)
 
 #%%
