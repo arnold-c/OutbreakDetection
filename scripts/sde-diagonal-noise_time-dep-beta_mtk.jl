@@ -19,7 +19,7 @@ includet(srcdir("Julia/plotting-functions.jl"))
 includet(srcdir("Julia/cleaning-functions.jl"))
 
 #%%
-δt = 0.01
+δt = 0.1
 tlower = 0.0
 tmax = 250.0
 tspan = (tlower, tmax)
@@ -44,9 +44,9 @@ eqs = [
 trans_eqs = [D(β) ~ 0.0]
 
 noise_eqs = [
-    0.0,
-    0.0,
-    0.0,
+    1.0,
+    1.0,
+    1.0,
     σ,
 ]
 
@@ -62,19 +62,21 @@ ode_simple = structural_simplify(ode)
 R₀ = 10.0
 p = Dict(γ => 1 / 8, μ => 1 / (62 * 365), σ => 0.01)
 u₀ = Dict(S => 999.0, I => 1.0, R => 0.0)
-push!(u₀, β => calculate_beta(R₀, p[γ], p[μ], ones(1, 1), [sum(values(u₀))]))
+
+logbeta = log(calculate_beta(R₀, p[γ], p[μ], ones(1, 1), [sum(values(u₀))]))
+push!(u₀, β => logbeta)
 
 #%%
 sde_prob = SDEProblem(sde, u₀, tspan, p; check_length = false)
-sde_sol = solve(sde_prob, SOSRI(); saveat = δt)
-sde_sol_df, sde_sol_beta = create_sir_betas_df(sde_sol)
-sde_sol_beta.beta = exp.(sde_sol_beta.beta)
+sde_sol = solve(sde_prob, SOSRA(); saveat = δt)
+sde_sol_df, sde_sol_beta = create_sir_beta_dfs(sde_sol, [:S, :I, :R])
+sde_sol_beta.β = exp.(sde_sol_beta.β)
 
 #%%
 fig = Figure()
 ax = Axis(fig[1, 1]; xlabel = "Time (days)", ylabel = "β")
 
-lines!(ax, sde_sol_beta.time, sde_sol_beta.beta; linewidth = 2)
+lines!(ax, sde_sol_beta.time, sde_sol_beta.β; linewidth = 2)
 
 fig
 
