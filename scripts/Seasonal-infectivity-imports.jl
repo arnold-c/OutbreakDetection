@@ -35,8 +35,8 @@ R₀ = 10.0
 β = calculate_beta(R₀, γ, μ, 1, sum(u₀))
 # Adjust the scale of the seasonal variation in infectivity i.e. A_scale scales the amplitude of cosine function to 1/A_scale. The maximum infectivity is β
 A_scale = 2.0
-σ = 1 / (365 * 1)
-p = (β, γ, μ, A_scale, σ)
+ε = (1.06 * μ * (R₀ - 1)) / sqrt(sum(u₀)) # Commuter imports - see p210 Keeling & Rohani
+p = (β, γ, μ, A_scale, ε)
 
 #%%
 birth_rate(u, p, t) = p[3] * (u[1] + u[2] + u[3])  # μ*N
@@ -63,13 +63,17 @@ R_death_rate(u, p, t) = p[3] * u[3]  # μ*R
 R_death_affect!(integrator) = integrator.u[3] -= 1  # S -> S + 1
 R_death_jump = ConstantRateJump(R_death_rate, R_death_affect!)
 
-import_rate(u, p, t) = p[5] # σ
-import_affect!(integrator) = integrator.u[2] += 1  # I -> I + 1
+import_rate(u, p, t) = p[5] * (u[1] + u[2] + u[3]) / R₀   # ε*N/R₀
+function import_affect!(integrator)
+    integrator.u[1] -= 1    # S -> S - 1
+    integrator.u[2] += 1    # I -> I + 1
+    return nothing
+end
 import_jump = ConstantRateJump(import_rate, import_affect!)
 
-export_rate(u, p, t) = p[5]
-export_affect!(integrator) = integrator.u[3] -= 1  # R -> R - 1
-export_jump = ConstantRateJump(export_rate, export_affect!)
+# export_rate(u, p, t) = p[5] * (u[1] + u[2] + u[3]) / R₀ # ε
+# export_affect!(integrator) = integrator.u[3] -= 1  # R -> R - 1
+# export_jump = ConstantRateJump(export_rate, export_affect!)
 
 # Place infection at the end as it is a VariableRateJump, which is ordered after ConstantRateJumps in the dependency graph.
 # Amplitude = 0.5 * (cos(2pi * t / 365) + 1)) * 1/scale + (scale - 1)/scale
@@ -95,21 +99,20 @@ infec_jump = VariableRateJump(infec_rate, infec_affect!; lrate, urate, rateinter
 
 jumps = JumpSet(
     birth_jump, recov_jump, S_death_jump, I_death_jump, R_death_jump,
-    import_jump, export_jump,
+    import_jump,
     infec_jump,
 )
 
 # ConstantRateJumps are ordered before VariableRateJumps in the dependency graph, otherwise within the same ordering presented to the JumpProblem, i.e., birth, recovery ...
 # Each row of the dependency graph is a list of rates that must be recalculated when the row's jump is executed, as it affects the underlying states each of the rates depends on.
 dep_graph = [
-    [1, 3, 8],          # Birth, S death, infection
-    [2, 1, 4, 5, 8],    # Recovery, birth, I death, R death, infection
-    [3, 1, 8],          # S death, birth, infection
-    [4, 1, 2, 8],       # I death, birth, recovery, infection
-    [5, 1, 2, 8],       # R death, birth, recovery, infection
-    [6, 2],             # Import
-    [7, 3],             # Export
-    [8, 1, 2, 3, 4],    # Infection, birth, recovery, S death, I death
+    [1, 3, 7],          # Birth, S death, infection
+    [2, 1, 4, 5, 7],    # Recovery, birth, I death, R death, infection
+    [3, 1, 7],          # S death, birth, infection
+    [4, 1, 2, 7],       # I death, birth, recovery, infection
+    [5, 1, 2, 7],       # R death, birth, recovery, infection
+    [6, 1, 2],          # Import, infection
+    [7, 1, 2, 3, 4],    # Infection, birth, recovery, S death, I death
 ]
 
 #%%
@@ -118,12 +121,12 @@ season_infec_prob = DiscreteProblem(u₀, tspan, p)
 season_infec_jump_prob = JumpProblem(season_infec_prob, Coevolve(), jumps; dep_graph)
 season_infec_sol = solve(season_infec_jump_prob, SSAStepper())
 
-season_infec_sol_df = create_sir_df(season_infec_sol)
+season_infec_sol_df = create_sir_df(season_infec_sol, [:S, :I, :R])
 
 #%%
-colors = ["dodgerblue4", "firebrick3", "chocolate2", "purple"]
+sircolors = ["dodgerblue4", "firebrick3", "chocolate2", "purple"]
 
-create_sir_plot(season_infec_sol_df; colors = colors)
+draw_sir_plot(season_infec_sol_df; colors = sircolors, annual = true)
 
 #%%
 # Visualize seasonal changes in the infection rate

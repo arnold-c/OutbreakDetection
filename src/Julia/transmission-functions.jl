@@ -89,7 +89,7 @@ function calculate_beta(
     )
 end
 
-""
+"""
     calculateR0(β, γ, μ, C, pop_matrix)
 
 Calculate the basic reproduction number R₀ for a given set of parameters and contact matrix.
