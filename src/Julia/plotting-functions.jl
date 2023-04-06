@@ -1,12 +1,18 @@
 function create_sir_plot(sol_df)
-    sir_plot =
-        data(sol_df) *
-        mapping(
-            :time => "Time (days)", :Number; color = :State => sorter("S", "I", "R", "N")
-        ) *
-        visual(Lines; linewidth = 4)
+    return data(sol_df) *
+           mapping(
+               :time => "Time (days)", :Number; color = :State => sorter("S", "I", "R", "N")
+           ) *
+           visual(Lines; linewidth = 4)
+end
 
-    return sir_plot
+function create_annual_sir_plot(sol_df)
+    return data(sol_df) *
+           mapping(
+               :time => (t -> t / 365.0) => "Time (years)", :Number;
+               color = :State => sorter("S", "I", "R", "N"),
+           ) *
+           visual(Lines; linewidth = 4)
 end
 
 function draw_sir_plot(
@@ -15,16 +21,22 @@ function draw_sir_plot(
     return draw(sir_plot; palettes = (; color = colors))
 end
 
-function draw_sir_plot(sol_df::DataFrame; colors = ["dodgerblue4", "firebrick3", "chocolate2", "purple"])
-    return draw_sir_plot(create_sir_plot(sol_df); colors = colors)
+function draw_sir_plot(
+    sol_df::DataFrame;
+    colors = ["dodgerblue4", "firebrick3", "chocolate2", "purple"],
+    annual = false,
+)
+    return if annual == false
+        draw_sir_plot(create_sir_plot(sol_df); colors = colors)
+    else
+        draw_sir_plot(create_annual_sir_plot(sol_df); colors = colors)
+    end
 end
 
 function create_beta_plot(beta_df)
-    beta_plot = data(beta_df) *
-        mapping(:time => "Time (days)", :β) *
-        visual(Lines; linewidth = 4, color = "green")
-
-    return beta_plot
+    return data(beta_df) *
+           mapping(:time => "Time (days)", :β) *
+           visual(Lines; linewidth = 4, color = "green")
 end
 
 function draw_beta_plot(beta_plot)
@@ -38,8 +50,10 @@ end
 function draw_combined_sir_beta_plot(sir_plot, beta_plot)
     combined = Figure()
 
-    axsir = Axis(combined[2:4, 1], xlabel = "Time (days)", ylabel = "Number of individuals")
-    axbeta = Axis(combined[1, 1], ylabel = "β", xticksvisible = false, xticklabelsvisible = false)
+    axsir = Axis(combined[2:4, 1]; xlabel = "Time (days)", ylabel = "Number of individuals")
+    axbeta = Axis(
+        combined[1, 1]; ylabel = "β", xticksvisible = false, xticklabelsvisible = false
+    )
 
     draw!(axsir, sir_plot)
     draw!(axbeta, beta_plot)
