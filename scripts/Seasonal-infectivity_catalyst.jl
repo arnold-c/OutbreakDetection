@@ -8,7 +8,7 @@ All jumps are manually defined using JumpProcesses, not using the ModelingToolki
 using DrWatson
 @quickactivate "OutbreakDetection"
 
-using DifferentialEquations, Catalyst, JumpProcesses, Statistics
+using DifferentialEquatplions, Catalyst, JumpProcesses, Statistics
 using DataFrames, DataFramesMeta, LinearAlgebra, Symbolics, Latexify
 using CairoMakie, AlgebraOfGraphics
 
@@ -29,23 +29,70 @@ tlength = length(tlower:δt:tmax)
 
 #%%
 R₀ = 10.0
-γ = 1 / 8
-μ = 1 / (62 * 365)
-# Adjust the scale of the seasonal variation in infectivity i.e. A_scale scales the amplitude of cosine function to 1/A_scale. The maximum infectivity is β
-A_scale = 10
-
+recov = 1 / 8
+birth = 1 / (62 * 365)
+imp = 1/365
 S_init = 999
 I_init = 1
 R_init = 0
 
 u₀ = [:S => S_init, :I => I_init, :R => R_init]
 
-β = calculate_beta(R₀, γ, μ, 1, S_init + I_init + R_init)
-p = [:γ => γ, :μ => μ, :β => β]
+beta = calculate_beta(R₀, recov, birth, 1, S_init + I_init + R_init)
+p = [:γ => recov, :μ => birth, :β => beta]
 
 #%%
-@variables t Amplitude(t) = 1.0
+@parameters β γ μ
+@variables t
+@species S(t) I(t) R(t)
 
+#%%
+sir_model_rxs = [
+    Reaction(β * 0.5 * (cos(2π * t/365) + 1), [S, I], [I], [1, 1], [2]),
+    Reaction(γ, [I], [R], [1], [1]),
+    Reaction(μ * (S + I + R), nothing, [S]),
+    Reaction(μ, [S], nothing),
+    Reaction(μ, [I], nothing),
+    Reaction(μ, [R], nothing),
+]
+
+@named sir_model = ReactionSystem(sir_model_rxs, t)
+
+reactions(sir_model)
+
+# latexify(convert(ODESystem, sir_model))
+
+
+#%%
+de_prob = ODEProblem(sir_model, u₀, tspan, p)
+jump_prob = JumpProblem(sir_model, de_prob, Coevolve(); savepositions = (false, false))
+
+#%%
+jump_sol = solve(jump_prob, Tsit5(); saveat = 1.0)
+jump_sol_df = @chain DataFrame(jump_sol) begin
+    rename(s -> replace(s, "(t)" => ""), _)
+    rename(:timestamp => :time)
+    @rtransform :N = :S + :I + :R
+    stack(_, [:S, :I, :R, :N]; variable_name = :State, value_name = :Number)
+end
+
+#%%
+colors = ["dodgerblue4", "firebrick3", "chocolate2", "purple"]
+
+create_sir_plot(jump_sol_df; colors = colors)
+
+
+
+
+
+
+
+
+
+
+
+
+#%%
 D = Differential(t)
 
 amp_eq = [Amplitude ~ 0.5 * (cos(2π * t / 365) + 1) * 1 / A_scale + (A_scale - 1) / A_scale]
