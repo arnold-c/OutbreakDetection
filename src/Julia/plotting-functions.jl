@@ -1,17 +1,55 @@
-function create_sir_plot(
-    sol_df; colors=["dodgerblue4", "firebrick3", "chocolate2", "purple", "green"]
-)
+function create_sir_plot(sol_df)
     sir_plot =
         data(sol_df) *
         mapping(
-            :time => "Time (days)", :Number; color=:State => sorter("S", "I", "R", "N", "β")
+            :time => "Time (days)", :Number; color = :State => sorter("S", "I", "R", "N")
         ) *
-        visual(Lines; linewidth=4)
+        visual(Lines; linewidth = 4)
 
-    return draw(sir_plot; palettes=(; color=colors))
+    return sir_plot
 end
 
-function create_sir_quantiles_plot(sim_quantiles = sim_quantiles; lower, upper, quantiles, δt = δt)
+function draw_sir_plot(
+    sir_plot; colors = ["dodgerblue4", "firebrick3", "chocolate2", "purple"]
+)
+    return draw(sir_plot; palettes = (; color = colors))
+end
+
+function draw_sir_plot(sol_df::DataFrame; colors = ["dodgerblue4", "firebrick3", "chocolate2", "purple"])
+    return draw_sir_plot(create_sir_plot(sol_df); colors = colors)
+end
+
+function create_beta_plot(beta_df)
+    beta_plot = data(beta_df) *
+        mapping(:time => "Time (days)", :β) *
+        visual(Lines; linewidth = 4, color = "green")
+
+    return beta_plot
+end
+
+function draw_beta_plot(beta_plot)
+    return draw(beta_plot)
+end
+
+function draw_beta_plot(beta_df::DataFrame)
+    return draw_beta_plot(create_beta_plot(beta_df))
+end
+
+function draw_combined_sir_beta_plot(sir_plot, beta_plot)
+    combined = Figure()
+
+    axsir = Axis(combined[2:4, 1], xlabel = "Time (days)", ylabel = "Number of individuals")
+    axbeta = Axis(combined[1, 1], ylabel = "β", xticksvisible = false, xticklabelsvisible = false)
+
+    draw!(axsir, sir_plot)
+    draw!(axbeta, beta_plot)
+
+    return combined
+end
+
+function create_sir_quantiles_plot(
+    sim_quantiles = sim_quantiles; lower, upper, quantiles, δt = δt
+)
     fig = Figure()
     ax = Axis(fig[1, 1])
 
@@ -24,33 +62,33 @@ function create_sir_quantiles_plot(sim_quantiles = sim_quantiles; lower, upper, 
         ax,
         tlower:δt:tmax,
         sim_quantiles[med_index, :, 1];
-        color=colors[1],
-        linewidth=2,
-        label="S",
+        color = colors[1],
+        linewidth = 2,
+        label = "S",
     )
     lines!(
         ax,
         tlower:δt:tmax,
         sim_quantiles[med_index, :, 2];
-        color=colors[2],
-        linewidth=2,
-        label="I",
+        color = colors[2],
+        linewidth = 2,
+        label = "I",
     )
     lines!(
         ax,
         tlower:δt:tmax,
         sim_quantiles[med_index, :, 3];
-        color=colors[3],
-        linewidth=2,
-        label="R",
+        color = colors[3],
+        linewidth = 2,
+        label = "R",
     )
     lines!(
         ax,
         tlower:δt:tmax,
         sim_quantiles[med_index, :, 4];
-        color=colors[4],
-        linewidth=2,
-        label="N",
+        color = colors[4],
+        linewidth = 2,
+        label = "N",
     )
 
     # User-specified quantiles
@@ -59,28 +97,28 @@ function create_sir_quantiles_plot(sim_quantiles = sim_quantiles; lower, upper, 
         tlower:δt:tmax,
         sim_quantiles[lower_index, :, 1],
         sim_quantiles[upper_index, :, 1];
-        color=(colors[1], 0.5),
+        color = (colors[1], 0.5),
     )
     band!(
         ax,
         tlower:δt:tmax,
         sim_quantiles[lower_index, :, 2],
         sim_quantiles[upper_index, :, 2];
-        color=(colors[2], 0.5),
+        color = (colors[2], 0.5),
     )
     band!(
         ax,
         tlower:δt:tmax,
         sim_quantiles[lower_index, :, 3],
         sim_quantiles[upper_index, :, 3];
-        color=(colors[3], 0.5),
+        color = (colors[3], 0.5),
     )
     band!(
         ax,
         tlower:δt:tmax,
         sim_quantiles[lower_index, :, 4],
         sim_quantiles[upper_index, :, 4];
-        color=(colors[4], 0.5),
+        color = (colors[4], 0.5),
     )
 
     Legend(fig[1, 2], ax, "State")
@@ -88,8 +126,9 @@ function create_sir_quantiles_plot(sim_quantiles = sim_quantiles; lower, upper, 
     return fig
 end
 
-
-function create_beta_quantiles_plot(sim_quantiles = sim_quantiles; lower, upper, quantiles, δt = δt)
+function create_beta_quantiles_plot(
+    sim_quantiles = sim_quantiles; lower, upper, quantiles, δt = δt
+)
     fig = Figure()
     ax = Axis(fig[1, 1])
 
@@ -102,9 +141,9 @@ function create_beta_quantiles_plot(sim_quantiles = sim_quantiles; lower, upper,
         ax,
         tlower:δt:tmax,
         sim_quantiles[med_index, :, 5];
-        color=colors[1],
-        linewidth=2,
-        label="β",
+        color = colors[1],
+        linewidth = 2,
+        label = "β",
     )
 
     # User-specified quantiles
@@ -113,9 +152,8 @@ function create_beta_quantiles_plot(sim_quantiles = sim_quantiles; lower, upper,
         tlower:δt:tmax,
         sim_quantiles[lower_index, :, 5],
         sim_quantiles[upper_index, :, 5];
-        color=("green", 0.5),
+        color = ("green", 0.5),
     )
-    
 
     Legend(fig[1, 2], ax, "Parameter")
 
