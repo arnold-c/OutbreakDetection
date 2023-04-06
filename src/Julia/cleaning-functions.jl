@@ -1,22 +1,36 @@
-function create_sir_df(sol)
-    @chain Tables.table(sol') begin
-        DataFrame(_)
-        rename!(:Column1 => :S, :Column2 => :I, :Column3 => :R)
-        @rtransform! :N = :S + :I + :R
-        hcat(_, DataFrame(; time = sol.t))
-        stack(_, [:S, :I, :R, :N]; variable_name = :State, value_name = :Number)
+function create_sir_df(sol, states = [:S, :I, :R])
+    @chain DataFrame(sol) begin
+        rename!([:time, states...])
+        transform!(_, states => (+) => :N)
+        stack(_, [states..., :N]; variable_name = :State, value_name = :Number)
     end
 end
 
-function create_sir_df(sol::RODESolution)
-   create_sir_df(sol)
+function create_sir_df(sol::RODESolution, states = [:S, :I, :R])
+    @chain DataFrame(sol) begin
+        rename!(s -> replace(s, "(t)" => ""), _)
+        rename!(:timestamp => :time)
+        transform!(_, states => (+) => :N)
+        stack(_, [states..., :N]; variable_name = :State, value_name = :Number)
+    end
 end
 
-function create_sir_beta_dfs(sol)
-    state_df = create_sir_df(sol)
+function create_sir_df(sol::ODESolution, states = [:S, :I, :R])
+    @chain DataFrame(sol) begin
+        rename!(s -> replace(s, "(t)" => ""), _)
+        rename!(:timestamp => :time)
+        transform!(_, states => (+) => :N)
+        stack(_, [states..., :N]; variable_name = :State, value_name = :Number)
+    end
+end
+
+function create_sir_beta_dfs(sol, states = [:S, :I, :R])
+    state_df = create_sir_df(sol, states)
     
-    beta_df = select(state_df, [:time, :Column4])
-    rename!(beta_df, :Column4 => :beta)
+    beta_df = select(state_df, [:time, :β])
+    unique!(beta_df)
+
+    select!(state_df, Not(:β))
 
     return state_df, beta_df
 end
