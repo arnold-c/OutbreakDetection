@@ -17,8 +17,12 @@ end
 
 function create_sir_df(sol::ODESolution, states = [:S, :I, :R])
     @chain DataFrame(sol) begin
-        rename!(s -> replace(s, "(t)" => ""), _)
-        rename!(:timestamp => :time)
+        if "value1" in names(DataFrame(_))
+            rename!(_, [:time, states...])
+        else
+            rename!(s -> replace(s, "(t)" => ""), _)
+            rename!(:timestamp => :time)
+        end
         transform!(_, states => (+) => :N)
         stack(_, [states..., :N]; variable_name = :State, value_name = :Number)
     end
@@ -26,7 +30,7 @@ end
 
 function create_sir_beta_dfs(sol, states = [:S, :I, :R])
     state_df = create_sir_df(sol, states)
-    
+
     beta_df = select(state_df, [:time, :β])
     unique!(beta_df)
 
@@ -34,7 +38,6 @@ function create_sir_beta_dfs(sol, states = [:S, :I, :R])
 
     return state_df, beta_df
 end
-
 
 function create_sir_sim_array!(; jump_sol)
     sir_array[1:3, :] = Array(jump_sol)
