@@ -62,8 +62,9 @@ function draw_combined_sir_beta_plot(sir_plot, beta_plot)
 end
 
 function create_sir_quantiles_plot(
-    sim_quantiles = sim_quantiles; lower, upper, quantiles, δt = δt, annual = false,
-    colors = ["dodgerblue4", "firebrick3", "chocolate2", "purple"],
+    sim_quantiles = sim_quantiles; lower = 0.1, upper = 0.9, quantiles = quantiles, δt = δt,
+    colors = ["dodgerblue4", "firebrick3", "chocolate2", "purple"], labels = ["S", "I", "R", "N"], 
+    annual = false,
 )
     times = tlower:δt:tmax
     xlab = "Time (days)"
@@ -80,67 +81,75 @@ function create_sir_quantiles_plot(
     upper_index = findfirst(isequal(upper), quantiles)
 
     # Medians
-    lines!(
-        ax,
-        times,
-        sim_quantiles[med_index, :, 1];
-        color = colors[1],
-        linewidth = 2,
-        label = "S",
-    )
-    lines!(
-        ax,
-        times,
-        sim_quantiles[med_index, :, 2];
-        color = colors[2],
-        linewidth = 2,
-        label = "I",
-    )
-    lines!(
-        ax,
-        times,
-        sim_quantiles[med_index, :, 3];
-        color = colors[3],
-        linewidth = 2,
-        label = "R",
-    )
-    lines!(
-        ax,
-        times,
-        sim_quantiles[med_index, :, 4];
-        color = colors[4],
-        linewidth = 2,
-        label = "N",
+    map(
+        state -> lines!(
+            ax,
+            times,
+            sim_quantiles[med_index, :, state];
+            color = colors[state],
+            linewidth = 2,
+            label = labels[state], 
+        ),
+        eachindex(labels)
     )
 
-    # User-specified quantiles
-    band!(
-        ax,
-        times,
-        sim_quantiles[lower_index, :, 1],
-        sim_quantiles[upper_index, :, 1];
-        color = (colors[1], 0.5),
+    map(
+        state -> band!(
+            ax,
+            times,
+            sim_quantiles[lower_index, :, state],
+            sim_quantiles[upper_index, :, state];
+            color = (colors[state], 0.5)
+        ),
+        eachindex(labels)  
     )
-    band!(
-        ax,
-        times,
-        sim_quantiles[lower_index, :, 2],
-        sim_quantiles[upper_index, :, 2];
-        color = (colors[2], 0.5),
+
+    Legend(fig[1, 2], ax, "State")
+
+    return fig
+end
+
+function create_sir_quantiles_plot(
+    summ::EnsembleSummary; annual = false,
+    colors = ["dodgerblue4", "firebrick3", "chocolate2"],
+    labels = ["S", "I", "R"]
+)
+
+    times = tlower:δt:tmax
+    xlab = "Time (days)"
+    if annual == true
+        times = times ./ 365
+        xlab = "Time (years)"
+    end
+
+    fig = Figure()
+    ax = Axis(fig[1, 1], xlabel = xlab, ylabel = "Number")
+
+    med_df = DataFrame(summ.med)[:, 2:end]
+    lower = DataFrame(summ.qlow)[:, 2:end]
+    upper = DataFrame(summ.qhigh)[:, 2:end]
+
+    map(
+        state -> lines!(
+            ax,
+            times,
+            med_df[:, state],
+            color = colors[state],
+            linewidth = 2,
+            label = labels[state]
+        ),
+        1:3
     )
-    band!(
-        ax,
-        times,
-        sim_quantiles[lower_index, :, 3],
-        sim_quantiles[upper_index, :, 3];
-        color = (colors[3], 0.5),
-    )
-    band!(
-        ax,
-        times,
-        sim_quantiles[lower_index, :, 4],
-        sim_quantiles[upper_index, :, 4];
-        color = (colors[4], 0.5),
+
+    map(
+        state -> band!(
+            ax,
+            times,
+            lower[:, state],
+            upper[:, state],
+            color = (colors[state], 0.5)
+        ),
+        1:3
     )
 
     Legend(fig[1, 2], ax, "State")

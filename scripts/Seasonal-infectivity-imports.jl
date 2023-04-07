@@ -174,8 +174,9 @@ ensemble_jump_prob = EnsembleProblem(season_infec_jump_prob)
 # @benchmark solve(ensemble_jump_prob, SSAStepper(), EnsembleSplitThreads(); trajectories = nsims, saveat = δt)
 
 ensemble_sol = solve(ensemble_jump_prob, SSAStepper(); trajectories = nsims, saveat = δt)
-ensemble_summ = EnsembleSummary(ensemble_sol; quantiles = [0.25, 0.75])
+ensemble_summ = EnsembleSummary(ensemble_sol; quantiles = [0.025, 0.975])
 
+create_sir_quantiles_plot(ensemble_summ; annual = true)
 # create_sir_all_sims_array!(ensemble_sol, nsims)
 
 # for i in 1:nsims
@@ -184,11 +185,13 @@ ensemble_summ = EnsembleSummary(ensemble_sol; quantiles = [0.25, 0.75])
 
 # all_sims_array[4, :, :] = sum(all_sims_array[1:3, :, :]; dims = 1)
 
+
+
 #%%
 sir_array = zeros(4, tlength)
 all_sims_array = fill(NaN, 4, tlength, nsims)
 
-@benchmark create_sir_all_sims_array!(;
+create_sir_all_sims_array!(;
     nsims = nsims, prob = season_infec_jump_prob, alg = SSAStepper(), δt = δt
 )
 
@@ -200,6 +203,6 @@ sim_quantiles = zeros(Float64, length(quantiles), tlength, 4)
 create_sir_all_sim_quantiles!(; quantiles = quantiles)
 
 #%%
-create_sir_quantiles_plot(;
-    lower = 0.025, upper = 0.975, quantiles = quantiles, annual = true, colors = sircolors
+create_sir_quantiles_plot(
+    sim_quantiles; lower = 0.025, upper = 0.975, annual = true
 )
