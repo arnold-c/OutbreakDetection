@@ -62,10 +62,18 @@ function draw_combined_sir_beta_plot(sir_plot, beta_plot)
 end
 
 function create_sir_quantiles_plot(
-    sim_quantiles = sim_quantiles; lower, upper, quantiles, δt = δt
+    sim_quantiles = sim_quantiles; lower, upper, quantiles, δt = δt, annual = false,
+    colors = ["dodgerblue4", "firebrick3", "chocolate2", "purple"],
 )
+    times = tlower:δt:tmax
+    xlab = "Time (days)"
+    if annual == true
+        times = times ./ 365
+        xlab = "Time (years)"
+    end
+
     fig = Figure()
-    ax = Axis(fig[1, 1])
+    ax = Axis(fig[1, 1]; xlabel = xlab, ylabel = "Number")
 
     med_index = findfirst(isequal(0.5), quantiles)
     lower_index = findfirst(isequal(lower), quantiles)
@@ -74,7 +82,7 @@ function create_sir_quantiles_plot(
     # Medians
     lines!(
         ax,
-        tlower:δt:tmax,
+        times,
         sim_quantiles[med_index, :, 1];
         color = colors[1],
         linewidth = 2,
@@ -82,7 +90,7 @@ function create_sir_quantiles_plot(
     )
     lines!(
         ax,
-        tlower:δt:tmax,
+        times,
         sim_quantiles[med_index, :, 2];
         color = colors[2],
         linewidth = 2,
@@ -90,7 +98,7 @@ function create_sir_quantiles_plot(
     )
     lines!(
         ax,
-        tlower:δt:tmax,
+        times,
         sim_quantiles[med_index, :, 3];
         color = colors[3],
         linewidth = 2,
@@ -98,7 +106,7 @@ function create_sir_quantiles_plot(
     )
     lines!(
         ax,
-        tlower:δt:tmax,
+        times,
         sim_quantiles[med_index, :, 4];
         color = colors[4],
         linewidth = 2,
@@ -108,28 +116,28 @@ function create_sir_quantiles_plot(
     # User-specified quantiles
     band!(
         ax,
-        tlower:δt:tmax,
+        times,
         sim_quantiles[lower_index, :, 1],
         sim_quantiles[upper_index, :, 1];
         color = (colors[1], 0.5),
     )
     band!(
         ax,
-        tlower:δt:tmax,
+        times,
         sim_quantiles[lower_index, :, 2],
         sim_quantiles[upper_index, :, 2];
         color = (colors[2], 0.5),
     )
     band!(
         ax,
-        tlower:δt:tmax,
+        times,
         sim_quantiles[lower_index, :, 3],
         sim_quantiles[upper_index, :, 3];
         color = (colors[3], 0.5),
     )
     band!(
         ax,
-        tlower:δt:tmax,
+        times,
         sim_quantiles[lower_index, :, 4],
         sim_quantiles[upper_index, :, 4];
         color = (colors[4], 0.5),
@@ -150,10 +158,15 @@ function create_beta_quantiles_plot(
     lower_index = findfirst(isequal(lower), quantiles)
     upper_index = findfirst(isequal(upper), quantiles)
 
+    times = tlower:δt:tmax
+    if annual == true
+        times = times ./ 365
+    end
+
     # Medians
     lines!(
         ax,
-        tlower:δt:tmax,
+        times,
         sim_quantiles[med_index, :, 5];
         color = colors[1],
         linewidth = 2,
@@ -163,7 +176,7 @@ function create_beta_quantiles_plot(
     # User-specified quantiles
     band!(
         ax,
-        tlower:δt:tmax,
+        times,
         sim_quantiles[lower_index, :, 5],
         sim_quantiles[upper_index, :, 5];
         color = ("green", 0.5),
