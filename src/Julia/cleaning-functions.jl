@@ -1,3 +1,5 @@
+using ProgressMeter
+
 function create_sir_df(sol, states = [:S, :I, :R])
     @chain DataFrame(sol) begin
         rename!([:time, states...])
@@ -52,6 +54,7 @@ function create_sir_all_sims_array!(; nsims, prob, alg, δt)
         create_sir_sim_array!(; jump_sol = jump_sol)
 
         all_sims_array[:, :, i] = sir_array
+
     end
 end
 
@@ -69,7 +72,7 @@ function create_sir_all_sims_array!(ensemble_sol::EnsembleSolution, nsims::Int)
     return nothing
 end
 
-function create_sir_all_sims_array!(ensemble_sol::EnsembleSolution, nsims::Int; β = true)
+function create_sir_all_sims_array!(ensemble_sol::EnsembleSolution, nsims::Int,β::Bool)
     for i in 1:nsims
         if size(ensemble_sol.u[i], 2) != size(all_sims_array, 2)
             skip
