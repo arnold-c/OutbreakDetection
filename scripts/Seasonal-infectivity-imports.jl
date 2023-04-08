@@ -153,54 +153,48 @@ nsims = 10
 sir_array = zeros(4, tlength)
 all_sims_array = fill(NaN, 4, tlength, nsims)
 
+#%%
 season_infec_jump_prob = JumpProblem(
     season_infec_prob, Coevolve(), jumps; dep_graph,
     save_positions = (false, false)
 )
 
+#%%
 ensemble_jump_prob = EnsembleProblem(season_infec_jump_prob)
 
-# @benchmark create_sir_all_sims_array!(
-#     solve(ensemble_jump_prob, SSAStepper(); trajectories = nsims, saveat = δt), nsims
-# )
+#%%
+# 3x faster!
+function ensemble_solve!()
+    ensemble_sol = solve(ensemble_jump_prob, SSAStepper(); trajectories = nsims, saveat = δt)
+    ensemble_summ = EnsembleSummary(ensemble_sol; quantiles = [0.025, 0.975])
 
-@benchmark solve(ensemble_jump_prob, SSAStepper(), EnsembleSerial(); trajectories = nsims, saveat = δt)
-
-#fastest
-@benchmark solve(ensemble_jump_prob, SSAStepper(), EnsembleThreads(); trajectories = nsims, saveat = δt)
-
-# solve(ensemble_jump_prob, SSAStepper(), EnsembleDistributed(); trajectories = nsims, saveat = δt)
-
-# @benchmark solve(ensemble_jump_prob, SSAStepper(), EnsembleSplitThreads(); trajectories = nsims, saveat = δt)
-
-ensemble_sol = solve(ensemble_jump_prob, SSAStepper(); trajectories = nsims, saveat = δt)
-ensemble_summ = EnsembleSummary(ensemble_sol; quantiles = [0.025, 0.975])
+    return ensemble_summ
+end
+    
+@benchmark ensemble_solve!()
 
 create_sir_quantiles_plot(ensemble_summ; annual = true)
-# create_sir_all_sims_array!(ensemble_sol, nsims)
-
-# for i in 1:nsims
-#     all_sims_array[1:3, :, i] = Array(ensemble_sol.u[i])
-# end
-
-# all_sims_array[4, :, :] = sum(all_sims_array[1:3, :, :]; dims = 1)
-
-
 
 #%%
-sir_array = zeros(4, tlength)
-all_sims_array = fill(NaN, 4, tlength, nsims)
+function loop_solve!()
+    create_sir_all_sims_array_multithread!(season_infec_jump_prob, nsims, SSAStepper(), δt)
+    
+    create_sir_all_sims_array!(;
+        nsims = nsims, prob = season_infec_jump_prob, alg = SSAStepper(), δt = δt
+    )
+    
+    create_sir_all_sim_quantiles!(; quantiles = quantiles)
 
-create_sir_all_sims_array!(;
-    nsims = nsims, prob = season_infec_jump_prob, alg = SSAStepper(), δt = δt
-)
+end
+
+@benchmark loop_solve!()
+
 
 #%%
 quantiles = [0.025, 0.05, 0.1, 0.2, 0.25, 0.4, 0.5, 0.6, 0.75, 0.8, 0.9, 0.95, 0.975]
 sim_quantiles = zeros(Float64, length(quantiles), tlength, 4)
 
 #%%
-create_sir_all_sim_quantiles!(; quantiles = quantiles)
 
 #%%
 create_sir_quantiles_plot(

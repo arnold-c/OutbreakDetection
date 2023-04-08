@@ -58,6 +58,13 @@ function create_sir_all_sims_array!(; nsims, prob, alg, Î´t)
     end
 end
 
+function create_sir_all_sims_array_multithread!(prob, nsims, alg, saveat)
+    Threads.@threads for i in 1:nsims
+        all_sims_array[1:3, :, i] = Array(solve(prob, alg; saveat = saveat))
+        all_sims_array[4, :, i] = sum(all_sims_array[1:3, :, i]; dims = 1)
+    end
+end
+
 function create_sir_all_sims_array!(ensemble_sol::EnsembleSolution, nsims::Int)
     for i in 1:nsims
         if size(ensemble_sol.u[i], 2) != size(all_sims_array, 2)
@@ -88,7 +95,7 @@ function create_sir_all_sims_array!(ensemble_sol::EnsembleSolution, nsims::Int,Î
 end
 
 function create_sir_all_sim_quantiles!(; quantiles)
-    for time in 1:size(all_sims_array, 2)
+    Threads.@threads for time in 1:size(all_sims_array, 2)
         for state in 1:size(all_sims_array, 1)
             sim_quantiles[:, time, state] = quantile(
                 skipmissing(replace(all_sims_array[state, time, :], NaN => missing)),
