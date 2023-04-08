@@ -111,8 +111,8 @@ end
 
 function create_sir_quantiles_plot(
     summ::EnsembleSummary; annual = false,
-    colors = ["dodgerblue4", "firebrick3", "chocolate2"],
-    labels = ["S", "I", "R"]
+    colors = ["dodgerblue4", "firebrick3", "chocolate2", "purple"],
+    labels = ["S", "I", "R", "N"]
 )
 
     times = tlower:δt:tmax
@@ -130,6 +130,11 @@ function create_sir_quantiles_plot(
     upper = DataFrame(summ.qhigh)[:, 2:end]
 
     map(
+        x -> transform!(x, Cols(:) => (+) => :N),
+        [med_df, lower, upper]
+    )
+
+    map(
         state -> lines!(
             ax,
             times,
@@ -138,7 +143,7 @@ function create_sir_quantiles_plot(
             linewidth = 2,
             label = labels[state]
         ),
-        1:3
+        eachindex(labels)
     )
 
     map(
@@ -149,7 +154,7 @@ function create_sir_quantiles_plot(
             upper[:, state],
             color = (colors[state], 0.5)
         ),
-        1:3
+        eachindex(labels)
     )
 
     Legend(fig[1, 2], ax, "State")

@@ -77,10 +77,6 @@ function import_affect!(integrator)
 end
 import_jump = ConstantRateJump(import_rate, import_affect!)
 
-# export_rate(u, p, t) = p[5] * (u[1] + u[2] + u[3]) / R₀ # ε
-# export_affect!(integrator) = integrator.u[3] -= 1  # R -> R - 1
-# export_jump = ConstantRateJump(export_rate, export_affect!)
-
 # Place infection at the end as it is a VariableRateJump, which is ordered after ConstantRateJumps in the dependency graph.
 # Amplitude = 0.5 * (cos(2pi * t / 365) + 1)) * 1/scale + (scale - 1)/scale
 function infec_rate(u, p, t)
@@ -148,55 +144,17 @@ hlines!([0.0, 0.5, 1.0])
 fig
 
 #%%
-nsims = 10
+nsims = 1000
 
-sir_array = zeros(4, tlength)
-all_sims_array = fill(NaN, 4, tlength, nsims)
-
-#%%
 season_infec_jump_prob = JumpProblem(
     season_infec_prob, Coevolve(), jumps; dep_graph,
     save_positions = (false, false)
 )
 
-#%%
 ensemble_jump_prob = EnsembleProblem(season_infec_jump_prob)
 
 #%%
-# 3x faster!
-function ensemble_solve!()
-    ensemble_sol = solve(ensemble_jump_prob, SSAStepper(); trajectories = nsims, saveat = δt)
-    ensemble_summ = EnsembleSummary(ensemble_sol; quantiles = [0.025, 0.975])
-
-    return ensemble_summ
-end
-    
-@benchmark ensemble_solve!()
+ensemble_sol = solve(ensemble_jump_prob, SSAStepper(), EnsembleThreads(); trajectories = nsims, saveat = δt)
+ensemble_summ = EnsembleSummary(ensemble_sol; quantiles = [0.025, 0.975])
 
 create_sir_quantiles_plot(ensemble_summ; annual = true)
-
-#%%
-function loop_solve!()
-    create_sir_all_sims_array_multithread!(season_infec_jump_prob, nsims, SSAStepper(), δt)
-    
-    create_sir_all_sims_array!(;
-        nsims = nsims, prob = season_infec_jump_prob, alg = SSAStepper(), δt = δt
-    )
-    
-    create_sir_all_sim_quantiles!(; quantiles = quantiles)
-
-end
-
-@benchmark loop_solve!()
-
-
-#%%
-quantiles = [0.025, 0.05, 0.1, 0.2, 0.25, 0.4, 0.5, 0.6, 0.75, 0.8, 0.9, 0.95, 0.975]
-sim_quantiles = zeros(Float64, length(quantiles), tlength, 4)
-
-#%%
-
-#%%
-create_sir_quantiles_plot(
-    sim_quantiles; lower = 0.025, upper = 0.975, annual = true
-)
