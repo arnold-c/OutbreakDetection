@@ -144,31 +144,46 @@ hlines!([0.0, 0.5, 1.0])
 fig
 
 #%%
-# nsims = 1000
+function run_ensemble_jump_prob(param_dict)
+    @unpack nsims, prob, dep_graph, quantiles = param_dict
 
-# season_infec_jump_prob = JumpProblem(
-#     season_infec_prob, Coevolve(), jumps; dep_graph,
-#     save_positions = (false, false)
-# )
+    season_infec_jump_prob = JumpProblem(
+        prob, Coevolve(), jumps; dep_graph,
+        save_positions = (false, false)
+    )
 
-# ensemble_jump_prob = EnsembleProblem(season_infec_jump_prob)
+    ensemble_jump_prob = EnsembleProblem(season_infec_jump_prob)
+
+    ensemble_sol = solve(
+        ensemble_jump_prob,
+        SSAStepper(),
+        EnsembleThreads();
+        trajectories = nsims,
+        saveat = δt,
+    )
+
+    all_sims = create_sir_all_sims_array(ensemble_sol, nsims)
+
+    sim_quantiles = create_sir_all_sim_quantiles(all_sims; quantiles = quantiles)
+
+    return @strdict all_sims sim_quantiles
+end
 
 #%%
-# ensemble_sol = solve(ensemble_jump_prob, SSAStepper(), EnsembleThreads(); trajectories = nsims, saveat = δt)
-
-# all_sims = create_sir_all_sims_array(ensemble_sol, nsims)
-
-
-# sim_quantiles = create_sir_all_sim_quantiles(all_sims; quantiles = quantiles)
-
-# jldsave("out/seasonal-infect-import_jump.jld2"; all_sims, sim_quantiles)
-
-#%%
-loaded_sims = jldopen("out/seasonal-infect-import_jump.jld2", "r")
-
-all_sims = loaded_sims["all_sims"]
-sim_quantiles = loaded_sims["sim_quantiles"]
-
-#%%
+nsims = 1000
 quantiles = [0.025, 0.1, 0.2, 0.5, 0.8, 0.9, 0.975]
-create_sir_quantiles_plot(sim_quantiles; lower = 0.025, upper = 0.975, quantiles = quantiles, annual = true)
+param_dict = @dict(nsims, prob = season_infec_prob, dep_graph, quantiles)
+
+data, file = produce_or_load(
+    datadir(),
+    param_dict,
+    run_ensemble_jump_prob;
+    prefix = "seasonal-infect-import_jump"
+)
+
+@unpack all_sims, sim_quantiles = data
+
+#%%
+create_sir_quantiles_plot(
+    sim_quantiles; lower = 0.025, upper = 0.975, quantiles = quantiles, annual = true
+)
