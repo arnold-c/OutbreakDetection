@@ -200,7 +200,7 @@ function run_ensemble_summary(param_dict)
 end
 
 #%%
-nsims = 100
+nsims = 1000
 sol_param_dict = @dict(N, nsims, prob = season_infec_prob, dep_graph)
 
 sol_data, sol_file = @produce_or_load(
