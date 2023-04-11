@@ -181,7 +181,9 @@ function run_ensemble_jump_prob(param_dict)
         saveat = δt,
     )
 
-    return @strdict ensemble_sol
+    ensemble_array = create_sir_all_sims_array(ensemble_sol, nsims, )
+
+    return @strdict ensemble_array
 end
 
 function run_ensemble_summary(param_dict)
@@ -189,14 +191,16 @@ function run_ensemble_summary(param_dict)
 
     qlow = round(0.5 - quantiles / 200; digits = 3)
     qhigh = round(0.5 + quantiles / 200; digits = 3)
+    
+    qs = [qlow, 0.5, qhigh]
 
-    ensemble_summary = EnsembleSummary(ensemble_sol; quantiles = [qlow, qhigh])
+    ensemble_summary = create_sir_all_sim_quantiles(ensemble_array; quantiles = qs)
 
     return @strdict ensemble_summary
 end
 
 #%%
-nsims = 1000
+nsims = 100
 sol_param_dict = @dict(N, nsims, prob = season_infec_prob, dep_graph)
 
 sol_data, sol_file = produce_or_load(
@@ -206,15 +210,15 @@ sol_data, sol_file = produce_or_load(
     prefix = "jump_sol",
 )
 
-@unpack ensemble_sol = sol_data
+@unpack ensemble_array = sol_data
 
 #%%
-quantiles = [95, 90, 80, 70, 60, 50]
+quantile_ints = [95, 90, 80, 70, 60, 50]
 
 summ_param_dict = dict_list(Dict(
     :N => N,
     :nsims => nsims,
-    :quantiles => quantiles,
+    :quantiles => quantile_ints,
 ))
 
 for (i, quantile) in enumerate(quantiles)
