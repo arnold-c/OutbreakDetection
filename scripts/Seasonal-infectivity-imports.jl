@@ -196,14 +196,14 @@ function run_ensemble_summary(param_dict)
 end
 
 #%%
-nsims = 10000
-sol_param_dict = @dict(nsims, prob = season_infec_prob, dep_graph)
+nsims = 1000
+sol_param_dict = @dict(N, nsims, prob = season_infec_prob, dep_graph)
 
 sol_data, sol_file = produce_or_load(
-    datadir(),
+    datadir("seasonal-infectivity-import", "jump"),
     sol_param_dict,
     run_ensemble_jump_prob;
-    prefix = "seasonal-infect-import-jump_sol",
+    prefix = "jump_sol",
 )
 
 @unpack ensemble_sol = sol_data
@@ -211,17 +211,18 @@ sol_data, sol_file = produce_or_load(
 #%%
 quantiles = [95, 90, 80, 70, 60, 50]
 
-for (i, quantile) in enumerate(quantiles)
-    summ_param_dict = Dict(
-        :nsims => nsims,
-        :quantiles => quantile
-    )
+summ_param_dict = dict_list(Dict(
+    :N => N,
+    :nsims => nsims,
+    :quantiles => quantiles,
+))
 
+for (i, quantile) in enumerate(quantiles)
     @eval $(Symbol("q$(quantile)_summ_data")), $(Symbol("q$(quantile)_summ_file")) = produce_or_load(
-        datadir(),
-        summ_param_dict,
+        datadir("seasonal-infectivity-import", "jump", "quantiles"),
+        $(summ_param_dict[i]),
         run_ensemble_summary;
-        prefix = "seasonal-infect-import-jump_summ",
+        prefix = "jump_summ",
     )
 
     @eval @unpack ensemble_summary = $(Symbol("q$(quantile)_summ_data"))
