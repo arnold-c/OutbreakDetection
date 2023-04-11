@@ -23,7 +23,7 @@ includet(srcdir("Julia/cleaning-functions.jl"))
 
 #%%
 N = 4e5
-u₀ = [N * 0.9, N * 0.1, 0]
+u₀ = [N * 0.9, N * 0.1, 0, N]
 δt = 0.5
 tlower = 0.0
 tmax = 365.0 * 100
@@ -34,15 +34,19 @@ dur_inf = 8
 R₀ = 10.0
 γ = 1 / dur_inf
 μ = 1 / (62 * 365)
-β = calculate_beta(R₀, γ, μ, 1, sum(u₀))
+β = calculate_beta(R₀, γ, μ, 1, N)
 # Adjust the scale of the seasonal variation in infectivity i.e. A_scale scales the amplitude of cosine function to 1/A_scale. The maximum infectivity is β
 A_scale = 2.0
 ε = (1.06 * μ * (R₀ - 1)) / sqrt(sum(u₀)) # Commuter imports - see p210 Keeling & Rohani
 p = (β, γ, μ, A_scale, ε)
 
 #%%
-birth_rate(u, p, t) = p[3] * (u[1] + u[2] + u[3])  # μ*N
-birth_affect!(integrator) = integrator.u[1] += 1  # S -> S + 1
+birth_rate(u, p, t) = p[3] * u[4]  # μ*N
+function birth_affect!(integrator)
+    integrator.u[1] += 1  # S -> S + 1
+    integrator.u[4] += 1  # N -> N + 1
+    return nothing
+end
 birth_jump = ConstantRateJump(birth_rate, birth_affect!)
 
 recov_rate(u, p, t) = p[2] * u[2]         # γ*I
@@ -54,22 +58,35 @@ end
 recov_jump = ConstantRateJump(recov_rate, recov_affect!)
 
 S_death_rate(u, p, t) = p[3] * u[1]  # μ*S
-S_death_affect!(integrator) = integrator.u[1] -= 1  # S -> S + 1
+function S_death_affect!(integrator)
+    integrator.u[1] -= 1  # S -> S - 1
+    integrator.u[4] -= 1  # N -> N - 1
+    return nothing
+end
 S_death_jump = ConstantRateJump(S_death_rate, S_death_affect!)
 
 I_death_rate(u, p, t) = p[3] * u[2]  # μ*I
-I_death_affect!(integrator) = integrator.u[2] -= 1  # S -> S + 1
+function I_death_affect!(integrator)
+    integrator.u[2] -= 1  # I -> I - 1
+    integrator.u[4] -= 1  # N -> N - 1
+    return nothing
+end
 I_death_jump = ConstantRateJump(I_death_rate, I_death_affect!)
 
 R_death_rate(u, p, t) = p[3] * u[3]  # μ*R
-R_death_affect!(integrator) = integrator.u[3] -= 1  # S -> S + 1
+function R_death_affect!(integrator)
+    integrator.u[3] -= 1  # R -> R - 1
+    integrator.u[4] -= 1  # N -> N - 1
+    return nothing
+end
+
 R_death_jump = ConstantRateJump(R_death_rate, R_death_affect!)
 
-import_rate(u, p, t) = p[5] * (u[1] + u[2] + u[3]) / R₀   # ε*N/R₀
+import_rate(u, p, t) = p[5] * u[4] / R₀   # ε*N/R₀
 function import_affect!(integrator)
     integrator.u[2] += 1    # I -> I + 1
-    integrator.u[1] = if integrator.u[1] - 1 < 0.0  # S -> S - 1
-        integrator.u[1]
+    if integrator.u[1] - 1 < 0.0  # S -> S - 1
+        integrator.u[4] += 1    # N -> N + 1
     else
         integrator.u[1] - 1
     end
@@ -108,13 +125,13 @@ jumps = JumpSet(
 # ConstantRateJumps are ordered before VariableRateJumps in the dependency graph, otherwise within the same ordering presented to the JumpProblem, i.e., birth, recovery ...
 # Each row of the dependency graph is a list of rates that must be recalculated when the row's jump is executed, as it affects the underlying states each of the rates depends on.
 dep_graph = [
-    [1, 3, 7],          # Birth, S death, infection
-    [2, 1, 4, 5, 7],    # Recovery, birth, I death, R death, infection
-    [3, 1, 7],          # S death, birth, infection
-    [4, 1, 2, 7],       # I death, birth, recovery, infection
-    [5, 1, 2, 7],       # R death, birth, recovery, infection
+    [1, 3, 6, 7],       # Birth, S death, import, infection
+    [2, 4, 5, 7],       # Recovery, I death, R death, infection
+    [3, 1, 6, 7],       # S death, birth, import, infection
+    [4, 1, 2, 6, 7],    # I death, birth, recovery, import, infection
+    [5, 1, 6],          # R death, birth, import
     [6, 1, 2, 3, 4, 7], # Import, birth, recovery, S death, I death, infection
-    [7, 1, 2, 3, 4, 6], # Infection, birth, recovery, S death, I death, import
+    [7, 2, 3, 4],    # Infection, recovery, S death, I death
 ]
 
 #%%
@@ -123,7 +140,7 @@ season_infec_prob = DiscreteProblem(u₀, tspan, p)
 season_infec_jump_prob = JumpProblem(season_infec_prob, Coevolve(), jumps; dep_graph)
 season_infec_sol = solve(season_infec_jump_prob, SSAStepper())
 
-season_infec_sol_df = create_sir_df(season_infec_sol, [:S, :I, :R])
+season_infec_sol_df = create_sir_df(season_infec_sol, [:S, :I, :R, :N])
 
 #%%
 sircolors = ["dodgerblue4", "firebrick3", "chocolate2", "purple"]
@@ -179,7 +196,7 @@ function run_ensemble_summary(param_dict)
 end
 
 #%%
-nsims = 10
+nsims = 10000
 sol_param_dict = @dict(nsims, prob = season_infec_prob, dep_graph)
 
 sol_data, sol_file = produce_or_load(
@@ -192,14 +209,11 @@ sol_data, sol_file = produce_or_load(
 @unpack ensemble_sol = sol_data
 
 #%%
-summ_param_dict = Dict(
-    :quantiles => 95
-)
-
-quantiles = [95, 90, 80]
+quantiles = [95, 90, 80, 70, 60, 50]
 
 for (i, quantile) in enumerate(quantiles)
     summ_param_dict = Dict(
+        :nsims => nsims,
         :quantiles => quantile
     )
 
@@ -212,9 +226,7 @@ for (i, quantile) in enumerate(quantiles)
 
     @eval @unpack ensemble_summary = $(Symbol("q$(quantile)_summ_data"))
     @eval $(Symbol("q$(quantile)_ensemble_summary")) = ensemble_summary
-
 end
-
 
 #%%
 create_sir_quantiles_plot(q95_ensemble_summary)

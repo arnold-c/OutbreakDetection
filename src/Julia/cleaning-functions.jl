@@ -25,8 +25,12 @@ function create_sir_df(sol::ODESolution, states = [:S, :I, :R])
             rename!(s -> replace(s, "(t)" => ""), _)
             rename!(:timestamp => :time)
         end
-        transform!(_, states => (+) => :N)
-        stack(_, [states..., :N]; variable_name = :State, value_name = :Number)
+        if :N in states
+            stack(_, [states...]; variable_name = :State, value_name = :Number)
+        else
+            transform!(_, states => (+) => :N)
+            stack(_, [states..., :N]; variable_name = :State, value_name = :Number)
+        end
     end
 end
 
