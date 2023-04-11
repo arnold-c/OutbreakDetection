@@ -76,9 +76,9 @@ function create_sir_quantiles_plot(
     fig = Figure()
     ax = Axis(fig[1, 1]; xlabel = xlab, ylabel = "Number")
 
-    med_index = findfirst(isequal(0.5), quantiles)
-    lower_index = findfirst(isequal(lower), quantiles)
-    upper_index = findfirst(isequal(upper), quantiles)
+    med_index = findfirst(isequal.(0.5), quantiles)
+    lower_index = findfirst(isequal.(lower), quantiles)
+    upper_index = findfirst(isequal.(upper), quantiles)
 
     # Medians
     map(
@@ -104,7 +104,7 @@ function create_sir_quantiles_plot(
         eachindex(labels)  
     )
 
-    Legend(fig[1, 2], ax, "State")
+    # Legend(fig[1, 2], ax, "State")
 
     return fig
 end
