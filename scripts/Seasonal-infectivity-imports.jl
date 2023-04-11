@@ -201,7 +201,7 @@ end
 
 #%%
 nsims = 1000
-sol_param_dict = @dict(N, nsims, prob = season_infec_prob, dep_graph)
+sol_param_dict = @dict(N, nsims, prob = season_infec_prob, dep_graph, δt, tmax)
 
 sol_data, sol_file = @produce_or_load(
     run_ensemble_jump_prob,
@@ -219,6 +219,8 @@ summ_param_dict = dict_list(Dict(
     :N => N,
     :nsims => nsims,
     :quantiles => quantile_ints,
+    :δt => δt,
+    :tmax => tmax,
 ))
 
 for (i, quantile) in enumerate(quantile_ints)
