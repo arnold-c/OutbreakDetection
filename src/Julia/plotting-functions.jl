@@ -61,10 +61,8 @@ function draw_combined_sir_beta_plot(sir_plot, beta_plot)
     return combined
 end
 
-function create_sir_quantiles_plot(
-    sim_quantiles = sim_quantiles; lower = 0.1, upper = 0.9, quantiles = quantiles, δt = δt,
-    colors = ["dodgerblue4", "firebrick3", "chocolate2", "purple"], labels = ["S", "I", "R", "N"], 
-    annual = false,
+function sir_quantiles_array_base_plot(
+    sim_quantiles, lower_index, med_index, upper_index, δt, colors, labels, annual
 )
     times = tlower:δt:tmax
     xlab = "Time (days)"
@@ -76,10 +74,6 @@ function create_sir_quantiles_plot(
     fig = Figure()
     ax = Axis(fig[1, 1]; xlabel = xlab, ylabel = "Number")
 
-    med_index = findfirst(isequal.(0.5), quantiles)
-    lower_index = findfirst(isequal.(lower), quantiles)
-    upper_index = findfirst(isequal.(upper), quantiles)
-
     # Medians
     map(
         state -> lines!(
@@ -88,9 +82,9 @@ function create_sir_quantiles_plot(
             sim_quantiles[med_index, :, state];
             color = colors[state],
             linewidth = 2,
-            label = labels[state], 
+            label = labels[state],
         ),
-        eachindex(labels)
+        eachindex(labels),
     )
 
     map(
@@ -99,22 +93,57 @@ function create_sir_quantiles_plot(
             times,
             sim_quantiles[lower_index, :, state],
             sim_quantiles[upper_index, :, state];
-            color = (colors[state], 0.5)
+            color = (colors[state], 0.5),
         ),
-        eachindex(labels)  
+        eachindex(labels),
     )
 
-    # Legend(fig[1, 2], ax, "State")
+    Legend(fig[1, 2], ax, "State")
 
     return fig
 end
 
 function create_sir_quantiles_plot(
+    sim_quantiles = sim_quantiles;
+    δt = δt,
+    colors = ["dodgerblue4", "firebrick3", "chocolate2", "purple"],
+    labels = ["S", "I", "R", "N"],
+    annual = false,
+)
+    med_index = 2
+    lower_index = 1
+    upper_index = 3
+
+    return sir_quantiles_array_base_plot(
+        sim_quantiles, lower_index, med_index, upper_index, δt,
+        colors,
+        labels,
+        annual,
+    )
+end
+
+function create_sir_quantiles_plot(
+    sim_quantiles = sim_quantiles, lower, upper, quantiles;
+    δt = δt,
+    colors = ["dodgerblue4", "firebrick3", "chocolate2", "purple"],
+    labels = ["S", "I", "R", "N"],
+    annual = false,
+)
+    med_index = findfirst(isequal.(0.5), quantiles)
+    lower_index = findfirst(isequal.(lower), quantiles)
+    upper_index = findfirst(isequal.(upper), quantiles)
+
+    return sir_quantiles_array_base_plot(
+        sim_quantiles, lower_index, med_index, upper_index, δt,
+        colors, labels, annual,
+    )
+end
+
+function create_sir_quantiles_plot(
     summ::EnsembleSummary; annual = false,
     colors = ["dodgerblue4", "firebrick3", "chocolate2", "purple"],
-    labels = ["S", "I", "R", "N"]
+    labels = ["S", "I", "R", "N"],
 )
-
     times = tlower:δt:tmax
     xlab = "Time (days)"
     if annual == true
@@ -123,7 +152,7 @@ function create_sir_quantiles_plot(
     end
 
     fig = Figure()
-    ax = Axis(fig[1, 1], xlabel = xlab, ylabel = "Number")
+    ax = Axis(fig[1, 1]; xlabel = xlab, ylabel = "Number")
 
     med_df = DataFrame(summ.med)[:, 2:end]
     lower = DataFrame(summ.qlow)[:, 2:end]
@@ -131,19 +160,19 @@ function create_sir_quantiles_plot(
 
     map(
         x -> transform!(x, Cols(:) => (+) => :N),
-        [med_df, lower, upper]
+        [med_df, lower, upper],
     )
 
     map(
         state -> lines!(
             ax,
             times,
-            med_df[:, state],
+            med_df[:, state];
             color = colors[state],
             linewidth = 2,
-            label = labels[state]
+            label = labels[state],
         ),
-        eachindex(labels)
+        eachindex(labels),
     )
 
     map(
@@ -151,10 +180,10 @@ function create_sir_quantiles_plot(
             ax,
             times,
             lower[:, state],
-            upper[:, state],
+            upper[:, state];
             color = (colors[state], 0.5)
         ),
-        eachindex(labels)
+        eachindex(labels),
     )
 
     Legend(fig[1, 2], ax, "State")
