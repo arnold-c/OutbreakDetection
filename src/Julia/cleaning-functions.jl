@@ -69,21 +69,19 @@ function create_sir_all_sims_array_multithread!(prob, nsims, alg, saveat)
 end
 
 function create_sir_all_sims_array!(ensemble_sol::EnsembleSolution, nsims::Int, array = all_sims_array)
-    for i in 1:nsims
+    Threads.@threads for i in 1:nsims
         if size(ensemble_sol.u[i], 2) != size(array, 2)
             skip
         else
-            array[1:3, :, i] = Array(ensemble_sol.u[i])
+            array[1:4, :, i] = Array(ensemble_sol.u[i])
         end
     end
-
-    array[4, :, :] = sum(array[1:3, :, :]; dims = 1)
 
     return nothing
 end
 
 function create_sir_all_sims_array(ensemble_sol::EnsembleSolution, nsims::Int)
-    all_sims_array = zeros(size(ensemble_sol.u[1], 1) + 1, size(ensemble_sol.u[1], 2), nsims)
+    all_sims_array = zeros(size(ensemble_sol.u[1], 1), size(ensemble_sol.u[1], 2), nsims)
 
     create_sir_all_sims_array!(ensemble_sol, nsims, all_sims_array)
 
