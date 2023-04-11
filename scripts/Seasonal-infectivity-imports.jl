@@ -10,7 +10,7 @@ using DrWatson
 
 using JumpProcesses, Statistics, DataFrames, DataFramesMeta, LinearAlgebra
 using CairoMakie, AlgebraOfGraphics, DifferentialEquations, ModelingToolkit
-using BenchmarkTools, JLD2
+using BenchmarkTools, JLD2, Random
 
 CairoMakie.activate!()
 set_aog_theme!()
@@ -145,7 +145,7 @@ fig
 
 #%%
 function run_ensemble_jump_prob(param_dict)
-    @unpack nsims, prob, dep_graph, quantiles = param_dict
+    @unpack nsims, prob, dep_graph = param_dict
 
     season_infec_jump_prob = JumpProblem(
         prob, Coevolve(), jumps; dep_graph,
@@ -153,6 +153,8 @@ function run_ensemble_jump_prob(param_dict)
     )
 
     ensemble_jump_prob = EnsembleProblem(season_infec_jump_prob)
+
+    Random.seed!(1234)
 
     ensemble_sol = solve(
         ensemble_jump_prob,
@@ -162,28 +164,57 @@ function run_ensemble_jump_prob(param_dict)
         saveat = δt,
     )
 
-    all_sims = create_sir_all_sims_array(ensemble_sol, nsims)
+    return @strdict ensemble_sol
+end
 
-    sim_quantiles = create_sir_all_sim_quantiles(all_sims; quantiles = quantiles)
+function run_ensemble_summary(param_dict)
+    @unpack quantiles = param_dict
 
-    return @strdict all_sims sim_quantiles
+    qlow = round(0.5 - quantiles / 200; digits = 3)
+    qhigh = round(0.5 + quantiles / 200; digits = 3)
+
+    ensemble_summary = EnsembleSummary(ensemble_sol; quantiles = [qlow, qhigh])
+
+    return @strdict ensemble_summary
 end
 
 #%%
-nsims = 1000
-quantiles = [0.025, 0.1, 0.2, 0.5, 0.8, 0.9, 0.975]
-param_dict = @dict(nsims, prob = season_infec_prob, dep_graph, quantiles)
+nsims = 10
+sol_param_dict = @dict(nsims, prob = season_infec_prob, dep_graph)
 
-data, file = produce_or_load(
+sol_data, sol_file = produce_or_load(
     datadir(),
-    param_dict,
+    sol_param_dict,
     run_ensemble_jump_prob;
-    prefix = "seasonal-infect-import_jump"
+    prefix = "seasonal-infect-import-jump_sol",
 )
 
-@unpack all_sims, sim_quantiles = data
+@unpack ensemble_sol = sol_data
 
 #%%
-create_sir_quantiles_plot(
-    sim_quantiles; lower = 0.025, upper = 0.975, quantiles = quantiles, annual = true
+summ_param_dict = Dict(
+    :quantiles => 95
 )
+
+quantiles = [95, 90, 80]
+
+for (i, quantile) in enumerate(quantiles)
+    summ_param_dict = Dict(
+        :quantiles => quantile
+    )
+
+    @eval $(Symbol("q$(quantile)_summ_data")), $(Symbol("q$(quantile)_summ_file")) = produce_or_load(
+        datadir(),
+        summ_param_dict,
+        run_ensemble_summary;
+        prefix = "seasonal-infect-import-jump_summ",
+    )
+
+    @eval @unpack ensemble_summary = $(Symbol("q$(quantile)_summ_data"))
+    @eval $(Symbol("q$(quantile)_ensemble_summary")) = ensemble_summary
+
+end
+
+
+#%%
+create_sir_quantiles_plot(q95_ensemble_summary)
