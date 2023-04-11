@@ -54,7 +54,6 @@ function create_sir_all_sims_array!(; nsims, prob, alg, δt)
         create_sir_sim_array!(; jump_sol = jump_sol)
 
         all_sims_array[:, :, i] = sir_array
-
     end
 end
 
@@ -65,21 +64,33 @@ function create_sir_all_sims_array_multithread!(prob, nsims, alg, saveat)
     end
 end
 
-function create_sir_all_sims_array!(ensemble_sol::EnsembleSolution, nsims::Int)
+function create_sir_all_sims_array!(ensemble_sol::EnsembleSolution, nsims::Int, array = all_sims_array)
     for i in 1:nsims
-        if size(ensemble_sol.u[i], 2) != size(all_sims_array, 2)
+        if size(ensemble_sol.u[i], 2) != size(array, 2)
             skip
         else
-            all_sims_array[1:3, :, i] = Array(ensemble_sol.u[i])
+            array[1:3, :, i] = Array(ensemble_sol.u[i])
         end
     end
 
-    all_sims_array[4, :, :] = sum(all_sims_array[1:3, :, :]; dims = 1)
+    array[4, :, :] = sum(array[1:3, :, :]; dims = 1)
 
     return nothing
 end
 
-function create_sir_all_sims_array!(ensemble_sol::EnsembleSolution, nsims::Int,β::Bool)
+function create_sir_all_sims_array(ensemble_sol::EnsembleSolution, nsims::Int)
+    all_sims_array = zeros(size(ensemble_sol.u[1], 1) + 1, size(ensemble_sol.u[1], 2), nsims)
+
+    create_sir_all_sims_array!(ensemble_sol, nsims, all_sims_array)
+
+    return all_sims_array
+end
+
+function create_sir_all_sims_array!(ensemble_sol::EnsembleSolution, nsims::Int, β::Bool)
+    if β == false
+        return create_sir_all_sims_array!(ensemble_sol, nsims)
+    end
+
     for i in 1:nsims
         if size(ensemble_sol.u[i], 2) != size(all_sims_array, 2)
             skip
@@ -94,7 +105,7 @@ function create_sir_all_sims_array!(ensemble_sol::EnsembleSolution, nsims::Int,�
     return nothing
 end
 
-function create_sir_all_sim_quantiles!(; quantiles)
+function create_sir_all_sim_quantiles!(all_sims_array, sim_quantiles; quantiles)
     Threads.@threads for time in 1:size(all_sims_array, 2)
         for state in 1:size(all_sims_array, 1)
             sim_quantiles[:, time, state] = quantile(
@@ -103,4 +114,12 @@ function create_sir_all_sim_quantiles!(; quantiles)
             )
         end
     end
+end
+
+function create_sir_all_sim_quantiles(all_sims_array; quantiles)
+    quantile_array = zeros(length(quantiles), size(all_sims_array, 2), size(all_sims_array, 1))
+
+    create_sir_all_sim_quantiles!(all_sims_array, quantile_array; quantiles = quantiles)
+
+    return quantile_array
 end
