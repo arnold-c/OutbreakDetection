@@ -203,10 +203,10 @@ end
 nsims = 100
 sol_param_dict = @dict(N, nsims, prob = season_infec_prob, dep_graph)
 
-sol_data, sol_file = produce_or_load(
-    datadir("seasonal-infectivity-import", "jump"),
+sol_data, sol_file = @produce_or_load(
+    run_ensemble_jump_prob,
     sol_param_dict,
-    run_ensemble_jump_prob;
+    datadir("seasonal-infectivity-import", "jump"),
     prefix = "jump_sol",
 )
 
@@ -221,11 +221,11 @@ summ_param_dict = dict_list(Dict(
     :quantiles => quantile_ints,
 ))
 
-for (i, quantile) in enumerate(quantiles)
-    @eval $(Symbol("q$(quantile)_summ_data")), $(Symbol("q$(quantile)_summ_file")) = produce_or_load(
-        datadir("seasonal-infectivity-import", "jump", "quantiles"),
+for (i, quantile) in enumerate(quantile_ints)
+    @eval $(Symbol("q$(quantile)_summ_data")), $(Symbol("q$(quantile)_summ_file")) = @produce_or_load(
+        run_ensemble_summary,
         $(summ_param_dict[i]),
-        run_ensemble_summary;
+        datadir("seasonal-infectivity-import", "jump", "quantiles"),
         prefix = "jump_summ",
     )
 
