@@ -116,7 +116,7 @@ function sir_quantiles_array_base_plot(
     Legend(fig[1, 2], ax, "State")
 
     if caption != false
-        Label(fig[2, 1, BottomRight()], caption)
+        Label(fig[2, :, Bottom()], caption)
         rowsize!(fig.layout, 1, Relative(0.98))
     end
 
@@ -149,11 +149,11 @@ function create_sir_quantiles_plot(
 end
 
 function create_sir_quantiles_plot(
-    sim_quantiles = sim_quantiles, lower, upper, quantiles;
+    sim_quantiles, lower, upper, quantiles;
     δt = δt,
     colors = ["dodgerblue4", "firebrick3", "chocolate2", "purple"],
     labels = ["S", "I", "R", "N"],
-    annual = false,
+    annual = false
 )
     med_index = findfirst(isequal.(0.5), quantiles)
     lower_index = findfirst(isequal.(lower), quantiles)
