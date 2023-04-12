@@ -26,7 +26,7 @@ N = 4e5
 s = 0.9
 i = 0.1
 r = 1.0 - (s + i)
-u₀ = [N * s, N * i, N * r, N]
+u₀ = convert.(Int64, [N * s, N * i, N * r, N])
 δt = 0.5
 tlower = 0.0
 tmax = 365.0 * 100
@@ -165,9 +165,10 @@ fig
 
 #%%
 function run_ensemble_jump_prob(param_dict)
-    @unpack N, s, i, r, nsims = param_dict
+    @unpack N, u₀_prop, nsims = param_dict
+    @unpack s, i, r = u₀_prop
 
-    u₀ = [s * N, i * N, r * N, N]
+    u₀ = convert.(Int64, [s * N, i * N, r * N, N])
 
     remade_ensemble_prob = remake(ensemble_jump_prob; u0 = u₀)
 
@@ -185,23 +186,30 @@ function run_ensemble_jump_prob(param_dict)
 end
 
 function run_ensemble_summary(param_dict)
-    @unpack N, r, quantiles = param_dict
+    @unpack N, u₀_prop, quantiles = param_dict
+    @unpack s, i, r = u₀_prop
 
-    sim_name = savename("jump_sol", param_dict, "jld2"; ignores = ["quantiles"])
-
+    sim_name = savename(
+        "jump_sol",
+        param_dict,
+        "jld2";
+        allowedtypes = (Symbol, Dict, String, Real),
+        accesses = [:N, :u₀_prop, :nsims, :tmax, :δt],
+        expand = ["u₀_prop"],
+        sort = false,
+    )
     sim_path = joinpath(
         datadir(
             "seasonal-infectivity-import",
             "jump",
             "N_$N",
-            "r_$r"
+            "r_$r",
         ),
-        sim_name,
+        sim_name
     )
 
     sol_data = load(sim_path)
     @unpack ensemble_array = sol_data
-
 
     qlow = round(0.5 - quantiles / 200; digits = 3)
     qhigh = round(0.5 + quantiles / 200; digits = 3)
@@ -214,11 +222,30 @@ function run_ensemble_summary(param_dict)
 end
 
 #%%
-N_vec = [1e3]#, 1e4, 4e5]
+# mutable struct DrWatsonEnsembleSummary
+#     u₀_params::Dict
+#     time_params::Dict
+#     quantiles::Int
+#     ensemble_summary::Array
+# end
+
+# test = DrWatsonEnsembleSummary(
+#     Dict(:N => 1e3, :s => 0.9, :i => 0.1, :r => 0.0),
+#     Dict(:δt => 1.0, :tmax => 720.0),
+#     95,
+#     fill(nothing, (1, 1))
+# )
+# DrWatson.allaccess(c::DrWatsonEnsembleSummary) = (:u₀_params, :time_params, :quantiles)
+# DrWatson.default_prefix(c::DrWatsonEnsembleSummary) = "jump_summ"
+# DrWatson.default_allowed(c::DrWatsonEnsembleSummary) = (Dict, Dict, Int, Array)
+# DrWatson.default_expand(c::DrWatsonEnsembleSummary) = ["u₀_params", "time_params"]
+
+# savename(test)
+
+#%%
+N_vec = convert.(Int64, [1e3])#, 1e4, 4e5]
 nsims_vec = [10, 100, 1000]
-s_vec = [0.9, 0.3]
-i_vec = [0.1]
-r_vec = round.(1 .- (s_vec .+ i_vec); digits = 2)
+u₀_prop_map = [Dict(:s => 0.9, :i => 0.1, :r => 0.0), Dict(:s => 0.3, :i => 0.1, :r => 0.6)]
 
 season_infec_jump_prob = JumpProblem(
     season_infec_prob, Coevolve(), jumps; dep_graph = dep_graph,
@@ -230,9 +257,7 @@ ensemble_jump_prob = EnsembleProblem(season_infec_jump_prob)
 Random.seed!(1234)
 base_param_dict = @dict(
     N = N_vec,
-    s = s_vec,
-    i = i_vec,
-    r = r_vec,
+    u₀_prop = u₀_prop_map,
     nsims = nsims_vec,
     δt,
     tmax
@@ -247,11 +272,20 @@ map(
     p -> @produce_or_load(
         run_ensemble_jump_prob,
         p,
-        datadir("seasonal-infectivity-import", "jump", "N_$(p[:N])", "r_$(p[:r])"),
+        datadir(
+            "seasonal-infectivity-import", "jump", "N_$(p[:N])", "r_$(p[:u₀_prop][:r])"
+        ),
         prefix = "jump_sol";
+        filename = savename(
+            p;
+            allowedtypes = (Symbol, Dict, String, Real),
+            accesses = [:N, :u₀_prop, :nsims, :tmax, :δt],
+            expand = ["u₀_prop"],
+            sort = false,
+        ),
         loadfile = false
     ),
-    sol_param_dict,
+    sol_param_dict[1:3],
 )
 
 #%%
@@ -272,24 +306,33 @@ map(
             "seasonal-infectivity-import",
             "jump",
             "N_$(p[:N])",
-            "r_$(p[:r])",
+            "r_$(p[:u₀_prop][:r])",
             "quantiles",
         ),
         prefix = "jump_quants";
+        filename = savename(
+            p;
+            allowedtypes = (Symbol, Dict, String, Real),
+            accesses = [:N, :u₀_prop, :nsims, :tmax, :δt, :quantiles],
+            expand = ["u₀_prop"],
+            sort = false,
+        ),
         loadfile = false
     ),
-    summ_param_dict,
+    summ_param_dict[1:3],
 )
 
 #%%
 quantile_files = []
-for (root, dirs, files) in walkdir(datadir("seasonal-infectivity-import", "jump", "N_1000.0", "r_0.0", "quantiles"))
+for (root, dirs, files) in walkdir(
+    datadir("seasonal-infectivity-import", "jump", "N_1000", "r_0.0", "quantiles")
+)
     for (i, file) in enumerate(files)
         push!(quantile_files, joinpath(root, file))
     end
 end
 
-summ_data = load(quantile_files[6])
+summ_data = load(quantile_files[3])
 @unpack ensemble_summary = summ_data
 
 #%%
