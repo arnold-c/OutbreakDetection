@@ -27,7 +27,7 @@ s = 0.9
 i = 0.1
 r = 1.0 - (s + i)
 u₀ = convert.(Int64, [N * s, N * i, N * r, N])
-δt = 0.5
+δt = 0.1
 tlower = 0.0
 tmax = 365.0 * 100
 tspan = (tlower, tmax)
@@ -274,14 +274,21 @@ seasonal_infec_jump_prob = JumpProblem(
 )
 
 seasonal_infec_ensemble_prob = EnsembleProblem(seasonal_infec_jump_prob)
-
+# @btime solve(
+#     seasonal_infec_ensemble_prob,
+#     SSAStepper(),
+#     EnsembleThreads();
+#     trajectories = 100,
+#     saveat = δt,
+# )
 #%%
-N_vec = convert.(Int64, [1e3, 1e4, 5e5])
+N_vec = convert.(Int64, [1e3])
 nsims_vec = [10, 100, 1000]
 u₀_prop_map = [
-    Dict(:s => 0.9, :i => 0.1, :r => 0.0), Dict(:s => 0.1, :i => 0.1, :r => 0.8)
+    Dict(:s => 0.9, :i => 0.1, :r => 0.0),
+    Dict(:s => 0.1, :i => 0.1, :r => 0.8)
 ]
-δt_vec = [0.5]
+δt_vec = [0.5, 0.1]
 tmax_vec = [365.0 * 100]
 
 Random.seed!(1234)
@@ -376,7 +383,7 @@ end
 
 summ_data = nothing
 for (i, file) in enumerate(quantile_files)
-    if occursin(r"jump_quants.*.nsims=100_.*.quantiles=95", file)
+    if occursin(r"jump_quants.*.nsims=1000_.*.δt=0.01.*.quantiles=95", file)
         summ_data = load(quantile_files[i])
     end
 end
