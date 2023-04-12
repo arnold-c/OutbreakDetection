@@ -170,7 +170,8 @@ function run_ensemble_jump_prob(param_dict)
 
     u₀ = convert.(Int64, [s * N, i * N, r * N, N])
 
-    remade_ensemble_prob = remake(ensemble_jump_prob; u0 = u₀)
+    remade_jump_prob = remake(season_infec_jump_prob; u0 = u₀)
+    remade_ensemble_prob = EnsembleProblem(remade_jump_prob)
 
     ensemble_sol = solve(
         remade_ensemble_prob,
@@ -243,7 +244,7 @@ end
 # savename(test)
 
 #%%
-N_vec = convert.(Int64, [1e3])#, 1e4, 4e5]
+N_vec = convert.(Int64, [1e3, 1e4, 4e5])
 nsims_vec = [10, 100, 1000]
 u₀_prop_map = [Dict(:s => 0.9, :i => 0.1, :r => 0.0), Dict(:s => 0.3, :i => 0.1, :r => 0.6)]
 
@@ -252,7 +253,25 @@ season_infec_jump_prob = JumpProblem(
     save_positions = (false, false),
 )
 
-ensemble_jump_prob = EnsembleProblem(season_infec_jump_prob)
+# new_u₀ = convert.(Int64, [values(u₀_prop_map[1]) .* N_vec[1]..., N_vec[1]])
+
+# remade_test = remake(season_infec_jump_prob; u0 = new_u₀)
+# remade_ensemble_test = EnsembleProblem(remade_test)
+
+# remade_ensemble_sol = solve(
+#     remade_ensemble_test,
+#     SSAStepper(),
+#     EnsembleThreads();
+#     trajectories = nsims_vec[1],
+#     saveat = δt,
+# )
+
+# create_sir_quantiles_plot(
+#     create_sir_all_sim_quantiles(
+#         create_sir_all_sims_array(remade_ensemble_sol, nsims_vec[1]);
+#         quantiles = [0.025, 0.5, 0.975],
+#     ),
+# )
 
 Random.seed!(1234)
 base_param_dict = @dict(
@@ -285,7 +304,7 @@ map(
         ),
         loadfile = false
     ),
-    sol_param_dict[1:3],
+    sol_param_dict[1:2],
 )
 
 #%%
@@ -319,10 +338,29 @@ map(
         ),
         loadfile = false
     ),
-    summ_param_dict[1:3],
+    summ_param_dict[1:2],
 )
 
 #%%
+sim_files = []
+for (root, dirs, files) in walkdir(
+    datadir("seasonal-infectivity-import", "jump", "N_1000", "r_0.0")
+)
+    for (i, file) in enumerate(files)
+        push!(sim_files, joinpath(root, file))
+    end
+end
+
+sim_data = load(sim_files[1])
+@unpack ensemble_array = sim_data
+
+@chain DataFrame(Tables.table(ensemble_array[:, :, 1]')) begin
+    hcat(tlower:δt:tmax, _)
+    rename!([:time, :S, :I, :R, :N])
+    stack(_, [:S, :I, :R, :N]; variable_name = :State, value_name = :Number)
+    draw_sir_plot(_)
+end
+
 quantile_files = []
 for (root, dirs, files) in walkdir(
     datadir("seasonal-infectivity-import", "jump", "N_1000", "r_0.0", "quantiles")
@@ -332,7 +370,7 @@ for (root, dirs, files) in walkdir(
     end
 end
 
-summ_data = load(quantile_files[3])
+summ_data = load(quantile_files[1])
 @unpack ensemble_summary = summ_data
 
 #%%
