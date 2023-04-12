@@ -216,7 +216,7 @@ function run_ensemble_summary(param_dict)
     sim_path = joinpath(
         datadir(
             "seasonal-infectivity-import",
-            "test",
+            "jump",
             "N_$N",
             "r_$r",
             "nsims_$nsims",
@@ -276,8 +276,8 @@ seasonal_infec_jump_prob = JumpProblem(
 seasonal_infec_ensemble_prob = EnsembleProblem(seasonal_infec_jump_prob)
 
 #%%
-N_vec = convert.(Int64, [1e3])
-nsims_vec = [10, 100]
+N_vec = convert.(Int64, [1e3, 1e4, 5e5])
+nsims_vec = [10, 100, 1000]
 u₀_prop_map = [
     Dict(:s => 0.9, :i => 0.1, :r => 0.0), Dict(:s => 0.1, :i => 0.1, :r => 0.8)
 ]
@@ -304,7 +304,7 @@ map(
         p,
         datadir(
             "seasonal-infectivity-import",
-            "test",
+            "jump",
             "N_$(p[:N])",
             "r_$(p[:u₀_prop][:r])",
             "nsims_$(p[:nsims])",
@@ -340,7 +340,7 @@ map(
         p,
         datadir(
             "seasonal-infectivity-import",
-            "test",
+            "jump",
             "N_$(p[:N])",
             "r_$(p[:u₀_prop][:r])",
             "nsims_$(p[:nsims])",
@@ -361,34 +361,10 @@ map(
 )
 
 #%%
-# sim_files = []
-# for (root, dirs, files) in walkdir(
-#     datadir(
-#         "seasonal-infectivity-import", "test", "N_1000", "r_0.0", "nsims_100"
-#     ),
-# )
-#     for (i, file) in enumerate(files)
-#         if occursin("jump_sol", file)
-#             push!(sim_files, joinpath(root, file))
-#         end
-#     end
-# end
-
-# sim_data = load(sim_files[1])
-# @unpack ensemble_array, u0_dict = sim_data
-
-# @chain DataFrame(Tables.table(ensemble_array[:, :, 1]')) begin
-#     hcat(tlower:δt:tmax, _)
-#     rename!([:time, :S, :I, :R, :N])
-#     stack(_, [:S, :I, :R, :N]; variable_name = :State, value_name = :Number)
-#     draw_sir_plot(_; annual = true)
-# end
-
-#%%
 quantile_files = []
 for (root, dirs, files) in walkdir(
     datadir(
-        "seasonal-infectivity-import", "test", "N_1000", "r_0.0"
+        "seasonal-infectivity-import", "jump", "N_1000", "r_0.0"
     ),
 )
     for (i, file) in enumerate(files)
