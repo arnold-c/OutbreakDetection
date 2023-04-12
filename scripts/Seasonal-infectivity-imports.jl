@@ -23,7 +23,10 @@ includet(srcdir("Julia/cleaning-functions.jl"))
 
 #%%
 N = 4e5
-u₀ = [N * 0.9, N * 0.1, 0, N]
+s = 0.9
+i = 0.1
+r = 1.0 - (s + i)
+u₀ = [N * s, N * i, N * r, N]
 δt = 0.5
 tlower = 0.0
 tmax = 365.0 * 100
@@ -162,36 +165,47 @@ fig
 
 #%%
 function run_ensemble_jump_prob(param_dict)
-    @unpack nsims, prob, dep_graph = param_dict
+    @unpack N, s, i, r, nsims = param_dict
 
-    season_infec_jump_prob = JumpProblem(
-        prob, Coevolve(), jumps; dep_graph,
-        save_positions = (false, false)
-    )
+    u₀ = [s * N, i * N, r * N, N]
 
-    ensemble_jump_prob = EnsembleProblem(season_infec_jump_prob)
-
-    Random.seed!(1234)
+    remade_ensemble_prob = remake(ensemble_jump_prob; u0 = u₀)
 
     ensemble_sol = solve(
-        ensemble_jump_prob,
+        remade_ensemble_prob,
         SSAStepper(),
         EnsembleThreads();
         trajectories = nsims,
         saveat = δt,
     )
 
-    ensemble_array = create_sir_all_sims_array(ensemble_sol, nsims, )
+    ensemble_array = create_sir_all_sims_array(ensemble_sol, nsims)
 
     return @strdict ensemble_array
 end
 
 function run_ensemble_summary(param_dict)
-    @unpack quantiles = param_dict
+    @unpack N, r, quantiles = param_dict
+
+    sim_name = savename("jump_sol", param_dict, "jld2"; ignores = ["quantiles"])
+
+    sim_path = joinpath(
+        datadir(
+            "seasonal-infectivity-import",
+            "jump",
+            "N_$N",
+            "r_$r"
+        ),
+        sim_name,
+    )
+
+    sol_data = load(sim_path)
+    @unpack ensemble_array = sol_data
+
 
     qlow = round(0.5 - quantiles / 200; digits = 3)
     qhigh = round(0.5 + quantiles / 200; digits = 3)
-    
+
     qs = [qlow, 0.5, qhigh]
 
     ensemble_summary = create_sir_all_sim_quantiles(ensemble_array; quantiles = qs)
@@ -200,40 +214,83 @@ function run_ensemble_summary(param_dict)
 end
 
 #%%
-nsims = 1000
-sol_param_dict = @dict(N, nsims, prob = season_infec_prob, dep_graph, δt, tmax)
+N_vec = [1e3]#, 1e4, 4e5]
+nsims_vec = [10, 100, 1000]
+s_vec = [0.9, 0.3]
+i_vec = [0.1]
+r_vec = round.(1 .- (s_vec .+ i_vec); digits = 2)
 
-sol_data, sol_file = @produce_or_load(
-    run_ensemble_jump_prob,
-    sol_param_dict,
-    datadir("seasonal-infectivity-import", "jump"),
-    prefix = "jump_sol",
+season_infec_jump_prob = JumpProblem(
+    season_infec_prob, Coevolve(), jumps; dep_graph = dep_graph,
+    save_positions = (false, false),
 )
 
-@unpack ensemble_array = sol_data
+ensemble_jump_prob = EnsembleProblem(season_infec_jump_prob)
+
+Random.seed!(1234)
+base_param_dict = @dict(
+    N = N_vec,
+    s = s_vec,
+    i = i_vec,
+    r = r_vec,
+    nsims = nsims_vec,
+    δt,
+    tmax
+)
+
+sol_param_dict = dict_list(
+    base_param_dict
+)
 
 #%%
-quantile_ints = [95, 90, 80, 70, 60, 50]
+map(
+    p -> @produce_or_load(
+        run_ensemble_jump_prob,
+        p,
+        datadir("seasonal-infectivity-import", "jump", "N_$(p[:N])", "r_$(p[:r])"),
+        prefix = "jump_sol";
+        loadfile = false
+    ),
+    sol_param_dict,
+)
 
-summ_param_dict = dict_list(Dict(
-    :N => N,
-    :nsims => nsims,
-    :quantiles => quantile_ints,
-    :δt => δt,
-    :tmax => tmax,
-))
+#%%
+quantile_ints = [95]
 
-for (i, quantile) in enumerate(quantile_ints)
-    @eval $(Symbol("q$(quantile)_summ_data")), $(Symbol("q$(quantile)_summ_file")) = @produce_or_load(
-        run_ensemble_summary,
-        $(summ_param_dict[i]),
-        datadir("seasonal-infectivity-import", "jump", "quantiles"),
-        prefix = "jump_summ",
-    )
-
-    @eval @unpack ensemble_summary = $(Symbol("q$(quantile)_summ_data"))
-    @eval $(Symbol("q$(quantile)_ensemble_summary")) = ensemble_summary
+summ_param_dict = @chain base_param_dict begin
+    deepcopy(_)
+    push!(_, :quantiles => quantile_ints)
+    dict_list(_)
 end
 
 #%%
-create_sir_quantiles_plot(q95_ensemble_summary)
+map(
+    p -> @produce_or_load(
+        run_ensemble_summary,
+        p,
+        datadir(
+            "seasonal-infectivity-import",
+            "jump",
+            "N_$(p[:N])",
+            "r_$(p[:r])",
+            "quantiles",
+        ),
+        prefix = "jump_quants";
+        loadfile = false
+    ),
+    summ_param_dict,
+)
+
+#%%
+quantile_files = []
+for (root, dirs, files) in walkdir(datadir("seasonal-infectivity-import", "jump", "N_1000.0", "r_0.0", "quantiles"))
+    for (i, file) in enumerate(files)
+        push!(quantile_files, joinpath(root, file))
+    end
+end
+
+summ_data = load(quantile_files[6])
+@unpack ensemble_summary = summ_data
+
+#%%
+create_sir_quantiles_plot(ensemble_summary; annual = true)
