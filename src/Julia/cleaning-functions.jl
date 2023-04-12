@@ -29,7 +29,9 @@ function create_sir_df(sol::ODESolution, states = [:S, :I, :R])
             stack(_, [states...]; variable_name = :State, value_name = :Number)
         else
             transform!(_, states => (+) => :N)
-            stack(_, [states..., :N]; variable_name = :State, value_name = :Number)
+            stack(
+                _, [states..., :N]; variable_name = :State, value_name = :Number
+            )
         end
     end
 end
@@ -68,7 +70,9 @@ function create_sir_all_sims_array_multithread!(prob, nsims, alg, saveat)
     end
 end
 
-function create_sir_all_sims_array!(ensemble_sol::EnsembleSolution, nsims::Int, array = all_sims_array)
+function create_sir_all_sims_array!(
+    ensemble_sol::EnsembleSolution, nsims::Int, array = all_sims_array
+)
     Threads.@threads for i in 1:nsims
         if size(ensemble_sol.u[i], 2) != size(array, 2)
             skip
@@ -81,14 +85,18 @@ function create_sir_all_sims_array!(ensemble_sol::EnsembleSolution, nsims::Int, 
 end
 
 function create_sir_all_sims_array(ensemble_sol::EnsembleSolution, nsims::Int)
-    all_sims_array = zeros(size(ensemble_sol.u[1], 1), size(ensemble_sol.u[1], 2), nsims)
+    all_sims_array = zeros(
+        size(ensemble_sol.u[1], 1), size(ensemble_sol.u[1], 2), nsims
+    )
 
     create_sir_all_sims_array!(ensemble_sol, nsims, all_sims_array)
 
     return all_sims_array
 end
 
-function create_sir_all_sims_array!(ensemble_sol::EnsembleSolution, nsims::Int, β::Bool)
+function create_sir_all_sims_array!(
+    ensemble_sol::EnsembleSolution, nsims::Int, β::Bool
+)
     if β == false
         return create_sir_all_sims_array!(ensemble_sol, nsims)
     end
@@ -111,7 +119,9 @@ function create_sir_all_sim_quantiles!(all_sims_array, sim_quantiles; quantiles)
     Threads.@threads for time in 1:size(all_sims_array, 2)
         for state in 1:size(all_sims_array, 1)
             sim_quantiles[:, time, state] = quantile(
-                skipmissing(replace(all_sims_array[state, time, :], NaN => missing)),
+                skipmissing(
+                    replace(all_sims_array[state, time, :], NaN => missing)
+                ),
                 quantiles,
             )
         end
@@ -119,9 +129,13 @@ function create_sir_all_sim_quantiles!(all_sims_array, sim_quantiles; quantiles)
 end
 
 function create_sir_all_sim_quantiles(all_sims_array; quantiles)
-    quantile_array = zeros(length(quantiles), size(all_sims_array, 2), size(all_sims_array, 1))
+    quantile_array = zeros(
+        length(quantiles), size(all_sims_array, 2), size(all_sims_array, 1)
+    )
 
-    create_sir_all_sim_quantiles!(all_sims_array, quantile_array; quantiles = quantiles)
+    create_sir_all_sim_quantiles!(
+        all_sims_array, quantile_array; quantiles = quantiles
+    )
 
     return quantile_array
 end

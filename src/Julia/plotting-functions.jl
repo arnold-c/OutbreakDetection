@@ -1,7 +1,8 @@
 function create_sir_plot(sol_df)
     return data(sol_df) *
            mapping(
-               :time => "Time (days)", :Number; color = :State => sorter("S", "I", "R", "N")
+               :time => "Time (days)", :Number;
+               color = :State => sorter("S", "I", "R", "N"),
            ) *
            visual(Lines; linewidth = 4)
 end
@@ -50,9 +51,14 @@ end
 function draw_combined_sir_beta_plot(sir_plot, beta_plot)
     combined = Figure()
 
-    axsir = Axis(combined[2:4, 1]; xlabel = "Time (days)", ylabel = "Number of individuals")
+    axsir = Axis(
+        combined[2:4, 1];
+        xlabel = "Time (days)",
+        ylabel = "Number of individuals",
+    )
     axbeta = Axis(
-        combined[1, 1]; ylabel = "β", xticksvisible = false, xticklabelsvisible = false
+        combined[1, 1]; ylabel = "β", xticksvisible = false,
+        xticklabelsvisible = false,
     )
 
     draw!(axsir, sir_plot)
@@ -62,7 +68,8 @@ function draw_combined_sir_beta_plot(sir_plot, beta_plot)
 end
 
 function sir_quantiles_array_base_plot(
-    sim_quantiles, lower_index, med_index, upper_index, δt, colors, labels, annual
+    sim_quantiles, lower_index, med_index, upper_index, δt, colors, labels,
+    annual; xlims, ylims, caption,
 )
     times = tlower:δt:tmax
     xlab = "Time (days)"
@@ -98,7 +105,20 @@ function sir_quantiles_array_base_plot(
         eachindex(labels),
     )
 
+    if xlims != false
+        xlims!(ax, xlims)
+    end
+
+    if ylims != false
+        ylims!(ax, ylims)
+    end
+
     Legend(fig[1, 2], ax, "State")
+
+    if caption != false
+        Label(fig[2, 1, BottomRight()], caption)
+        rowsize!(fig.layout, 1, Relative(0.98))
+    end
 
     return fig
 end
@@ -109,6 +129,9 @@ function create_sir_quantiles_plot(
     colors = ["dodgerblue4", "firebrick3", "chocolate2", "purple"],
     labels = ["S", "I", "R", "N"],
     annual = false,
+    xlims = false,
+    ylims = false,
+    caption = false,
 )
     med_index = 2
     lower_index = 1
@@ -118,7 +141,10 @@ function create_sir_quantiles_plot(
         sim_quantiles, lower_index, med_index, upper_index, δt,
         colors,
         labels,
-        annual,
+        annual;
+        xlims = xlims,
+        ylims = ylims,
+        caption = caption,
     )
 end
 
@@ -181,7 +207,7 @@ function create_sir_quantiles_plot(
             times,
             lower[:, state],
             upper[:, state];
-            color = (colors[state], 0.5)
+            color = (colors[state], 0.5),
         ),
         eachindex(labels),
     )

@@ -46,7 +46,7 @@ end
 
 function calculate_beta(
     ode::S, nic::T, nac::T, R₀::U, param::Dict{Num,U}, C::Array{U},
-    pop_matrix::Array{U}
+    pop_matrix::Array{U},
 ) where {S<:ODESystem,T<:Int,U<:AbstractFloat}
     size(C, 1) == size(C, 2) ? nothing : error("C must be square")
     if size(C, 1) == size(pop_matrix, 1)
@@ -64,7 +64,8 @@ function calculate_beta(
     FV⁻¹ = F * -inv(V)
     eigenvals =
         convert.(
-            Float64, Symbolics.value.(eigvals(eigen(substitute(FV⁻¹, Dict(param...)))))
+            Float64,
+            Symbolics.value.(eigvals(eigen(substitute(FV⁻¹, Dict(param...))))),
         )
     beta = R₀ / maximum(real(Symbolics.value.(eigenvals)))
 
@@ -150,7 +151,9 @@ function calculateR0(
     all_eigenvals =
         convert.(
             Float64,
-            Symbolics.value.(eigvals(eigen(substitute(FV⁻¹, Dict(S => S⁺, param...))))),
+            Symbolics.value.(
+                eigvals(eigen(substitute(FV⁻¹, Dict(S => S⁺, param...))))
+            ),
         )
     R0 = maximum(real(all_eigenvals))
 
