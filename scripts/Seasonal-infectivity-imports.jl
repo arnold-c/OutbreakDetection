@@ -170,7 +170,7 @@ fig
 
 #%%
 function run_ensemble_jump_prob(param_dict)
-    @unpack N, u₀_prop, nsims, δt = param_dict
+    @unpack N, u₀_prop, nsims, δt, tmax = param_dict
     @unpack s, i, r = u₀_prop
 
     u₀ = convert.(Int64, [s * N, i * N, r * N, N])
@@ -179,8 +179,13 @@ function run_ensemble_jump_prob(param_dict)
         u0_dict[k] = v
     end
 
-    remade_jump_prob = remake(season_infec_jump_prob; u0 = u₀)
-    remade_ensemble_prob = EnsembleProblem(remade_jump_prob)
+    tspan = (0.0, tmax)
+
+    β = calculate_beta(R₀, γ, μ, 1, N)
+    ε = (1.06 * μ * (R₀ - 1)) / sqrt(sum(u₀)) # Commuter imports - see p210 Keeling & Rohani
+    p = (β, γ, μ, A_scale, ε)
+
+    remade_ensemble_prob = remake(seasonal_infec_ensemble_prob; u0 = u₀, p = p)
 
     ensemble_sol = solve(
         remade_ensemble_prob,
@@ -236,7 +241,7 @@ function run_ensemble_summary(param_dict)
         ensemble_array; quantiles = qs
     )
 
-    caption = "nsims = $nsims, N = $N, S = $S, I = $I, R = $R, δt = $δt, quantile = $quantiles"
+    caption = "nsims = $nsims, N = $N, S = $S, I = $I, R = $R, δt = $δt, quantile int = $quantiles"
 
     return @strdict ensemble_summary caption u0_dict
 end
@@ -263,44 +268,29 @@ end
 # savename(test)
 
 #%%
-N_vec = convert.(Int64, [1e3])
-nsims_vec = [10, 100]
-u₀_prop_map = [
-    Dict(:s => 0.9, :i => 0.1, :r => 0.0), Dict(:s => 0.3, :i => 0.1, :r => 0.6)
-]
-
-season_infec_jump_prob = JumpProblem(
+seasonal_infec_jump_prob = JumpProblem(
     season_infec_prob, Coevolve(), jumps; dep_graph = dep_graph,
     save_positions = (false, false),
 )
 
-# new_u₀ = convert.(Int64, [values(u₀_prop_map[1]) .* N_vec[1]..., N_vec[1]])
+seasonal_infec_ensemble_prob = EnsembleProblem(seasonal_infec_jump_prob)
 
-# remade_test = remake(season_infec_jump_prob; u0 = new_u₀)
-# remade_ensemble_test = EnsembleProblem(remade_test)
-
-# remade_ensemble_sol = solve(
-#     remade_ensemble_test,
-#     SSAStepper(),
-#     EnsembleThreads();
-#     trajectories = nsims_vec[1],
-#     saveat = δt,
-# )
-
-# create_sir_quantiles_plot(
-#     create_sir_all_sim_quantiles(
-#         create_sir_all_sims_array(remade_ensemble_sol, nsims_vec[1]);
-#         quantiles = [0.025, 0.5, 0.975],
-#     ),
-# )
+#%%
+N_vec = convert.(Int64, [1e3])
+nsims_vec = [10, 100]
+u₀_prop_map = [
+    Dict(:s => 0.9, :i => 0.1, :r => 0.0), Dict(:s => 0.1, :i => 0.1, :r => 0.8)
+]
+δt_vec = [0.5]
+tmax_vec = [365.0 * 100]
 
 Random.seed!(1234)
 base_param_dict = @dict(
     N = N_vec,
     u₀_prop = u₀_prop_map,
     nsims = nsims_vec,
-    δt,
-    tmax
+    δt = δt_vec,
+    tmax = tmax_vec,
 )
 
 sol_param_dict = dict_list(
@@ -335,7 +325,7 @@ map(
 )
 
 #%%
-quantile_ints = [95]
+quantile_ints = [95, 90, 80, 50]
 
 summ_param_dict = @chain base_param_dict begin
     deepcopy(_)
@@ -371,28 +361,28 @@ map(
 )
 
 #%%
-sim_files = []
-for (root, dirs, files) in walkdir(
-    datadir(
-        "seasonal-infectivity-import", "test", "N_1000", "r_0.0", "nsims_100"
-    ),
-)
-    for (i, file) in enumerate(files)
-        if occursin("jump_sol", file)
-            push!(sim_files, joinpath(root, file))
-        end
-    end
-end
+# sim_files = []
+# for (root, dirs, files) in walkdir(
+#     datadir(
+#         "seasonal-infectivity-import", "test", "N_1000", "r_0.0", "nsims_100"
+#     ),
+# )
+#     for (i, file) in enumerate(files)
+#         if occursin("jump_sol", file)
+#             push!(sim_files, joinpath(root, file))
+#         end
+#     end
+# end
 
-sim_data = load(sim_files[1])
-@unpack ensemble_array, u0_dict = sim_data
+# sim_data = load(sim_files[1])
+# @unpack ensemble_array, u0_dict = sim_data
 
-@chain DataFrame(Tables.table(ensemble_array[:, :, 1]')) begin
-    hcat(tlower:δt:tmax, _)
-    rename!([:time, :S, :I, :R, :N])
-    stack(_, [:S, :I, :R, :N]; variable_name = :State, value_name = :Number)
-    draw_sir_plot(_; annual = true)
-end
+# @chain DataFrame(Tables.table(ensemble_array[:, :, 1]')) begin
+#     hcat(tlower:δt:tmax, _)
+#     rename!([:time, :S, :I, :R, :N])
+#     stack(_, [:S, :I, :R, :N]; variable_name = :State, value_name = :Number)
+#     draw_sir_plot(_; annual = true)
+# end
 
 #%%
 quantile_files = []
@@ -408,8 +398,9 @@ for (root, dirs, files) in walkdir(
     end
 end
 
+summ_data = nothing
 for (i, file) in enumerate(quantile_files)
-    if occursin(r"jump_quants.*.nsims=100.*.quantiles=95", file)
+    if occursin(r"jump_quants.*.nsims=100_.*.quantiles=95", file)
         summ_data = load(quantile_files[i])
     end
 end
