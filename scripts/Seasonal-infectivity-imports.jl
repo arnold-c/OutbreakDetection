@@ -117,7 +117,9 @@ function infec_affect!(integrator)
     integrator.u[2] += 1     # I -> I + 1
     return nothing
 end
-infec_jump = VariableRateJump(infec_rate, infec_affect!; lrate, urate, rateinterval)
+infec_jump = VariableRateJump(
+    infec_rate, infec_affect!; lrate, urate, rateinterval
+)
 
 jumps = JumpSet(
     birth_jump, recov_jump, S_death_jump, I_death_jump, R_death_jump,
@@ -140,7 +142,9 @@ dep_graph = [
 #%%
 season_infec_prob = DiscreteProblem(u₀, tspan, p)
 # Bounded VariableJumpRate problems require the Coevolve() algorithm
-season_infec_jump_prob = JumpProblem(season_infec_prob, Coevolve(), jumps; dep_graph)
+season_infec_jump_prob = JumpProblem(
+    season_infec_prob, Coevolve(), jumps; dep_graph
+)
 season_infec_sol = solve(season_infec_jump_prob, SSAStepper())
 
 season_infec_sol_df = create_sir_df(season_infec_sol, [:S, :I, :R, :N])
@@ -156,7 +160,8 @@ t = 0:0.01:720
 y = Vector{Float64}(undef, length(t))
 y_scale = similar(y)
 @. y = 0.5 * (cos(2pi * t / 365) + 1)
-@. y_scale = (0.5 * (cos(2pi * t / 365) + 1)) * 1 / A_scale + (A_scale - 1) / A_scale
+@. y_scale =
+    (0.5 * (cos(2pi * t / 365) + 1)) * 1 / A_scale + (A_scale - 1) / A_scale
 fig = lines(t, y; color = "black", linewidth = 2)
 lines!(t, y_scale; color = "green", linewidth = 2)
 vlines!(0:365:720; color = (:red, 0.5), linestyle = :dash, linewidth = 2)
@@ -165,10 +170,14 @@ fig
 
 #%%
 function run_ensemble_jump_prob(param_dict)
-    @unpack N, u₀_prop, nsims = param_dict
+    @unpack N, u₀_prop, nsims, δt = param_dict
     @unpack s, i, r = u₀_prop
 
     u₀ = convert.(Int64, [s * N, i * N, r * N, N])
+    u0_dict = Dict()
+    for (k, v) in zip([:S, :I, :R, :N], u₀)
+        u0_dict[k] = v
+    end
 
     remade_jump_prob = remake(season_infec_jump_prob; u0 = u₀)
     remade_ensemble_prob = EnsembleProblem(remade_jump_prob)
@@ -183,11 +192,11 @@ function run_ensemble_jump_prob(param_dict)
 
     ensemble_array = create_sir_all_sims_array(ensemble_sol, nsims)
 
-    return @strdict ensemble_array
+    return @strdict ensemble_array u0_dict
 end
 
 function run_ensemble_summary(param_dict)
-    @unpack N, u₀_prop, quantiles = param_dict
+    @unpack N, u₀_prop, nsims, quantiles, δt, tmax = param_dict
     @unpack s, i, r = u₀_prop
 
     sim_name = savename(
@@ -202,24 +211,34 @@ function run_ensemble_summary(param_dict)
     sim_path = joinpath(
         datadir(
             "seasonal-infectivity-import",
-            "jump",
+            "test",
             "N_$N",
             "r_$r",
+            "nsims_$nsims",
+            "tmax_$tmax",
+            "deltat_$δt",
         ),
-        sim_name
+        sim_name,
     )
 
     sol_data = load(sim_path)
-    @unpack ensemble_array = sol_data
+    @unpack ensemble_array, u0_dict = sol_data
+    S = u0_dict[:S]
+    I = u0_dict[:I]
+    R = u0_dict[:R]
 
     qlow = round(0.5 - quantiles / 200; digits = 3)
     qhigh = round(0.5 + quantiles / 200; digits = 3)
 
     qs = [qlow, 0.5, qhigh]
 
-    ensemble_summary = create_sir_all_sim_quantiles(ensemble_array; quantiles = qs)
+    ensemble_summary = create_sir_all_sim_quantiles(
+        ensemble_array; quantiles = qs
+    )
 
-    return @strdict ensemble_summary
+    caption = "nsims = $nsims, N = $N, S = $S, I = $I, R = $R, δt = $δt, quantile = $quantiles"
+
+    return @strdict ensemble_summary caption u0_dict
 end
 
 #%%
@@ -244,9 +263,11 @@ end
 # savename(test)
 
 #%%
-N_vec = convert.(Int64, [1e3, 1e4, 4e5])
-nsims_vec = [10, 100, 1000]
-u₀_prop_map = [Dict(:s => 0.9, :i => 0.1, :r => 0.0), Dict(:s => 0.3, :i => 0.1, :r => 0.6)]
+N_vec = convert.(Int64, [1e3])
+nsims_vec = [10, 100]
+u₀_prop_map = [
+    Dict(:s => 0.9, :i => 0.1, :r => 0.0), Dict(:s => 0.3, :i => 0.1, :r => 0.6)
+]
 
 season_infec_jump_prob = JumpProblem(
     season_infec_prob, Coevolve(), jumps; dep_graph = dep_graph,
@@ -292,7 +313,13 @@ map(
         run_ensemble_jump_prob,
         p,
         datadir(
-            "seasonal-infectivity-import", "jump", "N_$(p[:N])", "r_$(p[:u₀_prop][:r])"
+            "seasonal-infectivity-import",
+            "test",
+            "N_$(p[:N])",
+            "r_$(p[:u₀_prop][:r])",
+            "nsims_$(p[:nsims])",
+            "tmax_$(p[:tmax])",
+            "deltat_$(p[:δt])",
         ),
         prefix = "jump_sol";
         filename = savename(
@@ -304,7 +331,7 @@ map(
         ),
         loadfile = false
     ),
-    sol_param_dict[1:2],
+    sol_param_dict,
 )
 
 #%%
@@ -323,10 +350,12 @@ map(
         p,
         datadir(
             "seasonal-infectivity-import",
-            "jump",
+            "test",
             "N_$(p[:N])",
             "r_$(p[:u₀_prop][:r])",
-            "quantiles",
+            "nsims_$(p[:nsims])",
+            "tmax_$(p[:tmax])",
+            "deltat_$(p[:δt])",
         ),
         prefix = "jump_quants";
         filename = savename(
@@ -338,40 +367,55 @@ map(
         ),
         loadfile = false
     ),
-    summ_param_dict[1:2],
+    summ_param_dict,
 )
 
 #%%
 sim_files = []
 for (root, dirs, files) in walkdir(
-    datadir("seasonal-infectivity-import", "jump", "N_1000", "r_0.0")
+    datadir(
+        "seasonal-infectivity-import", "test", "N_1000", "r_0.0", "nsims_100"
+    ),
 )
     for (i, file) in enumerate(files)
-        push!(sim_files, joinpath(root, file))
+        if occursin("jump_sol", file)
+            push!(sim_files, joinpath(root, file))
+        end
     end
 end
 
 sim_data = load(sim_files[1])
-@unpack ensemble_array = sim_data
+@unpack ensemble_array, u0_dict = sim_data
 
 @chain DataFrame(Tables.table(ensemble_array[:, :, 1]')) begin
     hcat(tlower:δt:tmax, _)
     rename!([:time, :S, :I, :R, :N])
     stack(_, [:S, :I, :R, :N]; variable_name = :State, value_name = :Number)
-    draw_sir_plot(_)
+    draw_sir_plot(_; annual = true)
 end
 
+#%%
 quantile_files = []
 for (root, dirs, files) in walkdir(
-    datadir("seasonal-infectivity-import", "jump", "N_1000", "r_0.0", "quantiles")
+    datadir(
+        "seasonal-infectivity-import", "test", "N_1000", "r_0.0"
+    ),
 )
     for (i, file) in enumerate(files)
-        push!(quantile_files, joinpath(root, file))
+        if occursin("jump_quants", file)
+            push!(quantile_files, joinpath(root, file))
+        end
     end
 end
 
-summ_data = load(quantile_files[1])
-@unpack ensemble_summary = summ_data
+for (i, file) in enumerate(quantile_files)
+    if occursin(r"jump_quants.*.nsims=100.*.quantiles=95", file)
+        summ_data = load(quantile_files[i])
+    end
+end
 
-#%%
-create_sir_quantiles_plot(ensemble_summary; annual = true)
+@unpack ensemble_summary, caption = summ_data
+
+create_sir_quantiles_plot(
+    ensemble_summary; annual = true, caption = caption
+)
