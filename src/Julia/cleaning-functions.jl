@@ -10,10 +10,20 @@ end
 
 function create_sir_df(sol::RODESolution, states = [:S, :I, :R])
     @chain DataFrame(sol) begin
-        rename!(s -> replace(s, "(t)" => ""), _)
-        rename!(:timestamp => :time)
-        transform!(_, states => (+) => :N)
-        stack(_, [states..., :N]; variable_name = :State, value_name = :Number)
+        if "value1" in names(_)
+            rename!(_, [:time, states...])
+        else
+            rename!(s -> replace(s, "(t)" => ""), _)
+            rename!(:timestamp => :time)
+        end
+        if :N in states
+            stack(_, [states...]; variable_name = :State, value_name = :Number)
+        else
+            transform!(_, states => (+) => :N)
+            stack(
+                _, [states..., :N]; variable_name = :State, value_name = :Number
+            )
+        end
     end
 end
 
