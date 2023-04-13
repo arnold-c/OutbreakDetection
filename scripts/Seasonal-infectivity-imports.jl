@@ -416,7 +416,7 @@ for sim in 1:size(ensemble_array, 3)
     )
 end
 
-hlines!(ax, 5, color = "black", linestyle = :dash, label = "5")
+hlines!(ax, 5; color = "black", linestyle = :dash, label = "5")
 
 f
 
@@ -434,9 +434,11 @@ plot(above_5[1, :])
 test = zeros(length(above_5[1, :]), 2)
 test[:, 1] = above_5[1, :]
 
-test[:, 2] = reduce(vcat, map(
-    len -> repeat([len], len),
-    rle(test[:, 1])[2]
-))
+test[:, 2] = reduce(
+    vcat, map(
+        len -> repeat([len / δt], len),
+        rle(test[:, 1])[2],
+    )
+)
 
-scatter(1:size(test, 1), test[:, 2]; color = test[:, 1])
+scatter(tlower:δt:tmax, test[:, 2]; color = test[:, 1], colormap = :viridis)
