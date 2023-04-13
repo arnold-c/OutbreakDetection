@@ -10,7 +10,7 @@ using DrWatson
 
 using JumpProcesses, Statistics, DataFrames, DataFramesMeta, LinearAlgebra
 using CairoMakie, AlgebraOfGraphics, DifferentialEquations, ModelingToolkit
-using BenchmarkTools, JLD2, Random
+using BenchmarkTools, JLD2, Random, ProgressMeter
 
 CairoMakie.activate!()
 set_aog_theme!()
@@ -22,12 +22,12 @@ includet(srcdir("Julia/plotting-functions.jl"))
 includet(srcdir("Julia/cleaning-functions.jl"))
 
 #%%
-N = 4e5
+N = 1000
 s = 0.9
 i = 0.1
 r = 1.0 - (s + i)
 u₀ = convert.(Int64, [N * s, N * i, N * r, N])
-δt = 0.1
+δt = 0.5
 tlower = 0.0
 tmax = 365.0 * 100
 tspan = (tlower, tmax)
@@ -274,21 +274,15 @@ seasonal_infec_jump_prob = JumpProblem(
 )
 
 seasonal_infec_ensemble_prob = EnsembleProblem(seasonal_infec_jump_prob)
-# @btime solve(
-#     seasonal_infec_ensemble_prob,
-#     SSAStepper(),
-#     EnsembleThreads();
-#     trajectories = 100,
-#     saveat = δt,
-# )
+
 #%%
-N_vec = convert.(Int64, [1e3])
+N_vec = convert.(Int64, [1e3, 1e4, 5e5])
 nsims_vec = [10, 100, 1000]
 u₀_prop_map = [
     Dict(:s => 0.9, :i => 0.1, :r => 0.0),
     Dict(:s => 0.1, :i => 0.1, :r => 0.8)
 ]
-δt_vec = [0.5, 0.1]
+δt_vec = [0.5]
 tmax_vec = [365.0 * 100]
 
 Random.seed!(1234)
@@ -371,7 +365,7 @@ map(
 quantile_files = []
 for (root, dirs, files) in walkdir(
     datadir(
-        "seasonal-infectivity-import", "jump", "N_1000", "r_0.0"
+        "seasonal-infectivity-import", "jump", "N_500000", "r_0.0"
     ),
 )
     for (i, file) in enumerate(files)
@@ -383,7 +377,7 @@ end
 
 summ_data = nothing
 for (i, file) in enumerate(quantile_files)
-    if occursin(r"jump_quants.*.nsims=1000_.*.δt=0.01.*.quantiles=95", file)
+    if occursin(r"jump_quants.*.nsims=1000_.*.δt=0.5.*.quantiles=95", file)
         summ_data = load(quantile_files[i])
     end
 end
