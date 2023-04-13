@@ -22,7 +22,7 @@ includet(srcdir("Julia/plotting-functions.jl"))
 includet(srcdir("Julia/cleaning-functions.jl"))
 
 #%%
-N = 1000
+N = 4e5
 s = 0.9
 i = 0.1
 r = 1.0 - (s + i)
@@ -282,7 +282,7 @@ u₀_prop_map = [
     Dict(:s => 0.9, :i => 0.1, :r => 0.0),
     Dict(:s => 0.1, :i => 0.1, :r => 0.8)
 ]
-δt_vec = [0.5]
+δt_vec = [0.5, 1.0]
 tmax_vec = [365.0 * 100]
 
 Random.seed!(1234)
@@ -362,22 +362,36 @@ map(
 )
 
 #%%
+δt = 1.0
+sim_files = []
 quantile_files = []
 for (root, dirs, files) in walkdir(
     datadir(
-        "seasonal-infectivity-import", "jump", "N_500000", "r_0.0"
+        "seasonal-infectivity-import", "jump", "N_10000", "r_0.0"
     ),
 )
     for (i, file) in enumerate(files)
         if occursin("jump_quants", file)
             push!(quantile_files, joinpath(root, file))
         end
+        if occursin("jump_sol", file)
+            push!(sim_files, joinpath(root, file))
+        end
     end
 end
 
+sim_data = nothing
+for (i, file) in enumerate(sim_files)
+    if occursin(r"jump_sol.*.nsims=1000_.*.δt=1.0", file)
+        sim_data = load(sim_files[i])
+    end
+end
+
+@unpack ensemble_array = sim_data
+
 summ_data = nothing
 for (i, file) in enumerate(quantile_files)
-    if occursin(r"jump_quants.*.nsims=1000_.*.δt=0.5.*.quantiles=95", file)
+    if occursin(r"jump_quants.*.nsims=1000_.*.δt=1.0.*.quantiles=95", file)
         summ_data = load(quantile_files[i])
     end
 end
@@ -387,3 +401,42 @@ end
 create_sir_quantiles_plot(
     ensemble_summary; annual = true, caption = caption
 )
+
+#%%
+f = Figure()
+ax = Axis(f[1, 1])
+
+for sim in 1:size(ensemble_array, 3)
+    lines!(
+        ax,
+        1:size(ensemble_array, 2),
+        ensemble_array[2, :, sim];
+        color = "red",
+        alpha = 0.01,
+    )
+end
+
+hlines!(ax, 5, color = "black", linestyle = :dash, label = "5")
+
+f
+
+#%%
+above_5 = zeros(size(ensemble_array, 3), size(ensemble_array, 2))
+
+for j in 1:size(ensemble_array, 2)
+    for k in 1:size(ensemble_array, 3)
+        above_5[k, j] = ensemble_array[2, j, k] > 5
+    end
+end
+
+plot(above_5[1, :])
+
+test = zeros(length(above_5[1, :]), 2)
+test[:, 1] = above_5[1, :]
+
+test[:, 2] = reduce(vcat, map(
+    len -> repeat([len], len),
+    rle(test[:, 1])[2]
+))
+
+scatter(1:size(test, 1), test[:, 2]; color = test[:, 1])
