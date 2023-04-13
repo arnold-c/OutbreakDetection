@@ -1,17 +1,17 @@
-function create_sir_plot(sol_df)
+function create_sir_plot(sol_df; labels = ["S", "I", "R", "N"])
     return data(sol_df) *
            mapping(
                :time => "Time (days)", :Number;
-               color = :State => sorter("S", "I", "R", "N"),
+               color = :State => sorter(labels...),
            ) *
            visual(Lines; linewidth = 4)
 end
 
-function create_annual_sir_plot(sol_df)
+function create_annual_sir_plot(sol_df; labels = ["S", "I", "R", "N"])
     return data(sol_df) *
            mapping(
                :time => (t -> t / 365.0) => "Time (years)", :Number;
-               color = :State => sorter("S", "I", "R", "N"),
+               color = :State => sorter(labels...),
            ) *
            visual(Lines; linewidth = 4)
 end
@@ -25,12 +25,13 @@ end
 function draw_sir_plot(
     sol_df::DataFrame;
     colors = ["dodgerblue4", "firebrick3", "chocolate2", "purple"],
+    labels = ["S", "I", "R", "N"],
     annual = false,
 )
     return if annual == false
-        draw_sir_plot(create_sir_plot(sol_df); colors = colors)
+        draw_sir_plot(create_sir_plot(sol_df; labels = labels); colors = colors)
     else
-        draw_sir_plot(create_annual_sir_plot(sol_df); colors = colors)
+        draw_sir_plot(create_annual_sir_plot(sol_df; labels = labels); colors = colors)
     end
 end
 
