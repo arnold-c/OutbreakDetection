@@ -1,10 +1,20 @@
 using ProgressMeter
 
-function create_sir_df(sol, states = [:S, :I, :R])
+function create_sir_df(sir_array::Matrix, trange, states = [:S, :I, :R, :N])
+    create_sir_df(Tables.table(hcat(trange, sir_array')), states)
+end
+
+function create_sir_df(sol, states)
     @chain DataFrame(sol) begin
         rename!([:time, states...])
-        transform!(_, states => (+) => :N)
-        stack(_, [states..., :N]; variable_name = :State, value_name = :Number)
+        if :N in states
+            stack(_, [states...]; variable_name = :State, value_name = :Number)
+        else
+            transform!(_, states => (+) => :N)
+            stack(
+                _, [states..., :N]; variable_name = :State, value_name = :Number
+            )
+        end
     end
 end
 
