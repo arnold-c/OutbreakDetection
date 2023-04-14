@@ -154,7 +154,7 @@ sircolors = ["dodgerblue4", "firebrick3", "chocolate2", "purple"]
 
 draw_sir_plot(
     season_infec_sol_df; labels = ["S", "I", "R", "N"], annual = true,
-    colors = sircolors
+    colors = sircolors,
 )
 
 #%%
@@ -284,7 +284,7 @@ nsims_vec = [10, 100, 1000]
 u₀_prop_map = [
     Dict(:s => 0.9, :i => 0.1, :r => 0.0),
     Dict(:s => 0.1, :i => 0.1, :r => 0.8),
-    Dict(:s => 0.1, :i => 0.01, :r => 0.89)
+    Dict(:s => 0.1, :i => 0.01, :r => 0.89),
 ]
 δt_vec = [0.5, 1.0]
 tmax_vec = [365.0 * 100]
@@ -372,7 +372,7 @@ quantile_files = []
 for (root, dirs, files) in walkdir(
     datadir(
         "seasonal-infectivity-import", "jump", "N_500000", "r_0.89"
-    ),
+    )
 )
     for (i, file) in enumerate(files)
         if occursin("jump_quants", file)
@@ -444,4 +444,20 @@ test[:, 2] = reduce(
     )
 )
 
-scatter(tlower:δt:tmax, test[:, 2]; color = test[:, 1], colormap = :viridis)
+@chain DataFrame(Tables.table(test)) begin
+    @transform(:time = tlower:δt:tmax)
+    rename(:Column1 => :Above5, :Column2 => :Length)
+    data(_) *
+    mapping(:time, :Above5; color = :Length) *
+    (visual(Lines) + visual(Scatter))
+    draw
+end
+
+@chain DataFrame(Tables.table(test)) begin
+    @transform(:time = tlower:δt:tmax)
+    rename(:Column1 => :Above5, :Column2 => :Length)
+    data(_) *
+    mapping(:time, :Length; color = :Above5) *
+    (visual(Lines) + visual(Scatter))
+    draw
+end
