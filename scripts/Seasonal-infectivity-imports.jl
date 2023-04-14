@@ -10,7 +10,7 @@ using DrWatson
 
 using JumpProcesses, Statistics, DataFrames, DataFramesMeta, LinearAlgebra
 using CairoMakie, AlgebraOfGraphics, DifferentialEquations, ModelingToolkit
-using BenchmarkTools, JLD2, Random, ProgressMeter
+using BenchmarkTools, JLD2, Random, ProgressMeter, StatsBase
 
 CairoMakie.activate!()
 set_aog_theme!()
@@ -23,11 +23,11 @@ includet(srcdir("Julia/cleaning-functions.jl"))
 
 #%%
 N = 4e5
-s = 0.9
-i = 0.1
+s = 0.1
+i = 0.01
 r = 1.0 - (s + i)
 u₀ = convert.(Int64, [N * s, N * i, N * r, N])
-δt = 0.5
+δt = 1.0
 tlower = 0.0
 tmax = 365.0 * 100
 tspan = (tlower, tmax)
@@ -283,7 +283,8 @@ N_vec = convert.(Int64, [1e3, 1e4, 5e5])
 nsims_vec = [10, 100, 1000]
 u₀_prop_map = [
     Dict(:s => 0.9, :i => 0.1, :r => 0.0),
-    Dict(:s => 0.1, :i => 0.1, :r => 0.8)
+    Dict(:s => 0.1, :i => 0.1, :r => 0.8),
+    Dict(:s => 0.1, :i => 0.01, :r => 0.89)
 ]
 δt_vec = [0.5, 1.0]
 tmax_vec = [365.0 * 100]
@@ -370,7 +371,7 @@ sim_files = []
 quantile_files = []
 for (root, dirs, files) in walkdir(
     datadir(
-        "seasonal-infectivity-import", "jump", "N_10000", "r_0.0"
+        "seasonal-infectivity-import", "jump", "N_500000", "r_0.89"
     ),
 )
     for (i, file) in enumerate(files)
@@ -414,8 +415,7 @@ for sim in 1:size(ensemble_array, 3)
         ax,
         1:size(ensemble_array, 2),
         ensemble_array[2, :, sim];
-        color = "red",
-        alpha = 0.01,
+        color = ("red", 0.1),
     )
 end
 
