@@ -1,25 +1,23 @@
-function create_sir_plot(sol_df; labels = ["S", "I", "R", "N"])
-    return data(sol_df) *
-           mapping(
-               :time => "Time (days)", :Number;
-               color = :State => sorter(labels...),
-           ) *
-           visual(Lines; linewidth = 4)
-end
+function create_sir_plot(sol_df; labels = ["S", "I", "R", "N"], annual = annual)
+    time_function(t) = annual ==true ? t / 365.0 : t
+    if annual == true
+        time_label = "Time (years)"
+    else
+        time_label = "Time (days)"
+    end
 
-function create_annual_sir_plot(sol_df; labels = ["S", "I", "R", "N"])
     return data(sol_df) *
            mapping(
-               :time => (t -> t / 365.0) => "Time (years)", :Number;
+                :time => time_function => time_label, :Number;
                color = :State => sorter(labels...),
            ) *
            visual(Lines; linewidth = 4)
 end
 
 function draw_sir_plot(
-    sir_plot; colors = ["dodgerblue4", "firebrick3", "chocolate2", "purple"]
+    sir_plot; colors = ["dodgerblue4", "firebrick3", "chocolate2", "purple"], xlims = xlims, ylims = ylims,
 )
-    return draw(sir_plot; palettes = (; color = colors))
+    return draw(sir_plot; palettes = (; color = colors), axis = (; limits = (xlims, ylims)),)
 end
 
 function draw_sir_plot(
@@ -27,12 +25,15 @@ function draw_sir_plot(
     colors = ["dodgerblue4", "firebrick3", "chocolate2", "purple"],
     labels = ["S", "I", "R", "N"],
     annual = false,
+    xlims = nothing,
+    ylims = nothing,
 )
-    return if annual == false
-        draw_sir_plot(create_sir_plot(sol_df; labels = labels); colors = colors)
-    else
-        draw_sir_plot(create_annual_sir_plot(sol_df; labels = labels); colors = colors)
-    end
+    return draw_sir_plot(
+        create_sir_plot(sol_df; labels = labels, annual = annual);
+        colors = colors,
+        xlims = xlims,
+        ylims = ylims
+    )
 end
 
 function create_beta_plot(beta_df)
@@ -154,7 +155,7 @@ function create_sir_quantiles_plot(
     δt = δt,
     colors = ["dodgerblue4", "firebrick3", "chocolate2", "purple"],
     labels = ["S", "I", "R", "N"],
-    annual = false
+    annual = false,
 )
     med_index = findfirst(isequal.(0.5), quantiles)
     lower_index = findfirst(isequal.(lower), quantiles)

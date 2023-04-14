@@ -152,7 +152,10 @@ season_infec_sol_df = create_sir_df(season_infec_sol, [:S, :I, :R, :N])
 #%%
 sircolors = ["dodgerblue4", "firebrick3", "chocolate2", "purple"]
 
-draw_sir_plot(season_infec_sol_df; colors = sircolors, annual = true)
+draw_sir_plot(
+    season_infec_sol_df; labels = ["S", "I", "R", "N"], annual = true,
+    colors = sircolors
+)
 
 #%%
 # Visualize seasonal changes in the infection rate
