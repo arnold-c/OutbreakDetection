@@ -139,7 +139,6 @@ dep_graph = [
     [5, 1, 6],          # R death, birth, import
     [6, 1, 2, 3, 4, 7], # Import, birth, recovery, S death, I death, infection
     [7, 2, 3, 4],       # Infection, recovery, S death, I death
-    # [8],                # Background noise
 ]
 
 #%%
@@ -159,7 +158,7 @@ function sde_affect!(integrator)
 end
 
 sde_cb = DiscreteCallback(
-    sde_condition, sde_affect!; save_positions = (false, false)
+    sde_condition, sde_affect!; save_positions = (false, true)
 )
 
 #%%
@@ -174,9 +173,11 @@ season_infec_prob = SDEProblem(background_ode!, background_noise!, u₀, tspan, 
 season_infec_jump_prob = JumpProblem(
     season_infec_prob, Coevolve(), jumps; dep_graph
 )
+
 season_infec_sol = solve(
-    season_infec_jump_prob, SRIW1(); callback = sde_cb, save_everystep = false
+    season_infec_jump_prob, LambaEM(); callback = sde_cb, save_everystep = false
 )
+
 season_infec_sol_df = create_sir_df(season_infec_sol, [:S, :I, :R, :N, :Noise])
 minimum(subset(season_infec_sol_df, :State => s -> s .== "Noise")[:, :Number])
 
