@@ -1,7 +1,5 @@
-using ProgressMeter
-
 function create_sir_df(sir_array::Matrix, trange, states = [:S, :I, :R, :N])
-    create_sir_df(Tables.table(hcat(trange, sir_array')), states)
+    create_sir_df(hcat(trange, DataFrame(Tables.table(sir_array'))), states)
 end
 
 function create_sir_df(sol, states)
