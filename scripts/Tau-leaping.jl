@@ -60,6 +60,7 @@ function sir_mod!(state_arr, change_arr, jump_arr, u, p, tlength)
     β, γ, μ, ε, R₀, δt = p
 
     state_arr[:, 1] = u
+
     for j in 2:tlength
         S = state_arr[1, j - 1]
         I = state_arr[2, j - 1]
@@ -164,3 +165,33 @@ change_labels = ["dS", "dI", "dR", "dN"]
     )
 end
 
+#%%
+nsims = 1000
+ensemble_sir_arr = zeros(Int64, size(u₀, 1), tlength, nsims)
+ensemble_change_arr = zeros(Int64, size(u₀, 1), tlength, nsims)
+ensemble_jump_arr = zeros(Int64, 7, tlength, nsims)
+
+for k in 1:nsims
+    @views sir_arr = ensemble_sir_arr[:, :, k]
+    @views change_arr = ensemble_change_arr[:, :, k]
+    @views jump_arr = ensemble_jump_arr[:, :, k]
+
+    sir_mod!(sir_arr, change_arr, jump_arr, u₀, p, tlength)
+end
+
+quantile_ints = [95, 90, 80, 50]
+
+ensemble_summary = zeros(Float64, 3, tlength, length(u₀), length(quantile_ints))
+
+for q in eachindex(quantile_ints)
+    qlow = round(0.5 - quantile_ints[q] / 200, digits = 3)
+    qhigh = round(0.5 + quantile_ints[q] / 200, digits = 3)
+    quantiles = [qlow, 0.5, qhigh]
+
+    @views quantile_array = ensemble_summary[:, :, :, q]
+    create_sir_all_sim_quantiles!(
+        ensemble_sir_arr, quantile_array; quantiles = quantiles
+    )
+end
+
+create_sir_quantiles_plot(ensemble_summary[:, :, :, 1]; annual = true)
