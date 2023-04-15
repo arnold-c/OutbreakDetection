@@ -1,6 +1,6 @@
 """
 This is a simulation of an SIR model that uses Tau-leaping.
-All jumps are manually defined.
+All jump_arr are manually defined.
 """
 #%%
 using DrWatson
@@ -14,7 +14,7 @@ CairoMakie.activate!()
 set_aog_theme!()
 
 #%%
-# Revise will keep track of file changes and reload functions as necessary
+# Revise will keep track of file change_arr and reload functions as necessary
 includet(srcdir("Julia/transmission-functions.jl"))
 includet(srcdir("Julia/plotting-functions.jl"))
 includet(srcdir("Julia/cleaning-functions.jl"))
@@ -44,20 +44,27 @@ Random.seed!(1234)
 
 #%%
 function sir_mod(u, p, tlength)
+    state_arr = zeros(Int64, size(u, 1), tlength)
+    state_arr[:, 1] = u
+
+    change_arr = similar(state_arr)
+
+    jump_arr = zeros(Int64, 7, tlength)
+
+    sir_mod!(state_arr, change_arr, jump_arr, u, p, tlength)
+
+    return state_arr, change_arr, jump_arr
+end
+
+function sir_mod!(state_arr, change_arr, jump_arr, u, p, tlength)
     S0, I0, R0, N0 = u
     β, γ, μ, ε, R₀, δt = p
 
-    states = zeros(4, tlength)
-    changes = similar(states)
-    states[:, 1] = [S0, I0, R0, N0]
-
-    jumps = zeros(7, tlength)
-
-    for i in 2:tlength
-        S = states[1, i - 1]
-        I = states[2, i - 1]
-        R = states[3, i - 1]
-        N = states[4, i - 1]
+    for j in 2:tlength
+        S = state_arr[1, j - 1]
+        I = state_arr[2, j - 1]
+        R = state_arr[3, j - 1]
+        N = state_arr[4, j - 1]
 
         infec_rate = β * S * I
         infect_num = rand(Poisson(infec_rate * δt))
@@ -80,57 +87,75 @@ function sir_mod(u, p, tlength)
         import_rate = ε * N / R₀
         import_num = rand(Poisson(import_rate * δt))
 
-        changes[1, i] = birth_num - infect_num - S_death_num - import_num
-        changes[2, i] = infect_num - recov_num - I_death_num + import_num
-        changes[3, i] = recov_num - R_death_num
-        changes[4, i] = sum(changes[1:3, i])
+        change_arr[1, j] = birth_num - infect_num - S_death_num - import_num
+        change_arr[2, j] = infect_num - recov_num - I_death_num + import_num
+        change_arr[3, j] = recov_num - R_death_num
+        change_arr[4, j] = sum(change_arr[1:3, j])
 
-        @. states[:, i] = states[:, i - 1] + changes[:, i]
+        for state in 1:size(state_arr, 1)
+            if state_arr[state, j - 1] + change_arr[state, j] < 0
+                change_arr[state, j] = -state_arr[state, j - 1]
+            end
+        end
 
-        jumps[:, i] = [
+        @. state_arr[:, j] = state_arr[:, j - 1] + change_arr[:, j]
+
+        jump_arr[:, j] = [
             infect_num,
             recov_num,
             birth_num,
             S_death_num,
             I_death_num,
             R_death_num,
-            import_num
+            import_num,
         ]
     end
 
-    return states, changes, jumps
+    return nothing
 end
 
 #%%
 sir_array, change_array, jump_array = sir_mod(u₀, p, tlength)
 sir_df = create_sir_df(sir_array, trange, [:S, :I, :R, :N])
 
-
 #%%
+sircolors = ["dodgerblue4", "firebrick3", "chocolate2", "purple"]
 draw_sir_plot(sir_df; annual = true, labels = ["S", "I", "R", "N"])
 
 #%%
 @chain DataFrame(Tables.table(jump_array')) begin
     hcat(trange, _)
     rename!([
-        "time", "Infect", "Recov", "Birth", "S_death", "I_death", "R_death"
+        "time", "Infect", "Recov", "Birth", "S_death", "I_death", "R_death",
+        "Import",
     ])
     stack(_, Not("time"); variable_name = :Jump, value_name = :Number)
     data(_) *
-    mapping(:time => "Time (days)", :Number; color = :Jump) *
-    visual(Lines; linewidth = 4)
-    draw
+    mapping(
+        :time => (t -> t / 365) => "Time (years)",
+        :Number;
+        color = :Jump,
+        layout = :Jump,
+    ) *
+    visual(Lines; linewidth = 1)
+    draw(;
+        facet = (; linkyaxes = :none), axis = (; limits = ((0, 1), nothing))
+    )
 end
 
 #%%
+change_labels = ["dS", "dI", "dR", "dN"]
 @chain DataFrame(Tables.table(change_array')) begin
     hcat(trange, _)
     rename!([
-        "time", "dS", "dI", "dR", "dN"
+        "time", change_labels...
     ])
     stack(_, Not("time"); variable_name = :Change, value_name = :Number)
     data(_) *
-    mapping(:time => "Time (days)", :Number; color = :Change) *
+    mapping(
+        :time => (t -> t / 365) => "Time (years)", :Number;
+        color = :Change => sorter(change_labels...), layout = :Change,
+    ) *
     visual(Lines; linewidth = 4)
-    draw
+    draw(; facet = (; linkyaxes = :none), palettes = (; color = sircolors))
 end
