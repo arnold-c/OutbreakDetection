@@ -45,9 +45,8 @@ Random.seed!(1234)
 #%%
 function sir_mod(u, p, tlength)
     state_arr = zeros(Int64, size(u, 1), tlength)
-    state_arr[:, 1] = u
 
-    change_arr = similar(state_arr)
+    change_arr = zeros(Int64, size(u, 1), tlength)
 
     jump_arr = zeros(Int64, 7, tlength)
 
@@ -60,6 +59,7 @@ function sir_mod!(state_arr, change_arr, jump_arr, u, p, tlength)
     S0, I0, R0, N0 = u
     β, γ, μ, ε, R₀, δt = p
 
+    state_arr[:, 1] = u
     for j in 2:tlength
         S = state_arr[1, j - 1]
         I = state_arr[2, j - 1]
@@ -115,7 +115,7 @@ function sir_mod!(state_arr, change_arr, jump_arr, u, p, tlength)
 end
 
 #%%
-sir_array, change_array, jump_array = sir_mod(u₀, p, tlength)
+sir_array, change_array, jump_array = sir_mod!(u₀, p, tlength)
 sir_df = create_sir_df(sir_array, trange, [:S, :I, :R, :N])
 
 #%%
@@ -157,5 +157,10 @@ change_labels = ["dS", "dI", "dR", "dN"]
         color = :Change => sorter(change_labels...), layout = :Change,
     ) *
     visual(Lines; linewidth = 4)
-    draw(; facet = (; linkyaxes = :none), palettes = (; color = sircolors))
+    draw(;
+        facet = (; linkyaxes = :none),
+        palettes = (; color = sircolors),
+        axis = (; limits = ((0, 100), nothing)),
+    )
 end
+
