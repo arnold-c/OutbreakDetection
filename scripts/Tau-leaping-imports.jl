@@ -1,6 +1,6 @@
 """
-This is a simulation of an SIR model that uses Tau-leaping.
-All jump_arr are manually defined.
+This is a simulation of an SIR model that uses Tau-leaping, with commuter
+imports. All jumps are manually defined.
 """
 #%%
 using DrWatson
@@ -116,7 +116,7 @@ function sir_mod!(state_arr, change_arr, jump_arr, u, p, tlength)
 end
 
 #%%
-sir_array, change_array, jump_array = sir_mod!(u₀, p, tlength)
+sir_array, change_array, jump_array = sir_mod(u₀, p, tlength)
 sir_df = create_sir_df(sir_array, trange, [:S, :I, :R, :N])
 
 #%%
@@ -184,8 +184,8 @@ quantile_ints = [95, 90, 80, 50]
 ensemble_summary = zeros(Float64, 3, tlength, length(u₀), length(quantile_ints))
 
 for q in eachindex(quantile_ints)
-    qlow = round(0.5 - quantile_ints[q] / 200, digits = 3)
-    qhigh = round(0.5 + quantile_ints[q] / 200, digits = 3)
+    qlow = round(0.5 - quantile_ints[q] / 200; digits = 3)
+    qhigh = round(0.5 + quantile_ints[q] / 200; digits = 3)
     quantiles = [qlow, 0.5, qhigh]
 
     @views quantile_array = ensemble_summary[:, :, :, q]
@@ -194,4 +194,6 @@ for q in eachindex(quantile_ints)
     )
 end
 
-create_sir_quantiles_plot(ensemble_summary[:, :, :, 1]; annual = true)
+create_sir_quantiles_plot(
+    ensemble_summary[:, :, :, 1]; annual = true, ylims = (0, 1000)
+)
