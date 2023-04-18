@@ -47,10 +47,10 @@ Random.seed!(1234)
 
 #%%
 function calculate_beta_amp(β_mean, β_force, t)
-    return β_mean * (1 +  β_force * cos(2pi * t / 365))
+    return β_mean * (1 + β_force * cos(2pi * t / 365))
 end
 
-function sir_mod(u, p, trange; retβamp = false)
+function sir_mod(u, p, trange; retβamp = false, type = "stoch")
     tlength = length(trange)
     dt = step(trange)
 
@@ -63,47 +63,60 @@ function sir_mod(u, p, trange; retβamp = false)
     if retβamp == true
         beta_arr = zeros(Float64, 1, tlength)
         sir_mod!(
-            state_arr, change_arr, jump_arr, beta_arr, u, p, trange; dt = dt
+            state_arr, change_arr, jump_arr, beta_arr, u, p, trange; dt = dt, type = type
         )
         return state_arr, change_arr, jump_arr, beta_arr
     else
-        sir_mod!(state_arr, change_arr, jump_arr, u, p, trange; dt = dt)
+        sir_mod!(
+            state_arr, change_arr, jump_arr, u, p, trange; dt = dt, type = type
+        )
         return state_arr, change_arr, jump_arr
     end
 end
 
-function sir_mod_loop!(state_arr, change_arr, jump_arr, β_t, j, dt)
+function sir_mod_loop!(
+    state_arr, change_arr, jump_arr, β_t, j, dt; type = type
+)
+    # Unpack the state variables for easier use
     S = state_arr[1, j - 1]
     I = state_arr[2, j - 1]
     R = state_arr[3, j - 1]
     N = state_arr[4, j - 1]
 
+    # Calculate the rates of each event
     infec_rate = β_t * S * I
-    infect_num = rand(Poisson(infec_rate * dt))
-
     recov_rate = γ * I
-    recov_num = rand(Poisson(recov_rate * dt))
-
     birth_rate = μ * N
-    birth_num = rand(Poisson(birth_rate * dt))
-
     S_death_rate = μ * S
-    S_death_num = rand(Poisson(S_death_rate * dt))
-
     I_death_rate = μ * I
-    I_death_num = rand(Poisson(I_death_rate * dt))
-
     R_death_rate = μ * R
-    R_death_num = rand(Poisson(R_death_rate * dt))
-
     import_rate = ε * N / R₀
-    import_num = rand(Poisson(import_rate * dt))
 
-    change_arr[1, j] = birth_num - infect_num - S_death_num - import_num
-    change_arr[2, j] = infect_num - recov_num - I_death_num + import_num
-    change_arr[3, j] = recov_num - R_death_num
+    # Calculate the number of jumps for each event
+    if type == "stoch"
+        jump_arr[:, j] = map(
+            r -> rand(Poisson(r)),
+            [infec_rate, recov_rate, birth_rate, S_death_rate, I_death_rate,
+                R_death_rate, import_rate],
+        )
+    elseif type == "det"
+        jump_arr[:, j] = map(
+            r -> round(r * dt),
+            [infec_rate, recov_rate, birth_rate, S_death_rate, I_death_rate,
+                R_death_rate, import_rate],
+        )
+    else
+        return("Type must be stoch or det")
+    end
+
+    # Calculate the change in each state
+    change_arr[1, j] = jump_arr[3, j] - jump_arr[1, j] - jump_arr[4, j] - jump_arr[7, j]
+    change_arr[2, j] = jump_arr[1, j] - jump_arr[2, j] - jump_arr[5, j] + jump_arr[7, j]
+    change_arr[3, j] = jump_arr[2, j] - jump_arr[6, j]
     change_arr[4, j] = sum(change_arr[1:3, j])
 
+    # Check that the change in each state does not result in a negative state, 
+    # and if it is, set the change to the negative of the current state
     for state in 1:size(state_arr, 1)
         if state_arr[state, j - 1] + change_arr[state, j] < 0
             change_arr[state, j] = -state_arr[state, j - 1]
@@ -112,18 +125,10 @@ function sir_mod_loop!(state_arr, change_arr, jump_arr, β_t, j, dt)
 
     @. state_arr[:, j] = state_arr[:, j - 1] + change_arr[:, j]
 
-    jump_arr[:, j] = [
-        infect_num,
-        recov_num,
-        birth_num,
-        S_death_num,
-        I_death_num,
-        R_death_num,
-        import_num,
-    ]
+    return nothing
 end
 
-function sir_mod!(state_arr, change_arr, jump_arr, u, p, trange; dt)
+function sir_mod!(state_arr, change_arr, jump_arr, u, p, trange; dt, type = "stoch")
     S0, I0, R0, N0 = u
     β_mean, β_force, γ, μ, ε, R₀ = p
 
@@ -135,13 +140,13 @@ function sir_mod!(state_arr, change_arr, jump_arr, u, p, trange; dt)
 
         β_t = calculate_beta_amp(β_mean, β_force, t)
 
-        sir_mod_loop!(state_arr, change_arr, jump_arr, β_t, j, dt)
+        sir_mod_loop!(state_arr, change_arr, jump_arr, β_t, j, dt; type = type)
     end
 
     return nothing
 end
 
-function sir_mod!(state_arr, change_arr, jump_arr, beta_arr, u, p, trange; dt)
+function sir_mod!(state_arr, change_arr, jump_arr, beta_arr, u, p, trange; dt, type = "stoch")
     S0, I0, R0, N0 = u
     β_mean, β_force, γ, μ, ε, R₀ = p
 
@@ -154,16 +159,17 @@ function sir_mod!(state_arr, change_arr, jump_arr, beta_arr, u, p, trange; dt)
 
             continue
         end
-        
-        sir_mod_loop!(state_arr, change_arr, jump_arr, β_t, j, dt)
 
+        sir_mod_loop!(state_arr, change_arr, jump_arr, β_t, j, dt; type = type)
     end
 
     return nothing
 end
 
 #%%
-sir_array, change_array, jump_array, β_arr = sir_mod(u₀, p, trange; retβamp = true)
+sir_array, change_array, jump_array, β_arr = sir_mod(
+    u₀, p, trange; retβamp = true, type = "det"
+)
 sir_df = create_sir_df(sir_array, trange, [:S, :I, :R, :N])
 
 sircolors = ["dodgerblue4", "firebrick3", "chocolate2", "purple"]
@@ -187,7 +193,7 @@ draw_sir_plot(sir_df; annual = true, labels = state_labels)
     ) *
     visual(Lines; linewidth = 1)
     draw(;
-        facet = (; linkyaxes = :none), axis = (; limits = ((0, 1), nothing))
+        facet = (; linkyaxes = :none), axis = (; limits = (nothing, nothing))
     )
 end
 
@@ -236,7 +242,7 @@ end
 end
 
 #%%
-nsims = 1000
+nsims = 100
 ensemble_sir_arr = zeros(Int64, size(u₀, 1), tlength, nsims)
 ensemble_change_arr = zeros(Int64, size(u₀, 1), tlength, nsims)
 ensemble_jump_arr = zeros(Int64, 7, tlength, nsims)
@@ -265,7 +271,7 @@ for q in eachindex(quantile_ints)
 end
 
 create_sir_quantiles_plot(
-    ensemble_summary[:, :, :, 1]; annual = true, δt = τ, ylims = (0, 1e2), xlims = (0, 30)
+    ensemble_summary[:, :, :, 1]; annual = true, δt = τ
 )
 
 #%%
@@ -273,18 +279,17 @@ create_sir_quantiles_plot(
 μ_max = 60
 μ_step = 0.1
 n_μs = length(μ_min:μ_step:μ_max)
-bifurc_sims = 10
 μ_vec = zeros(Float64, n_μs)
-μ_vec .= collect(μ_min:μ_step:μ_max) ./  (1000 * 365)
+μ_vec .= collect(μ_min:μ_step:μ_max) ./ (1000 * 365)
 
-bifurc_sir_arr = zeros(Int64, size(u₀, 1), tlength, n_μs, bifurc_sims);
-bifurc_change_arr = zeros(Int64, size(u₀, 1), tlength, n_μs, bifurc_sims);
-bifurc_jump_arr = zeros(Int64, 7, tlength, n_μs, bifurc_sims);
+bifurc_sir_arr = zeros(Int64, size(u₀, 1), tlength, n_μs);
+bifurc_change_arr = zeros(Int64, size(u₀, 1), tlength, n_μs);
+bifurc_jump_arr = zeros(Int64, 7, tlength, n_μs);
 
-for (k, μ) in pairs(μ_vec), sim in 1:bifurc_sims
-    @views sir = bifurc_sir_arr[:, :, k, sim]
-    @views change = bifurc_change_arr[:, :, k, sim]
-    @views jump = bifurc_jump_arr[:, :, k, sim]
+@showprogress for (k, μ) in pairs(μ_vec)
+    @views sir = bifurc_sir_arr[:, :, k]
+    @views change = bifurc_change_arr[:, :, k]
+    @views jump = bifurc_jump_arr[:, :, k]
 
     p = (β₀, β₁, γ, μ, ε, R₀)
 
@@ -294,11 +299,11 @@ end
 bifurc_summary = DataFrame(
     Dict(
         :μ => μ_min:μ_step:μ_max,
-        :S => [median(bifurc_sir_arr[1, end, :, :], dims = 2)...],
-        :I => [median(bifurc_sir_arr[2, end, :, :], dims = 2)...],
-        :R => [median(bifurc_sir_arr[3, end, :, :], dims = 2)...],
-        :N => [median(bifurc_sir_arr[4, end, :, :], dims = 2)...],
-    )
+        :S => [median(bifurc_sir_arr[1, end, :, :]; dims = 2)...],
+        :I => [median(bifurc_sir_arr[2, end, :, :]; dims = 2)...],
+        :R => [median(bifurc_sir_arr[3, end, :, :]; dims = 2)...],
+        :N => [median(bifurc_sir_arr[4, end, :, :]; dims = 2)...],
+    ),
 )
 
 @chain bifurc_summary begin
@@ -307,3 +312,26 @@ bifurc_summary = DataFrame(
     visual(Scatter)
     draw
 end
+
+@chain bifurc_summary begin
+    data(_) *
+    mapping(:μ, :N) *
+    visual(Scatter)
+    draw
+end
+
+#%%
+bifurc_fig = Figure()
+bifurc_ax = Axis(bifurc_fig[1, 1])
+
+for sim in 1:bifurc_sims
+    scatter!(
+        bifurc_ax,
+        μ_min:μ_step:μ_max,
+        bifurc_sir_arr[2, end, :, sim];
+        colorrange = (1, 10),
+        color = :black,
+    )
+end
+
+bifurc_fig
