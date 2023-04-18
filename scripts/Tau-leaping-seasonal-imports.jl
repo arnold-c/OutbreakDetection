@@ -7,7 +7,7 @@ using DrWatson
 @quickactivate "OutbreakDetection"
 
 using JumpProcesses, Statistics, DataFrames, DataFramesMeta, LinearAlgebra
-using CairoMakie, AlgebraOfGraphics
+using CairoMakie, AlgebraOfGraphics, ColorSchemes|
 using DifferentialEquations, ModelingToolkit
 using BenchmarkTools, JLD2, Random, ProgressMeter, StatsBase, Distributions
 
@@ -276,62 +276,93 @@ create_sir_quantiles_plot(
 
 #%%
 μ_min = 10
-μ_max = 60
-μ_step = 0.1
+μ_max = 100
+μ_step = 1.0
 n_μs = length(μ_min:μ_step:μ_max)
 μ_vec = zeros(Float64, n_μs)
 μ_vec .= collect(μ_min:μ_step:μ_max) ./ (1000 * 365)
 
-bifurc_sir_arr = zeros(Int64, size(u₀, 1), tlength, n_μs);
-bifurc_change_arr = zeros(Int64, size(u₀, 1), tlength, n_μs);
-bifurc_jump_arr = zeros(Int64, 7, tlength, n_μs);
+bifurc_μ_sir_arr = zeros(Int64, size(u₀, 1), tlength, n_μs);
+bifurc_μ_change_arr = zeros(Int64, size(u₀, 1), tlength, n_μs);
+bifurc_μ_jump_arr = zeros(Int64, 7, tlength, n_μs);
 
 @showprogress for (k, μ) in pairs(μ_vec)
-    @views sir = bifurc_sir_arr[:, :, k]
-    @views change = bifurc_change_arr[:, :, k]
-    @views jump = bifurc_jump_arr[:, :, k]
+    @views sir = bifurc_μ_sir_arr[:, :, k]
+    @views change = bifurc_μ_change_arr[:, :, k]
+    @views jump = bifurc_μ_jump_arr[:, :, k]
 
     p = (β₀, β₁, γ, μ, ε, R₀)
 
-    sir_mod!(sir, change, jump, u₀, p, trange; dt = τ)
+    sir_mod!(sir, change, jump, u₀, p, trange; dt = τ, type = "det")
 end
 
-bifurc_summary = DataFrame(
-    Dict(
-        :μ => μ_min:μ_step:μ_max,
-        :S => [median(bifurc_sir_arr[1, end, :, :]; dims = 2)...],
-        :I => [median(bifurc_sir_arr[2, end, :, :]; dims = 2)...],
-        :R => [median(bifurc_sir_arr[3, end, :, :]; dims = 2)...],
-        :N => [median(bifurc_sir_arr[4, end, :, :]; dims = 2)...],
-    ),
-)
 
-@chain bifurc_summary begin
-    data(_) *
-    mapping(:μ, :I) *
-    visual(Scatter)
-    draw
-end
-
-@chain bifurc_summary begin
-    data(_) *
-    mapping(:μ, :N) *
-    visual(Scatter)
-    draw
+years = 40 * 365:365:tlength
+bifurc_μ_annual_summary = zeros(Int64, length(years), n_μs, 4)
+for state in 1:4
+    bifurc_μ_annual_summary[:, :, state] .= bifurc_μ_sir_arr[state, years, :]
 end
 
 #%%
-bifurc_fig = Figure()
-bifurc_ax = Axis(bifurc_fig[1, 1])
+bifurc_μ_fig = Figure()
+bifurc_μ_ax = Axis(bifurc_μ_fig[1, 1])
 
-for sim in 1:bifurc_sims
+for year in eachindex(years)
     scatter!(
-        bifurc_ax,
+        bifurc_μ_ax,
         μ_min:μ_step:μ_max,
-        bifurc_sir_arr[2, end, :, sim];
-        colorrange = (1, 10),
-        color = :black,
+        bifurc_μ_annual_summary[year, :, 2];
+        # markersize = 4,
+        color = ColorSchemes.magma[year / length(years)],
     )
 end
 
-bifurc_fig
+bifurc_μ_fig
+
+
+#%%
+β₁_min = 0.0
+β₁_max = 1.0
+β₁_step = 0.01
+n_β₁s = length(β₁_min:β₁_step:β₁_max)
+β₁_vec = zeros(Float64, n_β₁s)
+β₁_vec .= collect(β₁_min:β₁_step:β₁_max)
+
+μ = 0.04
+
+bifurc_β₁_sir_arr = zeros(Int64, size(u₀, 1), tlength, n_β₁s);
+bifurc_β₁_change_arr = zeros(Int64, size(u₀, 1), tlength, n_β₁s);
+bifurc_β₁_jump_arr = zeros(Int64, 7, tlength, n_β₁s);
+
+@showprogress for (k, β₁) in pairs(β₁_vec)
+    @views sir = bifurc_β₁_sir_arr[:, :, k]
+    @views change = bifurc_β₁_change_arr[:, :, k]
+    @views jump = bifurc_β₁_jump_arr[:, :, k]
+
+    p = (β₀, β₁, γ, μ, ε, R₀)
+
+    sir_mod!(sir, change, jump, u₀, p, trange; dt = τ, type = "det")
+end
+
+
+years = 40 * 365:365:tlength
+bifurc_β₁_annual_summary = zeros(Int64, length(years), n_β₁s, 4)
+for state in 1:4
+    bifurc_β₁_annual_summary[:, :, state] .= bifurc_β₁_sir_arr[state, years, :]
+end
+
+#%%
+bifurc_β₁_fig = Figure()
+bifurc_β₁_ax = Axis(bifurc_β₁_fig[1, 1])
+
+for year in eachindex(years)
+    scatter!(
+        bifurc_β₁_ax,
+        β₁_min:β₁_step:β₁_max,
+        bifurc_β₁_annual_summary[year, :, 2];
+        # markersize = 4,
+        color = ColorSchemes.magma[year / length(years)],
+    )
+end
+
+bifurc_β₁_fig
