@@ -36,18 +36,18 @@ dur_inf = 8
 R₀ = 10.0
 γ = 1 / dur_inf
 μ = 1 / (62.5 * 365)
-β = calculate_beta(R₀, γ, μ, 1, N)
-# Adjust the scale of the seasonal variation in infectivity i.e. A_scale scales the amplitude of cosine function to 1/A_scale. The maximum infectivity is β
-βmax_scale = 2.0
-βmin_scale = 0.5
+# β₀ is the average transmission rate
+β₀ = calculate_beta(R₀, γ, μ, 1, N)
+# Adjust the scale of the seasonal variation in infectivity i.e. β₁ scales the amplitude of cosine function
+β₁ = 0.2
 ε = (1.06 * μ * (R₀ - 1)) / sqrt(N) # Commuter imports - see p210 Keeling & Rohani
-p = (β, γ, μ, ε, R₀, βmax_scale, βmin_scale)
+p = (β₀, β₁, γ, μ, ε, R₀)
 
 Random.seed!(1234)
 
 #%%
-function calculate_beta_amp(Amin, Amax, t)
-    return 0.5 * (Amax - Amin) * cos(2pi * t / 365) + ((Amax - Amin) / 2 + Amin)
+function calculate_beta_amp(β_mean, β_force, t)
+    return β_mean * (1 +  β_force * cos(2pi * t / 365))
 end
 
 function sir_mod(u, p, trange; retβamp = false)
@@ -61,24 +61,24 @@ function sir_mod(u, p, trange; retβamp = false)
     jump_arr = zeros(Int64, 7, tlength)
 
     if retβamp == true
-        beta_amps = zeros(Float64, 2, tlength)
+        beta_arr = zeros(Float64, 1, tlength)
         sir_mod!(
-            state_arr, change_arr, jump_arr, beta_amps, u, p, trange; dt = dt
+            state_arr, change_arr, jump_arr, beta_arr, u, p, trange; dt = dt
         )
-        return state_arr, change_arr, jump_arr, beta_amps
+        return state_arr, change_arr, jump_arr, beta_arr
     else
         sir_mod!(state_arr, change_arr, jump_arr, u, p, trange; dt = dt)
         return state_arr, change_arr, jump_arr
     end
 end
 
-function sir_mod_loop!(state_arr, change_arr, jump_arr, β_scaled, j, dt)
+function sir_mod_loop!(state_arr, change_arr, jump_arr, β_t, j, dt)
     S = state_arr[1, j - 1]
     I = state_arr[2, j - 1]
     R = state_arr[3, j - 1]
     N = state_arr[4, j - 1]
 
-    infec_rate = β_scaled * S * I
+    infec_rate = β_t * S * I
     infect_num = rand(Poisson(infec_rate * dt))
 
     recov_rate = γ * I
@@ -125,7 +125,7 @@ end
 
 function sir_mod!(state_arr, change_arr, jump_arr, u, p, trange; dt)
     S0, I0, R0, N0 = u
-    β, γ, μ, ε, R₀, βmax_scale, βmin_scale = p
+    β_mean, β_force, γ, μ, ε, R₀ = p
 
     for (j, t) in pairs(trange)
         if j == 1
@@ -133,40 +133,37 @@ function sir_mod!(state_arr, change_arr, jump_arr, u, p, trange; dt)
             continue
         end
 
-        β_amp = calculate_beta_amp(βmax_scale, βmin_scale, t)
-        β_scaled = β * β_amp
+        β_t = calculate_beta_amp(β_mean, β_force, t)
 
-        sir_mod_loop!(state_arr, change_arr, jump_arr, β_scaled, j, dt)
+        sir_mod_loop!(state_arr, change_arr, jump_arr, β_t, j, dt)
     end
 
     return nothing
 end
 
-function sir_mod!(state_arr, change_arr, jump_arr, beta_amps_arr, u, p, trange; dt)
+function sir_mod!(state_arr, change_arr, jump_arr, beta_arr, u, p, trange; dt)
     S0, I0, R0, N0 = u
-    β, γ, μ, ε, R₀, βmax_scale, βmin_scale = p
+    β_mean, β_force, γ, μ, ε, R₀ = p
 
     for (j, t) in pairs(trange)
+        β_t = calculate_beta_amp(β_mean, β_force, t)
+        beta_arr[j] = β_t
 
         if j == 1
             state_arr[:, j] = u
+
             continue
         end
-
-        β_amp = calculate_beta_amp(βmax_scale, βmin_scale, t)
-        β_scaled = β * β_amp
         
-        sir_mod_loop!(state_arr, change_arr, jump_arr, β_scaled, j, dt)
+        sir_mod_loop!(state_arr, change_arr, jump_arr, β_t, j, dt)
 
-        beta_amps_arr[1, j] = β_amp
-        beta_amps_arr[2, j] = β_scaled
     end
 
     return nothing
 end
 
 #%%
-sir_array, change_array, jump_array, β_amps = sir_mod(u₀, p, trange; retβamp = true)
+sir_array, change_array, jump_array, β_arr = sir_mod(u₀, p, trange; retβamp = true)
 sir_df = create_sir_df(sir_array, trange, [:S, :I, :R, :N])
 
 sircolors = ["dodgerblue4", "firebrick3", "chocolate2", "purple"]
@@ -226,21 +223,20 @@ end
 end
 
 #%%
-@chain DataFrame(Tables.table(β_amps')) begin
+@chain DataFrame(Tables.table(β_arr')) begin
     hcat(trange, _)
-    rename!([:time, :β_amp, :β_scaled])
+    rename!([:time, :β_t])
     stack(_, Not("time"); variable_name = :β, value_name = :Number)
     data(_) *
     mapping(
         :time => (t -> t / 365) => "Time (years)", :Number;
-        color = :β => sorter(["β_amp", "β_scaled"]), layout = :β,
     ) *
     visual(Lines; linewidth = 1)
     draw(; facet = (; linkyaxes = :none), axis = (; limits = ((0, 3), nothing)))
 end
 
 #%%
-nsims = 100
+nsims = 1000
 ensemble_sir_arr = zeros(Int64, size(u₀, 1), tlength, nsims)
 ensemble_change_arr = zeros(Int64, size(u₀, 1), tlength, nsims)
 ensemble_jump_arr = zeros(Int64, 7, tlength, nsims)
@@ -269,5 +265,5 @@ for q in eachindex(quantile_ints)
 end
 
 create_sir_quantiles_plot(
-    ensemble_summary[:, :, :, 1]; annual = true, δt = τ
+    ensemble_summary[:, :, :, 1]; annual = true, δt = τ, ylims = (0, 1e2), xlims = (0, 30)
 )
