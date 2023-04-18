@@ -267,3 +267,43 @@ end
 create_sir_quantiles_plot(
     ensemble_summary[:, :, :, 1]; annual = true, δt = τ, ylims = (0, 1e2), xlims = (0, 30)
 )
+
+#%%
+μ_min = 10
+μ_max = 60
+μ_step = 0.1
+n_μs = length(μ_min:μ_step:μ_max)
+bifurc_sims = 10
+μ_vec = zeros(Float64, n_μs)
+μ_vec .= collect(μ_min:μ_step:μ_max) ./  (1000 * 365)
+
+bifurc_sir_arr = zeros(Int64, size(u₀, 1), tlength, n_μs, bifurc_sims);
+bifurc_change_arr = zeros(Int64, size(u₀, 1), tlength, n_μs, bifurc_sims);
+bifurc_jump_arr = zeros(Int64, 7, tlength, n_μs, bifurc_sims);
+
+for (k, μ) in pairs(μ_vec), sim in 1:bifurc_sims
+    @views sir = bifurc_sir_arr[:, :, k, sim]
+    @views change = bifurc_change_arr[:, :, k, sim]
+    @views jump = bifurc_jump_arr[:, :, k, sim]
+
+    p = (β₀, β₁, γ, μ, ε, R₀)
+
+    sir_mod!(sir, change, jump, u₀, p, trange; dt = τ)
+end
+
+bifurc_summary = DataFrame(
+    Dict(
+        :μ => μ_min:μ_step:μ_max,
+        :S => [median(bifurc_sir_arr[1, end, :, :], dims = 2)...],
+        :I => [median(bifurc_sir_arr[2, end, :, :], dims = 2)...],
+        :R => [median(bifurc_sir_arr[3, end, :, :], dims = 2)...],
+        :N => [median(bifurc_sir_arr[4, end, :, :], dims = 2)...],
+    )
+)
+
+@chain bifurc_summary begin
+    data(_) *
+    mapping(:μ, :I) *
+    visual(Scatter)
+    draw
+end
