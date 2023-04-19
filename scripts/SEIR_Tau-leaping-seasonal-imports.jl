@@ -39,7 +39,7 @@ dur_inf = 5
 R₀ = 10.0
 σ = 1 / latent_per
 γ = 1 / dur_inf
-μ = 100 / (1000 * 365)
+μ = 1 / (62.5 * 365)
 # β₀ is the average transmission rate
 β₀ = calculate_beta(R₀, γ, μ, 1, N)
 # Adjust the scale of the seasonal variation in infectivity i.e. β₁ scales the amplitude of cosine function
@@ -304,7 +304,7 @@ create_sir_quantiles_plot(
 #%%
 μ_min = 10
 μ_max = 100
-μ_step = 5
+μ_step = 2.0
 n_μs = length(μ_min:μ_step:μ_max)
 μ_vec = zeros(Float64, n_μs)
 μ_vec .= collect(μ_min:μ_step:μ_max) ./ (1000 * 365)
@@ -356,7 +356,7 @@ bifurc_μ_fig
 #%%
 β₁_min = 0.0
 β₁_max = 1.0
-β₁_step = 0.1
+β₁_step = 0.01
 n_β₁s = length(β₁_min:β₁_step:β₁_max)
 β₁_vec = zeros(Float64, n_β₁s)
 β₁_vec .= collect(β₁_min:β₁_step:β₁_max)
@@ -446,7 +446,7 @@ prog = Progress(length(years) * 5 * length(β₁_vec))
     next!(prog)
 end
 
-bifurc_μ_β₁_cycle_summary = zeros(Float64, n_μs, n_β₁s, 5)
+bifurc_μ_β₁_cycle_summary = zeros(Float64, n_μs, n_β₁s, 5);
 prog = Progress(5 * length(β₁_vec) * length(μ_vec))
 @floop for (state, β₁, μ) in
     IterTools.product(1:5, eachindex(β₁_vec), eachindex(μ_vec))
@@ -456,11 +456,12 @@ prog = Progress(5 * length(β₁_vec) * length(μ_vec))
     next!(prog)
 end
 
+#%%
 # Counterintutively, the x-axis is the rows in the matrix, and the y-axis is the columns
 bifurc_μ_β₁_fig, bifurc_μ_β₁_ax, bifurc_μ_β₁_hm = heatmap(
     μ_vec .* (1000 * 365), β₁_vec, bifurc_μ_β₁_cycle_summary[:, :, 2]
 )
-Colorbar(bifurc_μ_β₁_fig[:, end + 1], hm)
+Colorbar(bifurc_μ_β₁_fig[:, end + 1], bifurc_μ_β₁_hm)
 
 bifurc_μ_β₁_ax.xlabel = "μ (per 1000, per annum)"
 bifurc_μ_β₁_ax.ylabel = "β₁ (seasonality)"
