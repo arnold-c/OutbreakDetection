@@ -54,16 +54,17 @@ function sir_mod(u, p, trange; retβamp = false, type = "stoch")
     tlength = length(trange)
     dt = step(trange)
 
-    state_arr = zeros(Int64, size(u, 1), tlength)
+    state_arr = zeros(Float64, size(u, 1), tlength)
 
-    change_arr = zeros(Int64, size(u, 1), tlength)
+    change_arr = zeros(Float64, size(u, 1), tlength)
 
-    jump_arr = zeros(Int64, 7, tlength)
+    jump_arr = zeros(Float64, 7, tlength)
 
     if retβamp == true
         beta_arr = zeros(Float64, 1, tlength)
         sir_mod!(
-            state_arr, change_arr, jump_arr, beta_arr, u, p, trange; dt = dt, type = type
+            state_arr, change_arr, jump_arr, beta_arr, u, p, trange; dt = dt,
+            type = type,
         )
         return state_arr, change_arr, jump_arr, beta_arr
     else
@@ -82,6 +83,10 @@ function sir_mod_loop!(
     I = state_arr[2, j - 1]
     R = state_arr[3, j - 1]
     N = state_arr[4, j - 1]
+
+    # Unpack the parameters for easier use
+    β_mean, β_force, γ, μ, ε, R₀ = p
+    β_t = calculate_beta_amp(β_mean, β_force, t)
 
     # Calculate the rates of each event
     infec_rate = β_t * S * I
@@ -138,9 +143,7 @@ function sir_mod!(state_arr, change_arr, jump_arr, u, p, trange; dt, type = "sto
             continue
         end
 
-        β_t = calculate_beta_amp(β_mean, β_force, t)
-
-        sir_mod_loop!(state_arr, change_arr, jump_arr, β_t, j, dt; type = type)
+        sir_mod_loop!(state_arr, change_arr, jump_arr, j, p, t, dt; type = type)
     end
 
     return nothing
@@ -160,7 +163,7 @@ function sir_mod!(state_arr, change_arr, jump_arr, beta_arr, u, p, trange; dt, t
             continue
         end
 
-        sir_mod_loop!(state_arr, change_arr, jump_arr, β_t, j, dt; type = type)
+        sir_mod_loop!(state_arr, change_arr, jump_arr, j, p, t, dt; type = type)
     end
 
     return nothing
