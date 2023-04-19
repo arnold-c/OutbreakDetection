@@ -434,17 +434,25 @@ end
 years = (40 * 365):365:(tlength - 365)
 bifurc_μ_β₁_annual_summary = zeros(Float64, length(years), n_μs, n_β₁s, 5);
 
-for (year, day) in pairs(years), state in 1:5, β₁ in eachindex(β₁_vec)
+prog = Progress(length(years) * 5 * length(β₁_vec))
+@floop for (years, state, β₁) in
+           IterTools.product(pairs(years), 1:5, eachindex(β₁_vec))
+    year = years[1]
+    day = years[2]
+
     bifurc_μ_β₁_annual_summary[year, β₁, :, state] = maximum(
         bifurc_μ_β₁_seir_arr[state, day:(day + 364), β₁, :]; dims = 1
     )
+    next!(prog)
 end
 
-bifurc_μ_β₁_cycle_summary = zeros(Float64, n_μs, n_β₁s, 5)
-for state in 1:5, β₁ in eachindex(β₁_vec), μ in eachindex(μ_vec)
+prog = Progress(5 * length(β₁_vec) * length(μ_vec))
+@floop for (state, β₁, μ) in
+    IterTools.product(1:5, eachindex(β₁_vec), eachindex(μ_vec))
     bifurc_μ_β₁_cycle_summary[μ, β₁, state] = length(
         Set(round.(bifurc_μ_β₁_annual_summary[:, μ, β₁, state]))
     )
+    next!(prog)
 end
 
 # Counterintutively, the x-axis is the rows in the matrix, and the y-axis is the columns
