@@ -440,12 +440,13 @@ prog = Progress(length(years) * 5 * length(β₁_vec))
     year = years[1]
     day = years[2]
 
-    bifurc_μ_β₁_annual_summary[year, β₁, :, state] = maximum(
-        bifurc_μ_β₁_seir_arr[state, day:(day + 364), β₁, :]; dims = 1
+    bifurc_μ_β₁_annual_summary[year, :, β₁, state] = maximum(
+        bifurc_μ_β₁_seir_arr[state, day:(day + 364), :, β₁]; dims = 1
     )
     next!(prog)
 end
 
+bifurc_μ_β₁_cycle_summary = zeros(Float64, n_μs, n_β₁s, 5)
 prog = Progress(5 * length(β₁_vec) * length(μ_vec))
 @floop for (state, β₁, μ) in
     IterTools.product(1:5, eachindex(β₁_vec), eachindex(μ_vec))
@@ -457,7 +458,7 @@ end
 
 # Counterintutively, the x-axis is the rows in the matrix, and the y-axis is the columns
 bifurc_μ_β₁_fig, bifurc_μ_β₁_ax, bifurc_μ_β₁_hm = heatmap(
-    μ_vec, β₁_vec, bifurc_μ_β₁_cycle_summary[:, :, 2]
+    μ_vec .* (1000 * 365), β₁_vec, bifurc_μ_β₁_cycle_summary[:, :, 2]
 )
 Colorbar(bifurc_μ_β₁_fig[:, end + 1], hm)
 
