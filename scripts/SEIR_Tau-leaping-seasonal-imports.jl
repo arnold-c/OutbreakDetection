@@ -300,6 +300,9 @@ create_sir_quantiles_plot(
     ensemble_summary[:, :, :, 1]; annual = true, δt = τ, colors = seircolors,
     labels = state_labels,
 )
+################################################################################
+########################## Bifurcation Diagrams ################################
+################################################################################
 
 #%%
 μ_min = 10
@@ -309,11 +312,16 @@ n_μs = length(μ_min:μ_step:μ_max)
 μ_vec = zeros(Float64, n_μs)
 μ_vec .= collect(μ_min:μ_step:μ_max) ./ (1000 * 365)
 
+ε_vec = (1.06 .* μ_vec .* (R₀ - 1)) ./ sqrt(N)
+
 bifurc_μ_seir_arr = zeros(Float64, size(u₀, 1), tlength, n_μs);
 bifurc_μ_change_arr = zeros(Float64, size(u₀, 1), tlength, n_μs);
 bifurc_μ_jump_arr = zeros(Float64, 9, tlength, n_μs);
 
-@showprogress for (k, μ_run) in pairs(μ_vec)
+prog = Progress(n_μs)
+@floop for (k, μ_run) in pairs(μ_vec)
+    ε = ε_vec[k]
+
     seir = @view bifurc_μ_seir_arr[:, :, k]
     change = @view bifurc_μ_change_arr[:, :, k]
     jump = @view bifurc_μ_jump_arr[:, :, k]
@@ -322,6 +330,7 @@ bifurc_μ_jump_arr = zeros(Float64, 9, tlength, n_μs);
     sir_mod!(seir, change, jump,
         u₀, params, trange; dt = τ, type = "det",
     )
+    next!(prog)
 end
 
 years = (40 * 365):365:(tlength - 365)
@@ -366,6 +375,7 @@ bifurc_β₁_change_arr = zeros(Float64, size(u₀, 1), tlength, n_β₁s);
 bifurc_β₁_jump_arr = zeros(Float64, 9, tlength, n_β₁s);
 
 μ = 50 / (1000 * 365)
+ε = 1.06 * μ * (R₀ - 1) / sqrt(N)
 
 @showprogress for (k, β₁) in pairs(β₁_vec)
     seir = @view bifurc_β₁_seir_arr[:, :, k]
@@ -420,6 +430,8 @@ prog = Progress(length(μ_vec) * length(β₁_vec))
     μ = μ_pair[2]
     l = β₁_pair[1]
     β₁ = β₁_pair[2]
+    ε = ε_vec[k]
+
     seir = @view bifurc_μ_β₁_seir_arr[:, :, k, l]
     change = @view bifurc_μ_β₁_change_arr[:, :, k, l]
     jump = @view bifurc_μ_β₁_jump_arr[:, :, k, l]
