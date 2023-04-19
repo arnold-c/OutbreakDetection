@@ -267,39 +267,6 @@ end
     draw(; facet = (; linkyaxes = :none), axis = (; limits = ((0, 3), nothing)))
 end
 
-#%%
-nsims = 100
-ensemble_seir_arr = zeros(Int64, size(u₀, 1), tlength, nsims)
-ensemble_change_arr = zeros(Int64, size(u₀, 1), tlength, nsims)
-ensemble_jump_arr = zeros(Int64, 9, tlength, nsims)
-
-for k in 1:nsims
-    @views seir = ensemble_seir_arr[:, :, k]
-    @views change = ensemble_change_arr[:, :, k]
-    @views jump = ensemble_jump_arr[:, :, k]
-
-    sir_mod!(seir, change, jump, u₀, p, trange; dt = τ)
-end
-
-quantile_ints = [95, 90, 80, 50]
-
-ensemble_summary = zeros(Float64, 3, tlength, length(u₀), length(quantile_ints))
-
-for q in eachindex(quantile_ints)
-    qlow = round(0.5 - quantile_ints[q] / 200; digits = 3)
-    qhigh = round(0.5 + quantile_ints[q] / 200; digits = 3)
-    quantiles = [qlow, 0.5, qhigh]
-
-    @views quantile_array = ensemble_summary[:, :, :, q]
-    create_sir_all_sim_quantiles!(
-        ensemble_seir_arr, quantile_array; quantiles = quantiles
-    )
-end
-
-create_sir_quantiles_plot(
-    ensemble_summary[:, :, :, 1]; annual = true, δt = τ, colors = seircolors,
-    labels = state_labels,
-)
 ################################################################################
 ########################## Bifurcation Diagrams ################################
 ################################################################################
@@ -461,7 +428,7 @@ end
 bifurc_μ_β₁_cycle_summary = zeros(Float64, n_μs, n_β₁s, 5);
 prog = Progress(5 * length(β₁_vec) * length(μ_vec))
 @floop for (state, β₁, μ) in
-    IterTools.product(1:5, eachindex(β₁_vec), eachindex(μ_vec))
+           IterTools.product(1:5, eachindex(β₁_vec), eachindex(μ_vec))
     bifurc_μ_β₁_cycle_summary[μ, β₁, state] = length(
         Set(round.(bifurc_μ_β₁_annual_summary[:, μ, β₁, state]))
     )
@@ -479,3 +446,274 @@ bifurc_μ_β₁_ax.xlabel = "μ (per 1000, per annum)"
 bifurc_μ_β₁_ax.ylabel = "β₁ (seasonality)"
 
 bifurc_μ_β₁_fig
+
+################################################################################
+########################## Ensemble Analysis ###################################
+################################################################################
+
+#%%
+nsims = 1000
+μ = 1 / (62.5 * 365)
+ensemble_seir_arr = zeros(Int64, size(u₀, 1), tlength, nsims);
+ensemble_change_arr = zeros(Int64, size(u₀, 1), tlength, nsims);
+ensemble_jump_arr = zeros(Int64, 9, tlength, nsims);
+
+prog = Progress(nsims)
+@floop for k in 1:nsims
+    @views seir = ensemble_seir_arr[:, :, k]
+    @views change = ensemble_change_arr[:, :, k]
+    @views jump = ensemble_jump_arr[:, :, k]
+
+    sir_mod!(seir, change, jump, u₀, p, trange; dt = τ)
+    next!(prog)
+end
+
+quantile_ints = [95, 90, 80, 50]
+
+ensemble_summary = zeros(Float64, 3, tlength, length(u₀), length(quantile_ints));
+
+prog = Progress(length(quantile_ints))
+@floop for q in eachindex(quantile_ints)
+    qlow = round(0.5 - quantile_ints[q] / 200; digits = 3)
+    qhigh = round(0.5 + quantile_ints[q] / 200; digits = 3)
+    quantiles = [qlow, 0.5, qhigh]
+
+    @views quantile_array = ensemble_summary[:, :, :, q]
+    create_sir_all_sim_quantiles!(
+        ensemble_seir_arr, quantile_array; quantiles = quantiles
+    )
+    next!(prog)
+end
+
+create_sir_quantiles_plot(
+    ensemble_summary[:, :, :, 1]; annual = true, δt = τ, colors = seircolors,
+    labels = state_labels,
+)
+
+#%%
+N_vec = convert.(Int64, [5e5])
+nsims_vec = [1000]
+u₀_prop_map = [
+    # Dict(:s => 0.9, :i => 0.1, :r => 0.0),
+    # Dict(:s => 0.1, :i => 0.1, :r => 0.8),
+    Dict(:s => 0.1, :e => 0.01, :i => 0.01, :r => 0.88)
+]
+dt_vec = [1.0]
+tmax_vec = [365.0 * 100]
+β_force_vec = [0.0, 0.1, 0.2, 0.3, 0.4]
+μ_min = 5
+μ_max = 20
+μ_step = 5.0
+n_μs = length(μ_min:μ_step:μ_max)
+μ_vec = zeros(Float64, n_μs)
+μ_vec = convert.(Int64, collect(μ_min:μ_step:μ_max))
+
+Random.seed!(1234)
+base_param_dict = @dict(
+    N = N_vec,
+    u₀_prop = u₀_prop_map,
+    nsims = nsims_vec,
+    dt = dt_vec,
+    tmax = tmax_vec,
+    β_force = β_force_vec,
+    births_per_k = μ_vec,
+)
+
+sol_param_dict = dict_list(
+    base_param_dict
+)
+
+#%%
+function run_ensemble_jump_prob(param_dict)
+    @unpack N, u₀_prop, nsims, dt, tmax, β_force, births_per_k = param_dict
+    @unpack s, e, i, r = u₀_prop
+
+    u₀ = convert.(Int64, [s * N, e * N, i * N, r * N, N])
+    u0_dict = Dict()
+    for (k, v) in zip([:S, :E, :I, :R, :N], u₀)
+        u0_dict[k] = v
+    end
+
+    tspan = (0.0, tmax)
+
+    μ = births_per_k/(1000 * 365)
+
+    β₀ = calculate_beta(R₀, γ, μ, 1, N)
+    ε = (1.06 * μ * (R₀ - 1)) / sqrt(N) # Commuter imports - see p210 Keeling & Rohani
+    p = (β₀, β_force, σ, γ, μ, ε, R₀)
+
+    ensemble_seir_arr = zeros(Int64, size(u₀, 1), tlength, nsims)
+    ensemble_change_arr = zeros(Int64, size(u₀, 1), tlength, nsims)
+    ensemble_jump_arr = zeros(Int64, 9, tlength, nsims)
+
+    @floop for k in 1:nsims
+        @views seir = ensemble_seir_arr[:, :, k]
+        @views change = ensemble_change_arr[:, :, k]
+        @views jump = ensemble_jump_arr[:, :, k]
+
+        sir_mod!(seir, change, jump, u₀, p, trange; dt = τ)
+    end
+
+    return @strdict ensemble_seir_arr ensemble_change_arr ensemble_jump_arr u0_dict
+end
+
+#%%
+prog = Progress(length(sol_param_dict))
+for p in sol_param_dict
+    @produce_or_load(
+        run_ensemble_jump_prob,
+        p,
+        datadir(
+            "seasonal-infectivity-import",
+            "tau-leaping",
+            "N_$(p[:N])",
+            "r_$(p[:u₀_prop][:r])",
+            "nsims_$(p[:nsims])",
+            "births_per_k_$(p[:births_per_k])",
+            "beta_force_$(p[:β_force])",
+            "tmax_$(p[:tmax])",
+            "deltat_$(p[:dt])",
+        ),
+        prefix = "SEIR_tau_sol";
+        filename = savename(
+            p;
+            allowedtypes = (Symbol, Dict, String, Real),
+            accesses = [:N, :u₀_prop, :nsims, :tmax, :dt, :births_per_k, :β_force],
+            expand = ["u₀_prop"],
+            sort = false,
+        ),
+        loadfile = false
+    )
+    next!(prog)
+end
+
+#%%
+function run_ensemble_summary(param_dict)
+    @unpack N, u₀_prop, nsims, dt, tmax, β_force, births_per_k, quantiles = param_dict
+    @unpack s, e, i, r = u₀_prop
+
+    sim_name = savename(
+        "SEIR_tau_sol",
+        param_dict,
+        "jld2";
+        allowedtypes = (Symbol, Dict, String, Real),
+        accesses = [:N, :u₀_prop, :nsims, :tmax, :dt, :births_per_k, :β_force],
+        expand = ["u₀_prop"],
+        sort = false,
+    )
+    sim_path = joinpath(
+        datadir(
+            "seasonal-infectivity-import",
+            "tau-leaping",
+            "N_$N",
+            "r_$r",
+            "nsims_$nsims",
+            "births_per_k_$births_per_k",
+            "beta_force_$β_force",
+            "tmax_$tmax",
+            "deltat_$dt",
+        ),
+        sim_name,
+    )
+
+    sol_data = load(sim_path)
+    @unpack ensemble_seir_arr, u0_dict = sol_data
+    S = u0_dict[:S]
+    E = u0_dict[:E]
+    I = u0_dict[:I]
+    R = u0_dict[:R]
+
+    qlow = round(0.5 - quantiles / 200; digits = 3)
+    qhigh = round(0.5 + quantiles / 200; digits = 3)
+
+    qs = [qlow, 0.5, qhigh]
+
+    ensemble_seir_summary = create_sir_all_sim_quantiles(
+        ensemble_seir_arr; quantiles = qs
+    )
+
+    caption = "nsims = $nsims, N = $N, S = $S, I = $I, R = $R, β_force = $β_force,\nbirths per k/annum = $births_per_k dt = $dt, quantile int = $quantiles"
+
+    return @strdict ensemble_seir_summary caption u0_dict param_dict
+end
+
+#%%
+quantile_ints = [95, 90, 80, 50]
+
+summ_param_dict = @chain base_param_dict begin
+    deepcopy(_)
+    push!(_, :quantiles => quantile_ints)
+    dict_list(_)
+end;
+
+#%%
+prog = Progress(length(summ_param_dict))
+for p in summ_param_dict
+    @produce_or_load(
+        run_ensemble_summary,
+        p,
+        datadir(
+            "seasonal-infectivity-import",
+            "tau-leaping",
+            "N_$(p[:N])",
+            "r_$(p[:u₀_prop][:r])",
+            "nsims_$(p[:nsims])",
+            "births_per_k_$(p[:births_per_k])",
+            "beta_force_$(p[:β_force])",
+            "tmax_$(p[:tmax])",
+            "deltat_$(p[:dt])",
+        ),
+        prefix = "SEIR_tau_quants";
+        filename = savename(
+            p;
+            allowedtypes = (Symbol, Dict, String, Real),
+            accesses = [
+                :N, :u₀_prop, :nsims, :tmax, :dt, :births_per_k, :β_force, :quantiles
+            ],
+            expand = ["u₀_prop"],
+            sort = false,
+        ),
+        loadfile = false
+    )
+    next!(prog)
+end
+
+#%%
+sim_files = []
+quantile_files = []
+for (root, dirs, files) in walkdir(
+    datadir(
+        "seasonal-infectivity-import", "tau-leaping", "N_500000", "r_0.88", "nsims_1000"
+    )
+)
+    for (i, file) in enumerate(files)
+        if occursin("SEIR_tau_quants", file)
+            push!(quantile_files, joinpath(root, file))
+        end
+        if occursin("SEIR_tau_sol", file)
+            push!(sim_files, joinpath(root, file))
+        end
+    end
+end
+
+sim_data = nothing
+for (i, file) in enumerate(sim_files)
+    if occursin(r"SEIR_tau_sol.*.nsims=1000_.*.births_per_k=20.*.β_force=0.0", file)
+        sim_data = load(sim_files[i])
+    end
+end
+
+@unpack ensemble_seir_arr = sim_data
+
+summ_data = nothing
+for (i, file) in enumerate(quantile_files)
+    if occursin(r"SEIR_tau_quant.*.nsims=1000_.*.births_per_k=20.*.β_force=0.0.*.quantiles=95.jld2", file)
+        summ_data = load(quantile_files[i])
+    end
+end
+
+@unpack ensemble_seir_summary, caption, param_dict = summ_data
+
+create_sir_quantiles_plot(
+    ensemble_seir_summary; labels = state_labels, colors = seircolors, annual = true, caption = caption, δt = param_dict[:dt], ylims = (0, 1000)
+)
