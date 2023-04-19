@@ -10,6 +10,7 @@ using JumpProcesses, Statistics, DataFrames, DataFramesMeta, LinearAlgebra
 using CairoMakie, AlgebraOfGraphics, ColorSchemes, Colors
 using DifferentialEquations, ModelingToolkit
 using BenchmarkTools, JLD2, Random, ProgressMeter, StatsBase, Distributions
+using IterTools, FLoops
 
 CairoMakie.activate!()
 set_aog_theme!()
@@ -303,7 +304,7 @@ create_sir_quantiles_plot(
 #%%
 μ_min = 10
 μ_max = 100
-μ_step = 1.0
+μ_step = 5
 n_μs = length(μ_min:μ_step:μ_max)
 μ_vec = zeros(Float64, n_μs)
 μ_vec .= collect(μ_min:μ_step:μ_max) ./ (1000 * 365)
@@ -319,21 +320,26 @@ bifurc_μ_jump_arr = zeros(Float64, 9, tlength, n_μs);
 
     params = (β₀, β₁, σ, γ, μ_run, ε, R₀)
     sir_mod!(seir, change, jump,
-        u₀, params, trange; dt = τ, type = "det"
-        )
+        u₀, params, trange; dt = τ, type = "det",
+    )
 end
 
 years = (40 * 365):365:(tlength - 365)
-bifurc_μ_annual_summary = zeros(Float64, length(years), n_μs, 5)
-for (i, year) in pairs(years), state in 1:5, μ in eachindex(μ_vec)
-    bifurc_μ_annual_summary[i, μ, state] = maximum(bifurc_μ_seir_arr[state, year:(year + 364), μ])
+bifurc_μ_annual_summary = zeros(Float64, length(years), n_μs, 5);
+for (year, day) in pairs(years), state in 1:5, μ in eachindex(μ_vec)
+    bifurc_μ_annual_summary[year, μ, state] = maximum(
+        bifurc_μ_seir_arr[state, day:(day + 364), μ]
+    )
 end
 
-bifurc_μ_seir_arr[2, 40*365:(40*365 + 364), 1] == bifurc_μ_seir_arr[2, 40*365:(40*365 + 364), 91]
+bifurc_μ_seir_arr[2, (40 * 365):(40 * 365 + 364), 1] ==
+bifurc_μ_seir_arr[2, (40 * 365):(40 * 365 + 364), 11]
 
 #%%
 bifurc_μ_fig = Figure()
-bifurc_μ_ax = Axis(bifurc_μ_fig[1, 1], xlabel = "μ (per 1000, per annum)", ylabel = "Max. I")
+bifurc_μ_ax = Axis(
+    bifurc_μ_fig[1, 1]; xlabel = "μ (per 1000, per annum)", ylabel = "Max. I"
+)
 
 for year in eachindex(years)
     scatter!(
@@ -341,7 +347,7 @@ for year in eachindex(years)
         μ_min:μ_step:μ_max,
         bifurc_μ_annual_summary[year, :, 2];
         markersize = 4,
-        color = :black
+        color = :black,
     )
 end
 
@@ -350,7 +356,7 @@ bifurc_μ_fig
 #%%
 β₁_min = 0.0
 β₁_max = 1.0
-β₁_step = 0.01
+β₁_step = 0.1
 n_β₁s = length(β₁_min:β₁_step:β₁_max)
 β₁_vec = zeros(Float64, n_β₁s)
 β₁_vec .= collect(β₁_min:β₁_step:β₁_max)
@@ -359,7 +365,7 @@ bifurc_β₁_seir_arr = zeros(Float64, size(u₀, 1), tlength, n_β₁s);
 bifurc_β₁_change_arr = zeros(Float64, size(u₀, 1), tlength, n_β₁s);
 bifurc_β₁_jump_arr = zeros(Float64, 9, tlength, n_β₁s);
 
-μ = 20 / (1000 * 365)
+μ = 50 / (1000 * 365)
 
 @showprogress for (k, β₁) in pairs(β₁_vec)
     seir = @view bifurc_β₁_seir_arr[:, :, k]
@@ -373,15 +379,23 @@ end
 
 years = (40 * 365):365:(tlength - 365)
 bifurc_β₁_annual_summary = zeros(Float64, length(years), n_β₁s, 5)
-for (i, year) in pairs(years), state in 1:5, (k, β₁) in pairs(β₁_vec)
-    bifurc_β₁_annual_summary[i, k, state] = maximum(bifurc_β₁_seir_arr[state, year:(year + 364), k])
+for (year, day) in pairs(years), state in 1:5, (k, β₁) in pairs(β₁_vec)
+    bifurc_β₁_annual_summary[year, k, state] = maximum(
+        bifurc_β₁_seir_arr[state, day:(day + 364), k]
+    )
 end
 
-bifurc_β₁_seir_arr[2, 40*365:(40*365 + 364), 1] == bifurc_β₁_seir_arr[2, 40*365:(40*365 + 364), 91]
+maximum(bifurc_β₁_seir_arr[2, (40 * 365):(40 * 365 + 364), :]; dims = 1)
+bifurc_β₁_annual_summary[:, :, 2]
+
+bifurc_β₁_seir_arr[2, (40 * 365):(40 * 365 + 364), 1] ==
+bifurc_β₁_seir_arr[2, (40 * 365):(40 * 365 + 364), 11]
 
 #%%
 bifurc_β₁_fig = Figure()
-bifurc_β₁_ax = Axis(bifurc_β₁_fig[1, 1], xlabel = "β₁ (seasonality)", ylabel = "Max. I")
+bifurc_β₁_ax = Axis(
+    bifurc_β₁_fig[1, 1]; xlabel = "β₁ (seasonality)", ylabel = "Max. I"
+)
 
 for year in eachindex(years)
     scatter!(
@@ -389,7 +403,57 @@ for year in eachindex(years)
         β₁_min:β₁_step:β₁_max,
         bifurc_β₁_annual_summary[year, :, 2];
         markersize = 4,
+        color = :black,
     )
 end
 
 bifurc_β₁_fig
+
+#%%
+bifurc_μ_β₁_seir_arr = zeros(Float64, size(u₀, 1), tlength, n_μs, n_β₁s);
+bifurc_μ_β₁_change_arr = zeros(Float64, size(u₀, 1), tlength, n_μs, n_β₁s);
+bifurc_μ_β₁_jump_arr = zeros(Float64, 9, tlength, n_μs, n_β₁s);
+
+prog = Progress(length(μ_vec) * length(β₁_vec))
+@floop for (μ_pair, β₁_pair) in IterTools.product(pairs(μ_vec), pairs(β₁_vec))
+    k = μ_pair[1]
+    μ = μ_pair[2]
+    l = β₁_pair[1]
+    β₁ = β₁_pair[2]
+    seir = @view bifurc_μ_β₁_seir_arr[:, :, k, l]
+    change = @view bifurc_μ_β₁_change_arr[:, :, k, l]
+    jump = @view bifurc_μ_β₁_jump_arr[:, :, k, l]
+
+    params = (β₀, β₁, σ, γ, μ, ε, R₀)
+
+    sir_mod!(seir, change, jump, u₀, params, trange; dt = τ, type = "det")
+    next!(prog)
+end
+
+#%%
+years = (40 * 365):365:(tlength - 365)
+bifurc_μ_β₁_annual_summary = zeros(Float64, length(years), n_μs, n_β₁s, 5);
+
+for (year, day) in pairs(years), state in 1:5, β₁ in eachindex(β₁_vec)
+    bifurc_μ_β₁_annual_summary[year, β₁, :, state] = maximum(
+        bifurc_μ_β₁_seir_arr[state, day:(day + 364), β₁, :]; dims = 1
+    )
+end
+
+bifurc_μ_β₁_cycle_summary = zeros(Float64, n_μs, n_β₁s, 5)
+for state in 1:5, β₁ in eachindex(β₁_vec), μ in eachindex(μ_vec)
+    bifurc_μ_β₁_cycle_summary[μ, β₁, state] = length(
+        Set(round.(bifurc_μ_β₁_annual_summary[:, μ, β₁, state]))
+    )
+end
+
+# Counterintutively, the x-axis is the rows in the matrix, and the y-axis is the columns
+bifurc_μ_β₁_fig, bifurc_μ_β₁_ax, bifurc_μ_β₁_hm = heatmap(
+    μ_vec, β₁_vec, bifurc_μ_β₁_cycle_summary[:, :, 2]
+)
+Colorbar(bifurc_μ_β₁_fig[:, end + 1], hm)
+
+bifurc_μ_β₁_ax.xlabel = "μ (per 1000, per annum)"
+bifurc_μ_β₁_ax.ylabel = "β₁ (seasonality)"
+
+bifurc_μ_β₁_fig
