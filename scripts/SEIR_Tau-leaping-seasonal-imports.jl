@@ -696,7 +696,7 @@ create_sir_quantiles_plot(
 ########################## Above-Below Analysis ################################
 ################################################################################
 inc_infec_arr = zeros(
-    Int64, 3, size(ensemble_jump_arr, 2), size(ensemble_jump_arr, 3)
+    Int64, 4, size(ensemble_jump_arr, 2), size(ensemble_jump_arr, 3)
 )
 
 prog = Progress(size(ensemble_jump_arr, 3))
@@ -710,7 +710,7 @@ prog = Progress(size(ensemble_jump_arr, 3))
     ## Calculate the number of consecutive days of infection above or below threshold
     above5rle = rle(@view(inc_infec_arr[2, :, sim]))
 
-    ## 
+    ## Calculate upper and lower indices of consecutive days of infection
     above5accum = accumulate(+, above5rle[2])
     above5uppers = above5accum[findall(==(1), above5rle[1])]
     above5lowers = filter(
@@ -719,9 +719,14 @@ prog = Progress(size(ensemble_jump_arr, 3))
     )
 
     for (lower, upper) in zip(above5lowers, above5uppers)
-        inc_infec_arr[3, lower:upper, sim] .= sum(
-            @view(inc_infec_arr[1, lower:upper, sim])
-        )
+        # Calculate number of infections between lower and upper indices
+        period_sum = sum(@view(inc_infec_arr[1, lower:upper, sim]))
+        inc_infec_arr[3, lower:upper, sim] .= period_sum
+
+        # Determine if there is an outbreak between lower and upper indices
+        if upper - lower >= 30 && period_sum >= 500
+            inc_infec_arr[4, lower:upper, sim] .= 1
+        end
     end
 
     next!(prog)
@@ -731,23 +736,24 @@ end
 above5fig = Figure()
 above5ax_prev = Axis(above5fig[1, 1]; ylabel = "Prevalence")
 above5ax_inc = Axis(above5fig[2, 1]; ylabel = "Incidence")
-above5ax_outbreak = Axis(
-    above5fig[3, 1]; xlabel = "Time (years)", ylabel = "Outbreak Size"
+above5ax_periodsum = Axis(
+    above5fig[3, 1]; xlabel = "Time (years)", ylabel = "Period Sum"
 )
-linkxaxes!(above5ax_prev, above5ax_inc, above5ax_outbreak)
+
+linkxaxes!(above5ax_prev, above5ax_inc, above5ax_periodsum)
 
 times = collect(0:param_dict[:dt]:tmax) ./ 365
 
 lines!(above5ax_prev, times, ensemble_seir_arr[2, :, 1])
 lines!(above5ax_inc, times, inc_infec_arr[1, :, 1])
-barplot!(above5ax_outbreak, times, inc_infec_arr[3, :, 1]; color = :red)
+barplot!(above5ax_periodsum, times, inc_infec_arr[3, :, 1]; color = inc_infec_arr[4, :, 1], colormap = [:blue, :red])
 
 map(hidexdecorations!, [above5ax_prev, above5ax_inc])
 
 map(
-    ax -> xlims!(ax, (92, 94)), [above5ax_prev, above5ax_inc, above5ax_outbreak]
+    ax -> xlims!(ax, (92, 94)), [above5ax_prev, above5ax_inc, above5ax_periodsum]
 )
-ylims!(above5ax_outbreak, (0, 10000))
+ylims!(above5ax_periodsum, (0, 10000))
 ylims!(above5ax_inc, (0, 300))
 
 above5fig
