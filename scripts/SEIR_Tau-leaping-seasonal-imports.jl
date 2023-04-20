@@ -705,7 +705,7 @@ prog = Progress(size(ensemble_jump_arr, 3))
     inc_infec_arr[1, :, sim] = @view(ensemble_jump_arr[1, :, sim])
     # Calculate if new infection is above or below threshold
     inc_infec_arr[2, :, sim] = @view(inc_infec_arr[1, :, sim]) .> 5
-    
+
     # Calculate the total number of infections above threshold in a consecutive string of days
     ## Calculate the number of consecutive days of infection above or below threshold
     above5rle = rle(@view(inc_infec_arr[2, :, sim]))
@@ -715,7 +715,7 @@ prog = Progress(size(ensemble_jump_arr, 3))
     above5uppers = above5accum[findall(==(1), above5rle[1])]
     above5lowers = filter(
         x -> x <= maximum(above5uppers),
-        above5accum[findall(==(0), above5rle[1])] .+ 1
+        above5accum[findall(==(0), above5rle[1])] .+ 1,
     )
 
     for (lower, upper) in zip(above5lowers, above5uppers)
@@ -746,15 +746,28 @@ times = collect(0:param_dict[:dt]:tmax) ./ 365
 
 lines!(above5ax_prev, times, ensemble_seir_arr[2, :, 1])
 lines!(above5ax_inc, times, inc_infec_arr[1, :, 1])
-barplot!(above5ax_periodsum, times, inc_infec_arr[3, :, 1]; color = inc_infec_arr[4, :, 1], colormap = [:blue, :red])
+outbreak_fig = barplot!(
+    above5ax_periodsum,
+    times,
+    inc_infec_arr[3, :, 1];
+    color = inc_infec_arr[4, :, 1],
+    colormap = [:blue, :red],
+)
 
 map(hidexdecorations!, [above5ax_prev, above5ax_inc])
 
 map(
-    ax -> xlims!(ax, (92, 94)), [above5ax_prev, above5ax_inc, above5ax_periodsum]
+    ax -> xlims!(ax, (92, 94)),
+    [above5ax_prev, above5ax_inc, above5ax_periodsum],
 )
 ylims!(above5ax_periodsum, (0, 10000))
 ylims!(above5ax_inc, (0, 300))
+
+axislegend(
+    above5ax_periodsum,
+    [PolyElement(; color = col) for col in [:blue, :red]],
+    ["Not Outbreak", "Outbreak"],
+)
 
 above5fig
 
