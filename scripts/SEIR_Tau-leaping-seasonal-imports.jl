@@ -701,8 +701,11 @@ inc_infec_arr = zeros(
 
 prog = Progress(size(ensemble_jump_arr, 3))
 @floop for sim in 1:size(ensemble_jump_arr, 3)
+    # Copy new infections to array
     inc_infec_arr[1, :, sim] = @view(ensemble_jump_arr[1, :, sim])
+    # Calculate if new infection is above or below threshold
     inc_infec_arr[2, :, sim] = @view(inc_infec_arr[1, :, sim]) .> 5
+    # Calculate the number of consecutive days of infection above or below threshold
     inc_infec_arr[3, :, sim] = reduce(
         vcat,
         map(
@@ -711,6 +714,7 @@ prog = Progress(size(ensemble_jump_arr, 3))
         ),
     )
 
+    # Calculate the total number of new infections contained in each outbreak above threshold
     for day in 1:size(inc_infec_arr[:, :, sim], 2)
         lower_day = 1
         upper_day = 1
@@ -747,7 +751,70 @@ barplot!(above5ax_outbreak, times, inc_infec_arr[4, :, 1]; color = :red)
 
 map(hidexdecorations!, [above5ax_prev, above5ax_inc])
 
-# map(ax -> xlims!(ax, (0, 10)), [above5ax_prev, above5ax_inc, above5ax_outbreak])
-# ylims!(above5ax_inc, (0, 100))
+# map(ax -> xlims!(ax, (93, 97)), [above5ax_prev, above5ax_inc, above5ax_outbreak])
+# ylims!(above5ax_outbreak, (0, 100))
+# ylims!(above5ax_inc, (0, 300))
 
 above5fig
+
+#%%
+################################################################################
+########################## Background Noise ####################################
+################################################################################
+background_ode!(du, u, p, t) = (du .= 0.0)
+background_noise!(du, u, p, t) = (du .= 1.0)
+
+sde_condition(u, t, integrator) = true
+function sde_affect!(integrator)
+    if integrator.u[1] < 0.0
+        integrator.u[1] = -integrator.u[1]
+    end
+end
+
+sde_cb = DiscreteCallback(
+    sde_condition, sde_affect!; save_positions = (false, false)
+)
+
+#%%
+noise_u₀ = [0.5 * maximum(ensemble_seir_arr[2, 200:end, 1])]
+tspan = (tlower, tmax)
+noise_prob = SDEProblem(background_ode!, background_noise!, noise_u₀, tspan, p)
+noise_sol = solve(
+    noise_prob, SRIW1(); callback = sde_cb, dt = param_dict[:dt],
+    adaptive = false,
+)
+noise_df = rename(DataFrame(noise_sol), [:time, :noise])
+
+lines(noise_df[:, :time], noise_df[:, :noise])
+
+#%%
+noise_arr = zeros(
+    Float64, size(ensemble_jump_arr, 3), size(ensemble_jump_arr, 2)
+)
+@floop for sim in 1:size(ensemble_jump_arr, 3)
+    noise_prob =
+        noise_prob = SDEProblem(
+            background_ode!,
+            background_noise!,
+            [0.5 * maximum(ensemble_seir_arr[2, 200:end, sim])],
+            tspan,
+            p,
+        )
+
+    noise_sol = solve(
+        noise_prob, SRIW1(); callback = sde_cb, dt = param_dict[:dt],
+        adaptive = false,
+    )
+
+    noise_arr[sim, :] = noise_sol[1, :]
+end
+
+#%%
+noise_fig = Figure()
+noise_ax = Axis(noise_fig[1, 1]; xlabel = "Time (years)", ylabel = "Noise Prevalence")
+
+for sim in eachrow(noise_arr)
+    lines!(noise_ax, times, sim; color = (:red, 0.05))
+end
+
+noise_fig
