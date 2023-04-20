@@ -695,22 +695,40 @@ create_sir_quantiles_plot(
 ################################################################################
 ########################## Above-Below Analysis ################################
 ################################################################################
-inc_infec_arr = ensemble_jump_arr[1, :, :]';
+inc_infec_arr = zeros(
+    Int64, 4, size(ensemble_jump_arr, 2), size(ensemble_jump_arr, 3)
+)
 
-#%%
-above_5_fig = Figure()
-above_5_ax = Axis(above_5_fig[1, 1])
+prog = Progress(size(ensemble_jump_arr, 3))
+@floop for sim in 1:size(ensemble_jump_arr, 3)
+    inc_infec_arr[1, :, sim] = @view(ensemble_jump_arr[1, :, sim])
+    inc_infec_arr[2, :, sim] = @view(inc_infec_arr[1, :, sim]) .> 5
+    inc_infec_arr[3, :, sim] = reduce(
+        vcat,
+        map(
+            len -> repeat([len / param_dict[:dt]], len),
+            rle(@view(inc_infec_arr[2, :, sim]))[2],
+        ),
+    )
 
-@btime for sim in eachrow(inc_infec_arr)
-    lines!(above_5_ax, sim; color = "black", alpha = 0.1)
+    for day in 1:size(inc_infec_arr[:, :, sim], 2)
+        lower_day = 1
+        upper_day = 1
+
+        if inc_infec_arr[2, day, sim] !== 1
+            continue
+        end
+        if inc_infec_arr[2, day, sim] == 1 &&
+            inc_infec_arr[2, day - 1, sim] !== 1
+            lower_day = day
+            upper_day = day + inc_infec_arr[3, day, sim] - 1
+            inc_infec_arr[4, lower_day:upper_day, sim] .= sum(
+                @view(inc_infec_arr[1, lower_day:upper_day, sim])
+            )
+        end
+    end
+    next!(prog)
 end
 
-# lines!(
-#     above_5_ax,
-#     mean(inc_infec_arr; dims = 1);
-#     color = "black",
-#     linewidth = 2,
-#     label = "mean",
-# )
-
-above_5_fig
+#%%
+inc_infec_arr[:, :, 1]
