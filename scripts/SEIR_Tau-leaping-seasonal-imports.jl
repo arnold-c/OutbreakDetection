@@ -497,7 +497,7 @@ function run_ensemble_jump_prob(param_dict)
 
     tspan = (0.0, tmax)
 
-    μ = births_per_k/(1000 * 365)
+    μ = births_per_k / (1000 * 365)
 
     β₀ = calculate_beta(R₀, γ, μ, 1, N)
     ε = (1.06 * μ * (R₀ - 1)) / sqrt(N) # Commuter imports - see p210 Keeling & Rohani
@@ -539,7 +539,9 @@ for p in sol_param_dict
         filename = savename(
             p;
             allowedtypes = (Symbol, Dict, String, Real),
-            accesses = [:N, :u₀_prop, :nsims, :tmax, :dt, :births_per_k, :β_force],
+            accesses = [
+                :N, :u₀_prop, :nsims, :tmax, :dt, :births_per_k, :β_force
+            ],
             expand = ["u₀_prop"],
             sort = false,
         ),
@@ -550,7 +552,8 @@ end
 
 #%%
 function run_ensemble_summary(param_dict)
-    @unpack N, u₀_prop, nsims, dt, tmax, β_force, births_per_k, quantiles = param_dict
+    @unpack N, u₀_prop, nsims, dt, tmax, β_force, births_per_k, quantiles =
+        param_dict
     @unpack s, e, i, r = u₀_prop
 
     sim_name = savename(
@@ -629,7 +632,8 @@ for p in summ_param_dict
             p;
             allowedtypes = (Symbol, Dict, String, Real),
             accesses = [
-                :N, :u₀_prop, :nsims, :tmax, :dt, :births_per_k, :β_force, :quantiles
+                :N, :u₀_prop, :nsims, :tmax, :dt, :births_per_k, :β_force,
+                :quantiles,
             ],
             expand = ["u₀_prop"],
             sort = false,
@@ -644,8 +648,9 @@ sim_files = []
 quantile_files = []
 for (root, dirs, files) in walkdir(
     datadir(
-        "seasonal-infectivity-import", "tau-leaping", "N_500000", "r_0.88", "nsims_1000"
-    )
+        "seasonal-infectivity-import", "tau-leaping", "N_500000", "r_0.88",
+        "nsims_1000",
+    ),
 )
     for (i, file) in enumerate(files)
         if occursin("SEIR_tau_quants", file)
@@ -659,16 +664,21 @@ end
 
 sim_data = nothing
 for (i, file) in enumerate(sim_files)
-    if occursin(r"SEIR_tau_sol.*.nsims=1000_.*.births_per_k=20.*.β_force=0.0", file)
+    if occursin(
+        r"SEIR_tau_sol.*.nsims=1000_.*.births_per_k=20.*.β_force=0.2", file
+    )
         sim_data = load(sim_files[i])
     end
 end
 
-@unpack ensemble_seir_arr = sim_data
+@unpack ensemble_seir_arr, ensemble_jump_arr, ensemble_change_arr = sim_data
 
 summ_data = nothing
 for (i, file) in enumerate(quantile_files)
-    if occursin(r"SEIR_tau_quant.*.nsims=1000_.*.births_per_k=20.*.β_force=0.0.*.quantiles=95.jld2", file)
+    if occursin(
+        r"SEIR_tau_quant.*.nsims=1000_.*.births_per_k=20.*.β_force=0.2.*.quantiles=95.jld2",
+        file,
+    )
         summ_data = load(quantile_files[i])
     end
 end
@@ -676,5 +686,31 @@ end
 @unpack ensemble_seir_summary, caption, param_dict = summ_data
 
 create_sir_quantiles_plot(
-    ensemble_seir_summary; labels = state_labels, colors = seircolors, annual = true, caption = caption, δt = param_dict[:dt], ylims = (0, 1000)
+    ensemble_seir_summary; labels = state_labels, colors = seircolors,
+    annual = true, caption = caption, δt = param_dict[:dt], xlims = (80, 100),
+    ylims = (0, 1000),
 )
+
+#%%
+################################################################################
+########################## Above-Below Analysis ################################
+################################################################################
+inc_infec_arr = ensemble_jump_arr[1, :, :]';
+
+#%%
+above_5_fig = Figure()
+above_5_ax = Axis(above_5_fig[1, 1])
+
+@btime for sim in eachrow(inc_infec_arr)
+    lines!(above_5_ax, sim; color = "black", alpha = 0.1)
+end
+
+# lines!(
+#     above_5_ax,
+#     mean(inc_infec_arr; dims = 1);
+#     color = "black",
+#     linewidth = 2,
+#     label = "mean",
+# )
+
+above_5_fig
