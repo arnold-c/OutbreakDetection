@@ -696,7 +696,7 @@ create_sir_quantiles_plot(
 ########################## Above-Below Analysis ################################
 ################################################################################
 inc_infec_arr = zeros(
-    Int64, 4, size(ensemble_jump_arr, 2), size(ensemble_jump_arr, 3)
+    Int64, 3, size(ensemble_jump_arr, 2), size(ensemble_jump_arr, 3)
 )
 
 prog = Progress(size(ensemble_jump_arr, 3))
@@ -705,32 +705,25 @@ prog = Progress(size(ensemble_jump_arr, 3))
     inc_infec_arr[1, :, sim] = @view(ensemble_jump_arr[1, :, sim])
     # Calculate if new infection is above or below threshold
     inc_infec_arr[2, :, sim] = @view(inc_infec_arr[1, :, sim]) .> 5
-    # Calculate the number of consecutive days of infection above or below threshold
-    inc_infec_arr[3, :, sim] = reduce(
-        vcat,
-        map(
-            len -> repeat([len / param_dict[:dt]], len),
-            rle(@view(inc_infec_arr[2, :, sim]))[2],
-        ),
+    
+    # Calculate the total number of infections above threshold in a consecutive string of days
+    ## Calculate the number of consecutive days of infection above or below threshold
+    above5rle = rle(@view(inc_infec_arr[2, :, sim]))
+
+    ## 
+    above5accum = accumulate(+, above5rle[2])
+    above5uppers = above5accum[findall(==(1), above5rle[1])]
+    above5lowers = filter(
+        x -> x <= maximum(above5uppers),
+        above5accum[findall(==(0), above5rle[1])] .+ 1
     )
 
-    # Calculate the total number of new infections contained in each outbreak above threshold
-    for day in 1:size(inc_infec_arr[:, :, sim], 2)
-        lower_day = 1
-        upper_day = 1
-
-        if inc_infec_arr[2, day, sim] !== 1
-            continue
-        end
-        if inc_infec_arr[2, day, sim] == 1 &&
-            inc_infec_arr[2, day - 1, sim] !== 1
-            lower_day = day
-            upper_day = day + inc_infec_arr[3, day, sim] - 1
-            inc_infec_arr[4, lower_day:upper_day, sim] .= sum(
-                @view(inc_infec_arr[1, lower_day:upper_day, sim])
-            )
-        end
+    for (lower, upper) in zip(above5lowers, above5uppers)
+        inc_infec_arr[3, lower:upper, sim] .= sum(
+            @view(inc_infec_arr[1, lower:upper, sim])
+        )
     end
+
     next!(prog)
 end
 
@@ -747,13 +740,15 @@ times = collect(0:param_dict[:dt]:tmax) ./ 365
 
 lines!(above5ax_prev, times, ensemble_seir_arr[2, :, 1])
 lines!(above5ax_inc, times, inc_infec_arr[1, :, 1])
-barplot!(above5ax_outbreak, times, inc_infec_arr[4, :, 1]; color = :red)
+barplot!(above5ax_outbreak, times, inc_infec_arr[3, :, 1]; color = :red)
 
 map(hidexdecorations!, [above5ax_prev, above5ax_inc])
 
-# map(ax -> xlims!(ax, (93, 97)), [above5ax_prev, above5ax_inc, above5ax_outbreak])
-# ylims!(above5ax_outbreak, (0, 100))
-# ylims!(above5ax_inc, (0, 300))
+map(
+    ax -> xlims!(ax, (92, 94)), [above5ax_prev, above5ax_inc, above5ax_outbreak]
+)
+ylims!(above5ax_outbreak, (0, 10000))
+ylims!(above5ax_inc, (0, 300))
 
 above5fig
 
@@ -789,7 +784,7 @@ lines(noise_df[:, :time], noise_df[:, :noise])
 
 #%%
 noise_arr = zeros(
-    Float64, size(ensemble_jump_arr, 3), size(ensemble_jump_arr, 2)
+    Float64, 3, size(ensemble_jump_arr, 2), size(ensemble_jump_arr, 3)
 )
 @floop for sim in 1:size(ensemble_jump_arr, 3)
     noise_prob =
@@ -806,12 +801,14 @@ noise_arr = zeros(
         adaptive = false,
     )
 
-    noise_arr[sim, :] = noise_sol[1, :]
+    noise_arr[1, :, sim] = noise_sol[1, :]
 end
 
 #%%
 noise_fig = Figure()
-noise_ax = Axis(noise_fig[1, 1]; xlabel = "Time (years)", ylabel = "Noise Prevalence")
+noise_ax = Axis(
+    noise_fig[1, 1]; xlabel = "Time (years)", ylabel = "Noise Prevalence"
+)
 
 for sim in eachrow(noise_arr)
     lines!(noise_ax, times, sim; color = (:red, 0.05))
