@@ -731,4 +731,23 @@ prog = Progress(size(ensemble_jump_arr, 3))
 end
 
 #%%
-inc_infec_arr[:, :, 1]
+above5fig = Figure()
+above5ax_prev = Axis(above5fig[1, 1]; ylabel = "Prevalence")
+above5ax_inc = Axis(above5fig[2, 1]; ylabel = "Incidence")
+above5ax_outbreak = Axis(
+    above5fig[3, 1]; xlabel = "Time (years)", ylabel = "Outbreak Size"
+)
+linkxaxes!(above5ax_prev, above5ax_inc, above5ax_outbreak)
+
+times = collect(0:param_dict[:dt]:tmax) ./ 365
+
+lines!(above5ax_prev, times, ensemble_seir_arr[2, :, 1])
+lines!(above5ax_inc, times, inc_infec_arr[1, :, 1])
+barplot!(above5ax_outbreak, times, inc_infec_arr[4, :, 1]; color = :red)
+
+map(hidexdecorations!, [above5ax_prev, above5ax_inc])
+
+# map(ax -> xlims!(ax, (0, 10)), [above5ax_prev, above5ax_inc, above5ax_outbreak])
+# ylims!(above5ax_inc, (0, 100))
+
+above5fig
