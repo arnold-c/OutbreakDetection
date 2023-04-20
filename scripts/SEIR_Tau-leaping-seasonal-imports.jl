@@ -267,11 +267,11 @@ end
     draw(; facet = (; linkyaxes = :none), axis = (; limits = ((0, 3), nothing)))
 end
 
+#%%
 ################################################################################
 ########################## Bifurcation Diagrams ################################
 ################################################################################
 
-#%%
 μ_min = 10
 μ_max = 100
 μ_step = 2.0
@@ -447,50 +447,11 @@ bifurc_μ_β₁_ax.ylabel = "β₁ (seasonality)"
 
 bifurc_μ_β₁_fig
 
+#%%
 ################################################################################
 ########################## Ensemble Analysis ###################################
 ################################################################################
 
-#%%
-nsims = 1000
-μ = 1 / (62.5 * 365)
-ensemble_seir_arr = zeros(Int64, size(u₀, 1), tlength, nsims);
-ensemble_change_arr = zeros(Int64, size(u₀, 1), tlength, nsims);
-ensemble_jump_arr = zeros(Int64, 9, tlength, nsims);
-
-prog = Progress(nsims)
-@floop for k in 1:nsims
-    @views seir = ensemble_seir_arr[:, :, k]
-    @views change = ensemble_change_arr[:, :, k]
-    @views jump = ensemble_jump_arr[:, :, k]
-
-    sir_mod!(seir, change, jump, u₀, p, trange; dt = τ)
-    next!(prog)
-end
-
-quantile_ints = [95, 90, 80, 50]
-
-ensemble_summary = zeros(Float64, 3, tlength, length(u₀), length(quantile_ints));
-
-prog = Progress(length(quantile_ints))
-@floop for q in eachindex(quantile_ints)
-    qlow = round(0.5 - quantile_ints[q] / 200; digits = 3)
-    qhigh = round(0.5 + quantile_ints[q] / 200; digits = 3)
-    quantiles = [qlow, 0.5, qhigh]
-
-    @views quantile_array = ensemble_summary[:, :, :, q]
-    create_sir_all_sim_quantiles!(
-        ensemble_seir_arr, quantile_array; quantiles = quantiles
-    )
-    next!(prog)
-end
-
-create_sir_quantiles_plot(
-    ensemble_summary[:, :, :, 1]; annual = true, δt = τ, colors = seircolors,
-    labels = state_labels,
-)
-
-#%%
 N_vec = convert.(Int64, [5e5])
 nsims_vec = [1000]
 u₀_prop_map = [
