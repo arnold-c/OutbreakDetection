@@ -306,15 +306,18 @@ prog = Progress(n_μs)
 end
 
 years = (40 * 365):365:(tlength - 365)
-bifurc_μ_annual_summary = zeros(Float64, length(years), n_μs, 5);
-for (year, day) in pairs(years), state in 1:5, μ in eachindex(μ_vec)
-    bifurc_μ_annual_summary[year, μ, state] = maximum(
+bifurc_μ_annual_summary = zeros(Float64, 5, length(years), n_μs);
+
+for μ in eachindex(μ_vec), state in eachindex(state_labels),
+    (year, day) in pairs(years)
+
+    bifurc_μ_annual_summary[state, year, μ] = maximum(
         bifurc_μ_seir_arr[state, day:(day + 364), μ]
     )
 end
 
 bifurc_μ_seir_arr[2, (40 * 365):(40 * 365 + 364), 1] ==
-bifurc_μ_seir_arr[2, (40 * 365):(40 * 365 + 364), 11]
+bifurc_μ_seir_arr[2, (40 * 365):(40 * 365 + 364), 10]
 
 #%%
 bifurc_μ_fig = Figure()
@@ -326,7 +329,7 @@ for year in eachindex(years)
     scatter!(
         bifurc_μ_ax,
         μ_min:μ_step:μ_max,
-        bifurc_μ_annual_summary[year, :, 2];
+        bifurc_μ_annual_summary[2, year, :];
         markersize = 4,
         color = :black,
     )
@@ -337,7 +340,7 @@ bifurc_μ_fig
 #%%
 β₁_min = 0.0
 β₁_max = 1.0
-β₁_step = 0.01
+β₁_step = 0.02
 n_β₁s = length(β₁_min:β₁_step:β₁_max)
 β₁_vec = zeros(Float64, n_β₁s)
 β₁_vec .= collect(β₁_min:β₁_step:β₁_max)
@@ -360,15 +363,14 @@ bifurc_β₁_jump_arr = zeros(Float64, 9, tlength, n_β₁s);
 end
 
 years = (40 * 365):365:(tlength - 365)
-bifurc_β₁_annual_summary = zeros(Float64, length(years), n_β₁s, 5)
-for (year, day) in pairs(years), state in 1:5, (k, β₁) in pairs(β₁_vec)
-    bifurc_β₁_annual_summary[year, k, state] = maximum(
+bifurc_β₁_annual_summary = zeros(Float64, 5, length(years), n_β₁s)
+
+@floop for (k, β₁) in pairs(β₁_vec), (year, day) in pairs(years),
+    state in eachindex(state_labels)
+    bifurc_β₁_annual_summary[state, year, k] = maximum(
         bifurc_β₁_seir_arr[state, day:(day + 364), k]
     )
 end
-
-maximum(bifurc_β₁_seir_arr[2, (40 * 365):(40 * 365 + 364), :]; dims = 1)
-bifurc_β₁_annual_summary[:, :, 2]
 
 bifurc_β₁_seir_arr[2, (40 * 365):(40 * 365 + 364), 1] ==
 bifurc_β₁_seir_arr[2, (40 * 365):(40 * 365 + 364), 11]
@@ -383,7 +385,7 @@ for year in eachindex(years)
     scatter!(
         bifurc_β₁_ax,
         β₁_min:β₁_step:β₁_max,
-        bifurc_β₁_annual_summary[year, :, 2];
+        bifurc_β₁_annual_summary[2, year, :];
         markersize = 4,
         color = :black,
     )
@@ -397,7 +399,8 @@ bifurc_μ_β₁_change_arr = zeros(Float64, size(u₀, 1), tlength, n_μs, n_β�
 bifurc_μ_β₁_jump_arr = zeros(Float64, 9, tlength, n_μs, n_β₁s);
 
 prog = Progress(length(μ_vec) * length(β₁_vec))
-@floop for (μ_pair, β₁_pair) in IterTools.product(pairs(μ_vec), pairs(β₁_vec))
+@floop for (β₁_pair, μ_pair) in
+           IterTools.product(pairs(β₁_vec), pairs(μ_vec))
     k = μ_pair[1]
     μ = μ_pair[2]
     l = β₁_pair[1]
@@ -416,34 +419,36 @@ end
 
 #%%
 years = (40 * 365):365:(tlength - 365)
-bifurc_μ_β₁_annual_summary = zeros(Float64, length(years), n_μs, n_β₁s, 5);
 
+bifurc_μ_β₁_annual_summary = zeros(
+    Float64, size(u₀, 1), length(years), n_μs, n_β₁s
+);
 prog = Progress(length(years) * 5 * length(β₁_vec))
-@floop for (years, state, β₁) in
-           IterTools.product(pairs(years), 1:5, eachindex(β₁_vec))
+@floop for (β₁, state, years) in
+           IterTools.product(eachindex(β₁_vec), eachindex(u₀), pairs(years))
     year = years[1]
     day = years[2]
 
-    bifurc_μ_β₁_annual_summary[year, :, β₁, state] = maximum(
+    bifurc_μ_β₁_annual_summary[state, year, :, β₁] = maximum(
         bifurc_μ_β₁_seir_arr[state, day:(day + 364), :, β₁]; dims = 1
     )
     next!(prog)
 end
 
-bifurc_μ_β₁_cycle_summary = zeros(Float64, n_μs, n_β₁s, 5);
+bifurc_μ_β₁_cycle_summary = zeros(Float64, n_β₁s, n_μs, 5);
 prog = Progress(5 * length(β₁_vec) * length(μ_vec))
-@floop for (state, β₁, μ) in
-           IterTools.product(1:5, eachindex(β₁_vec), eachindex(μ_vec))
-    bifurc_μ_β₁_cycle_summary[μ, β₁, state] = length(
-        Set(round.(bifurc_μ_β₁_annual_summary[:, μ, β₁, state]))
+@floop for (β₁, μ, state) in
+           IterTools.product(eachindex(β₁_vec), eachindex(μ_vec), 1:5)
+    bifurc_μ_β₁_cycle_summary[β₁, μ, state] = length(
+        Set(round.(bifurc_μ_β₁_annual_summary[state, :, μ, β₁]))
     )
     next!(prog)
 end
 
 #%%
-# Counterintutively, the x-axis is the rows in the matrix, and the y-axis is the columns
+# Because Julia is column-major, we need to transpose the heatmap as it reads the data one column at a time, and in our original matrix, each column represents a different β₁ value.
 bifurc_μ_β₁_fig, bifurc_μ_β₁_ax, bifurc_μ_β₁_hm = heatmap(
-    μ_vec .* (1000 * 365), β₁_vec, bifurc_μ_β₁_cycle_summary[:, :, 2]
+    μ_vec .* (1000 * 365), β₁_vec, bifurc_μ_β₁_cycle_summary[:, :, 2]'
 )
 Colorbar(bifurc_μ_β₁_fig[:, end + 1], bifurc_μ_β₁_hm)
 
@@ -456,17 +461,14 @@ bifurc_μ_β₁_fig
 ################################################################################
 ########################## Ensemble Analysis ###################################
 ################################################################################
-
 N_vec = convert.(Int64, [5e5])
 nsims_vec = [1000]
 u₀_prop_map = [
-    # Dict(:s => 0.9, :i => 0.1, :r => 0.0),
-    # Dict(:s => 0.1, :i => 0.1, :r => 0.8),
     Dict(:s => 0.1, :e => 0.01, :i => 0.01, :r => 0.88)
 ]
 dt_vec = [1.0]
 tmax_vec = [365.0 * 100]
-β_force_vec = [0.0, 0.1, 0.2, 0.3, 0.4]
+β_force_vec = collect(0.0:0.1:0.4)
 μ_min = 5
 μ_max = 20
 μ_step = 5.0
@@ -539,8 +541,8 @@ for p in sol_param_dict
             "beta_force_$(p[:β_force])",
             "tmax_$(p[:tmax])",
             "deltat_$(p[:dt])",
-        ),
-        prefix = "SEIR_tau_sol";
+        );
+        prefix = "SEIR_tau_sol",
         filename = savename(
             p;
             allowedtypes = (Symbol, Dict, String, Real),
@@ -607,7 +609,7 @@ function run_ensemble_summary(param_dict)
 end
 
 #%%
-quantile_ints = [95, 90, 80, 50]
+quantile_ints = [95, 80]
 
 summ_param_dict = @chain base_param_dict begin
     deepcopy(_)
@@ -795,7 +797,8 @@ sde_cb = DiscreteCallback(
 )
 
 #%%
-noise_u₀ = [0.5 * maximum(ensemble_seir_arr[2, 200:end, 1])]
+# Noise should be incidence, not prevalence
+noise_u₀ = round.([0.5 * maximum(inc_infec_arr[1, 200:end, 1])])
 tspan = (tlower, tmax)
 noise_prob = SDEProblem(background_ode!, background_noise!, noise_u₀, tspan, p)
 noise_sol = solve(
@@ -826,9 +829,14 @@ noise_arr = zeros(
     )
 
     noise_arr[1, :, sim] = noise_sol[1, :]
+
+    for day in 2:size(noise_arr, 2)
+        noise_arr[2, day, sim] =
+            noise_arr[1, day, sim] - noise_arr[1, day - 1, sim]
+    end
 end
 
-#%%
+#%% 
 noise_fig = Figure()
 noise_ax = Axis(
     noise_fig[1, 1]; xlabel = "Time (years)", ylabel = "Noise Prevalence"
