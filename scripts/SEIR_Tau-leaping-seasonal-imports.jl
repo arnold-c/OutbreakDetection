@@ -54,7 +54,7 @@ function calculate_beta_amp(β_mean, β_force, t)
     return β_mean * (1 + β_force * cos(2pi * t / 365))
 end
 
-function sir_mod(u, p, trange; retβamp = false, type = "stoch")
+function sir_mod(u, p, trange; retβarr = false, type = "stoch")
     tlength = length(trange)
     dt = step(trange)
 
@@ -64,8 +64,8 @@ function sir_mod(u, p, trange; retβamp = false, type = "stoch")
 
     jump_arr = zeros(Float64, 9, tlength)
 
-    if retβamp == true
-        beta_arr = zeros(Float64, 1, tlength)
+    if retβarr == true
+        beta_arr = zeros(Float64, tlength)
         sir_mod!(
             state_arr, change_arr, jump_arr, beta_arr, u, p, trange; dt = dt,
             type = type,
@@ -186,7 +186,7 @@ end
 
 #%%
 sir_array, change_array, jump_array, β_arr = sir_mod(
-    u₀, p, trange; retβamp = true, type = "stoch"
+    u₀, p, trange; retβarr = true, type = "stoch"
 )
 sir_df = create_sir_df(sir_array, trange, [:S, :E, :I, :R, :N])
 
