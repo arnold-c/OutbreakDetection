@@ -1,9 +1,14 @@
 function create_sir_df(sir_array::Matrix, trange, states = [:S, :I, :R, :N])
-    create_sir_df(hcat(trange, DataFrame(Tables.table(sir_array'))), states)
+    if size(sir_array, 1) == length(states)
+        sir_array = sir_array'
+    end
+    return create_sir_df_inner(
+        hcat(trange, DataFrame(Tables.table(sir_array))), states
+    )
 end
 
-function create_sir_df(sol, states)
-    @chain DataFrame(sol) begin
+function create_sir_df_inner(sir_df::DataFrame, states)
+    @chain sir_df begin
         rename!([:time, states...])
         if :N in states
             stack(_, [states...]; variable_name = :State, value_name = :Number)
@@ -14,6 +19,10 @@ function create_sir_df(sol, states)
             )
         end
     end
+end
+
+function create_sir_df(sol, states)
+    return create_sir_df_inner(DataFrame(sol), states)
 end
 
 function create_sir_df(sol::RODESolution, states = [:S, :I, :R])
@@ -134,8 +143,8 @@ function create_sir_all_sims_array!(
 end
 
 function create_sir_all_sim_quantiles!(all_sims_array, sim_quantiles; quantiles)
-    Threads.@threads for time in 1:size(all_sims_array, 2)
-        for state in 1:size(all_sims_array, 1)
+    @floop for state in 1:size(all_sims_array, 1)
+        for time in 1:size(all_sims_array, 2)
             sim_quantiles[:, time, state] = quantile(
                 skipmissing(
                     replace(all_sims_array[state, time, :], NaN => missing)
