@@ -842,3 +842,29 @@ for sim in axes(noise_arr, 3)
 end
 
 noise_fig
+
+#%%
+################################################################################
+############################### Testing ########################################
+################################################################################
+testlag = 0
+perc_clinic = 0.3
+perc_clinic_test = 0.8
+perc_tested = perc_clinic * perc_clinic_test
+
+testing_arr = zeros(Float64, tlength, 3, size(inc_infec_arr, 3));
+noise_testing_arr = zeros(Float64, tlength, 3, size(noise_arr, 3));
+post_odds_arr = zeros(Float64, tlength, 1, size(inc_infec_arr, 3));
+
+@floop for sim in 1:size(inc_infec_arr, 3)
+    testing_arr[:, 1, sim] .= @view(inc_infec_arr[:, 1, sim]) .* perc_tested
+    testing_arr[:, 2, sim] .= @view(testing_arr[:, 1, sim]) .>= 5
+    testing_arr[:, 3, sim] .= @view(inc_infec_arr[:, 4, sim]) .== @view(testing_arr[:, 1, sim])
+
+    noise_testing_arr[:, 1, sim] .= @view(noise_arr[:, 1, sim]) .* perc_tested
+    noise_testing_arr[:, 2, sim] .= @view(noise_testing_arr[:, 1, sim]) .>= 5
+    noise_testing_arr[:, 3, sim] .= @view(inc_infec_arr[:, 4, sim]) .== @view(noise_testing_arr[:, 1, sim])
+
+    post_odds_arr[:, 1, sim] .= 
+        @view(testing_arr[:, 1, sim]) ./ @view(testing_arr[:, 1, sim])
+end
