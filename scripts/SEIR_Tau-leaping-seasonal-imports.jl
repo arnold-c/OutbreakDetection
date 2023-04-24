@@ -367,6 +367,7 @@ bifurc_β₁_annual_summary = zeros(Float64, 5, length(years), n_β₁s)
 
 @floop for (k, β₁) in pairs(β₁_vec), (year, day) in pairs(years),
     state in eachindex(state_labels)
+
     bifurc_β₁_annual_summary[state, year, k] = maximum(
         bifurc_β₁_seir_arr[state, day:(day + 364), k]
     )
@@ -703,19 +704,19 @@ create_sir_quantiles_plot(
 ########################## Above-Below Analysis ################################
 ################################################################################
 inc_infec_arr = zeros(
-    Int64, 4, size(ensemble_jump_arr, 2), size(ensemble_jump_arr, 3)
+    Int64, size(ensemble_jump_arr, 2), 4, size(ensemble_jump_arr, 3)
 )
 
 prog = Progress(size(ensemble_jump_arr, 3))
 @floop for sim in 1:size(ensemble_jump_arr, 3)
     # Copy new infections to array
-    inc_infec_arr[1, :, sim] = @view(ensemble_jump_arr[1, :, sim])
+    inc_infec_arr[:, 1, sim] = @view(ensemble_jump_arr[1, :, sim])
     # Calculate if new infection is above or below threshold
-    inc_infec_arr[2, :, sim] = @view(inc_infec_arr[1, :, sim]) .> 5
+    inc_infec_arr[:, 2, sim] = @view(inc_infec_arr[:, 1, sim]) .>= 5
 
     # Calculate the total number of infections above threshold in a consecutive string of days
-    ## Calculate the number of consecutive days of infection above or below threshold
-    above5rle = rle(@view(inc_infec_arr[2, :, sim]))
+    # Calculate the number of consecutive days of infection above or below threshold
+    above5rle = rle(@view(inc_infec_arr[:, 2, sim]))
 
     ## Calculate upper and lower indices of consecutive days of infection
     above5accum = accumulate(+, above5rle[2])
@@ -727,12 +728,12 @@ prog = Progress(size(ensemble_jump_arr, 3))
 
     for (lower, upper) in zip(above5lowers, above5uppers)
         # Calculate number of infections between lower and upper indices
-        period_sum = sum(@view(inc_infec_arr[1, lower:upper, sim]))
-        inc_infec_arr[3, lower:upper, sim] .= period_sum
+        period_sum = sum(@view(inc_infec_arr[lower:upper, 1, sim]))
+        inc_infec_arr[lower:upper, 3, sim] .= period_sum
 
         # Determine if there is an outbreak between lower and upper indices
         if upper - lower >= 30 && period_sum >= 500
-            inc_infec_arr[4, lower:upper, sim] .= 1
+            inc_infec_arr[lower:upper, 4, sim] .= 1
         end
     end
 
@@ -752,12 +753,12 @@ linkxaxes!(above5ax_prev, above5ax_inc, above5ax_periodsum)
 times = collect(0:param_dict[:dt]:tmax) ./ 365
 
 lines!(above5ax_prev, times, ensemble_seir_arr[2, :, 1])
-lines!(above5ax_inc, times, inc_infec_arr[1, :, 1])
+lines!(above5ax_inc, times, inc_infec_arr[:, 1, 1])
 outbreak_fig = barplot!(
     above5ax_periodsum,
     times,
-    inc_infec_arr[3, :, 1];
-    color = inc_infec_arr[4, :, 1],
+    inc_infec_arr[:, 3, 1];
+    color = inc_infec_arr[:, 4, 1],
     colormap = [:blue, :red],
 )
 
@@ -798,7 +799,7 @@ sde_cb = DiscreteCallback(
 
 #%%
 # Noise should be incidence, not prevalence
-noise_u₀ = round.([0.5 * maximum(inc_infec_arr[1, 200:end, 1])])
+noise_u₀ = [200]
 tspan = (tlower, tmax)
 noise_prob = SDEProblem(background_ode!, background_noise!, noise_u₀, tspan, p)
 noise_sol = solve(
@@ -811,29 +812,23 @@ lines(noise_df[:, :time], noise_df[:, :noise])
 
 #%%
 noise_arr = zeros(
-    Float64, 3, size(ensemble_jump_arr, 2), size(ensemble_jump_arr, 3)
+    Float64, size(ensemble_jump_arr, 2), 3, size(ensemble_jump_arr, 3)
 )
 @floop for sim in 1:size(ensemble_jump_arr, 3)
-    noise_prob =
-        noise_prob = SDEProblem(
-            background_ode!,
-            background_noise!,
-            [0.5 * maximum(ensemble_seir_arr[2, 200:end, sim])],
-            tspan,
-            p,
-        )
+    noise_prob = SDEProblem(
+        background_ode!,
+        background_noise!,
+        noise_u₀,
+        tspan,
+        p
+    )
 
     noise_sol = solve(
         noise_prob, SRIW1(); callback = sde_cb, dt = param_dict[:dt],
         adaptive = false,
     )
 
-    noise_arr[1, :, sim] = noise_sol[1, :]
-
-    for day in 2:size(noise_arr, 2)
-        noise_arr[2, day, sim] =
-            noise_arr[1, day, sim] - noise_arr[1, day - 1, sim]
-    end
+    noise_arr[:, 1, sim] = @view(noise_sol[1, :])
 end
 
 #%% 
@@ -842,8 +837,8 @@ noise_ax = Axis(
     noise_fig[1, 1]; xlabel = "Time (years)", ylabel = "Noise Prevalence"
 )
 
-for sim in eachrow(noise_arr)
-    lines!(noise_ax, times, sim; color = (:red, 0.05))
+for sim in axes(noise_arr, 3)
+    lines!(noise_ax, times, noise_arr[:, 1, sim]; color = (:red, 0.05))
 end
 
 noise_fig
