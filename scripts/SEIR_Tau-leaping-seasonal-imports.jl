@@ -54,7 +54,7 @@ function calculate_beta_amp(β_mean, β_force, t)
     return β_mean * (1 + β_force * cos(2pi * t / 365))
 end
 
-function sir_mod(u, p, trange; retβarr = false, type = "stoch")
+function seir_mod(u, p, trange; retβarr = false, type = "stoch")
     tlength = length(trange)
     dt = step(trange)
 
@@ -66,20 +66,20 @@ function sir_mod(u, p, trange; retβarr = false, type = "stoch")
 
     if retβarr == true
         beta_arr = zeros(Float64, tlength)
-        sir_mod!(
+        seir_mod!(
             state_arr, change_arr, jump_arr, beta_arr, u, p, trange; dt = dt,
             type = type,
         )
         return state_arr, change_arr, jump_arr, beta_arr
     else
-        sir_mod!(
+        seir_mod!(
             state_arr, change_arr, jump_arr, u, p, trange; dt = dt, type = type
         )
         return state_arr, change_arr, jump_arr
     end
 end
 
-function sir_mod_loop!(
+function seir_mod_loop!(
     state_arr, change_arr, jump_arr, j, p, t, dt; type = type
 )
     # Unpack the state variables for easier use
@@ -145,7 +145,7 @@ function sir_mod_loop!(
     return nothing
 end
 
-function sir_mod!(
+function seir_mod!(
     state_arr, change_arr, jump_arr, u, p, trange; dt, type = "stoch"
 )
     S0, I0, R0, N0 = u
@@ -156,13 +156,15 @@ function sir_mod!(
             continue
         end
 
-        sir_mod_loop!(state_arr, change_arr, jump_arr, j, p, t, dt; type = type)
+        seir_mod_loop!(
+            state_arr, change_arr, jump_arr, j, p, t, dt; type = type
+        )
     end
 
     return nothing
 end
 
-function sir_mod!(
+function seir_mod!(
     state_arr, change_arr, jump_arr, beta_arr, u, p, trange; dt, type = "stoch"
 )
     S0, I0, R0, N0 = u
@@ -178,22 +180,25 @@ function sir_mod!(
             continue
         end
 
-        sir_mod_loop!(state_arr, change_arr, jump_arr, j, p, t, dt; type = type)
+        seir_mod_loop!(
+            state_arr, change_arr, jump_arr, j, p, t, dt; type = type
+        )
     end
 
     return nothing
 end
 
 #%%
-sir_array, change_array, jump_array, β_arr = sir_mod(
+seir_array, change_array, jump_array = seir_mod(
     u₀, p, trange; retβarr = true, type = "stoch"
-)
-sir_df = create_sir_df(sir_array, trange, [:S, :E, :I, :R, :N])
+);
+
+seir_df = create_sir_df(seir_array, trange, [:S, :E, :I, :R, :N])
 
 seircolors = ["dodgerblue4", "green", "firebrick3", "chocolate2", "purple"]
 state_labels = ["S", "E", "I", "R", "N"]
 draw_sir_plot(
-    sir_df;
+    seir_df;
     annual = true,
     colors = seircolors,
     labels = state_labels,
@@ -245,7 +250,7 @@ change_labels = ["dS", "dE", "dI", "dR", "dN"]
 end
 
 #%%
-@chain DataFrame(Tables.table(sir_array')) begin
+@chain DataFrame(Tables.table(seir_array')) begin
     hcat(trange, _)
     rename!(["time", state_labels...])
     data(_) *
@@ -255,7 +260,7 @@ end
 end
 
 #%%
-@chain DataFrame(Tables.table(β_arr')) begin
+@chain DataFrame(Tables.table(β_arr)) begin
     hcat(trange, _)
     rename!([:time, :β_t])
     stack(_, Not("time"); variable_name = :β, value_name = :Number)
@@ -294,7 +299,7 @@ prog = Progress(n_μs)
     jump = @view bifurc_μ_jump_arr[:, :, k]
 
     params = (β₀, β₁, σ, γ, μ_run, ε, R₀)
-    sir_mod!(seir, change, jump,
+    seir_mod!(seir, change, jump,
         u₀, params, trange; dt = τ, type = "det",
     )
     next!(prog)
@@ -351,7 +356,7 @@ bifurc_β₁_jump_arr = zeros(Float64, 9, tlength, n_β₁s);
 
     p = (β₀, β₁, σ, γ, μ, ε, R₀)
 
-    sir_mod!(seir, change, jump, u₀, p, trange; dt = τ, type = "det")
+    seir_mod!(seir, change, jump, u₀, p, trange; dt = τ, type = "det")
 end
 
 years = (40 * 365):365:(tlength - 365)
@@ -405,7 +410,7 @@ prog = Progress(length(μ_vec) * length(β₁_vec))
 
     params = (β₀, β₁, σ, γ, μ, ε, R₀)
 
-    sir_mod!(seir, change, jump, u₀, params, trange; dt = τ, type = "det")
+    seir_mod!(seir, change, jump, u₀, params, trange; dt = τ, type = "det")
     next!(prog)
 end
 
@@ -512,10 +517,10 @@ function run_ensemble_jump_prob(param_dict)
         @views change = ensemble_change_arr[:, :, k]
         @views jump = ensemble_jump_arr[:, :, k]
 
-        sir_mod!(seir, change, jump, u₀, p, trange; dt = τ)
+        seir_mod!(seir, change, jump, u₀, p, trange; dt = τ)
     end
 
-    return @strdict ensemble_seir_arr ensemble_change_arr ensemble_jump_arr u0_dict
+    return @strdict ensemble_seir_arr ensemble_change_arr ensemble_jump_arr u0_dict param_dict
 end
 
 #%%
