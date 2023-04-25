@@ -959,7 +959,7 @@ Legend(
 testing_fig
 
 #%%
-mutable struct OutbreakTriggerFreq{A,B,C}
+mutable struct OutbreakThresholdChars{A,B,C}
     crosstab::A
     tp::B
     tn::B
@@ -967,6 +967,8 @@ mutable struct OutbreakTriggerFreq{A,B,C}
     fn::B
     sens::C
     spec::C
+    ppv::C
+    npv::C
 end
 
 #%%
@@ -981,12 +983,15 @@ function calculate_ot_characterstics(test_arr, infec_arr, ind)
     sens = tp / (tp + fn)
     spec = tn / (tn + fp)
 
-    return (crosstab, tp, tn, fp, fn, sens, spec)
+    ppv = tp / (tp + fp)
+    npv = tn / (tn + fn)
+
+    return (crosstab, tp, tn, fp, fn, sens, spec, ppv, npv)
 end
 
 #%%
 OT_chars = ThreadsX.map(
-    sim -> OutbreakTriggerFreq(
+    sim -> OutbreakThresholdChars(
         calculate_ot_characterstics(testing_arr, inc_infec_arr, sim)...
     ),
     axes(inc_infec_arr, 3),
@@ -996,15 +1001,22 @@ OT_chars = ThreadsX.map(
 OT_chars[1].crosstab
 
 #%%
-otsens_vec = zeros(Float64, size(inc_infec_arr, 3));
-otspec_vec = zeros(Float64, size(inc_infec_arr, 3));
+otchars_vec = zeros(Float64, length(OT_chars), 4);
 
-ThreadsX.map!(x -> x.sens, otsens_vec, OT_chars)
-ThreadsX.map!(x -> x.spec, otspec_vec, OT_chars)
+@floop for sim in eachindex(OT_chars)
+    otchars_vec[sim, 1] = OT_chars[sim].sens
+    otchars_vec[sim, 2] = OT_chars[sim].spec
+    otchars_vec[sim, 3] = OT_chars[sim].ppv
+    otchars_vec[sim, 4] = OT_chars[sim].npv
+end
 
 #%%
-sens_spec_fig, sens_spec_ax = hist(
-    otsens_vec;
+sens_spec_fig = Figure()
+sens_spec_ax = Axis(sens_spec_fig[1, 1], xticks = 0.0:0.1:1.0)
+
+hist!(
+    sens_spec_ax,
+    @view(otchars_vec[:, 1]);
     bins = 0:0.01:1,
     color = (:blue, 0.5),
     strokecolor = :black,
@@ -1012,9 +1024,10 @@ sens_spec_fig, sens_spec_ax = hist(
     label = "Sensitivity",
     normalization = :pdf,
 )
+
 hist!(
     sens_spec_ax,
-    otspec_vec;
+    @view(otchars_vec[:, 2]);
     bins = 0:0.01:1,
     color = (:red, 0.5),
     strokecolor = :black,
@@ -1023,6 +1036,51 @@ hist!(
     normalization = :pdf,
 )
 
+vlines!(
+    sens_spec_ax,
+    [mean(@view(otchars_vec[:, i])) for i in 1:2],
+    color = :black,
+    linestyle = :dash,
+    linewidth = 2
+)
+
 Legend(sens_spec_fig[1, 2], sens_spec_ax, "Characterstic")
 
 sens_spec_fig
+
+#%%
+ppv_npv_fig = Figure()
+ppv_npv_ax = Axis(ppv_npv_fig[1, 1], xticks = 0.0:0.1:1.0)
+
+hist!(
+    ppv_npv_ax,
+    @view(otchars_vec[:, 3]);
+    bins = 0:0.01:1,
+    color = (:green, 0.5),
+    strokecolor = :black,
+    strokewidth = 1,
+    label = "PPV",
+    normalization = :pdf,
+)
+hist!(
+    ppv_npv_ax,
+    @view(otchars_vec[:, 4]);
+    bins = 0:0.01:1,
+    color = (:purple, 0.5),
+    strokecolor = :black,
+    strokewidth = 1,
+    label = "NPV",
+    normalization = :pdf,
+)
+
+vlines!(
+    ppv_npv_ax,
+    [mean(@view(otchars_vec[:, i])) for i in 3:4],
+    color = :black,
+    linestyle = :dash,
+    linewidth = 2
+)
+
+Legend(ppv_npv_fig[1, 2], ppv_npv_ax, "Characterstic")
+
+ppv_npv_fig
