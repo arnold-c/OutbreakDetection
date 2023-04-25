@@ -891,7 +891,6 @@ end
     @. testing_arr[:, 3, sim] =
         @view(testing_arr[:, 1, sim]) + @view(testing_arr[:, 2, sim])
 
-
     # Test positive individuals trigger outbreak response 
     @. testing_arr[:, 4, sim] = @view(noise_testing_arr[:, 1, sim]) >= 1
 
@@ -905,3 +904,51 @@ end
 testing_arr[:, :, 1]
 post_odds_arr[:, :, 1]
 
+#%%
+testing_fig = Figure()
+for (sim, ax) in zip(1:4, IterTools.product(1:2, 1:2))
+    row = ax[1]
+    col = ax[2]
+
+    fig_ax = Symbol("testing_ax_" * string(sim))
+
+    @eval $(fig_ax) = Axis(
+        testing_fig[$row, $col]; xlabel = "Time (years)",
+        ylabel = "Test Positive",
+    )
+
+    @eval lines!(
+        $(fig_ax), times, testing_arr[:, 1, $sim];
+        color = :red,
+        label = "Infectious",
+    )
+    @eval lines!(
+        $(fig_ax), times, testing_arr[:, 2, $sim];
+        color = :blue,
+        label = "Noise",
+    )
+    @eval lines!(
+        $(fig_ax), times, testing_arr[:, 3, $sim];
+        color = :black,
+        label = "Total",
+    )
+end
+
+linkxaxes!(testing_ax_1, testing_ax_2)
+
+linkyaxes!(testing_ax_1, testing_ax_3)
+linkyaxes!(testing_ax_2, testing_ax_4)
+
+map(hidexdecorations!, [testing_ax_1, testing_ax_3])
+map(hideydecorations!, [testing_ax_3, testing_ax_4])
+
+Legend(
+    testing_fig[3, :],
+    testing_ax_1,
+    "Type of Individual";
+    orientation = :horizontal,
+)
+
+testing_fig
+
+#%%
