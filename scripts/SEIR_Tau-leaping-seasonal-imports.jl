@@ -908,43 +908,6 @@ end
 testing_arr[:, :, 1]
 
 #%%
-mutable struct OutbreakTriggerFreq{A, B, C}
-    crosstab::A
-    tp::B
-    tn::B
-    fp::B
-    fn::B
-    sens::C
-    spec::C
-end
-
-#%%
-function calculate_ot_characterstics(test_arr, infec_arr, ind)
-    crosstab = freqtable(testing_arr[:, 4, ind], inc_infec_arr[:, 4, ind])
-    
-    tp = crosstab[2, 2];
-    tn = crosstab[1, 1];
-    fp = crosstab[2, 1];
-    fn = crosstab[1, 2];
-    
-    sens = tp / (tp + fn)
-    spec = tn / (tn + fp)
-
-    return (crosstab, tp, tn, fp, fn, sens, spec)
-end 
-
-#%%
-OT_chars = ThreadsX.map(
-    sim -> OutbreakTriggerFreq(
-        calculate_ot_characterstics(testing_arr, inc_infec_arr, sim)...
-    ),
-    axes(inc_infec_arr, 3)
-)
-
-#%%
-OT_chars[1].crosstab
-
-#%%
 testing_fig = Figure()
 plot_test_sims = 4
 plot_test_coords = 1:(plot_test_sims ÷ 2)
@@ -994,3 +957,72 @@ Legend(
 )
 
 testing_fig
+
+#%%
+mutable struct OutbreakTriggerFreq{A,B,C}
+    crosstab::A
+    tp::B
+    tn::B
+    fp::B
+    fn::B
+    sens::C
+    spec::C
+end
+
+#%%
+function calculate_ot_characterstics(test_arr, infec_arr, ind)
+    crosstab = freqtable(testing_arr[:, 4, ind], inc_infec_arr[:, 4, ind])
+
+    tp = crosstab[2, 2]
+    tn = crosstab[1, 1]
+    fp = crosstab[2, 1]
+    fn = crosstab[1, 2]
+
+    sens = tp / (tp + fn)
+    spec = tn / (tn + fp)
+
+    return (crosstab, tp, tn, fp, fn, sens, spec)
+end
+
+#%%
+OT_chars = ThreadsX.map(
+    sim -> OutbreakTriggerFreq(
+        calculate_ot_characterstics(testing_arr, inc_infec_arr, sim)...
+    ),
+    axes(inc_infec_arr, 3),
+)
+
+#%%
+OT_chars[1].crosstab
+
+#%%
+otsens_vec = zeros(Float64, size(inc_infec_arr, 3));
+otspec_vec = zeros(Float64, size(inc_infec_arr, 3));
+
+ThreadsX.map!(x -> x.sens, otsens_vec, OT_chars)
+ThreadsX.map!(x -> x.spec, otspec_vec, OT_chars)
+
+#%%
+sens_spec_fig, sens_spec_ax = hist(
+    otsens_vec;
+    bins = 0:0.01:1,
+    color = (:blue, 0.5),
+    strokecolor = :black,
+    strokewidth = 1,
+    label = "Sensitivity",
+    normalization = :pdf,
+)
+hist!(
+    sens_spec_ax,
+    otspec_vec;
+    bins = 0:0.01:1,
+    color = (:red, 0.5),
+    strokecolor = :black,
+    strokewidth = 1,
+    label = "Specificity",
+    normalization = :pdf,
+)
+
+Legend(sens_spec_fig[1, 2], sens_spec_ax, "Characterstic")
+
+sens_spec_fig
