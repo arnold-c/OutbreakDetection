@@ -784,7 +784,7 @@ above5fig
 ########################## Background Noise ####################################
 ################################################################################
 background_ode!(du, u, p, t) = (du .= 0.0)
-background_noise!(du, u, p, t) = (du .= 1.0)
+background_noise!(du, u, p, t) = (du .= 0.1)
 
 sde_condition(u, t, integrator) = true
 function sde_affect!(integrator)
@@ -799,7 +799,7 @@ sde_cb = DiscreteCallback(
 
 #%%
 # Noise should be incidence, not prevalence
-noise_u₀ = [50.0]
+noise_u₀ = [10.0]
 tspan = (tlower, tmax)
 noise_prob = SDEProblem(background_ode!, background_noise!, noise_u₀, tspan, p)
 noise_sol = solve(
