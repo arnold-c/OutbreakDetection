@@ -811,10 +811,12 @@ noise_df = rename(DataFrame(noise_sol), [:time, :noise])
 lines(noise_df[:, :time], noise_df[:, :noise])
 
 #%%
+# Set noise arr to 3D array (even though not necessary), so it has the same 
+# dimensions as the other arrays
 noise_arr = zeros(
-    Float64, size(ensemble_jump_arr, 2), 3, size(ensemble_jump_arr, 3)
+    Float64, size(ensemble_jump_arr, 2), 1, size(ensemble_jump_arr, 3)
 )
-@floop for sim in 1:size(ensemble_jump_arr, 3)
+@floop for sim in axes(ensemble_jump_arr, 3)
     noise_prob = SDEProblem(
         background_ode!,
         background_noise!,
@@ -829,16 +831,18 @@ noise_arr = zeros(
     )
 
     noise_arr[:, 1, sim] = @view(noise_sol[1, :])
+    # Set first noise incidence to 0 as no new noise in the first time step
+    noise_arr[1, 1, sim] = 0.0
 end
 
 #%% 
 noise_fig = Figure()
 noise_ax = Axis(
-    noise_fig[1, 1]; xlabel = "Time (years)", ylabel = "Noise Prevalence"
+    noise_fig[1, 1]; xlabel = "Time (years)", ylabel = "Noise Incidence"
 )
 
 for sim in axes(noise_arr, 3)
-    lines!(noise_ax, times, noise_arr[:, 1, sim]; color = (:red, 0.05))
+    lines!(noise_ax, times, noise_arr[:, 1, sim]; color = (:red, 0.1))
 end
 
 noise_fig
@@ -847,24 +851,57 @@ noise_fig
 ################################################################################
 ############################### Testing ########################################
 ################################################################################
-testlag = 0
+testlag = 3
 perc_clinic = 0.3
 perc_clinic_test = 0.8
 perc_tested = perc_clinic * perc_clinic_test
 
-testing_arr = zeros(Float64, tlength, 3, size(inc_infec_arr, 3));
-noise_testing_arr = zeros(Float64, tlength, 3, size(noise_arr, 3));
-post_odds_arr = zeros(Float64, tlength, 1, size(inc_infec_arr, 3));
+testing_arr = zeros(Int64, tlength, 4, size(inc_infec_arr, 3));
+post_odds_arr = zeros(Float64, tlength, 2, size(inc_infec_arr, 3));
 
-@floop for sim in 1:size(inc_infec_arr, 3)
-    testing_arr[:, 1, sim] .= @view(inc_infec_arr[:, 1, sim]) .* perc_tested
-    testing_arr[:, 2, sim] .= @view(testing_arr[:, 1, sim]) .>= 5
-    testing_arr[:, 3, sim] .= @view(inc_infec_arr[:, 4, sim]) .== @view(testing_arr[:, 1, sim])
-
-    noise_testing_arr[:, 1, sim] .= @view(noise_arr[:, 1, sim]) .* perc_tested
-    noise_testing_arr[:, 2, sim] .= @view(noise_testing_arr[:, 1, sim]) .>= 5
-    noise_testing_arr[:, 3, sim] .= @view(inc_infec_arr[:, 4, sim]) .== @view(noise_testing_arr[:, 1, sim])
-
-    post_odds_arr[:, 1, sim] .= 
-        @view(testing_arr[:, 1, sim]) ./ @view(testing_arr[:, 1, sim])
+function calculate_tested!(outarr, outarr_ind, inarr, lag, perc_tested, sim)
+    for day in axes(inarr, 1)
+        if day + lag <= size(inarr, 1)
+            outarr[day + lag, outarr_ind, sim] = Int64(
+                round(inarr[day, 1, sim] * perc_tested)
+            )
+        end
+    end
 end
+
+function calculate_movingavg!(arr, testlag, avglag, sim)
+    for day in axes(arr, 1)
+        if day >= testlag + avglag
+            arr[day, 2, sim] = mean(@view(arr[(day - avglag + 1):day, 1, sim]))
+        end
+    end
+end
+
+@floop for sim in axes(inc_infec_arr, 3)
+    # Test positive infectious individuals
+    calculate_tested!(
+        testing_arr, 1, inc_infec_arr, testlag, perc_tested, sim
+    )
+    # Test positive noise individuals
+    calculate_tested!(
+        testing_arr, 2, noise_arr, testlag, perc_tested, sim
+    )
+
+    # Total test positive individuals
+    @. testing_arr[:, 3, sim] =
+        @view(testing_arr[:, 1, sim]) + @view(testing_arr[:, 2, sim])
+
+
+    # Test positive individuals trigger outbreak response 
+    @. testing_arr[:, 4, sim] = @view(noise_testing_arr[:, 1, sim]) >= 1
+
+    # Posterior odds of infectious / noise test positive
+    @. post_odds_arr[:, 1, sim] =
+        @view(testing_arr[:, 1, sim]) / @view(testing_arr[:, 2, sim])
+    calculate_movingavg!(post_odds_arr, testlag, 7, sim)
+end
+
+#%%
+testing_arr[:, :, 1]
+post_odds_arr[:, :, 1]
+
