@@ -10,7 +10,7 @@ using JumpProcesses, Statistics, DataFrames, DataFramesMeta, LinearAlgebra
 using CairoMakie, AlgebraOfGraphics, ColorSchemes, Colors
 using DifferentialEquations, ModelingToolkit
 using BenchmarkTools, JLD2, Random, ProgressMeter, StatsBase, Distributions
-using IterTools, FLoops, FreqTables
+using IterTools, FLoops, FreqTables, ThreadsX
 
 CairoMakie.activate!()
 set_aog_theme!()
@@ -908,14 +908,41 @@ end
 testing_arr[:, :, 1]
 
 #%%
-outbreak_trigger_freq = freqtable(testing_arr[:, 4, 1], inc_infec_arr[:, 4, 1])
-ot_tp = outbreak_trigger_freq[2, 2];
-ot_tn = outbreak_trigger_freq[1, 1];
-ot_fp = outbreak_trigger_freq[2, 1];
-ot_fn = outbreak_trigger_freq[1, 2];
+mutable struct OutbreakTriggerFreq{A, B, C}
+    crosstab::A
+    tp::B
+    tn::B
+    fp::B
+    fn::B
+    sens::C
+    spec::C
+end
 
-ot_sens = ot_tp / (ot_tp + ot_fn)
-ot_spec = ot_tn / (ot_tn + ot_fp)
+#%%
+function calculate_ot_characterstics(test_arr, infec_arr, ind)
+    crosstab = freqtable(testing_arr[:, 4, ind], inc_infec_arr[:, 4, ind])
+    
+    tp = crosstab[2, 2];
+    tn = crosstab[1, 1];
+    fp = crosstab[2, 1];
+    fn = crosstab[1, 2];
+    
+    sens = tp / (tp + fn)
+    spec = tn / (tn + fp)
+
+    return (crosstab, tp, tn, fp, fn, sens, spec)
+end 
+
+#%%
+OT_chars = ThreadsX.map(
+    sim -> OutbreakTriggerFreq(
+        calculate_ot_characterstics(testing_arr, inc_infec_arr, sim)...
+    ),
+    axes(inc_infec_arr, 3)
+)
+
+#%%
+OT_chars[1].crosstab
 
 #%%
 testing_fig = Figure()
