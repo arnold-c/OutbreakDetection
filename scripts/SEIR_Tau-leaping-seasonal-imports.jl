@@ -892,7 +892,7 @@ end
         @view(testing_arr[:, 1, sim]) + @view(testing_arr[:, 2, sim])
 
     # Test positive individuals trigger outbreak response 
-    @. testing_arr[:, 4, sim] = @view(noise_testing_arr[:, 1, sim]) >= 10
+    @. testing_arr[:, 4, sim] = @view(testing_arr[:, 3, sim]) >= 10
 
     # Posterior odds of infectious / noise test positive
     @. post_odds_arr[:, 1, sim] =
@@ -905,14 +905,14 @@ end
 end
 
 #%%
-testing_arr[:, :, 4]
+testing_arr[:, :, 1]
 
 #%%
-outbreak_trigger_freq = freqtable(testing_arr[:, 4, 4], inc_infec_arr[:, 4, 4])
-ot_tp = outbreak_trigger_freq[2, 2]
-ot_tn = outbreak_trigger_freq[1, 1]
-ot_fp = outbreak_trigger_freq[2, 1]
-ot_fn = outbreak_trigger_freq[1, 2]
+outbreak_trigger_freq = freqtable(testing_arr[:, 4, 1], inc_infec_arr[:, 4, 1])
+ot_tp = outbreak_trigger_freq[2, 2];
+ot_tn = outbreak_trigger_freq[1, 1];
+ot_fp = outbreak_trigger_freq[2, 1];
+ot_fn = outbreak_trigger_freq[1, 2];
 
 ot_sens = ot_tp / (ot_tp + ot_fn)
 ot_spec = ot_tn / (ot_tn + ot_fp)
