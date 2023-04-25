@@ -906,7 +906,10 @@ post_odds_arr[:, :, 1]
 
 #%%
 testing_fig = Figure()
-for (sim, ax) in zip(1:4, IterTools.product(1:2, 1:2))
+plot_test_sims = 4
+plot_test_coords = 1:(plot_test_sims ÷ 2)
+for (sim, ax) in
+    zip(1:plot_test_sims, IterTools.product(plot_test_coords, plot_test_coords))
     row = ax[1]
     col = ax[2]
 
@@ -935,6 +938,7 @@ for (sim, ax) in zip(1:4, IterTools.product(1:2, 1:2))
 end
 
 linkxaxes!(testing_ax_1, testing_ax_2)
+linkxaxes!(testing_ax_3, testing_ax_4)
 
 linkyaxes!(testing_ax_1, testing_ax_3)
 linkyaxes!(testing_ax_2, testing_ax_4)
@@ -950,5 +954,3 @@ Legend(
 )
 
 testing_fig
-
-#%%
