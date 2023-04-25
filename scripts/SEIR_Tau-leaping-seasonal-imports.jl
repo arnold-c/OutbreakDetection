@@ -10,7 +10,7 @@ using JumpProcesses, Statistics, DataFrames, DataFramesMeta, LinearAlgebra
 using CairoMakie, AlgebraOfGraphics, ColorSchemes, Colors
 using DifferentialEquations, ModelingToolkit
 using BenchmarkTools, JLD2, Random, ProgressMeter, StatsBase, Distributions
-using IterTools, FLoops
+using IterTools, FLoops, FreqTables
 
 CairoMakie.activate!()
 set_aog_theme!()
@@ -856,7 +856,7 @@ perc_clinic = 0.3
 perc_clinic_test = 0.8
 perc_tested = perc_clinic * perc_clinic_test
 
-testing_arr = zeros(Int64, tlength, 4, size(inc_infec_arr, 3));
+testing_arr = zeros(Int64, tlength, 5, size(inc_infec_arr, 3));
 post_odds_arr = zeros(Float64, tlength, 2, size(inc_infec_arr, 3));
 
 function calculate_tested!(outarr, outarr_ind, inarr, lag, perc_tested, sim)
@@ -892,17 +892,30 @@ end
         @view(testing_arr[:, 1, sim]) + @view(testing_arr[:, 2, sim])
 
     # Test positive individuals trigger outbreak response 
-    @. testing_arr[:, 4, sim] = @view(noise_testing_arr[:, 1, sim]) >= 1
+    @. testing_arr[:, 4, sim] = @view(noise_testing_arr[:, 1, sim]) >= 10
 
     # Posterior odds of infectious / noise test positive
     @. post_odds_arr[:, 1, sim] =
         @view(testing_arr[:, 1, sim]) / @view(testing_arr[:, 2, sim])
     calculate_movingavg!(post_odds_arr, testlag, 7, sim)
+
+    # Triggered outbreak equal to actual outbreak status
+    @. testing_arr[:, 5, sim] =
+        @view(testing_arr[:, 4, sim]) == @view(inc_infec_arr[:, 4, sim])
 end
 
 #%%
-testing_arr[:, :, 1]
-post_odds_arr[:, :, 1]
+testing_arr[:, :, 4]
+
+#%%
+outbreak_trigger_freq = freqtable(testing_arr[:, 4, 4], inc_infec_arr[:, 4, 4])
+ot_tp = outbreak_trigger_freq[2, 2]
+ot_tn = outbreak_trigger_freq[1, 1]
+ot_fp = outbreak_trigger_freq[2, 1]
+ot_fn = outbreak_trigger_freq[1, 2]
+
+ot_sens = ot_tp / (ot_tp + ot_fn)
+ot_spec = ot_tn / (ot_tn + ot_fp)
 
 #%%
 testing_fig = Figure()
