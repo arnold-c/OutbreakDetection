@@ -956,7 +956,7 @@ Legend(
 testing_fig
 
 #%%
-struct OutbreakThresholdCharsTest{A,B,C}
+struct OutbreakThresholdCharsTest2{A,B,C,D}
     crosstab::A
     tp::B
     tn::B
@@ -968,9 +968,11 @@ struct OutbreakThresholdCharsTest{A,B,C}
     npv::C
     noutbreaks::B
     ndetectoutbreaks::B
+    outbreakbounds::D
+    detectoutbreakbounds::D
 end
 
-OutbreakThresholdChars = OutbreakThresholdCharsTest
+OutbreakThresholdChars = OutbreakThresholdCharsTest2
 #%%
 function calculate_ot_characterstics(test_arr, infec_arr, ind)
     crosstab = freqtable(testing_arr[:, 4, ind], inc_infec_arr[:, 4, ind])
@@ -989,23 +991,49 @@ function calculate_ot_characterstics(test_arr, infec_arr, ind)
     return crosstab, tp, tn, fp, fn, sens, spec, ppv, npv
 end
 
-function calculate_noutbreaks(arr, ind, sim)
-    outbreakrle = rle(@view(inc_infec_arr[:, ind, sim]))
+function calculate_noutbreaks(outbreakrle)
     return length(findall(==(1), outbreakrle[1]))
+end
+
+function calculate_outbreak_thresholds(outbreakrle)
+    outbreakbounds = zeros(Int64, (length(outbreakrle[1]) ÷ 2), 2)
+
+    # Calculate upper and lower indices of consecutive days of infection
+    outbreakaccum = accumulate(+, outbreakrle[2])
+    outbreakbounds[:, 2] .= outbreakaccum[findall(==(1), outbreakrle[1])]
+    outbreakbounds[:, 1] .= filter(
+        x -> x <= maximum(outbreakbounds[:, 2]),
+        outbreakaccum[findall(==(0), outbreakrle[1])] .+ 1,
+    )
+
+    return outbreakbounds
 end
 
 #%%
 OT_chars = ThreadsX.map(
-    sim -> OutbreakThresholdChars(
-        calculate_ot_characterstics(testing_arr, inc_infec_arr, sim)...,
-        calculate_noutbreaks(inc_infec_arr, 4, sim),
-        calculate_noutbreaks(testing_arr, 4, sim),
-    ),
     axes(inc_infec_arr, 3),
-)
+) do sim
+    outbreakrle = rle(@view(inc_infec_arr[:, 4, sim]))
+    detectrle = rle(@view(testing_arr[:, 4, sim]))
+
+    OutbreakThresholdChars(
+        calculate_ot_characterstics(testing_arr, inc_infec_arr, sim)...,
+        calculate_noutbreaks(outbreakrle),
+        calculate_noutbreaks(detectrle),
+        calculate_outbreak_thresholds(outbreakrle),
+        calculate_outbreak_thresholds(detectrle),
+    )
+end
 
 #%%
-OT_chars[1].crosstab
+OT_chars[1].detectoutbreakbounds
+OT_chars[1].noutbreaks
+OT_chars[1].ndetectoutbreaks
+
+# Note that an outbreak isn't detected continously!
+testing_arr[80:100, :, 1]
+
+#%%
 
 #%%
 otchars_vec = zeros(Float64, length(OT_chars), 6);
@@ -1021,28 +1049,30 @@ end
 
 #%%
 outbreak_dist_fig = Figure()
-outbreak_dist_ax = Axis(outbreak_dist_fig[1, 1], xlabel = "Proportion of Time Series with Outbreak")
+outbreak_dist_ax = Axis(
+    outbreak_dist_fig[1, 1]; xlabel = "Proportion of Time Series with Outbreak"
+)
 
 hist!(
     outbreak_dist_ax,
-    vec(sum(@view(inc_infec_arr[:, 4, :]), dims = 1)) ./ (365 * 100);
+    vec(sum(@view(inc_infec_arr[:, 4, :]); dims = 1)) ./ (365 * 100);
     bins = 0.0:0.02:1.0,
     color = (:blue, 0.5),
     strokecolor = :black,
     strokewidth = 1,
     normalization = :pdf,
-    label = "True Outbreaks"
+    label = "True Outbreaks",
 )
 
 hist!(
     outbreak_dist_ax,
-    vec(sum(@view(testing_arr[:, 4, :]), dims = 1)) ./ (365 * 100);
+    vec(sum(@view(testing_arr[:, 4, :]); dims = 1)) ./ (365 * 100);
     bins = 0.0:0.02:1.0,
     color = (:red, 0.5),
     strokecolor = :black,
     strokewidth = 1,
     normalization = :pdf,
-    label = "Tested Outbreaks"
+    label = "Tested Outbreaks",
 )
 
 Legend(outbreak_dist_fig[1, 2], outbreak_dist_ax, "Outbreak Proportion")
@@ -1051,7 +1081,7 @@ outbreak_dist_fig
 
 #%%
 noutbreaks_fig = Figure()
-noutbreaks_ax = Axis(noutbreaks_fig[1, 1], xlabel = "Number of Outbreaks")
+noutbreaks_ax = Axis(noutbreaks_fig[1, 1]; xlabel = "Number of Outbreaks")
 
 hist!(
     noutbreaks_ax,
@@ -1061,7 +1091,7 @@ hist!(
     strokecolor = :black,
     strokewidth = 1,
     normalization = :pdf,
-    label = "True Outbreaks"
+    label = "True Outbreaks",
 )
 
 hist!(
@@ -1072,7 +1102,7 @@ hist!(
     strokecolor = :black,
     strokewidth = 1,
     normalization = :pdf,
-    label = "Tested Outbreaks"
+    label = "Tested Outbreaks",
 )
 
 Legend(noutbreaks_fig[1, 2], noutbreaks_ax, "# Outbreaks")
@@ -1081,7 +1111,7 @@ noutbreaks_fig
 
 #%%
 sens_spec_fig = Figure()
-sens_spec_ax = Axis(sens_spec_fig[1, 1], xticks = 0.0:0.1:1.0)
+sens_spec_ax = Axis(sens_spec_fig[1, 1]; xticks = 0.0:0.1:1.0)
 
 hist!(
     sens_spec_ax,
@@ -1107,10 +1137,10 @@ hist!(
 
 vlines!(
     sens_spec_ax,
-    [mean(@view(otchars_vec[:, i])) for i in 1:2],
+    [mean(@view(otchars_vec[:, i])) for i in 1:2];
     color = :black,
     linestyle = :dash,
-    linewidth = 2
+    linewidth = 2,
 )
 
 Legend(sens_spec_fig[1, 2], sens_spec_ax, "Characterstic")
@@ -1119,7 +1149,7 @@ sens_spec_fig
 
 #%%
 ppv_npv_fig = Figure()
-ppv_npv_ax = Axis(ppv_npv_fig[1, 1], xticks = 0.0:0.1:1.0)
+ppv_npv_ax = Axis(ppv_npv_fig[1, 1]; xticks = 0.0:0.1:1.0)
 
 hist!(
     ppv_npv_ax,
@@ -1145,10 +1175,10 @@ hist!(
 
 vlines!(
     ppv_npv_ax,
-    [mean(@view(otchars_vec[:, i])) for i in 3:4],
+    [mean(@view(otchars_vec[:, i])) for i in 3:4];
     color = :black,
     linestyle = :dash,
-    linewidth = 2
+    linewidth = 2,
 )
 
 Legend(ppv_npv_fig[1, 2], ppv_npv_ax, "Characterstic")
