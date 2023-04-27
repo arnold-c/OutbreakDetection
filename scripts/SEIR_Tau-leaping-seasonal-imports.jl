@@ -863,18 +863,45 @@ testlag = 3
 perc_clinic = 0.3
 perc_clinic_test = 0.8
 perc_tested = perc_clinic * perc_clinic_test
+testsens = 1.0
+testspec = 1.0
 
 testing_arr = zeros(Int64, tlength, 5, size(inc_infec_arr, 3));
 post_odds_arr = zeros(Float64, tlength, 2, size(inc_infec_arr, 3));
 
-function calculate_tested!(outarr, outarr_ind, inarr, lag, perc_tested, sim)
-    for day in axes(inarr, 1)
-        if day + lag <= size(inarr, 1)
-            outarr[day + lag, outarr_ind, sim] = Int64(
-                round(inarr[day, 1, sim] * perc_tested)
-            )
+function calculate_tested!(outarr, outarr_ind, inarr, perc_tested, sim)
+    @. outarr[:, outarr_ind, sim] = round(@view(inarr[:, 1, sim]) * perc_tested)
+end
+
+function calculate_pos(
+    tested_vec,
+    lag,
+    sens,
+    spec;
+    noise = false
+)
+    ntested = length(tested_vec)
+    npos = zeros(Int64, ntested)
+
+    if noise
+        for day in eachindex(tested_vec)
+            if day + lag <= ntested
+                npos[day + lag] = Int64(
+                    round(tested_vec[day] * (1.0 - spec))
+                )
+            end
+        end
+    else
+        for day in eachindex(tested_vec)
+            if day + lag <= ntested
+                npos[day + lag] = Int64(
+                    round(tested_vec[day] * sens)
+                )
+            end
         end
     end
+
+    return npos
 end
 
 function calculate_movingavg!(arr, testlag, avglag, sim)
@@ -885,19 +912,19 @@ function calculate_movingavg!(arr, testlag, avglag, sim)
     end
 end
 
+#%%
+prog = Progress(size(inc_infec_arr, 3))
 @floop for sim in axes(inc_infec_arr, 3)
-    # Test positive infectious individuals
-    calculate_tested!(
-        testing_arr, 1, inc_infec_arr, testlag, perc_tested, sim
-    )
-    # Test positive noise individuals
-    calculate_tested!(
-        testing_arr, 2, noise_arr, testlag, perc_tested, sim
-    )
+    # Number of infectious individuals tested
+    calculate_tested!(testing_arr, 1, inc_infec_arr, perc_tested, sim)
 
-    # Total test positive individuals
-    @. testing_arr[:, 3, sim] =
-        @view(testing_arr[:, 1, sim]) + @view(testing_arr[:, 2, sim])
+    # Number of noise individuals tested
+    calculate_tested!(testing_arr, 2, noise_arr, perc_tested, sim)
+
+    # Number of test positive individuals
+    testing_arr[:, 3, sim] .=
+        calculate_pos(@view(testing_arr[:, 1, sim]), testlag, testsens, testspec) .+
+        calculate_pos(@view(testing_arr[:, 2, sim]), testlag, testsens, testspec; noise = true)
 
     # Test positive individuals trigger outbreak response 
     @. testing_arr[:, 4, sim] = @view(testing_arr[:, 3, sim]) >= 10
@@ -910,7 +937,12 @@ end
     # Triggered outbreak equal to actual outbreak status
     @. testing_arr[:, 5, sim] =
         @view(testing_arr[:, 4, sim]) == @view(inc_infec_arr[:, 4, sim])
+    
+    next!(prog)
 end
+
+#%%
+testing_arr[:, :, 1]
 
 #%%
 testing_fig = Figure()
@@ -925,7 +957,7 @@ for (sim, ax) in
 
     @eval $(fig_ax) = Axis(
         testing_fig[$row, $col]; xlabel = "Time (years)",
-        ylabel = "Test Positive",
+        ylabel = "Tested",
     )
 
     @eval lines!(
@@ -941,7 +973,7 @@ for (sim, ax) in
     @eval lines!(
         $(fig_ax), times, testing_arr[:, 3, $sim];
         color = :black,
-        label = "Total",
+        label = "Total Positive",
     )
 end
 
@@ -1005,7 +1037,7 @@ end
 
 #%%
 OT_chars = ThreadsX.map(
-    axes(inc_infec_arr, 3),
+    axes(inc_infec_arr, 3)
 ) do sim
     outbreakrle = rle(@view(inc_infec_arr[:, 4, sim]))
     detectrle = rle(@view(testing_arr[:, 4, sim]))
@@ -1020,6 +1052,8 @@ OT_chars = ThreadsX.map(
 end
 
 #%%
+OT_chars[1].crosstab
+OT_chars[1].outbreakbounds
 OT_chars[1].detectoutbreakbounds
 OT_chars[1].noutbreaks
 OT_chars[1].ndetectoutbreaks
@@ -1050,7 +1084,7 @@ outbreak_dist_ax = Axis(
 hist!(
     outbreak_dist_ax,
     vec(sum(@view(inc_infec_arr[:, 4, :]); dims = 1)) ./ (365 * 100);
-    bins = 0.0:0.02:1.0,
+    bins = 0.1:0.01:0.7,
     color = (:blue, 0.5),
     strokecolor = :black,
     strokewidth = 1,
@@ -1061,7 +1095,7 @@ hist!(
 hist!(
     outbreak_dist_ax,
     vec(sum(@view(testing_arr[:, 4, :]); dims = 1)) ./ (365 * 100);
-    bins = 0.0:0.02:1.0,
+    bins = 0.1:0.01:0.7,
     color = (:red, 0.5),
     strokecolor = :black,
     strokewidth = 1,
@@ -1074,13 +1108,14 @@ Legend(outbreak_dist_fig[1, 2], outbreak_dist_ax, "Outbreak Proportion")
 outbreak_dist_fig
 
 #%%
+# TODO - make outbreak triggers close together count as one 
 noutbreaks_fig = Figure()
 noutbreaks_ax = Axis(noutbreaks_fig[1, 1]; xlabel = "Number of Outbreaks")
 
 hist!(
     noutbreaks_ax,
     @view(otchars_vec[:, 5]);
-    # bins = 0.0:0.02:1.0,
+    bins = 0.0:10.:800.0,
     color = (:blue, 0.5),
     strokecolor = :black,
     strokewidth = 1,
@@ -1091,7 +1126,7 @@ hist!(
 hist!(
     noutbreaks_ax,
     @view(otchars_vec[:, 6]);
-    # bins = 0.0:0.02:1.0,
+    bins = 0.0:10.:800.0,
     color = (:red, 0.5),
     strokecolor = :black,
     strokewidth = 1,
