@@ -959,7 +959,7 @@ Legend(
 testing_fig
 
 #%%
-mutable struct OutbreakThresholdChars{A,B,C}
+struct OutbreakThresholdCharsTest{A,B,C}
     crosstab::A
     tp::B
     tn::B
@@ -969,8 +969,11 @@ mutable struct OutbreakThresholdChars{A,B,C}
     spec::C
     ppv::C
     npv::C
+    noutbreaks::B
+    ndetectoutbreaks::B
 end
 
+OutbreakThresholdChars = OutbreakThresholdCharsTest
 #%%
 function calculate_ot_characterstics(test_arr, infec_arr, ind)
     crosstab = freqtable(testing_arr[:, 4, ind], inc_infec_arr[:, 4, ind])
