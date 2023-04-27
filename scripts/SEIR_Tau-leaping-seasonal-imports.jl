@@ -703,6 +703,19 @@ create_sir_quantiles_plot(
 ################################################################################
 ########################## Above-Below Analysis ################################
 ################################################################################
+function calculate_outbreak_thresholds(outbreakrle)
+    # Calculate upper and lower indices of consecutive days of infection
+    outbreakaccum = accumulate(+, outbreakrle[2])
+    outbreakuppers = outbreakaccum[findall(==(1), outbreakrle[1])]
+    outbreaklowers = filter(
+        x -> x <= maximum(outbreakuppers),
+        outbreakaccum[findall(==(0), outbreakrle[1])] .+ 1,
+    )
+
+    return (outbreaklowers, outbreakuppers)
+end
+
+#%%
 inc_infec_arr = zeros(
     Int64, size(ensemble_jump_arr, 2), 4, size(ensemble_jump_arr, 3)
 )
@@ -719,12 +732,7 @@ prog = Progress(size(ensemble_jump_arr, 3))
     above5rle = rle(@view(inc_infec_arr[:, 2, sim]))
 
     ## Calculate upper and lower indices of consecutive days of infection
-    above5accum = accumulate(+, above5rle[2])
-    above5uppers = above5accum[findall(==(1), above5rle[1])]
-    above5lowers = filter(
-        x -> x <= maximum(above5uppers),
-        above5accum[findall(==(0), above5rle[1])] .+ 1,
-    )
+    above5lowers, above5uppers = calculate_outbreak_thresholds(above5rle)
 
     for (lower, upper) in zip(above5lowers, above5uppers)
         # Calculate number of infections between lower and upper indices
@@ -995,20 +1003,6 @@ function calculate_noutbreaks(outbreakrle)
     return length(findall(==(1), outbreakrle[1]))
 end
 
-function calculate_outbreak_thresholds(outbreakrle)
-    outbreakbounds = zeros(Int64, (length(outbreakrle[1]) ÷ 2), 2)
-
-    # Calculate upper and lower indices of consecutive days of infection
-    outbreakaccum = accumulate(+, outbreakrle[2])
-    outbreakbounds[:, 2] .= outbreakaccum[findall(==(1), outbreakrle[1])]
-    outbreakbounds[:, 1] .= filter(
-        x -> x <= maximum(outbreakbounds[:, 2]),
-        outbreakaccum[findall(==(0), outbreakrle[1])] .+ 1,
-    )
-
-    return outbreakbounds
-end
-
 #%%
 OT_chars = ThreadsX.map(
     axes(inc_infec_arr, 3),
@@ -1020,8 +1014,8 @@ OT_chars = ThreadsX.map(
         calculate_ot_characterstics(testing_arr, inc_infec_arr, sim)...,
         calculate_noutbreaks(outbreakrle),
         calculate_noutbreaks(detectrle),
-        calculate_outbreak_thresholds(outbreakrle),
-        calculate_outbreak_thresholds(detectrle),
+        reduce(hcat, collect(calculate_outbreak_thresholds(outbreakrle))),
+        reduce(hcat, collect(calculate_outbreak_thresholds(detectrle))),
     )
 end
 
