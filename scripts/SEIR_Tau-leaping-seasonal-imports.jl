@@ -836,16 +836,16 @@ noise_arr = zeros(
 end
 
 #%% 
-noise_fig = Figure()
-noise_ax = Axis(
-    noise_fig[1, 1]; xlabel = "Time (years)", ylabel = "Noise Incidence"
-)
+# noise_fig = Figure()
+# noise_ax = Axis(
+#     noise_fig[1, 1]; xlabel = "Time (years)", ylabel = "Noise Incidence"
+# )
 
-for sim in axes(noise_arr, 3)
-    lines!(noise_ax, times, noise_arr[:, 1, sim]; color = (:red, 0.1))
-end
+# for sim in axes(noise_arr, 3)
+#     lines!(noise_ax, times, noise_arr[:, 1, sim]; color = (:red, 0.1))
+# end
 
-noise_fig
+# noise_fig
 
 #%%
 ################################################################################
@@ -903,9 +903,6 @@ end
     @. testing_arr[:, 5, sim] =
         @view(testing_arr[:, 4, sim]) == @view(inc_infec_arr[:, 4, sim])
 end
-
-#%%
-testing_arr[:, :, 1]
 
 #%%
 testing_fig = Figure()
@@ -989,13 +986,20 @@ function calculate_ot_characterstics(test_arr, infec_arr, ind)
     ppv = tp / (tp + fp)
     npv = tn / (tn + fn)
 
-    return (crosstab, tp, tn, fp, fn, sens, spec, ppv, npv)
+    return crosstab, tp, tn, fp, fn, sens, spec, ppv, npv
+end
+
+function calculate_noutbreaks(arr, ind, sim)
+    outbreakrle = rle(@view(inc_infec_arr[:, ind, sim]))
+    return length(findall(==(1), outbreakrle[1]))
 end
 
 #%%
 OT_chars = ThreadsX.map(
     sim -> OutbreakThresholdChars(
-        calculate_ot_characterstics(testing_arr, inc_infec_arr, sim)...
+        calculate_ot_characterstics(testing_arr, inc_infec_arr, sim)...,
+        calculate_noutbreaks(inc_infec_arr, 4, sim),
+        calculate_noutbreaks(testing_arr, 4, sim),
     ),
     axes(inc_infec_arr, 3),
 )
@@ -1004,14 +1008,76 @@ OT_chars = ThreadsX.map(
 OT_chars[1].crosstab
 
 #%%
-otchars_vec = zeros(Float64, length(OT_chars), 4);
+otchars_vec = zeros(Float64, length(OT_chars), 6);
 
 @floop for sim in eachindex(OT_chars)
     otchars_vec[sim, 1] = OT_chars[sim].sens
     otchars_vec[sim, 2] = OT_chars[sim].spec
     otchars_vec[sim, 3] = OT_chars[sim].ppv
     otchars_vec[sim, 4] = OT_chars[sim].npv
+    otchars_vec[sim, 5] = OT_chars[sim].noutbreaks
+    otchars_vec[sim, 6] = OT_chars[sim].ndetectoutbreaks
 end
+
+#%%
+outbreak_dist_fig = Figure()
+outbreak_dist_ax = Axis(outbreak_dist_fig[1, 1], xlabel = "Proportion of Time Series with Outbreak")
+
+hist!(
+    outbreak_dist_ax,
+    vec(sum(@view(inc_infec_arr[:, 4, :]), dims = 1)) ./ (365 * 100);
+    bins = 0.0:0.02:1.0,
+    color = (:blue, 0.5),
+    strokecolor = :black,
+    strokewidth = 1,
+    normalization = :pdf,
+    label = "True Outbreaks"
+)
+
+hist!(
+    outbreak_dist_ax,
+    vec(sum(@view(testing_arr[:, 4, :]), dims = 1)) ./ (365 * 100);
+    bins = 0.0:0.02:1.0,
+    color = (:red, 0.5),
+    strokecolor = :black,
+    strokewidth = 1,
+    normalization = :pdf,
+    label = "Tested Outbreaks"
+)
+
+Legend(outbreak_dist_fig[1, 2], outbreak_dist_ax, "Outbreak Proportion")
+
+outbreak_dist_fig
+
+#%%
+noutbreaks_fig = Figure()
+noutbreaks_ax = Axis(noutbreaks_fig[1, 1], xlabel = "Number of Outbreaks")
+
+hist!(
+    noutbreaks_ax,
+    @view(otchars_vec[:, 5]);
+    # bins = 0.0:0.02:1.0,
+    color = (:blue, 0.5),
+    strokecolor = :black,
+    strokewidth = 1,
+    normalization = :pdf,
+    label = "True Outbreaks"
+)
+
+hist!(
+    noutbreaks_ax,
+    @view(otchars_vec[:, 6]);
+    # bins = 0.0:0.02:1.0,
+    color = (:red, 0.5),
+    strokecolor = :black,
+    strokewidth = 1,
+    normalization = :pdf,
+    label = "Tested Outbreaks"
+)
+
+Legend(noutbreaks_fig[1, 2], noutbreaks_ax, "# Outbreaks")
+
+noutbreaks_fig
 
 #%%
 sens_spec_fig = Figure()
@@ -1065,6 +1131,7 @@ hist!(
     label = "PPV",
     normalization = :pdf,
 )
+
 hist!(
     ppv_npv_ax,
     @view(otchars_vec[:, 4]);
