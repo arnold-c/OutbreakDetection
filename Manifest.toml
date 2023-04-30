@@ -2,7 +2,7 @@
 
 julia_version = "1.9.0-rc2"
 manifest_format = "2.0"
-project_hash = "709b5170bc4240ddfc638fa006cc921fe83fa02d"
+project_hash = "e48232bc9e8ad1833ba957a7b4c26f7d0fc4b34c"
 
 [[deps.AbstractAlgebra]]
 deps = ["GroupsCore", "InteractiveUtils", "LinearAlgebra", "MacroTools", "Markdown", "Random", "RandomExtensions", "SparseArrays", "Test"]
@@ -1892,6 +1892,11 @@ deps = ["Distributed", "Printf"]
 git-tree-sha1 = "d7a7aef8f8f2d537104f170139553b14dfe39fe9"
 uuid = "92933f4c-e287-5a05-a399-4b506db050ca"
 version = "1.7.2"
+
+[[deps.ProtoStructs]]
+git-tree-sha1 = "a6369210ad7d48e3b0402975a9df963a48ec487b"
+uuid = "437b6fc4-8e8e-11e9-3fa1-ad391e66c018"
+version = "1.1.0"
 
 [[deps.QOI]]
 deps = ["ColorTypes", "FileIO", "FixedPointNumbers"]

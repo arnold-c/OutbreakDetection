@@ -10,7 +10,7 @@ using JumpProcesses, Statistics, DataFrames, DataFramesMeta, LinearAlgebra
 using CairoMakie, AlgebraOfGraphics, ColorSchemes, Colors
 using DifferentialEquations, ModelingToolkit
 using BenchmarkTools, JLD2, Random, ProgressMeter, StatsBase, Distributions
-using IterTools, FLoops, FreqTables, ThreadsX
+using IterTools, FLoops, FreqTables, ThreadsX, ProtoStructs
 
 CairoMakie.activate!()
 set_aog_theme!()
@@ -996,7 +996,7 @@ Legend(
 testing_fig
 
 #%%
-struct OutbreakThresholdCharsTest2{A,B,C,D}
+@proto struct OutbreakThresholdChars{A,B,C,D}
     crosstab::A
     tp::B
     tn::B
