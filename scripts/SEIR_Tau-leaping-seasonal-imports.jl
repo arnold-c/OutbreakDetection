@@ -863,10 +863,10 @@ testlag = 3
 perc_clinic = 0.3
 perc_clinic_test = 0.8
 perc_tested = perc_clinic * perc_clinic_test
-testsens = 1.0
-testspec = 1.0
+testsens = 0.9
+testspec = 0.9
 
-testing_arr = zeros(Int64, tlength, 5, size(inc_infec_arr, 3));
+testing_arr = zeros(Int64, tlength, 6, size(inc_infec_arr, 3));
 post_odds_arr = zeros(Float64, tlength, 2, size(inc_infec_arr, 3));
 
 function calculate_tested!(outarr, outarr_ind, inarr, perc_tested, sim)
@@ -904,12 +904,20 @@ function calculate_pos(
     return npos
 end
 
-function calculate_movingavg!(arr, testlag, avglag, sim)
-    for day in axes(arr, 1)
+function calculate_movingavg!(inarr, outarr, testlag, avglag)
+    for day in axes(inarr, 1)
         if day >= testlag + avglag
-            arr[day, 2, sim] = mean(@view(arr[(day - avglag + 1):day, 1, sim]))
+            outarr[day] = mean(@view(inarr[(day - avglag + 1):day]))
         end
     end
+end
+
+function calculate_movingavg(inarr, testlag, avglag)
+    outarr = zeros(Float64, size(inarr, 1), 1)
+
+    calculate_movingavg!(inarr, outarr, testlag, avglag)
+
+    return outarr
 end
 
 #%%
@@ -932,17 +940,22 @@ prog = Progress(size(inc_infec_arr, 3))
     # Posterior odds of infectious / noise test positive
     @. post_odds_arr[:, 1, sim] =
         @view(testing_arr[:, 1, sim]) / @view(testing_arr[:, 2, sim])
-    calculate_movingavg!(post_odds_arr, testlag, 7, sim)
+    calculate_movingavg!(
+        @view(post_odds_arr[:, 1, sim]),
+        @view(post_odds_arr[:, 1, sim]),
+        testlag, 7
+    )
 
     # Triggered outbreak equal to actual outbreak status
     @. testing_arr[:, 5, sim] =
         @view(testing_arr[:, 4, sim]) == @view(inc_infec_arr[:, 4, sim])
     
+    # Calculate moving average of test positives
+    testing_arr[:, 6, sim] .= convert.(Int64, round.(calculate_movingavg(@view(testing_arr[:, 3, sim]), testlag, 7)))
+    
     next!(prog)
 end
 
-#%%
-testing_arr[:, :, 1]
 
 #%%
 testing_fig = Figure()
@@ -996,6 +1009,62 @@ Legend(
 testing_fig
 
 #%%
+inc_test_fig = Figure()
+inc_test_ax1 = Axis(inc_test_fig[1, 1]; ylabel = "Incidence")
+inc_test_ax2 = Axis(inc_test_fig[2, 1]; ylabel = "Test Positive")
+inc_test_ax3 = Axis(
+    inc_test_fig[3, 1];
+    xlabel = "Time (years)",
+    ylabel = "7d Avg Test Positive"
+)
+
+outbreakcols = [ColorSchemes.magma[i] for i in (200, 20)]
+
+lines!(
+    inc_test_ax1, times, inc_infec_arr[:, 1, 1];
+    color = inc_infec_arr[:, 4, 1],
+    colormap = outbreakcols,
+)
+lines!(
+    inc_test_ax2, times, testing_arr[:, 3, 1];
+    color = testing_arr[:, 4, 1],
+    colormap = outbreakcols,
+)
+lines!(
+    inc_test_ax3, times, testing_arr[:, 6, 1];
+    color = testing_arr[:, 6, 1] .>= 10,
+    colormap = outbreakcols,
+)
+
+linkxaxes!(inc_test_ax1, inc_test_ax2, inc_test_ax3)
+
+map(hidexdecorations!, [inc_test_ax1, inc_test_ax2])
+
+map(ax -> xlims!(ax, (40, 60)), [inc_test_ax1, inc_test_ax2, inc_test_ax3])
+map(ax -> ylims!(ax, (0, 50)), [inc_test_ax1, inc_test_ax2, inc_test_ax3])
+
+hlines!(
+    inc_test_ax1, 5;
+    color = :black,
+    linestyle = :dash,
+    linewidth = 2,
+)
+map(
+    ax -> hlines!(ax, 10; color = :black, linestyle = :dash, linewidth = 2),
+    [inc_test_ax2, inc_test_ax3]
+)
+
+Legend(
+    inc_test_fig[:, 2],
+    [PolyElement(; color = col) for col in outbreakcols],
+    ["Not Outbreak", "Outbreak"],
+    "Outbreak"
+)
+
+inc_test_fig
+
+
+#%%
 @proto struct OutbreakThresholdChars{A,B,C,D}
     crosstab::A
     tp::B
@@ -1012,7 +1081,6 @@ testing_fig
     detectoutbreakbounds::D
 end
 
-OutbreakThresholdChars = OutbreakThresholdCharsTest2
 #%%
 function calculate_ot_characterstics(test_arr, infec_arr, ind)
     crosstab = freqtable(testing_arr[:, 4, ind], inc_infec_arr[:, 4, ind])
@@ -1062,8 +1130,6 @@ OT_chars[1].ndetectoutbreaks
 testing_arr[80:100, :, 1]
 
 #%%
-
-#%%
 otchars_vec = zeros(Float64, length(OT_chars), 6);
 
 @floop for sim in eachindex(OT_chars)
@@ -1079,7 +1145,7 @@ end
 outbreak_dist_fig = Figure()
 outbreak_dist_ax = Axis(
     outbreak_dist_fig[1, 1]; xlabel = "Proportion of Time Series with Outbreak"
-)
+
 
 hist!(
     outbreak_dist_ax,
