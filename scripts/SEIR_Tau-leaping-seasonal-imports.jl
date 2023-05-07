@@ -754,6 +754,8 @@ prog = Progress(size(ensemble_jump_arr, 3))
 end
 
 #%%
+outbreakcols = [ColorSchemes.magma[i] for i in (200, 20)]
+
 above5fig = Figure()
 above5ax_prev = Axis(above5fig[1, 1]; ylabel = "Prevalence")
 above5ax_inc = Axis(above5fig[2, 1]; ylabel = "Incidence")
@@ -772,7 +774,7 @@ outbreak_fig = barplot!(
     times,
     inc_infec_arr[:, 3, 1];
     color = inc_infec_arr[:, 4, 1],
-    colormap = [:blue, :red],
+    colormap = outbreakcols,
 )
 
 map(hidexdecorations!, [above5ax_prev, above5ax_inc])
@@ -786,7 +788,7 @@ ylims!(above5ax_inc, (0, 300))
 
 axislegend(
     above5ax_periodsum,
-    [PolyElement(; color = col) for col in [:blue, :red]],
+    [PolyElement(; color = col) for col in outbreakcols],
     ["Not Outbreak", "Outbreak"],
 )
 
@@ -885,7 +887,7 @@ function calculate_pos(
     lag,
     sens,
     spec;
-    noise = false
+    noise = false,
 )
     ntested = length(tested_vec)
     npos = zeros(Int64, ntested)
@@ -928,21 +930,23 @@ function calculate_movingavg(inarr, testlag, avglag)
 end
 
 function detectoutbreak(incvec, avgvec, threshold, avglag)
-# For each day in the timeseries, if the number of infections goes above the threshold for incident cases (e.g. 10), then an outbreak is triggered. The end of the outbreak is declared when the number of cases first goes below the threshold, but only if the moving average falls below the threshold X days later (X = average lag)
+    # For each day in the timeseries, if the number of infections goes above the threshold for incident cases (e.g. 10), then an outbreak is triggered. The end of the outbreak is declared when the number of cases first goes below the threshold, but only if the moving average falls below the threshold X days later (X = average lag)
     outbreak = zeros(Int64, length(incvec))
 
     for day in axes(incvec, 1)
-        avgdayend = day + avglag <= length(incvec) ? day + avglag : length(incvec)
+        avgdayend =
+            day + avglag <= length(incvec) ? day + avglag : length(incvec)
         avgdaystart = day <= avglag ? 1 : day - avglag
         prevday = day == 1 ? 1 : day - 1
 
         if incvec[day] >= threshold
             outbreak[day] = 1
-        elseif incvec[day] < threshold &&
+        elseif (
+            incvec[day] < threshold &&
             sum(avgvec[day:avgdayend] .>= threshold) >= 1 &&
             sum(incvec[avgdaystart:day] .>= threshold) >= 1 &&
             outbreak[prevday] == 1
-            
+        )
             outbreak[day] = 1
         end
     end
@@ -967,11 +971,27 @@ prog = Progress(size(inc_infec_arr, 3))
 
     # Number of test positive individuals
     testing_arr[:, 3, sim] .=
-        calculate_pos(@view(testing_arr[:, 1, sim]), testlag, testsens, testspec) .+
-        calculate_pos(@view(testing_arr[:, 2, sim]), testlag, testsens, testspec; noise = true)
+        calculate_pos(
+            @view(testing_arr[:, 1, sim]), testlag, testsens, testspec
+        ) .+
+        calculate_pos(
+            @view(testing_arr[:, 2, sim]),
+            testlag,
+            testsens,
+            testspec;
+            noise = true,
+        )
 
     # Calculate moving average of test positives
-    testing_arr[:, 4, sim] .= convert.(Int64, round.(calculate_movingavg(@view(testing_arr[:, 3, sim]), testlag, 7)))
+    testing_arr[:, 4, sim] .=
+        convert.(
+            Int64,
+            round.(
+                calculate_movingavg(
+                    @view(testing_arr[:, 3, sim]), testlag, moveavglag
+                )
+            ),
+        )
 
     # Test positive individuals trigger outbreak response 
     testing_arr[:, 5, sim] = detectoutbreak(
@@ -1003,25 +1023,22 @@ inc_test_ax2 = Axis(inc_test_fig[2, 1]; ylabel = "Test Positive")
 inc_test_ax3 = Axis(
     inc_test_fig[3, 1];
     xlabel = "Time (years)",
-    ylabel = "7d Avg Test Positive",
-    xticks = 1750:10:1850
+    ylabel = "7d Avg Test Positive"
 )
 
-outbreakcols = [ColorSchemes.magma[i] for i in (200, 20)]
-
 lines!(
-    inc_test_ax1, times .* 365, inc_infec_arr[:, 1, 1];
+    inc_test_ax1, times, inc_infec_arr[:, 1, 1];
     color = inc_infec_arr[:, 4, 1],
     colormap = outbreakcols,
 )
-scatter!(
-    inc_test_ax2, times .* 365, testing_arr[:, 3, 1];
+lines!(
+    inc_test_ax2, times, testing_arr[:, 3, 1];
     color = testing_arr[:, 5, 1],
     colormap = outbreakcols,
 )
 lines!(
-    inc_test_ax3, times .* 365, testing_arr[:, 4, 1];
-    color = testing_arr[:, 4, 1] .>= 10,
+    inc_test_ax3, times, testing_arr[:, 4, 1];
+    color = testing_arr[:, 4, 1] .>= detectthreshold,
     colormap = outbreakcols,
 )
 
@@ -1029,7 +1046,10 @@ linkxaxes!(inc_test_ax1, inc_test_ax2, inc_test_ax3)
 
 map(hidexdecorations!, [inc_test_ax1, inc_test_ax2])
 
-map(ax -> xlims!(ax, (1750, 1850)), [inc_test_ax1, inc_test_ax2, inc_test_ax3])
+map(
+    ax -> xlims!(ax, (1750 / 365, 1850 / 365)),
+    [inc_test_ax1, inc_test_ax2, inc_test_ax3],
+)
 map(ax -> ylims!(ax, (0, 50)), [inc_test_ax1, inc_test_ax2, inc_test_ax3])
 
 hlines!(
@@ -1039,15 +1059,21 @@ hlines!(
     linewidth = 2,
 )
 map(
-    ax -> hlines!(ax, 10; color = :black, linestyle = :dash, linewidth = 2),
-    [inc_test_ax2, inc_test_ax3]
+    ax -> hlines!(
+        ax,
+        detectthreshold;
+        color = :black,
+        linestyle = :dash,
+        linewidth = 2,
+    ),
+    [inc_test_ax2, inc_test_ax3],
 )
 
 Legend(
     inc_test_fig[:, 2],
     [PolyElement(; color = col) for col in outbreakcols],
     ["Not Outbreak", "Outbreak"],
-    "Outbreak"
+    "Outbreak Status",
 )
 
 inc_test_fig
@@ -1065,7 +1091,7 @@ for (sim, ax) in
 
     @eval $(fig_ax) = Axis(
         testing_fig[$row, $col]; xlabel = "Time (years)",
-        ylabel = "Tested",
+        ylabel = "Tested"
     )
 
     @eval lines!(
@@ -1184,12 +1210,12 @@ end
 outbreak_dist_fig = Figure()
 outbreak_dist_ax = Axis(
     outbreak_dist_fig[1, 1]; xlabel = "Proportion of Time Series with Outbreak"
-
+)
 
 hist!(
     outbreak_dist_ax,
     vec(sum(@view(inc_infec_arr[:, 4, :]); dims = 1)) ./ (365 * 100);
-    bins = 0.1:0.01:0.7,
+    bins = 0.0:0.01:0.7,
     color = (:blue, 0.5),
     strokecolor = :black,
     strokewidth = 1,
@@ -1199,8 +1225,8 @@ hist!(
 
 hist!(
     outbreak_dist_ax,
-    vec(sum(@view(testing_arr[:, 4, :]); dims = 1)) ./ (365 * 100);
-    bins = 0.1:0.01:0.7,
+    vec(sum(@view(testing_arr[:, 6, :]); dims = 1)) ./ (365 * 100);
+    bins = 0.0:0.01:0.7,
     color = (:red, 0.5),
     strokecolor = :black,
     strokewidth = 1,
@@ -1220,7 +1246,7 @@ noutbreaks_ax = Axis(noutbreaks_fig[1, 1]; xlabel = "Number of Outbreaks")
 hist!(
     noutbreaks_ax,
     @view(otchars_vec[:, 5]);
-    bins = 0.0:10.:800.0,
+    bins = 0.0:10.0:400.0,
     color = (:blue, 0.5),
     strokecolor = :black,
     strokewidth = 1,
@@ -1231,7 +1257,7 @@ hist!(
 hist!(
     noutbreaks_ax,
     @view(otchars_vec[:, 6]);
-    bins = 0.0:10.:800.0,
+    bins = 0.0:10.0:400.0,
     color = (:red, 0.5),
     strokecolor = :black,
     strokewidth = 1,
@@ -1250,7 +1276,7 @@ sens_spec_ax = Axis(sens_spec_fig[1, 1]; xticks = 0.0:0.1:1.0)
 hist!(
     sens_spec_ax,
     @view(otchars_vec[:, 1]);
-    bins = 0:0.01:1,
+    bins = 0.3:0.01:1.01,
     color = (:blue, 0.5),
     strokecolor = :black,
     strokewidth = 1,
@@ -1261,7 +1287,7 @@ hist!(
 hist!(
     sens_spec_ax,
     @view(otchars_vec[:, 2]);
-    bins = 0:0.01:1,
+    bins = 0.3:0.01:1.01,
     color = (:red, 0.5),
     strokecolor = :black,
     strokewidth = 1,
@@ -1277,7 +1303,7 @@ vlines!(
     linewidth = 2,
 )
 
-Legend(sens_spec_fig[1, 2], sens_spec_ax, "Characterstic")
+Legend(sens_spec_fig[1, 2], sens_spec_ax, "Characteristic")
 
 sens_spec_fig
 
@@ -1288,7 +1314,7 @@ ppv_npv_ax = Axis(ppv_npv_fig[1, 1]; xticks = 0.0:0.1:1.0)
 hist!(
     ppv_npv_ax,
     @view(otchars_vec[:, 3]);
-    bins = 0:0.01:1,
+    bins = 0.5:0.01:1.01,
     color = (:green, 0.5),
     strokecolor = :black,
     strokewidth = 1,
@@ -1299,7 +1325,7 @@ hist!(
 hist!(
     ppv_npv_ax,
     @view(otchars_vec[:, 4]);
-    bins = 0:0.01:1,
+    bins = 0.5:0.01:1.01,
     color = (:purple, 0.5),
     strokecolor = :black,
     strokewidth = 1,
@@ -1315,6 +1341,6 @@ vlines!(
     linewidth = 2,
 )
 
-Legend(ppv_npv_fig[1, 2], ppv_npv_ax, "Characterstic")
+Legend(ppv_npv_fig[1, 2], ppv_npv_ax, "Characteristic")
 
 ppv_npv_fig
