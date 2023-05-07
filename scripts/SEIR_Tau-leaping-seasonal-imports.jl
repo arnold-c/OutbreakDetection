@@ -716,6 +716,10 @@ function calculate_outbreak_thresholds(outbreakrle)
 end
 
 #%%
+outbreakthreshold = 5
+minoutbreakdur = 30
+minoutbreaksize = 500
+
 inc_infec_arr = zeros(
     Int64, size(ensemble_jump_arr, 2), 4, size(ensemble_jump_arr, 3)
 )
@@ -725,7 +729,8 @@ prog = Progress(size(ensemble_jump_arr, 3))
     # Copy new infections to array
     inc_infec_arr[:, 1, sim] = @view(ensemble_jump_arr[1, :, sim])
     # Calculate if new infection is above or below threshold
-    inc_infec_arr[:, 2, sim] = @view(inc_infec_arr[:, 1, sim]) .>= 5
+    inc_infec_arr[:, 2, sim] =
+        @view(inc_infec_arr[:, 1, sim]) .>= outbreakthreshold
 
     # Calculate the total number of infections above threshold in a consecutive string of days
     # Calculate the number of consecutive days of infection above or below threshold
@@ -740,7 +745,7 @@ prog = Progress(size(ensemble_jump_arr, 3))
         inc_infec_arr[lower:upper, 3, sim] .= period_sum
 
         # Determine if there is an outbreak between lower and upper indices
-        if upper - lower >= 30 && period_sum >= 500
+        if upper - lower >= minoutbreakdur && period_sum >= minoutbreaksize
             inc_infec_arr[lower:upper, 4, sim] .= 1
         end
     end
@@ -860,6 +865,8 @@ end
 ############################### Testing ########################################
 ################################################################################
 testlag = 3
+moveavglag = 7
+detectthreshold = 10
 perc_clinic = 0.3
 perc_clinic_test = 0.8
 perc_tested = perc_clinic * perc_clinic_test
@@ -970,8 +977,8 @@ prog = Progress(size(inc_infec_arr, 3))
     testing_arr[:, 5, sim] = detectoutbreak(
         @view(testing_arr[:, 3, sim]),
         @view(testing_arr[:, 4, sim]),
-        10, 7
-        )
+        detectthreshold, moveavglag,
+    )
 
     # Posterior odds of infectious / noise test positive
     @. post_odds_arr[:, 1, sim] =
@@ -979,13 +986,13 @@ prog = Progress(size(inc_infec_arr, 3))
     calculate_movingavg!(
         @view(post_odds_arr[:, 1, sim]),
         @view(post_odds_arr[:, 1, sim]),
-        testlag, 7
+        testlag, moveavglag,
     )
 
     # Triggered outbreak equal to actual outbreak status
     @. testing_arr[:, 6, sim] =
         @view(testing_arr[:, 4, sim]) == @view(inc_infec_arr[:, 4, sim])
-    
+
     next!(prog)
 end
 
