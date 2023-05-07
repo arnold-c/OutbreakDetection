@@ -724,33 +724,55 @@ inc_infec_arr = zeros(
     Int64, size(ensemble_jump_arr, 2), 4, size(ensemble_jump_arr, 3)
 )
 
-prog = Progress(size(ensemble_jump_arr, 3))
-@floop for sim in 1:size(ensemble_jump_arr, 3)
-    # Copy new infections to array
-    inc_infec_arr[:, 1, sim] = @view(ensemble_jump_arr[1, :, sim])
-    # Calculate if new infection is above or below threshold
-    inc_infec_arr[:, 2, sim] =
-        @view(inc_infec_arr[:, 1, sim]) .>= outbreakthreshold
+function create_inc_infec_arr!(
+    incarr, ensemblejumparr, outbreakthreshold, minoutbreakdur, minoutbreaksize
+)
+    prog = Progress(size(ensemblejumparr, 3))
+    @floop for sim in axes(ensemblejumparr, 3)
+        # Copy new infections to array
+        incarr[:, 1, sim] = @view(ensemblejumparr[1, :, sim])
+        # Calculate if new infection is above or below threshold
+        incarr[:, 2, sim] =
+            @view(incarr[:, 1, sim]) .>= outbreakthreshold
 
-    # Calculate the total number of infections above threshold in a consecutive string of days
-    # Calculate the number of consecutive days of infection above or below threshold
-    above5rle = rle(@view(inc_infec_arr[:, 2, sim]))
+        # Calculate the total number of infections above threshold in a consecutive string of days
+        # Calculate the number of consecutive days of infection above or below threshold
+        above5rle = rle(@view(incarr[:, 2, sim]))
 
-    ## Calculate upper and lower indices of consecutive days of infection
-    above5lowers, above5uppers = calculate_outbreak_thresholds(above5rle)
+        ## Calculate upper and lower indices of consecutive days of infection
+        above5lowers, above5uppers = calculate_outbreak_thresholds(above5rle)
 
-    for (lower, upper) in zip(above5lowers, above5uppers)
-        # Calculate number of infections between lower and upper indices
-        period_sum = sum(@view(inc_infec_arr[lower:upper, 1, sim]))
-        inc_infec_arr[lower:upper, 3, sim] .= period_sum
+        for (lower, upper) in zip(above5lowers, above5uppers)
+            # Calculate number of infections between lower and upper indices
+            period_sum = sum(@view(incarr[lower:upper, 1, sim]))
+            incarr[lower:upper, 3, sim] .= period_sum
 
-        # Determine if there is an outbreak between lower and upper indices
-        if upper - lower >= minoutbreakdur && period_sum >= minoutbreaksize
-            inc_infec_arr[lower:upper, 4, sim] .= 1
+            # Determine if there is an outbreak between lower and upper indices
+            if upper - lower >= minoutbreakdur && period_sum >= minoutbreaksize
+                incarr[lower:upper, 4, sim] .= 1
+            end
         end
-    end
 
-    next!(prog)
+        next!(prog)
+    end
+end
+
+function create_inc_infec_arr(
+    ensemble_jump_arr, outbreakthreshold, minoutbreakdur, minoutbreaksize
+)
+    incarr = zeros(
+        Int64, size(ensemble_jump_arr, 2), 4, size(ensemble_jump_arr, 3)
+    )
+
+    create_inc_infec_arr!(
+        incarr,
+        ensemble_jump_arr,
+        outbreakthreshold,
+        minoutbreakdur,
+        minoutbreaksize,
+    )
+
+    return incarr
 end
 
 #%%
@@ -961,60 +983,98 @@ end
 # )
 
 #%%
-prog = Progress(size(inc_infec_arr, 3))
-@floop for sim in axes(inc_infec_arr, 3)
-    # Number of infectious individuals tested
-    calculate_tested!(testing_arr, 1, inc_infec_arr, perc_tested, sim)
+function create_testing_arr!(
+    testarr, incarr, noisearr, perc_tested, testlag, testsens, testspec,
+    detectthreshold, moveavglag,
+)
+    prog = Progress(size(incarr, 3))
+    @floop for sim in 1:size(incarr, 3)
+        # Number of infectious individuals tested
+        calculate_tested!(testarr, 1, incarr, perc_tested, sim)
 
-    # Number of noise individuals tested
-    calculate_tested!(testing_arr, 2, noise_arr, perc_tested, sim)
+        # Number of noise individuals tested
+        calculate_tested!(testarr, 2, noisearr, perc_tested, sim)
 
-    # Number of test positive individuals
-    testing_arr[:, 3, sim] .=
-        calculate_pos(
-            @view(testing_arr[:, 1, sim]), testlag, testsens, testspec
-        ) .+
-        calculate_pos(
-            @view(testing_arr[:, 2, sim]),
-            testlag,
-            testsens,
-            testspec;
-            noise = true,
+        # Number of test positive individuals
+        testarr[:, 3, sim] .=
+            calculate_pos(
+                @view(testarr[:, 1, sim]), testlag, testsens, testspec
+            ) .+
+            calculate_pos(
+                @view(testarr[:, 2, sim]),
+                testlag,
+                testsens,
+                testspec;
+                noise = true,
+            )
+
+        # Calculate moving average of test positives
+        testarr[:, 4, sim] .=
+            convert.(
+                Int64,
+                round.(
+                    calculate_movingavg(
+                        @view(testarr[:, 3, sim]), testlag, moveavglag
+                    )
+                ),
+            )
+
+        # Test positive individuals trigger outbreak response 
+        testarr[:, 5, sim] = detectoutbreak(
+            @view(testarr[:, 3, sim]),
+            @view(testarr[:, 4, sim]),
+            detectthreshold, moveavglag,
         )
 
-    # Calculate moving average of test positives
-    testing_arr[:, 4, sim] .=
-        convert.(
-            Int64,
-            round.(
-                calculate_movingavg(
-                    @view(testing_arr[:, 3, sim]), testlag, moveavglag
-                )
-            ),
+        # Posterior odds of infectious / noise test positive
+        @. post_odds_arr[:, 1, sim] =
+            @view(testarr[:, 1, sim]) / @view(testarr[:, 2, sim])
+        calculate_movingavg!(
+            @view(post_odds_arr[:, 1, sim]),
+            @view(post_odds_arr[:, 1, sim]),
+            testlag, moveavglag,
         )
 
-    # Test positive individuals trigger outbreak response 
-    testing_arr[:, 5, sim] = detectoutbreak(
-        @view(testing_arr[:, 3, sim]),
-        @view(testing_arr[:, 4, sim]),
+        # Triggered outbreak equal to actual outbreak status
+        @. testarr[:, 6, sim] =
+            @view(testarr[:, 4, sim]) == @view(incarr[:, 4, sim])
+
+        next!(prog)
+    end
+
+    return nothing
+end
+
+function create_testing_arr(
+    incarr, noisearr, perc_tested, testlag, testsens, testspec, detectthreshold,
+    moveavglag,
+)
+    # TODO: Figure out why this is so much slower than in-place (c. 2min vs 10s)
+    # Local scope issues?
+    testarr = zeros(Int64, size(incarr, 1), 6, size(incarr, 3))
+
+    create_testing_arr!(
+        testarr, incarr, noisearr, perc_tested, testlag, testsens, testspec,
         detectthreshold, moveavglag,
     )
 
-    # Posterior odds of infectious / noise test positive
-    @. post_odds_arr[:, 1, sim] =
-        @view(testing_arr[:, 1, sim]) / @view(testing_arr[:, 2, sim])
-    calculate_movingavg!(
-        @view(post_odds_arr[:, 1, sim]),
-        @view(post_odds_arr[:, 1, sim]),
-        testlag, moveavglag,
-    )
-
-    # Triggered outbreak equal to actual outbreak status
-    @. testing_arr[:, 6, sim] =
-        @view(testing_arr[:, 4, sim]) == @view(inc_infec_arr[:, 4, sim])
-
-    next!(prog)
+    return testarr
 end
+
+#%%
+create_testing_arr(inc_infec_arr, noise_arr, perc_tested, testlag, testsens, testspec, detectthreshold, moveavglag)
+
+#%%
+@profview create_testing_arr(
+    inc_infec_arr,
+    noise_arr,
+    perc_tested,
+    testlag,
+    testsens,
+    testspec,
+    detectthreshold,
+    moveavglag,
+)
 
 #%%
 inc_test_fig = Figure()
@@ -1046,11 +1106,11 @@ linkxaxes!(inc_test_ax1, inc_test_ax2, inc_test_ax3)
 
 map(hidexdecorations!, [inc_test_ax1, inc_test_ax2])
 
-map(
-    ax -> xlims!(ax, (1750 / 365, 1850 / 365)),
-    [inc_test_ax1, inc_test_ax2, inc_test_ax3],
-)
-map(ax -> ylims!(ax, (0, 50)), [inc_test_ax1, inc_test_ax2, inc_test_ax3])
+# map(
+#     ax -> xlims!(ax, (1750 / 365, 1850 / 365)),
+#     [inc_test_ax1, inc_test_ax2, inc_test_ax3],
+# )
+map(ax -> ylims!(ax, (0, 20)), [inc_test_ax1, inc_test_ax2, inc_test_ax3])
 
 hlines!(
     inc_test_ax1, 5;
@@ -1070,10 +1130,17 @@ map(
 )
 
 Legend(
-    inc_test_fig[:, 2],
+    inc_test_fig[1, 2],
     [PolyElement(; color = col) for col in outbreakcols],
     ["Not Outbreak", "Outbreak"],
-    "Outbreak Status",
+    "True\nOutbreak Status",
+)
+
+Legend(
+    inc_test_fig[2:3, 2],
+    [PolyElement(; color = col) for col in outbreakcols],
+    ["Not Outbreak", "Outbreak"],
+    "Detected\nOutbreak Status",
 )
 
 inc_test_fig
@@ -1214,7 +1281,7 @@ outbreak_dist_ax = Axis(
 
 hist!(
     outbreak_dist_ax,
-    vec(sum(@view(inc_infec_arr[:, 4, :]); dims = 1)) ./ (365 * 100);
+    vec(sum(@view(inc_infec_arr[:, 4, :]); dims = 1)) ./ size(inc_infec_arr, 1);
     bins = 0.0:0.01:0.7,
     color = (:blue, 0.5),
     strokecolor = :black,
@@ -1225,7 +1292,7 @@ hist!(
 
 hist!(
     outbreak_dist_ax,
-    vec(sum(@view(testing_arr[:, 6, :]); dims = 1)) ./ (365 * 100);
+    vec(sum(@view(testing_arr[:, 6, :]); dims = 1)) ./ size(testing_arr, 1);
     bins = 0.0:0.01:0.7,
     color = (:red, 0.5),
     strokecolor = :black,
@@ -1344,3 +1411,92 @@ vlines!(
 Legend(ppv_npv_fig[1, 2], ppv_npv_ax, "Characteristic")
 
 ppv_npv_fig
+
+#%%
+# TODO: Calculate threshold chars over range of test lags and detection thresholds. Use constant R0 and ind test chars for the moment.
+
+@proto struct MeanOutbreakThresholdChars{A,B}
+    testlag::A
+    incthreshold::A
+    tp::A
+    tn::A
+    fp::A
+    fn::A
+    sens::B
+    spec::B
+    ppv::B
+    npv::B
+    noutbreaks::A
+    ndetectoutbreaks::A
+end
+
+testlag_vec = 0:1:2
+detectthreshold_vec = [1, collect(5:5:10)...]
+
+function create_OTchars_struct(incarr, testarr)
+    ThreadsX.map(
+        axes(incarr, 3)
+    ) do sim
+        outbreakrle = rle(@view(incarr[:, 4, sim]))
+        return detectrle = rle(@view(testarr[:, 5, sim]))
+
+        OutbreakThresholdChars(
+            calculate_ot_characterstics(testarr, incarr, sim)...,
+            calculate_noutbreaks(outbreakrle),
+            calculate_noutbreaks(detectrle),
+            reduce(hcat, collect(calculate_outbreak_thresholds(outbreakrle))),
+            reduce(hcat, collect(calculate_outbreak_thresholds(detectrle))),
+        )
+    end
+end
+
+function calculate_mean_ot_chars(
+    testlag,
+    detectthreshold;
+    ensemblejumparr = ensemble_jump_arr,
+    outbreakthreshold = outbreakthreshold,
+    minoutbreakdur = minoutbreakdur,
+    minoutbreaksize = minoutbreaksize,
+    noisearr = noise_arr,
+    perctested = perc_tested,
+    testsens = testsens,
+    testspec = testspec,
+    moveavglag = moveavglag,
+)
+    @info "Creating Incidence Array"
+    incarr = create_inc_infec_arr(
+        ensemble_jump_arr,
+        outbreakthreshold,
+        minoutbreakdur,
+        minoutbreaksize
+    )
+
+    @info "Creating Testing Array"
+    testing_arr = zeros(
+        Int64, size(incarr, 1), 6, size(incarr, 3)
+    )
+
+    create_testing_arr!(
+        testing_arr,
+        incarr,
+        noise_arr,
+        perc_tested,
+        testlag,
+        testsens,
+        testspec,
+        detectthreshold,
+        moveavglag,
+    )
+
+    @info "Calculating OT characteristics"
+    OT_chars = create_OTchars_struct(incarr, testing_arr)
+
+    return OT_chars
+end
+
+#%%
+test = calculate_mean_ot_chars(7, 10)
+#%%
+for (testlag, detectthreshold) in
+    IterTools.product(testlag_vec, detectthreshold_vec)
+end
