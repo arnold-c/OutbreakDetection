@@ -957,20 +957,28 @@ function calculate_pos(
     return npos
 end
 
-function calculate_movingavg!(inarr, outarr, testlag, avglag)
-    for day in axes(inarr, 1)
-        if day >= testlag + avglag
-            outarr[day] = mean(@view(inarr[(day - avglag + 1):day]))
+#%%
+function calculate_movingavg!(invec, outvec, testlag, avglag; Float = true)
+    if Float
+        avgfunc = (invec, day, avglag) -> mean(@view(invec[(day - avglag + 1):day]))
+    else
+        avgfunc = (invec, day, avglag) -> Int64(round(
+            mean(@view(invec[(day - avglag + 1):day]))
+            ))
+    end
+    for day in eachindex(invec)
+        if day >= testlag + avglag + 1
+            outvec[day] = avgfunc(invec, day, avglag)
         end
     end
 end
 
-function calculate_movingavg(inarr, testlag, avglag)
-    outarr = zeros(Float64, size(inarr, 1), 1)
+function calculate_movingavg(invec, testlag, avglag)
+    outvec = zeros(Float64, size(invec, 1), 1)
 
-    calculate_movingavg!(inarr, outarr, testlag, avglag)
+    calculate_movingavg!(invec, outvec, testlag, avglag)
 
-    return outarr
+    return outvec
 end
 
 function detectoutbreak(incvec, avgvec, threshold, avglag)
@@ -1047,10 +1055,12 @@ function create_testing_arr!(
         # Number of test positive TOTAL individuals
         @. testarr[:, 5, sim] =
             @view(testarr[:, 3, sim]) + @view(testarr[:, 4, sim])
+        # Calculate moving average of TOTAL test positives
         calculate_movingavg!(
-            @view(post_odds_arr[:, 1, sim]),
-            @view(post_odds_arr[:, 1, sim]),
-            testlag, moveavglag,
+            @view(testarr[:, 5, sim]),
+            @view(testarr[:, 6, sim]),
+            testlag, moveavglag;
+            Float = false,
         )
 
         # Triggered outbreak equal to actual outbreak status
