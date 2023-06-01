@@ -6,7 +6,7 @@ imports. All jumps are manually defined.
 using DrWatson
 @quickactivate "OutbreakDetection"
 
-using JumpProcesses, Statistics, DataFrames, DataFramesMeta, LinearAlgebra
+using Statistics, DataFrames, DataFramesMeta, LinearAlgebra
 using CairoMakie, AlgebraOfGraphics, ColorSchemes, Colors
 using DifferentialEquations, ModelingToolkit
 using BenchmarkTools, JLD2, Random, ProgressMeter, StatsBase, Distributions
@@ -189,7 +189,7 @@ function seir_mod!(
 end
 
 #%%
-seir_array, change_array, jump_array = seir_mod(
+seir_array, change_array, jump_array, β_arr = seir_mod(
     u₀, p, trange; retβarr = true, type = "stoch"
 );
 
@@ -357,7 +357,7 @@ bifurc_β₁_jump_arr = zeros(Float64, 9, tlength, n_β₁s);
     change = @view bifurc_β₁_change_arr[:, :, k]
     jump = @view bifurc_β₁_jump_arr[:, :, k]
 
-    p = (β₀, β₁, σ, γ, μ, ε, R₀)
+    local p = (β₀, β₁, σ, γ, μ, ε, R₀)
 
     seir_mod!(seir, change, jump, u₀, p, trange; dt = τ, type = "det")
 end
@@ -675,7 +675,7 @@ for (i, file) in enumerate(sim_files)
     if occursin(
         r"SEIR_tau_sol.*.nsims=1000_.*.births_per_k=20.*.β_force=0.2", file
     )
-        sim_data = load(sim_files[i])
+        global sim_data = load(sim_files[i])
     end
 end
 
