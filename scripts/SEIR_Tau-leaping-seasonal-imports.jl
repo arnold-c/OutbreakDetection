@@ -897,11 +897,41 @@ perc_tested = perc_clinic * perc_clinic_test
 testsens = 0.9
 testspec = 0.9
 
-testing_arr = zeros(Int64, tlength, 6, size(inc_infec_arr, 3));
+testing_arr = zeros(Int64, tlength, 8, size(inc_infec_arr, 3));
 post_odds_arr = zeros(Float64, tlength, 2, size(inc_infec_arr, 3));
 
 function calculate_tested!(outarr, outarr_ind, inarr, perc_tested, sim)
     @. outarr[:, outarr_ind, sim] = round(@view(inarr[:, 1, sim]) * perc_tested)
+end
+
+function calculate_pos!(
+    npos_vec,
+    tested_vec,
+    ntested,
+    lag,
+    sens,
+    spec;
+    noise = false
+)
+    if noise
+        for day in eachindex(tested_vec)
+            if day + lag <= ntested
+                npos_vec[day + lag] = Int64(
+                    round(tested_vec[day] * (1.0 - spec))
+                )
+            end
+        end
+    else
+        for day in eachindex(tested_vec)
+            if day + lag <= ntested
+                npos_vec[day + lag] = Int64(
+                    round(tested_vec[day] * sens)
+                )
+            end
+        end
+    end
+
+    return nothing
 end
 
 function calculate_pos(
@@ -914,23 +944,15 @@ function calculate_pos(
     ntested = length(tested_vec)
     npos = zeros(Int64, ntested)
 
-    if noise
-        for day in eachindex(tested_vec)
-            if day + lag <= ntested
-                npos[day + lag] = Int64(
-                    round(tested_vec[day] * (1.0 - spec))
-                )
-            end
-        end
-    else
-        for day in eachindex(tested_vec)
-            if day + lag <= ntested
-                npos[day + lag] = Int64(
-                    round(tested_vec[day] * sens)
-                )
-            end
-        end
-    end
+    calculate_pos!(
+        npos,
+        tested_vec,
+        ntested,
+        lag,
+        sens,
+        spec;
+        noise = noise,
+    )
 
     return npos
 end
@@ -987,7 +1009,9 @@ function create_testing_arr!(
     testarr, incarr, noisearr, perc_tested, testlag, testsens, testspec,
     detectthreshold, moveavglag,
 )
-    prog = Progress(size(incarr, 3))
+    ntested = size(testarr, 1)
+
+    # prog = Progress(size(incarr, 3))
     @floop for sim in 1:size(incarr, 3)
         # Number of infectious individuals tested
         calculate_tested!(testarr, 1, incarr, perc_tested, sim)
@@ -995,40 +1019,34 @@ function create_testing_arr!(
         # Number of noise individuals tested
         calculate_tested!(testarr, 2, noisearr, perc_tested, sim)
 
-        # Number of test positive individuals
-        testarr[:, 3, sim] .=
-            calculate_pos(
-                @view(testarr[:, 1, sim]), testlag, testsens, testspec
-            ) .+
-            calculate_pos(
-                @view(testarr[:, 2, sim]),
-                testlag,
-                testsens,
-                testspec;
-                noise = true,
-            )
-
-        # Calculate moving average of test positives
-        testarr[:, 4, sim] .=
-            convert.(
-                Int64,
-                round.(
-                    calculate_movingavg(
-                        @view(testarr[:, 3, sim]), testlag, moveavglag
-                    )
-                ),
-            )
-
-        # Test positive individuals trigger outbreak response 
-        testarr[:, 5, sim] = detectoutbreak(
+        # Number of test positive INFECTED individuals
+        calculate_pos!(
             @view(testarr[:, 3, sim]),
+            @view(testarr[:, 1, sim]),
+            ntested,
+            testlag,
+            testsens,
+            testspec;
+            noise = false,
+        )
+
+        # Number of test positive NOISE individuals
+        calculate_pos!(
             @view(testarr[:, 4, sim]),
-            detectthreshold, moveavglag,
+            @view(testarr[:, 2, sim]),
+            ntested,
+            testlag,
+            testsens,
+            testspec;
+            noise = true,
         )
 
         # Posterior odds of infectious / noise test positive
         @. post_odds_arr[:, 1, sim] =
             @view(testarr[:, 1, sim]) / @view(testarr[:, 2, sim])
+        # Number of test positive TOTAL individuals
+        @. testarr[:, 5, sim] =
+            @view(testarr[:, 3, sim]) + @view(testarr[:, 4, sim])
         calculate_movingavg!(
             @view(post_odds_arr[:, 1, sim]),
             @view(post_odds_arr[:, 1, sim]),
