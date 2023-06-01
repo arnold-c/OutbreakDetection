@@ -720,10 +720,6 @@ outbreakthreshold = 5
 minoutbreakdur = 30
 minoutbreaksize = 500
 
-inc_infec_arr = zeros(
-    Int64, size(ensemble_jump_arr, 2), 4, size(ensemble_jump_arr, 3)
-)
-
 function create_inc_infec_arr!(
     incarr, ensemblejumparr, outbreakthreshold, minoutbreakdur, minoutbreaksize
 )
@@ -774,6 +770,10 @@ function create_inc_infec_arr(
 
     return incarr
 end
+
+inc_infec_arr = create_inc_infec_arr(
+    ensemble_jump_arr, outbreakthreshold, minoutbreakdur, minoutbreaksize
+)
 
 #%%
 outbreakcols = [ColorSchemes.magma[i] for i in (200, 20)]
