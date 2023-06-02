@@ -1097,12 +1097,24 @@ function create_testing_arr(
 end
 
 #%%
-create_testing_arr(inc_infec_arr, noise_arr, perc_tested, testlag, testsens, testspec, detectthreshold, moveavglag)
+# @benchmark create_testing_arr!(
+#     $testing_arr,
+#     $inc_infec_arr,
+#     $noise_arr,
+#     $post_odds_arr,
+#     $perc_tested,
+#     $testlag,
+#     $testsens,
+#     $testspec,
+#     $detectthreshold,
+#     $moveavglag,
+# )
 
-#%%
-@profview create_testing_arr(
+create_testing_arr!(
+    testing_arr,
     inc_infec_arr,
     noise_arr,
+    post_odds_arr,
     perc_tested,
     testlag,
     testsens,
