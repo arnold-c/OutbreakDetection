@@ -960,10 +960,12 @@ end
 #%%
 function calculate_movingavg!(invec, outvec, testlag, avglag; Float = true)
     if Float
-        avgfunc = (invec, day, avglag) -> mean(@view(invec[(day - avglag + 1):day]))
+        avgfunc =
+            (invec, day, avglag) -> mean(@view(invec[(day - avglag + 1):day]))
     else
-        avgfunc = (invec, day, avglag) -> Int64(round(
-            mean(@view(invec[(day - avglag + 1):day]))
+        avgfunc =
+            (invec, day, avglag) -> Int64(round(
+                mean(@view(invec[(day - avglag + 1):day]))
             ))
     end
     for day in eachindex(invec)
