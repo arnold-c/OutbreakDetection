@@ -997,12 +997,6 @@ function detectoutbreak(incvec, avgvec, threshold, avglag)
     return outbreak
 end
 
-# detectoutbreak(
-#     @view(testing_arr[:, 3, 1]),
-#     @view(testing_arr[:, 4, 1]),
-#     10, 7
-# )
-
 #%%
 function create_testing_arr!(
     testarr, incarr, noisearr, posoddsarr, perc_tested, testlag, testsens,
@@ -1140,12 +1134,12 @@ lines!(
 )
 lines!(
     inc_test_ax2, times, testing_arr[:, 3, 1];
-    color = testing_arr[:, 5, 1],
+    color = testing_arr[:, 7, 1],
     colormap = outbreakcols,
 )
 lines!(
-    inc_test_ax3, times, testing_arr[:, 4, 1];
-    color = testing_arr[:, 4, 1] .>= detectthreshold,
+    inc_test_ax3, times, testing_arr[:, 6, 1];
+    color = testing_arr[:, 7, 1],
     colormap = outbreakcols,
 )
 
@@ -1165,6 +1159,7 @@ hlines!(
     linestyle = :dash,
     linewidth = 2,
 )
+
 map(
     ax -> hlines!(
         ax,
@@ -1219,7 +1214,7 @@ for (sim, ax) in
         label = "Noise",
     )
     @eval lines!(
-        $(fig_ax), times, testing_arr[:, 3, $sim];
+        $(fig_ax), times, testing_arr[:, 5, $sim];
         color = :black,
         label = "Total Positive",
     )
@@ -1287,7 +1282,7 @@ OT_chars = ThreadsX.map(
     axes(inc_infec_arr, 3)
 ) do sim
     outbreakrle = rle(@view(inc_infec_arr[:, 4, sim]))
-    detectrle = rle(@view(testing_arr[:, 5, sim]))
+    detectrle = rle(@view(testing_arr[:, 7, sim]))
 
     OutbreakThresholdChars(
         calculate_ot_characterstics(testing_arr, inc_infec_arr, sim)...,
@@ -1339,7 +1334,7 @@ hist!(
 
 hist!(
     outbreak_dist_ax,
-    vec(sum(@view(testing_arr[:, 6, :]); dims = 1)) ./ size(testing_arr, 1);
+    vec(sum(@view(testing_arr[:, 7, :]); dims = 1)) ./ size(testing_arr, 1);
     bins = 0.0:0.01:0.7,
     color = (:red, 0.5),
     strokecolor = :black,
@@ -1360,7 +1355,7 @@ noutbreaks_ax = Axis(noutbreaks_fig[1, 1]; xlabel = "Number of Outbreaks")
 hist!(
     noutbreaks_ax,
     @view(otchars_vec[:, 5]);
-    bins = 0.0:10.0:400.0,
+    bins = 0.0:10.0:450.0,
     color = (:blue, 0.5),
     strokecolor = :black,
     strokewidth = 1,
@@ -1371,7 +1366,7 @@ hist!(
 hist!(
     noutbreaks_ax,
     @view(otchars_vec[:, 6]);
-    bins = 0.0:10.0:400.0,
+    bins = 0.0:10.0:450.0,
     color = (:red, 0.5),
     strokecolor = :black,
     strokewidth = 1,
@@ -1390,7 +1385,7 @@ sens_spec_ax = Axis(sens_spec_fig[1, 1]; xticks = 0.0:0.1:1.0)
 hist!(
     sens_spec_ax,
     @view(otchars_vec[:, 1]);
-    bins = 0.3:0.01:1.01,
+    bins = 0.0:0.01:1.01,
     color = (:blue, 0.5),
     strokecolor = :black,
     strokewidth = 1,
@@ -1401,7 +1396,7 @@ hist!(
 hist!(
     sens_spec_ax,
     @view(otchars_vec[:, 2]);
-    bins = 0.3:0.01:1.01,
+    bins = 0.0:0.01:1.01,
     color = (:red, 0.5),
     strokecolor = :black,
     strokewidth = 1,
@@ -1414,7 +1409,7 @@ vlines!(
     [mean(@view(otchars_vec[:, i])) for i in 1:2];
     color = :black,
     linestyle = :dash,
-    linewidth = 2,
+    linewidth = 4,
 )
 
 Legend(sens_spec_fig[1, 2], sens_spec_ax, "Characteristic")
@@ -1428,7 +1423,7 @@ ppv_npv_ax = Axis(ppv_npv_fig[1, 1]; xticks = 0.0:0.1:1.0)
 hist!(
     ppv_npv_ax,
     @view(otchars_vec[:, 3]);
-    bins = 0.5:0.01:1.01,
+    bins = 0.0:0.01:1.01,
     color = (:green, 0.5),
     strokecolor = :black,
     strokewidth = 1,
@@ -1439,7 +1434,7 @@ hist!(
 hist!(
     ppv_npv_ax,
     @view(otchars_vec[:, 4]);
-    bins = 0.5:0.01:1.01,
+    bins = 0.0:0.01:1.01,
     color = (:purple, 0.5),
     strokecolor = :black,
     strokewidth = 1,
@@ -1452,7 +1447,7 @@ vlines!(
     [mean(@view(otchars_vec[:, i])) for i in 3:4];
     color = :black,
     linestyle = :dash,
-    linewidth = 2,
+    linewidth = 4,
 )
 
 Legend(ppv_npv_fig[1, 2], ppv_npv_ax, "Characteristic")
