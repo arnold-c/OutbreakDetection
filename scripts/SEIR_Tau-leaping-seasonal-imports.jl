@@ -1005,7 +1005,8 @@ end
 
 #%%
 function create_testing_arr!(
-    testarr, incarr, noisearr, perc_tested, testlag, testsens, testspec,
+    testarr, incarr, noisearr, posoddsarr, perc_tested, testlag, testsens,
+    testspec,
     detectthreshold, moveavglag,
 )
     ntested = size(testarr, 1)
@@ -1040,12 +1041,10 @@ function create_testing_arr!(
             noise = true,
         )
 
-        # Posterior odds of infectious / noise test positive
-        @. post_odds_arr[:, 1, sim] =
-            @view(testarr[:, 1, sim]) / @view(testarr[:, 2, sim])
         # Number of test positive TOTAL individuals
         @. testarr[:, 5, sim] =
             @view(testarr[:, 3, sim]) + @view(testarr[:, 4, sim])
+
         # Calculate moving average of TOTAL test positives
         calculate_movingavg!(
             @view(testarr[:, 5, sim]),
@@ -1054,11 +1053,28 @@ function create_testing_arr!(
             Float = false,
         )
 
-        # Triggered outbreak equal to actual outbreak status
-        @. testarr[:, 6, sim] =
-            @view(testarr[:, 4, sim]) == @view(incarr[:, 4, sim])
+        # TOTAL Test positive individuals trigger outbreak response 
+        detectoutbreak!(
+            @view(testarr[:, 7, sim]),
+            @view(testarr[:, 5, sim]),
+            @view(testarr[:, 6, sim]),
+            detectthreshold, moveavglag,
+        )
 
-        next!(prog)
+        # # Posterior prob of infectious / total test positive
+        @. @view(posoddsarr[:, 1, sim]) =
+            @view(testarr[:, 3, sim]) / @view(testarr[:, 5, sim])
+        calculate_movingavg!(
+            @view(posoddsarr[:, 1, sim]),
+            @view(posoddsarr[:, 2, sim]),
+            testlag, moveavglag,
+        )
+
+        # Triggered outbreak equal to actual outbreak status
+        @. testarr[:, 8, sim] =
+            @view(testarr[:, 7, sim]) == @view(incarr[:, 4, sim])
+
+        # next!(prog)
     end
 
     return nothing
@@ -1068,12 +1084,12 @@ function create_testing_arr(
     incarr, noisearr, perc_tested, testlag, testsens, testspec, detectthreshold,
     moveavglag,
 )
-    # TODO: Figure out why this is so much slower than in-place (c. 2min vs 10s)
-    # Local scope issues?
     testarr = zeros(Int64, size(incarr, 1), 6, size(incarr, 3))
+    posoddsarr = zeros(Float64, size(incarr, 1), 2, size(incarr, 3))
 
     create_testing_arr!(
-        testarr, incarr, noisearr, perc_tested, testlag, testsens, testspec,
+        testarr, incarr, noisearr, posoddsarr, perc_tested, testlag, testsens,
+        testspec,
         detectthreshold, moveavglag,
     )
 
