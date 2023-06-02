@@ -983,27 +983,16 @@ function calculate_movingavg(invec, testlag, avglag)
     return outvec
 end
 
+function detectoutbreak!(outbreakvec, incvec, avgvec, threshold, avglag)
+    @. outbreakvec = ifelse(incvec >= threshold || avgvec >= threshold, 1, 0)
+
+    return nothing
+end
+
 function detectoutbreak(incvec, avgvec, threshold, avglag)
-    # For each day in the timeseries, if the number of infections goes above the threshold for incident cases (e.g. 10), then an outbreak is triggered. The end of the outbreak is declared when the number of cases first goes below the threshold, but only if the moving average falls below the threshold X days later (X = average lag)
     outbreak = zeros(Int64, length(incvec))
 
-    for day in axes(incvec, 1)
-        avgdayend =
-            day + avglag <= length(incvec) ? day + avglag : length(incvec)
-        avgdaystart = day <= avglag ? 1 : day - avglag
-        prevday = day == 1 ? 1 : day - 1
-
-        if incvec[day] >= threshold
-            outbreak[day] = 1
-        elseif (
-            incvec[day] < threshold &&
-            sum(avgvec[day:avgdayend] .>= threshold) >= 1 &&
-            sum(incvec[avgdaystart:day] .>= threshold) >= 1 &&
-            outbreak[prevday] == 1
-        )
-            outbreak[day] = 1
-        end
-    end
+    detectoutbreak!(outbreak, incvec, avgvec, threshold, avglag)
 
     return outbreak
 end
