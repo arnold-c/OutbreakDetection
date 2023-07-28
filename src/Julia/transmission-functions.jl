@@ -8,12 +8,8 @@ julia> calculate_beta(2.0, 1 / 8, 0.0, ones(1, 1), [1000])
 0.00025
 ```
 
-* * *
-
-**TODO** Currently only works when the populations are the same size as each other, and doesn't account for an exposed state.
-
-* * *
 """
+# TODO: Currently only works when the populations are the same size as each other, and doesn't account for an exposed state.
 function calculate_beta(
     R₀::T, γ::T, μ::T, C::Array{T}, pop_matrix::Array{T}
 ) where {T<:AbstractFloat}
