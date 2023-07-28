@@ -20,9 +20,10 @@ update_theme!(; resolution = (1300, 900))
 
 #%%
 # Revise will keep track of file change_arr and reload functions as necessary
-includet(srcdir("Julia/transmission-functions.jl"))
-includet(srcdir("Julia/plotting-functions.jl"))
-includet(srcdir("Julia/cleaning-functions.jl"))
+includet(srcdir("Julia/DrWatson-helpers.jl"))
+includet(funsdir("transmission-functions.jl"))
+includet(funsdir("plotting-functions.jl"))
+includet(funsdir("cleaning-functions.jl"))
 
 #%%
 N = 5e5
@@ -1459,7 +1460,6 @@ ppv_npv_fig
 
 #%%
 # TODO: Calculate threshold chars over range of test lags and detection thresholds. Use constant R0 and ind test chars for the moment.
-
 @proto struct MeanOutbreakThresholdChars{A,B}
     testlag::A
     incthreshold::A
