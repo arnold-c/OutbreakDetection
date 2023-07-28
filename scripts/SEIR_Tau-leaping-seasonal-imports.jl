@@ -200,6 +200,7 @@ seir_df = create_sir_df(seir_array, trange, [:S, :E, :I, :R, :N])
 
 seircolors = ["dodgerblue4", "green", "firebrick3", "chocolate2", "purple"]
 state_labels = ["S", "E", "I", "R", "N"]
+
 draw_sir_plot(
     seir_df;
     annual = true,
@@ -1351,7 +1352,6 @@ Legend(outbreak_dist_fig[1, 2], outbreak_dist_ax, "Outbreak Proportion")
 outbreak_dist_fig
 
 #%%
-# TODO - make outbreak triggers close together count as one 
 noutbreaks_fig = Figure()
 noutbreaks_ax = Axis(noutbreaks_fig[1, 1]; xlabel = "Number of Outbreaks")
 
@@ -1541,6 +1541,7 @@ end
 
 #%%
 test = calculate_mean_ot_chars(7, 10)
+
 #%%
 for (testlag, detectthreshold) in
     IterTools.product(testlag_vec, detectthreshold_vec)
