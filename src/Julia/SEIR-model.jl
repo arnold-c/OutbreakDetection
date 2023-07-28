@@ -141,8 +141,6 @@ The in-palce function to run the SEIR model, without producing the transmission 
 function seir_mod!(
     state_arr, change_arr, jump_arr, u, p, trange; dt, type = "stoch"
 )
-    S0, I0, R0, N0 = u
-
     for (j, t) in pairs(trange)
         if j == 1
             state_arr[:, j] = u
@@ -166,8 +164,7 @@ The in-place function to run the SEIR model and produce the transmission rate ar
 function seir_mod!(
     state_arr, change_arr, jump_arr, beta_arr, u, p, trange; dt, type = "stoch"
 )
-    S0, I0, R0, N0 = u
-    β_mean, β_force, σ, γ, μ, ε, R₀ = p
+    β_mean, β_force = p
 
     for (j, t) in pairs(trange)
         β_t = calculate_beta_amp(β_mean, β_force, t)
