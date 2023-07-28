@@ -7,13 +7,16 @@ using DrWatson
 @quickactivate "OutbreakDetection"
 
 using Statistics, DataFrames, DataFramesMeta, LinearAlgebra
-using CairoMakie, AlgebraOfGraphics, ColorSchemes, Colors
+using WGLMakie, AlgebraOfGraphics, ColorSchemes, Colors
 using DifferentialEquations, ModelingToolkit
 using BenchmarkTools, JLD2, Random, ProgressMeter, StatsBase, Distributions
 using IterTools, FLoops, FreqTables, ThreadsX, ProtoStructs
 
-CairoMakie.activate!()
+WGLMakie.activate!()
+#= CairoMakie.activate!(type = "pdf") =#
 set_aog_theme!()
+# Set depending on size of screen
+update_theme!(; resolution = (1300, 900))
 
 #%%
 # Revise will keep track of file change_arr and reload functions as necessary
