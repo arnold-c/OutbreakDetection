@@ -1,3 +1,15 @@
+using DrWatson
+@quickactivate "OutbreakDetection"
+
+using WGLMakie, AlgebraOfGraphics#, ColorSchemes, Colors
+
+# defaults to http://localhost:9384/browser-display
+WGLMakie.activate!()
+#= CairoMakie.activate!(type = "pdf") =#
+set_aog_theme!()
+# Set depending on size of screen
+update_theme!(; resolution = (1300, 900))
+
 function create_sir_plot(sol_df; labels = ["S", "I", "R", "N"], annual = annual)
     time_function(t) = annual ==true ? t / 365.0 : t
     if annual == true

@@ -1,3 +1,10 @@
+using DrWatson
+@quickactivate "OutbreakDetection"
+
+using DataFrames, DataFramesMeta
+using ModelingToolkit, DifferentialEquations
+using FLoops
+
 function create_sir_df(sir_array::Matrix, trange, states = [:S, :I, :R, :N])
     if size(sir_array, 1) == length(states)
         sir_array = sir_array'

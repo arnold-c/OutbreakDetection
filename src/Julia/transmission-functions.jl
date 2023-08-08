@@ -1,3 +1,11 @@
+using DrWatson
+@quickactivate "OutbreakDetection"
+
+using DataFrames, DataFramesMeta, LinearAlgebra
+using ModelingToolkit, DifferentialEquations
+using FLoops
+
+
 """
     calculate_beta(R₀, γ, μ, C, pop_matrix)
 

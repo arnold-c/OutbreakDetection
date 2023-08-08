@@ -2,17 +2,7 @@
 using DrWatson
 @quickactivate "OutbreakDetection"
 
-using DataFrames, DataFramesMeta, LinearAlgebra
-using ModelingToolkit, DifferentialEquations
-using WGLMakie, AlgebraOfGraphics, ColorSchemes, Colors
-using BenchmarkTools, JLD2, Random, ProgressMeter, StatsBase, Distributions
-using IterTools, FLoops, FreqTables, ThreadsX, ProtoStructs
-
-WGLMakie.activate!()
-#= CairoMakie.activate!(type = "pdf") =#
-set_aog_theme!()
-# Set depending on size of screen
-update_theme!(; resolution = (1300, 900))
+using Random
 
 #%%
 # Revise will keep track of file change_arr and reload functions as necessary
@@ -60,11 +50,3 @@ seir_df = create_sir_df(seir_array, trange, [:S, :E, :I, :R, :N])
 seircolors = ["dodgerblue4", "green", "firebrick3", "chocolate2", "purple"]
 state_labels = ["S", "E", "I", "R", "N"]
 
-draw_sir_plot(
-    seir_df;
-    annual = true,
-    colors = seircolors,
-    labels = state_labels,
-    # ylims = (0, 1000),
-    # xlims = (90, 95),
-)

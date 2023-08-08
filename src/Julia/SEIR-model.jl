@@ -8,6 +8,7 @@ using DrWatson
 
 using DifferentialEquations
 using Statistics
+using Distributions
 
 """
 
