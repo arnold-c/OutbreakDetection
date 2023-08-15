@@ -22,4 +22,8 @@ struct EnsembleSpecification
     N::Int64
     Rinit_prop::Float64
     nsims::Int64
+    births_per_k::Int64
+    beta_force::Float64
+    time_parameters::EnsembleTimeParameters
 end
+

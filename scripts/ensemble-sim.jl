@@ -74,14 +74,18 @@ ensemble_spec = EnsembleSpecification(
     ("seasonal-infectivity-import", "tau-leaping"),
     500000,
     0.88,
-    1000
+    1000,
+    20,
+    0.2,
+    time_p
 )
 
-ensemble_sol_filepaths = get_ensemble_file_paths(
+
+ensemble_sol = get_ensemble_file(
     "sol", ensemble_spec
 )
 
-ensemble_quants_filepaths = get_ensemble_file_paths(
-    "quants", ensemble_spec
+ensemble_quants = get_ensemble_file(
+    "95", ensemble_spec
 )
 

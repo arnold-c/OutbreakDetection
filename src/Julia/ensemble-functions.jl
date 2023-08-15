@@ -9,6 +9,7 @@ includet(srcdir("Julia/DrWatson-helpers.jl"))
 includet(funsdir("transmission-functions.jl"))
 includet(funsdir("cleaning-functions.jl"))
 includet(funsdir("SEIR-model.jl"))
+includet(funsdir("structs.jl"))
 
 function run_ensemble_jump_prob(params_dict; prog = prog)
     for p in params_dict
@@ -161,25 +162,69 @@ function jump_prob_summary(param_dict)
     return @strdict ensemble_seir_summary caption u0_dict param_dict
 end
 
-function get_ensemble_file_paths(type, ensemble_spec::EnsembleSpecification)
-    root_path =
-        join(ensemble_spec.modeltypes, "/") * "/N_$(ensemble_spec.N)" *
-        "/r_$(ensemble_spec.Rinit_prop)" *
-        "/nsims_$(ensemble_spec.nsims)"
-    file_container = []
-    for (root, _, files) in walkdir(datadir(root_path))
-        map(
-            f -> collect_filepath!(type, file_container, root, f),
-            files,
+function get_ensemble_file(type, spec)
+    dirpath = get_ensemble_file_dir(spec)
+    filecontainer = []
+    for f in readdir(dirpath)
+        match_ensemble_file!(type, dirpath, filecontainer, f)
+    end
+    if length(filecontainer) != 1
+        println("Matched $(length(filecontainer)) files, when should be 1")
+    end
+    if type != "sol"
+        try
+            parse(Int, type)
+        catch
+            println("The quantile could not be parsed correctly")
+        end
+    end
+    if type != "sol" && length(filecontainer) == 0
+        println(
+            "It looks like are trying to return a quantile file. Check that the quantile simulation has been run",
         )
     end
-    return file_container
+    return load(filecontainer...)
 end
 
-function collect_filepath!(type, container, root, file)
-    if occursin("SEIR_tau_" * type, file)
-        push!(container, joinpath(root, file))
+function get_ensemble_file_dir(spec)
+    dirpath = joinpath(
+        spec.modeltypes...,
+        "N_$(spec.N)",
+        "r_$(spec.Rinit_prop)",
+        "nsims_$(spec.nsims)",
+        "births_per_k_$(spec.births_per_k)",
+        "beta_force_$(spec.beta_force)",
+        "tmax_$(spec.time_parameters.tmax)",
+        "deltat_$(spec.time_parameters.tstep)",
+    )
+    return datadir(dirpath)
+end
+
+function match_ensemble_file!(criteria, dirpath, container, file)
+    if occursin(criteria, file)
+        push!(container, joinpath(dirpath, file))
     end
-    return container
 end
 
+# sim_data = nothing
+# for (i, file) in pairs(sim_files)
+#     if occursin(
+#         r"SEIR_tau_sol.*.nsims=1000_.*.births_per_k=20.*.β_force=0.2", file
+#     )
+#         global sim_data = load(sim_files[i])
+#     end
+# end
+#
+# @unpack ensemble_seir_arr, ensemble_jump_arr, ensemble_change_arr = sim_data
+#
+# summ_data = nothing
+# for (i, file) in pairs(quantile_files)
+#     if occursin(
+#         r"SEIR_tau_quant.*.nsims=1000_.*.births_per_k=20.*.β_force=0.2.*.quantiles=95.jld2",
+#         file,
+#     )
+#         summ_data = load(quantile_files[i])
+#     end
+# end
+#
+# @unpack ensemble_seir_summary, caption, param_dict = summ_data

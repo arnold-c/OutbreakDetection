@@ -31,46 +31,6 @@ includet(funsdir("SEIR-model.jl"))
 ########################## Ensemble Analysis ###################################
 ################################################################################
 
-sim_files = []
-quantile_files = []
-for (root, dirs, files) in walkdir(
-    datadir(
-        "seasonal-infectivity-import", "tau-leaping", "N_500000", "r_0.88",
-        "nsims_1000",
-    ),
-)
-    for (i, file) in enumerate(files)
-        if occursin("SEIR_tau_quants", file)
-            push!(quantile_files, joinpath(root, file))
-        end
-        if occursin("SEIR_tau_sol", file)
-            push!(sim_files, joinpath(root, file))
-        end
-    end
-end
-
-sim_data = nothing
-for (i, file) in enumerate(sim_files)
-    if occursin(
-        r"SEIR_tau_sol.*.nsims=1000_.*.births_per_k=20.*.β_force=0.2", file
-    )
-        global sim_data = load(sim_files[i])
-    end
-end
-
-@unpack ensemble_seir_arr, ensemble_jump_arr, ensemble_change_arr = sim_data
-
-summ_data = nothing
-for (i, file) in enumerate(quantile_files)
-    if occursin(
-        r"SEIR_tau_quant.*.nsims=1000_.*.births_per_k=20.*.β_force=0.2.*.quantiles=95.jld2",
-        file,
-    )
-        summ_data = load(quantile_files[i])
-    end
-end
-
-@unpack ensemble_seir_summary, caption, param_dict = summ_data
 
 create_sir_quantiles_plot(
     ensemble_seir_summary; labels = state_labels, colors = seircolors,
