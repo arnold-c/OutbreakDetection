@@ -16,3 +16,10 @@ struct EnsembleTimeParameters
         return new(tmin, tmax, tstep, tmin:tstep:tmax, length(tmin:tstep:tmax))
     end
 end
+
+struct EnsembleSpecification
+    modeltypes::Tuple
+    N::Int64
+    Rinit_prop::Float64
+    nsims::Int64
+end

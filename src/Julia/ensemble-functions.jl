@@ -47,7 +47,7 @@ end
 """
 function run_jump_prob(param_dict)
     @unpack N, u₀_prop, transmission_p, time_p, nsims, dt, β_force,
-        births_per_k, seed = param_dict
+    births_per_k, seed = param_dict
     @unpack s, e, i, r = u₀_prop
     @unpack R₀, σ, γ = transmission_p
     @unpack tstep, tlength, trange = time_p
@@ -160,3 +160,26 @@ function jump_prob_summary(param_dict)
 
     return @strdict ensemble_seir_summary caption u0_dict param_dict
 end
+
+function get_ensemble_file_paths(type, ensemble_spec::EnsembleSpecification)
+    root_path =
+        join(ensemble_spec.modeltypes, "/") * "/N_$(ensemble_spec.N)" *
+        "/r_$(ensemble_spec.Rinit_prop)" *
+        "/nsims_$(ensemble_spec.nsims)"
+    file_container = []
+    for (root, _, files) in walkdir(datadir(root_path))
+        map(
+            f -> collect_filepath!(type, file_container, root, f),
+            files,
+        )
+    end
+    return file_container
+end
+
+function collect_filepath!(type, container, root, file)
+    if occursin("SEIR_tau_" * type, file)
+        push!(container, joinpath(root, file))
+    end
+    return container
+end
+

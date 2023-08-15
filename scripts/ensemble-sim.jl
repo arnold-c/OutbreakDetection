@@ -6,7 +6,6 @@ using ProgressMeter
 
 includet(srcdir("Julia/DrWatson-helpers.jl"))
 includet(funsdir("ensemble-functions.jl"))
-includet(funsdir("structs.jl"))
 
 #%%
 N_vec = convert.(Int64, [5e5])
@@ -69,3 +68,20 @@ end;
 #%%
 prog = Progress(length(summ_param_dict))
 summarize_ensemble_jump_prob(summ_param_dict; prog = prog)
+
+#%%
+ensemble_spec = EnsembleSpecification(
+    ("seasonal-infectivity-import", "tau-leaping"),
+    500000,
+    0.88,
+    1000
+)
+
+ensemble_sol_filepaths = get_ensemble_file_paths(
+    "sol", ensemble_spec
+)
+
+ensemble_quants_filepaths = get_ensemble_file_paths(
+    "quants", ensemble_spec
+)
+
