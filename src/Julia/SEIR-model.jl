@@ -9,9 +9,9 @@ using DrWatson
 using DifferentialEquations
 using Statistics
 using Distributions
+using Random
 
 """
-
     calculate_beta_amp(β_mean, β_force, t)
 
 Calculate the amplitude of the transmission rate β as a function of time.
@@ -21,9 +21,7 @@ function calculate_beta_amp(β_mean, β_force, t)
     return β_mean * (1 + β_force * cos(2pi * t / 365))
 end
 
-
 """
-
     seir_mod(u, p, trange; retβarr = false, type = "stoch")
 
 A Tau-leaping SEIR model with commuter style importers.
@@ -35,7 +33,7 @@ seir_array, change_array, jump_array, β_arr = seir_mod(
 );
 ```
 """
-function seir_mod(u, p, trange; retβarr = false, type = "stoch")
+function seir_mod(u, p, trange; retβarr = false, type = "stoch", seed = 1234)
     tlength = length(trange)
     dt = step(trange)
 
@@ -49,26 +47,79 @@ function seir_mod(u, p, trange; retβarr = false, type = "stoch")
         beta_arr = zeros(Float64, tlength)
         seir_mod!(
             state_arr, change_arr, jump_arr, beta_arr, u, p, trange; dt = dt,
-            type = type,
+            type = type, seed = seed,
         )
         return state_arr, change_arr, jump_arr, beta_arr
     else
         seir_mod!(
-            state_arr, change_arr, jump_arr, u, p, trange; dt = dt, type = type
+            state_arr, change_arr, jump_arr, u, p, trange; dt = dt, type = type,
+            seed = seed,
         )
         return state_arr, change_arr, jump_arr
     end
 end
 
+"""
+    seir_mod!(state_arr, change_arr, jump_arr, u, p, trange; dt, type = "stoch")
+
+The in-place function to run the SEIR model, without producing the transmission rate array.
+"""
+function seir_mod!(
+    state_arr, change_arr, jump_arr, u, p, trange; dt, type = "stoch",
+    seed = 1234,
+)
+    for (j, t) in pairs(trange)
+        if j == 1
+            state_arr[:, j] = u
+            continue
+        end
+
+        seir_mod_loop!(
+            state_arr, change_arr, jump_arr, j, p, t, dt; type = type,
+            seed = seed,
+        )
+    end
+
+    return nothing
+end
 
 """
+    seir_mod!(state_arr, change_arr, jump_arr, beta_arr, u, p, trange; dt, type = "stoch")
 
+The in-place function to run the SEIR model and produce the transmission rate array.
+"""
+function seir_mod!(
+    state_arr, change_arr, jump_arr, beta_arr, u, p, trange; dt, type = "stoch",
+    seed = 1234,
+)
+    β_mean, β_force = p
+
+    for (j, t) in pairs(trange)
+        β_t = calculate_beta_amp(β_mean, β_force, t)
+        beta_arr[j] = β_t
+
+        if j == 1
+            state_arr[:, j] = u
+
+            continue
+        end
+
+        seir_mod_loop!(
+            state_arr, change_arr, jump_arr, j, p, t, dt; type = type,
+            seed = seed,
+        )
+    end
+
+    return nothing
+end
+
+"""
     seir_mod_loop!(state_arr, change_arr, jump_arr, j, p, t, dt; type = type)
 
 The inner loop that is called by `seir_mod!()` function.
 """
 function seir_mod_loop!(
-    state_arr, change_arr, jump_arr, j, p, t, dt; type = type
+    state_arr, change_arr, jump_arr, j, p, t, dt; type = type, seed = 1234
 )
     # Unpack the state variables for easier use
     S = state_arr[1, j - 1]
@@ -98,6 +149,8 @@ function seir_mod_loop!(
 
     # Calculate the number of jumps for each event
     if type == "stoch"
+        Random.seed!(seed)
+
         jump_arr[:, j] = map(
             r -> rand(Poisson(r * dt)),
             rates,
@@ -122,7 +175,7 @@ function seir_mod_loop!(
 
     # Check that the change in each state does not result in a negative state, 
     # and if it is, set the change to the negative of the current state
-    for state in 1:size(state_arr, 1)
+    for state in axes(state_arr, 1)
         if state_arr[state, j - 1] + change_arr[state, j] < 0
             change_arr[state, j] = -state_arr[state, j - 1]
         end
@@ -132,56 +185,3 @@ function seir_mod_loop!(
 
     return nothing
 end
-
-"""
-
-    seir_mod!(state_arr, change_arr, jump_arr, u, p, trange; dt, type = "stoch")
-
-The in-palce function to run the SEIR model, without producing the transmission rate array.
-"""
-function seir_mod!(
-    state_arr, change_arr, jump_arr, u, p, trange; dt, type = "stoch"
-)
-    for (j, t) in pairs(trange)
-        if j == 1
-            state_arr[:, j] = u
-            continue
-        end
-
-        seir_mod_loop!(
-            state_arr, change_arr, jump_arr, j, p, t, dt; type = type
-        )
-    end
-
-    return nothing
-end
-
-"""
-
-    seir_mod!(state_arr, change_arr, jump_arr, beta_arr, u, p, trange; dt, type = "stoch")
-
-The in-place function to run the SEIR model and produce the transmission rate array.
-"""
-function seir_mod!(
-    state_arr, change_arr, jump_arr, beta_arr, u, p, trange; dt, type = "stoch"
-)
-    β_mean, β_force = p
-
-    for (j, t) in pairs(trange)
-        β_t = calculate_beta_amp(β_mean, β_force, t)
-        beta_arr[j] = β_t
-
-        if j == 1
-            state_arr[:, j] = u
-
-            continue
-        end
-
-        seir_mod_loop!(
-            state_arr, change_arr, jump_arr, j, p, t, dt; type = type
-        )
-    end
-
-    return nothing
-end
-
