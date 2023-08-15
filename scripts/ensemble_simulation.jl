@@ -2,11 +2,11 @@
 using DrWatson
 @quickactivate "OutbreakDetection"
 
-using Random
 using ProgressMeter
 
 includet(srcdir("Julia/DrWatson-helpers.jl"))
 includet(funsdir("ensemble-functions.jl"))
+includet(funsdir("structs.jl"))
 
 #%%
 N_vec = convert.(Int64, [5e5])
@@ -23,16 +23,30 @@ tmax_vec = [365.0 * 100]
 n_μs = length(μ_min:μ_step:μ_max)
 μ_vec = zeros(Float64, n_μs)
 μ_vec = convert.(Int64, collect(μ_min:μ_step:μ_max))
+seed = 1234
 
-Random.seed!(1234)
+latent_per_days = 8
+dur_inf_days = 5
+R₀ = 10.0
+σ = 1 / latent_per_days
+γ = 1 / dur_inf_days
+transmission_p = EnsembleTransmissionParameters(R₀, σ, γ)
+tmin = 0.0
+tmax = 365.0 * 100
+tstep = 1.0
+time_p = EnsembleTimeParameters(tmin, tmax, tstep)
+
 base_param_dict = @dict(
     N = N_vec,
     u₀_prop = u₀_prop_map,
+    transmission_p = transmission_p,
+    time_p = time_p,
     nsims = nsims_vec,
     dt = dt_vec,
     tmax = tmax_vec,
     β_force = β_force_vec,
     births_per_k = μ_vec,
+    seed = seed,
 )
 
 sol_param_dict = dict_list(
@@ -55,4 +69,3 @@ end;
 #%%
 prog = Progress(length(summ_param_dict))
 summarize_ensemble_jump_prob(summ_param_dict; prog = prog)
-
