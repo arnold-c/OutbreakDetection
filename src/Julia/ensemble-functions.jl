@@ -205,26 +205,3 @@ function match_ensemble_file!(criteria, dirpath, container, file)
         push!(container, joinpath(dirpath, file))
     end
 end
-
-# sim_data = nothing
-# for (i, file) in pairs(sim_files)
-#     if occursin(
-#         r"SEIR_tau_sol.*.nsims=1000_.*.births_per_k=20.*.β_force=0.2", file
-#     )
-#         global sim_data = load(sim_files[i])
-#     end
-# end
-#
-# @unpack ensemble_seir_arr, ensemble_jump_arr, ensemble_change_arr = sim_data
-#
-# summ_data = nothing
-# for (i, file) in pairs(quantile_files)
-#     if occursin(
-#         r"SEIR_tau_quant.*.nsims=1000_.*.births_per_k=20.*.β_force=0.2.*.quantiles=95.jld2",
-#         file,
-#     )
-#         summ_data = load(quantile_files[i])
-#     end
-# end
-#
-# @unpack ensemble_seir_summary, caption, param_dict = summ_data
