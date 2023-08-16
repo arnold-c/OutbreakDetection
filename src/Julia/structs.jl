@@ -4,7 +4,7 @@ struct EnsembleTransmissionParameters
     γ::Float64
 end
 
-struct EnsembleTimeParameters
+struct SimTimeParameters
     tlower
     tmax
     tstep
@@ -12,7 +12,7 @@ struct EnsembleTimeParameters
     tlength
     # Use an inner constructor to calculate the trange and tlength, and ensure
     # that the struct pointer can be redefined below without rewriting a const method
-    function EnsembleTimeParameters(tmin, tmax, tstep)
+    function SimTimeParameters(tmin, tmax, tstep)
         return new(tmin, tmax, tstep, tmin:tstep:tmax, length(tmin:tstep:tmax))
     end
 end
@@ -24,6 +24,6 @@ struct EnsembleSpecification
     nsims::Int64
     births_per_k::Int64
     beta_force::Float64
-    time_parameters::EnsembleTimeParameters
+    time_parameters::SimTimeParameters
 end
 
