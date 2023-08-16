@@ -7,7 +7,7 @@ using FLoops
 
 
 """
-    calculate_beta(R₀, gamma, μ, C, pop_matrix)
+    calculate_beta(R₀, gamma, mu, C, pop_matrix)
 
 Calculate the value beta for a given set of parameters and contact matrix.
 
@@ -19,7 +19,7 @@ julia> calculate_beta(2.0, 1 / 8, 0.0, ones(1, 1), [1000])
 """
 # TODO: Currently only works when the populations are the same size as each other, and doesn't account for an exposed state.
 function calculate_beta(
-    R₀::T, gamma::T, μ::T, C::Array{T}, pop_matrix::Array{T}
+    R₀::T, gamma::T, mu::T, C::Array{T}, pop_matrix::Array{T}
 ) where {T<:AbstractFloat}
     size(C, 1) == size(C, 2) ? nothing : error("C must be square")
     if size(C, 1) == size(pop_matrix, 1)
@@ -29,7 +29,7 @@ function calculate_beta(
     end
 
     F = C .* pop_matrix
-    V = Diagonal(repeat([gamma + μ], size(C, 1)))
+    V = Diagonal(repeat([gamma + mu], size(C, 1)))
 
     FV⁻¹ = F * inv(V)
     eigenvals, eigenvectors = eigen(FV⁻¹)
@@ -38,11 +38,11 @@ function calculate_beta(
     return beta
 end
 
-function calculate_beta(R₀, gamma, μ, C, pop_matrix)
+function calculate_beta(R₀, gamma, mu, C, pop_matrix)
     return calculate_beta(
         convert(Float64, R₀),
         convert(Float64, gamma),
-        convert(Float64, μ),
+        convert(Float64, mu),
         convert(Array{Float64}, [C]),
         convert(Array{Float64}, [pop_matrix]),
     )
@@ -63,7 +63,7 @@ function calculate_beta(
         (nac + 1):(nac + nic * nac)]
 
     F = C .* pop_matrix
-    # F = substitute(Jac, Dict(gamma => 0.0, μ => 0.0))
+    # F = substitute(Jac, Dict(gamma => 0.0, mu => 0.0))
     V = substitute(Jac, Dict(beta => 0.0))
     FV⁻¹ = F * -inv(V)
     eigenvals =
@@ -95,7 +95,7 @@ function calculate_beta(
 end
 
 """
-    calculateR0(beta, gamma, μ, C, pop_matrix)
+    calculateR0(beta, gamma, mu, C, pop_matrix)
 
 Calculate the basic reproduction number R₀ for a given set of parameters and contact matrix.
 
@@ -111,7 +111,7 @@ julia> calculateR0(0.00025, 1 / 8, 0.0, ones(1, 1), [1000])
 * * *
 """
 function calculateR0(
-    beta::T, gamma::T, μ::T, C::Array{T}, pop_matrix::Array{T}
+    beta::T, gamma::T, mu::T, C::Array{T}, pop_matrix::Array{T}
 ) where {T<:AbstractFloat}
     size(C, 1) == size(C, 2) ? nothing : error("C must be square")
     if size(C, 1) == size(pop_matrix, 1)
@@ -123,7 +123,7 @@ function calculateR0(
     B = beta * C
 
     F = B .* pop_matrix
-    V = Diagonal(repeat([gamma + μ], size(C, 1)))
+    V = Diagonal(repeat([gamma + mu], size(C, 1)))
 
     FV⁻¹ = F * inv(V)
     eigenvals, eigenvectors = eigen(FV⁻¹)
@@ -133,11 +133,11 @@ function calculateR0(
     return R₀
 end
 
-function calculateR0(beta, gamma, μ, C, pop_matrix)
+function calculateR0(beta, gamma, mu, C, pop_matrix)
     return calculateR0(
         convert(Float64, beta),
         convert(Float64, gamma),
-        convert(Float64, μ),
+        convert(Float64, mu),
         convert(Array{Float64}, [C]),
         convert(Array{Float64}, [pop_matrix]),
     )
@@ -149,7 +149,7 @@ function calculateR0(
     Jac = calculate_jacobian(ode)[(nac + 1):(nac + nic * nac),
         (nac + 1):(nac + nic * nac)]
 
-    F = substitute(Jac, Dict(gamma => 0.0, μ => 0.0))
+    F = substitute(Jac, Dict(gamma => 0.0, mu => 0.0))
     V = substitute(Jac, Dict(beta => 0.0))
     FV⁻¹ = F * -inv(V)
     all_eigenvals =

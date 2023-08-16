@@ -56,11 +56,11 @@ function run_jump_prob(param_dict)
     u₀ = convert.(Int64, [s * N, e * N, i * N, r * N, N])
     u0_dict = Dict(zip([:S, :E, :I, :R, :N], u₀))
 
-    μ = births_per_k / (1000 * 365)
-    beta_mean = calculate_beta(R₀, gamma, μ, 1, N)
-    ε = (1.06 * μ * (R₀ - 1)) / sqrt(N) # Commuter imports - see p210 Keeling & Rohani
+    mu = births_per_k / (1000 * 365)
+    beta_mean = calculate_beta(R₀, gamma, mu, 1, N)
+    ε = (1.06 * mu * (R₀ - 1)) / sqrt(N) # Commuter imports - see p210 Keeling & Rohani
 
-    p = (beta_mean, beta_force, sigma, gamma, μ, ε, R₀)
+    p = (beta_mean, beta_force, sigma, gamma, mu, ε, R₀)
 
     ensemble_seir_arr = zeros(Int64, size(u₀, 1), tlength, nsims)
     ensemble_change_arr = zeros(Int64, size(u₀, 1), tlength, nsims)

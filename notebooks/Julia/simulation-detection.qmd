@@ -45,12 +45,12 @@ Random.seed!(1234);
 
 u₀ = [999.0, 10.0, 0.0, 0.0]
 
-μ = 1
+mu = 1
 beta = 1000
 sigma = 365/8
 gamma = 365/5
 ε = 100
-p = (beta, sigma, gamma, μ, ε)
+p = (beta, sigma, gamma, mu, ε)
 ```
 
 ```{julia}
@@ -105,32 +105,32 @@ function recov_affect!(integrator)
 end
 recov_jump = ConstantRateJump(recov_rate, recov_affect!)
 
-birth_rate(u, p, t) = p[4] * (u[1] + u[2] + u[3] + u[4]) # μ * N
+birth_rate(u, p, t) = p[4] * (u[1] + u[2] + u[3] + u[4]) # mu * N
 function birth_affect!(integrator)
     integrator.u[1] += 1         # S -> S + 1
     nothing
 end
 birth_jump = ConstantRateJump(birth_rate, birth_affect!)
 
-S_death_rate(u, p, t) = p[4] * u[1] # μ * S
+S_death_rate(u, p, t) = p[4] * u[1] # mu * S
 function S_death_affect!(integrator)
     integrator.u[1] -= 1        # S -> S - 1
 end
 S_death_jump = ConstantRateJump(S_death_rate, S_death_affect!)
 
-E_death_rate(u, p, t) = p[4] * u[2] # μ * E
+E_death_rate(u, p, t) = p[4] * u[2] # mu * E
 function E_death_affect!(integrator)
     integrator.u[2] -= 1        # E -> E -1
 end
 E_death_jump = ConstantRateJump(E_death_rate, E_death_affect!)
 
-I_death_rate(u, p, t) = p[4] * u[3] # μ * I
+I_death_rate(u, p, t) = p[4] * u[3] # mu * I
 function I_death_affect!(integrator)
     integrator.u[3] -= 1        # I -> I - 1
 end
 I_death_jump = ConstantRateJump(I_death_rate, I_death_affect!)
 
-R_death_rate(u, p, t) = p[4] * u[4] # μ * R
+R_death_rate(u, p, t) = p[4] * u[4] # mu * R
 function R_death_affect!(integrator)
     integrator.u[4] -= 1        # R -> R - 1 
 end

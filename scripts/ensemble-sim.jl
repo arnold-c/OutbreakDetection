@@ -16,12 +16,12 @@ u₀_prop_map = [
 dt_vec = [1.0]
 tmax_vec = [365.0 * 100]
 beta_force_vec = collect(0.0:0.1:0.4)
-μ_min = 5
-μ_max = 20
-μ_step = 5.0
-n_μs = length(μ_min:μ_step:μ_max)
-μ_vec = zeros(Float64, n_μs)
-μ_vec = convert.(Int64, collect(μ_min:μ_step:μ_max))
+mu_min = 5
+mu_max = 20
+mu_step = 5.0
+n_mus = length(mu_min:mu_step:mu_max)
+mu_vec = zeros(Float64, n_mus)
+mu_vec = convert.(Int64, collect(mu_min:mu_step:mu_max))
 seed = 1234
 
 latent_per_days = 8
@@ -44,7 +44,7 @@ base_param_dict = @dict(
     dt = dt_vec,
     tmax = tmax_vec,
     beta_force = beta_force_vec,
-    births_per_k = μ_vec,
+    births_per_k = mu_vec,
     seed = seed,
 )
 
