@@ -175,9 +175,9 @@ sde_cb = DiscreteCallback(
 
 #%%
 # Noise should be incidence, not prevalence
-noise_u₀ = [10.0]
+init_noise = [10.0]
 tspan = (tlower, tmax)
-noise_prob = SDEProblem(background_ode!, background_noise!, noise_u₀, tspan, p)
+noise_prob = SDEProblem(background_ode!, background_noise!, init_noise, tspan, p)
 noise_sol = solve(
     noise_prob, SRIW1(); callback = sde_cb, dt = param_dict[:dt],
     adaptive = false,
@@ -196,7 +196,7 @@ noise_arr = zeros(
     noise_prob = SDEProblem(
         background_ode!,
         background_noise!,
-        noise_u₀,
+        init_noise,
         tspan,
         p
     )

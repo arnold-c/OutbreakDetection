@@ -29,7 +29,7 @@ the model can return an array of transmission rates if `retbetaarr = true`, and 
 
 ```julia-repl
 seir_array, change_array, jump_array, beta_arr = seir_mod(
-    u₀, p, trange; retbetaarr = true, type = "stoch"
+    init_states, p, trange; retbetaarr = true, type = "stoch"
 );
 ```
 """

@@ -17,8 +17,8 @@ mu_vec .= collect(mu_min:mu_step:mu_max) ./ (1_000 * 365)
 
 epsilon_vec = (1.06 .* mu_vec .* (R_0 - 1)) ./ sqrt(N)
 
-bifurc_mu_seir_arr = zeros(Float64, size(u₀, 1), tlength, n_mus);
-bifurc_mu_change_arr = zeros(Float64, size(u₀, 1), tlength, n_mus);
+bifurc_mu_seir_arr = zeros(Float64, size(init_states, 1), tlength, n_mus);
+bifurc_mu_change_arr = zeros(Float64, size(init_states, 1), tlength, n_mus);
 bifurc_mu_jump_arr = zeros(Float64, 9, tlength, n_mus);
 
 prog = Progress(n_mus)
@@ -31,7 +31,7 @@ prog = Progress(n_mus)
 
     params = (beta_mean, beta_force, sigma, gamma, mu_run, epsilon, R_0)
     seir_mod!(seir, change, jump,
-        u₀, params, trange; dt = τ, type = "det",
+        init_states, params, trange; dt = τ, type = "det",
     )
     next!(prog)
 end
@@ -76,8 +76,8 @@ n_beta_forces = length(beta_force_min:beta_force_step:beta_force_max)
 beta_force_vec = zeros(Float64, n_beta_forces)
 beta_force_vec .= collect(beta_force_min:beta_force_step:beta_force_max)
 
-bifurc_beta_force_seir_arr = zeros(Float64, size(u₀, 1), tlength, n_beta_forces);
-bifurc_beta_force_change_arr = zeros(Float64, size(u₀, 1), tlength, n_beta_forces);
+bifurc_beta_force_seir_arr = zeros(Float64, size(init_states, 1), tlength, n_beta_forces);
+bifurc_beta_force_change_arr = zeros(Float64, size(init_states, 1), tlength, n_beta_forces);
 bifurc_beta_force_jump_arr = zeros(Float64, 9, tlength, n_beta_forces);
 
 mu = 50 / (1_000 * 365)
@@ -90,7 +90,7 @@ epsilon = 1.06 * mu * (R_0 - 1) / sqrt(N)
 
     local p = (beta_mean, beta_force, sigma, gamma, mu, epsilon, R_0)
 
-    seir_mod!(seir, change, jump, u₀, p, trange; dt = τ, type = "det")
+    seir_mod!(seir, change, jump, init_states, p, trange; dt = τ, type = "det")
 end
 
 years = (40 * 365):365:(tlength - 365)
@@ -126,8 +126,8 @@ end
 bifurc_beta_force_fig
 
 #%%
-bifurc_mu_beta_force_seir_arr = zeros(Float64, size(u₀, 1), tlength, n_mus, n_beta_forces);
-bifurc_mu_beta_force_change_arr = zeros(Float64, size(u₀, 1), tlength, n_mus, n_beta_forces);
+bifurc_mu_beta_force_seir_arr = zeros(Float64, size(init_states, 1), tlength, n_mus, n_beta_forces);
+bifurc_mu_beta_force_change_arr = zeros(Float64, size(init_states, 1), tlength, n_mus, n_beta_forces);
 bifurc_mu_beta_force_jump_arr = zeros(Float64, 9, tlength, n_mus, n_beta_forces);
 
 prog = Progress(length(mu_vec) * length(beta_force_vec))
@@ -145,7 +145,7 @@ prog = Progress(length(mu_vec) * length(beta_force_vec))
 
     params = (beta_mean, beta_force, sigma, gamma, mu, epsilon, R_0)
 
-    seir_mod!(seir, change, jump, u₀, params, trange; dt = τ, type = "det")
+    seir_mod!(seir, change, jump, init_states, params, trange; dt = τ, type = "det")
     next!(prog)
 end
 
@@ -153,11 +153,11 @@ end
 years = (40 * 365):365:(tlength - 365)
 
 bifurc_mu_beta_force_annual_summary = zeros(
-    Float64, size(u₀, 1), length(years), n_mus, n_beta_forces
+    Float64, size(init_states, 1), length(years), n_mus, n_beta_forces
 );
 prog = Progress(length(years) * 5 * length(beta_force_vec))
 @floop for (beta_force, state, years) in
-           IterTools.product(eachindex(beta_force_vec), eachindex(u₀), pairs(years))
+           IterTools.product(eachindex(beta_force_vec), eachindex(init_states), pairs(years))
     year = years[1]
     day = years[2]
 

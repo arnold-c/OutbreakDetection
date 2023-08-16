@@ -43,7 +43,7 @@ tspan = (0.0, tmax)
 tlength = length(tspan[1]:δt:tspan[2])
 Random.seed!(1234);
 
-u₀ = [999.0, 10.0, 0.0, 0.0]
+init_states = [999.0, 10.0, 0.0, 0.0]
 
 mu = 1
 beta = 1_000
@@ -155,7 +155,7 @@ dep_graph = [
     [1, 3, 4, 5, 8]    # Exposure jump depends on states changed by itself, birth, S_death, E_death, and infection jumps
     ]
 
-prob = DiscreteProblem(u₀, tspan, p)
+prob = DiscreteProblem(init_states, tspan, p)
 jump_prob = JumpProblem(prob, Coevolve(), gillespie_jumps...; dep_graph)
 sol = solve(jump_prob, SSAStepper())
 sol_array = zeros(6, length(sol))
@@ -189,8 +189,8 @@ draw(
 ```
 
 ```{julia}
-function run_sir_sim(; u₀, tspan, p)
-    prob = DiscreteProblem(u₀, tspan, p)
+function run_sir_sim(; init_states, tspan, p)
+    prob = DiscreteProblem(init_states, tspan, p)
     jump_prob = JumpProblem(
         prob, Coevolve(), gillespie_jumps..., save_positions = (false, false);
         dep_graph
@@ -225,7 +225,7 @@ all_sims_array = zeros(Float64, 6, tlength + 1, nsims)
 sim_means = zeros(Float64, 5, tlength + 1)
 
 @showprogress for i in 1:nsims
-    out_jump = run_sir_sim(u₀ = u₀, tspan = tspan, p = p)
+    out_jump = run_sir_sim(init_states = init_states, tspan = tspan, p = p)
     create_sim_array!(out_jump = out_jump)
 
     all_sims_array[:, :, i] = sir_array

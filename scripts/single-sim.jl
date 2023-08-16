@@ -19,7 +19,7 @@ s = 0.1
 e = 0.01
 i = 0.01
 r = 1.0 - (s + e + i)
-u₀ = convert.(Int64, [N * s, N * e, N * i, N * r, N])
+init_states = convert.(Int64, [N * s, N * e, N * i, N * r, N])
 singlesim_time_p = SimTimeParameters(0.0, 365.0 * 100, 1.0)
 
 latent_per = 8
@@ -39,7 +39,7 @@ Random.seed!(1234)
 
 #%%
 seir_array, change_array, jump_array, beta_arr = seir_mod(
-    u₀, p, trange; retbetaarr = true, type = "stoch"
+    init_states, p, trange; retbetaarr = true, type = "stoch"
 );
 
 seir_df = create_sir_df(

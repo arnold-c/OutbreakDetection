@@ -20,7 +20,7 @@ function run_ensemble_jump_prob(params_dict; prog = prog)
                 "seasonal-infectivity-import",
                 "tau-leaping",
                 "N_$(p[:N])",
-                "r_$(p[:u₀_prop][:r])",
+                "r_$(p[:init_states_prop][:r])",
                 "nsims_$(p[:nsims])",
                 "births_per_k_$(p[:births_per_k])",
                 "beta_force_$(p[:beta_force])",
@@ -32,9 +32,9 @@ function run_ensemble_jump_prob(params_dict; prog = prog)
                 p;
                 allowedtypes = (Symbol, Dict, String, Real),
                 accesses = [
-                    :N, :u₀_prop, :nsims, :tmax, :dt, :births_per_k, :beta_force
+                    :N, :init_states_prop, :nsims, :tmax, :dt, :births_per_k, :beta_force
                 ],
-                expand = ["u₀_prop"],
+                expand = ["init_states_prop"],
                 sort = false,
             ),
             loadfile = false
@@ -47,14 +47,14 @@ end
     run_jump_prob(param_dict)
 """
 function run_jump_prob(param_dict)
-    @unpack N, u₀_prop, transmission_p, time_p, nsims, dt, beta_force,
+    @unpack N, init_states_prop, transmission_p, time_p, nsims, dt, beta_force,
     births_per_k, seed = param_dict
-    @unpack s, e, i, r = u₀_prop
+    @unpack s, e, i, r = init_states_prop
     @unpack R_0, sigma, gamma = transmission_p
     @unpack tstep, tlength, trange = time_p
 
-    u₀ = convert.(Int64, [s * N, e * N, i * N, r * N, N])
-    u0_dict = Dict(zip([:S, :E, :I, :R, :N], u₀))
+    init_states = convert.(Int64, [s * N, e * N, i * N, r * N, N])
+    init_states_dict = Dict(zip([:S, :E, :I, :R, :N], init_states))
 
     mu = births_per_k / (1_000 * 365)
     beta_mean = calculate_beta(R_0, gamma, mu, 1, N)
@@ -62,8 +62,8 @@ function run_jump_prob(param_dict)
 
     p = (beta_mean, beta_force, sigma, gamma, mu, epsilon, R_0)
 
-    ensemble_seir_arr = zeros(Int64, size(u₀, 1), tlength, nsims)
-    ensemble_change_arr = zeros(Int64, size(u₀, 1), tlength, nsims)
+    ensemble_seir_arr = zeros(Int64, size(init_states, 1), tlength, nsims)
+    ensemble_change_arr = zeros(Int64, size(init_states, 1), tlength, nsims)
     ensemble_jump_arr = zeros(Int64, 9, tlength, nsims)
 
     @floop for k in 1:nsims
@@ -71,10 +71,10 @@ function run_jump_prob(param_dict)
         @views change = ensemble_change_arr[:, :, k]
         @views jump = ensemble_jump_arr[:, :, k]
 
-        seir_mod!(seir, change, jump, u₀, p, trange; dt = tstep, seed = seed)
+        seir_mod!(seir, change, jump, init_states, p, trange; dt = tstep, seed = seed)
     end
 
-    return @strdict ensemble_seir_arr ensemble_change_arr ensemble_jump_arr u0_dict param_dict
+    return @strdict ensemble_seir_arr ensemble_change_arr ensemble_jump_arr init_states_dict param_dict
 end
 
 function summarize_ensemble_jump_prob(params_dict; prog = prog)
@@ -86,7 +86,7 @@ function summarize_ensemble_jump_prob(params_dict; prog = prog)
                 "seasonal-infectivity-import",
                 "tau-leaping",
                 "N_$(p[:N])",
-                "r_$(p[:u₀_prop][:r])",
+                "r_$(p[:init_states_prop][:r])",
                 "nsims_$(p[:nsims])",
                 "births_per_k_$(p[:births_per_k])",
                 "beta_force_$(p[:beta_force])",
@@ -98,10 +98,10 @@ function summarize_ensemble_jump_prob(params_dict; prog = prog)
                 p;
                 allowedtypes = (Symbol, Dict, String, Real),
                 accesses = [
-                    :N, :u₀_prop, :nsims, :tmax, :dt, :births_per_k, :beta_force,
+                    :N, :init_states_prop, :nsims, :tmax, :dt, :births_per_k, :beta_force,
                     :quantiles,
                 ],
-                expand = ["u₀_prop"],
+                expand = ["init_states_prop"],
                 sort = false,
             ),
             loadfile = false
@@ -114,17 +114,17 @@ end
     jump_prob_summary(param_dict)
 """
 function jump_prob_summary(param_dict)
-    @unpack N, u₀_prop, nsims, dt, tmax, beta_force, births_per_k, quantiles =
+    @unpack N, init_states_prop, nsims, dt, tmax, beta_force, births_per_k, quantiles =
         param_dict
-    @unpack s, e, i, r = u₀_prop
+    @unpack s, e, i, r = init_states_prop
 
     sim_name = savename(
         "SEIR_tau_sol",
         param_dict,
         "jld2";
         allowedtypes = (Symbol, Dict, String, Real),
-        accesses = [:N, :u₀_prop, :nsims, :tmax, :dt, :births_per_k, :beta_force],
-        expand = ["u₀_prop"],
+        accesses = [:N, :init_states_prop, :nsims, :tmax, :dt, :births_per_k, :beta_force],
+        expand = ["init_states_prop"],
         sort = false,
     )
     sim_path = joinpath(
@@ -143,10 +143,10 @@ function jump_prob_summary(param_dict)
     )
 
     sol_data = load(sim_path)
-    @unpack ensemble_seir_arr, u0_dict = sol_data
-    S = u0_dict[:S]
-    I = u0_dict[:I]
-    R = u0_dict[:R]
+    @unpack ensemble_seir_arr, init_states_dict = sol_data
+    S = init_states_dict[:S]
+    I = init_states_dict[:I]
+    R = init_states_dict[:R]
 
     qlow = round(0.5 - quantiles / 200; digits = 3)
     qhigh = round(0.5 + quantiles / 200; digits = 3)
@@ -159,7 +159,7 @@ function jump_prob_summary(param_dict)
 
     caption = "nsims = $nsims, N = $N, S = $S, I = $I, R = $R, beta_force = $beta_force,\nbirths per k/annum = $births_per_k dt = $dt, quantile int = $quantiles"
 
-    return @strdict ensemble_seir_summary caption u0_dict param_dict
+    return @strdict ensemble_seir_summary caption init_states_dict param_dict
 end
 
 function get_ensemble_file(type, spec)

@@ -10,7 +10,7 @@ includet(funsdir("ensemble-functions.jl"))
 #%%
 N_vec = convert.(Int64, [5e5])
 nsims_vec = [1_000]
-u₀_prop_map = [
+init_states_prop_map = [
     Dict(:s => 0.1, :e => 0.01, :i => 0.01, :r => 0.88)
 ]
 dt_vec = [1.0]
@@ -37,7 +37,7 @@ ensemble_time_p = EnsembleTimeParameters(tmin, tmax, tstep)
 
 base_param_dict = @dict(
     N = N_vec,
-    u₀_prop = u₀_prop_map,
+    init_states_prop = init_states_prop_map,
     transmission_p = transmission_p,
     time_p = time_p,
     nsims = nsims_vec,
