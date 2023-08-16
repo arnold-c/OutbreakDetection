@@ -29,7 +29,7 @@ prog = Progress(n_μs)
     change = @view bifurc_μ_change_arr[:, :, k]
     jump = @view bifurc_μ_jump_arr[:, :, k]
 
-    params = (β₀, β₁, σ, γ, μ_run, ε, R₀)
+    params = (beta_mean, beta_force, σ, γ, μ_run, ε, R₀)
     seir_mod!(seir, change, jump,
         u₀, params, trange; dt = τ, type = "det",
     )
@@ -69,81 +69,81 @@ end
 bifurc_μ_fig
 
 #%%
-β₁_min = 0.0
-β₁_max = 1.0
-β₁_step = 0.02
-n_β₁s = length(β₁_min:β₁_step:β₁_max)
-β₁_vec = zeros(Float64, n_β₁s)
-β₁_vec .= collect(β₁_min:β₁_step:β₁_max)
+beta_force_min = 0.0
+beta_force_max = 1.0
+beta_force_step = 0.02
+n_beta_forces = length(beta_force_min:beta_force_step:beta_force_max)
+beta_force_vec = zeros(Float64, n_beta_forces)
+beta_force_vec .= collect(beta_force_min:beta_force_step:beta_force_max)
 
-bifurc_β₁_seir_arr = zeros(Float64, size(u₀, 1), tlength, n_β₁s);
-bifurc_β₁_change_arr = zeros(Float64, size(u₀, 1), tlength, n_β₁s);
-bifurc_β₁_jump_arr = zeros(Float64, 9, tlength, n_β₁s);
+bifurc_beta_force_seir_arr = zeros(Float64, size(u₀, 1), tlength, n_beta_forces);
+bifurc_beta_force_change_arr = zeros(Float64, size(u₀, 1), tlength, n_beta_forces);
+bifurc_beta_force_jump_arr = zeros(Float64, 9, tlength, n_beta_forces);
 
 μ = 50 / (1000 * 365)
 ε = 1.06 * μ * (R₀ - 1) / sqrt(N)
 
-@showprogress for (k, β₁) in pairs(β₁_vec)
-    seir = @view bifurc_β₁_seir_arr[:, :, k]
-    change = @view bifurc_β₁_change_arr[:, :, k]
-    jump = @view bifurc_β₁_jump_arr[:, :, k]
+@showprogress for (k, beta_force) in pairs(beta_force_vec)
+    seir = @view bifurc_beta_force_seir_arr[:, :, k]
+    change = @view bifurc_beta_force_change_arr[:, :, k]
+    jump = @view bifurc_beta_force_jump_arr[:, :, k]
 
-    local p = (β₀, β₁, σ, γ, μ, ε, R₀)
+    local p = (beta_mean, beta_force, σ, γ, μ, ε, R₀)
 
     seir_mod!(seir, change, jump, u₀, p, trange; dt = τ, type = "det")
 end
 
 years = (40 * 365):365:(tlength - 365)
-bifurc_β₁_annual_summary = zeros(Float64, 5, length(years), n_β₁s)
+bifurc_beta_force_annual_summary = zeros(Float64, 5, length(years), n_beta_forces)
 
-@floop for (k, β₁) in pairs(β₁_vec), (year, day) in pairs(years),
+@floop for (k, beta_force) in pairs(beta_force_vec), (year, day) in pairs(years),
     state in eachindex(state_labels)
 
-    bifurc_β₁_annual_summary[state, year, k] = maximum(
-        bifurc_β₁_seir_arr[state, day:(day + 364), k]
+    bifurc_beta_force_annual_summary[state, year, k] = maximum(
+        bifurc_beta_force_seir_arr[state, day:(day + 364), k]
     )
 end
 
-bifurc_β₁_seir_arr[2, (40 * 365):(40 * 365 + 364), 1] ==
-bifurc_β₁_seir_arr[2, (40 * 365):(40 * 365 + 364), 11]
+bifurc_beta_force_seir_arr[2, (40 * 365):(40 * 365 + 364), 1] ==
+bifurc_beta_force_seir_arr[2, (40 * 365):(40 * 365 + 364), 11]
 
 #%%
-bifurc_β₁_fig = Figure()
-bifurc_β₁_ax = Axis(
-    bifurc_β₁_fig[1, 1]; xlabel = "β₁ (seasonality)", ylabel = "Max. I"
+bifurc_beta_force_fig = Figure()
+bifurc_beta_force_ax = Axis(
+    bifurc_beta_force_fig[1, 1]; xlabel = "beta_force (seasonality)", ylabel = "Max. I"
 )
 
 for year in eachindex(years)
     scatter!(
-        bifurc_β₁_ax,
-        β₁_min:β₁_step:β₁_max,
-        bifurc_β₁_annual_summary[2, year, :];
+        bifurc_beta_force_ax,
+        beta_force_min:beta_force_step:beta_force_max,
+        bifurc_beta_force_annual_summary[2, year, :];
         markersize = 4,
         color = :black,
     )
 end
 
-bifurc_β₁_fig
+bifurc_beta_force_fig
 
 #%%
-bifurc_μ_β₁_seir_arr = zeros(Float64, size(u₀, 1), tlength, n_μs, n_β₁s);
-bifurc_μ_β₁_change_arr = zeros(Float64, size(u₀, 1), tlength, n_μs, n_β₁s);
-bifurc_μ_β₁_jump_arr = zeros(Float64, 9, tlength, n_μs, n_β₁s);
+bifurc_μ_beta_force_seir_arr = zeros(Float64, size(u₀, 1), tlength, n_μs, n_beta_forces);
+bifurc_μ_beta_force_change_arr = zeros(Float64, size(u₀, 1), tlength, n_μs, n_beta_forces);
+bifurc_μ_beta_force_jump_arr = zeros(Float64, 9, tlength, n_μs, n_beta_forces);
 
-prog = Progress(length(μ_vec) * length(β₁_vec))
-@floop for (β₁_pair, μ_pair) in
-           IterTools.product(pairs(β₁_vec), pairs(μ_vec))
+prog = Progress(length(μ_vec) * length(beta_force_vec))
+@floop for (beta_force_pair, μ_pair) in
+           IterTools.product(pairs(beta_force_vec), pairs(μ_vec))
     k = μ_pair[1]
     μ = μ_pair[2]
-    l = β₁_pair[1]
-    β₁ = β₁_pair[2]
+    l = beta_force_pair[1]
+    beta_force = beta_force_pair[2]
     ε = ε_vec[k]
 
-    seir = @view bifurc_μ_β₁_seir_arr[:, :, k, l]
-    change = @view bifurc_μ_β₁_change_arr[:, :, k, l]
-    jump = @view bifurc_μ_β₁_jump_arr[:, :, k, l]
+    seir = @view bifurc_μ_beta_force_seir_arr[:, :, k, l]
+    change = @view bifurc_μ_beta_force_change_arr[:, :, k, l]
+    jump = @view bifurc_μ_beta_force_jump_arr[:, :, k, l]
 
-    params = (β₀, β₁, σ, γ, μ, ε, R₀)
+    params = (beta_mean, beta_force, σ, γ, μ, ε, R₀)
 
     seir_mod!(seir, change, jump, u₀, params, trange; dt = τ, type = "det")
     next!(prog)
@@ -152,40 +152,40 @@ end
 #%%
 years = (40 * 365):365:(tlength - 365)
 
-bifurc_μ_β₁_annual_summary = zeros(
-    Float64, size(u₀, 1), length(years), n_μs, n_β₁s
+bifurc_μ_beta_force_annual_summary = zeros(
+    Float64, size(u₀, 1), length(years), n_μs, n_beta_forces
 );
-prog = Progress(length(years) * 5 * length(β₁_vec))
-@floop for (β₁, state, years) in
-           IterTools.product(eachindex(β₁_vec), eachindex(u₀), pairs(years))
+prog = Progress(length(years) * 5 * length(beta_force_vec))
+@floop for (beta_force, state, years) in
+           IterTools.product(eachindex(beta_force_vec), eachindex(u₀), pairs(years))
     year = years[1]
     day = years[2]
 
-    bifurc_μ_β₁_annual_summary[state, year, :, β₁] = maximum(
-        bifurc_μ_β₁_seir_arr[state, day:(day + 364), :, β₁]; dims = 1
+    bifurc_μ_beta_force_annual_summary[state, year, :, beta_force] = maximum(
+        bifurc_μ_beta_force_seir_arr[state, day:(day + 364), :, beta_force]; dims = 1
     )
     next!(prog)
 end
 
-bifurc_μ_β₁_cycle_summary = zeros(Float64, n_β₁s, n_μs, 5);
-prog = Progress(5 * length(β₁_vec) * length(μ_vec))
-@floop for (β₁, μ, state) in
-           IterTools.product(eachindex(β₁_vec), eachindex(μ_vec), 1:5)
-    bifurc_μ_β₁_cycle_summary[β₁, μ, state] = length(
-        Set(round.(bifurc_μ_β₁_annual_summary[state, :, μ, β₁]))
+bifurc_μ_beta_force_cycle_summary = zeros(Float64, n_beta_forces, n_μs, 5);
+prog = Progress(5 * length(beta_force_vec) * length(μ_vec))
+@floop for (beta_force, μ, state) in
+           IterTools.product(eachindex(beta_force_vec), eachindex(μ_vec), 1:5)
+    bifurc_μ_beta_force_cycle_summary[beta_force, μ, state] = length(
+        Set(round.(bifurc_μ_beta_force_annual_summary[state, :, μ, beta_force]))
     )
     next!(prog)
 end
 
 #%%
-# Because Julia is column-major, we need to transpose the heatmap as it reads the data one column at a time, and in our original matrix, each column represents a different β₁ value.
-bifurc_μ_β₁_fig, bifurc_μ_β₁_ax, bifurc_μ_β₁_hm = heatmap(
-    μ_vec .* (1000 * 365), β₁_vec, bifurc_μ_β₁_cycle_summary[:, :, 2]'
+# Because Julia is column-major, we need to transpose the heatmap as it reads the data one column at a time, and in our original matrix, each column represents a different beta_force value.
+bifurc_μ_beta_force_fig, bifurc_μ_beta_force_ax, bifurc_μ_beta_force_hm = heatmap(
+    μ_vec .* (1000 * 365), beta_force_vec, bifurc_μ_beta_force_cycle_summary[:, :, 2]'
 )
-Colorbar(bifurc_μ_β₁_fig[:, end + 1], bifurc_μ_β₁_hm)
+Colorbar(bifurc_μ_beta_force_fig[:, end + 1], bifurc_μ_beta_force_hm)
 
-bifurc_μ_β₁_ax.xlabel = "μ (per 1000, per annum)"
-bifurc_μ_β₁_ax.ylabel = "β₁ (seasonality)"
+bifurc_μ_beta_force_ax.xlabel = "μ (per 1000, per annum)"
+bifurc_μ_beta_force_ax.ylabel = "beta_force (seasonality)"
 
-bifurc_μ_β₁_fig
+bifurc_μ_beta_force_fig
 

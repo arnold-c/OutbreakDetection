@@ -9,7 +9,7 @@ using FLoops
 """
     calculate_beta(R₀, γ, μ, C, pop_matrix)
 
-Calculate the value β for a given set of parameters and contact matrix.
+Calculate the value beta for a given set of parameters and contact matrix.
 
 ```jldoctest
 julia> calculate_beta(2.0, 1 / 8, 0.0, ones(1, 1), [1000])
@@ -33,9 +33,9 @@ function calculate_beta(
 
     FV⁻¹ = F * inv(V)
     eigenvals, eigenvectors = eigen(FV⁻¹)
-    β = R₀ / maximum(real(eigenvals))
+    beta = R₀ / maximum(real(eigenvals))
 
-    return β
+    return beta
 end
 
 function calculate_beta(R₀, γ, μ, C, pop_matrix)
@@ -64,7 +64,7 @@ function calculate_beta(
 
     F = C .* pop_matrix
     # F = substitute(Jac, Dict(γ => 0.0, μ => 0.0))
-    V = substitute(Jac, Dict(β => 0.0))
+    V = substitute(Jac, Dict(beta => 0.0))
     FV⁻¹ = F * -inv(V)
     eigenvals =
         convert.(
@@ -95,7 +95,7 @@ function calculate_beta(
 end
 
 """
-    calculateR0(β, γ, μ, C, pop_matrix)
+    calculateR0(beta, γ, μ, C, pop_matrix)
 
 Calculate the basic reproduction number R₀ for a given set of parameters and contact matrix.
 
@@ -111,7 +111,7 @@ julia> calculateR0(0.00025, 1 / 8, 0.0, ones(1, 1), [1000])
 * * *
 """
 function calculateR0(
-    β::T, γ::T, μ::T, C::Array{T}, pop_matrix::Array{T}
+    beta::T, γ::T, μ::T, C::Array{T}, pop_matrix::Array{T}
 ) where {T<:AbstractFloat}
     size(C, 1) == size(C, 2) ? nothing : error("C must be square")
     if size(C, 1) == size(pop_matrix, 1)
@@ -120,7 +120,7 @@ function calculateR0(
         error("C and pop_matrix must have the same number of rows")
     end
 
-    B = β * C
+    B = beta * C
 
     F = B .* pop_matrix
     V = Diagonal(repeat([γ + μ], size(C, 1)))
@@ -133,9 +133,9 @@ function calculateR0(
     return R₀
 end
 
-function calculateR0(β, γ, μ, C, pop_matrix)
+function calculateR0(beta, γ, μ, C, pop_matrix)
     return calculateR0(
-        convert(Float64, β),
+        convert(Float64, beta),
         convert(Float64, γ),
         convert(Float64, μ),
         convert(Array{Float64}, [C]),
@@ -150,7 +150,7 @@ function calculateR0(
         (nac + 1):(nac + nic * nac)]
 
     F = substitute(Jac, Dict(γ => 0.0, μ => 0.0))
-    V = substitute(Jac, Dict(β => 0.0))
+    V = substitute(Jac, Dict(beta => 0.0))
     FV⁻¹ = F * -inv(V)
     all_eigenvals =
         convert.(

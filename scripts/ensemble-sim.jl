@@ -15,7 +15,7 @@ u₀_prop_map = [
 ]
 dt_vec = [1.0]
 tmax_vec = [365.0 * 100]
-β_force_vec = collect(0.0:0.1:0.4)
+beta_force_vec = collect(0.0:0.1:0.4)
 μ_min = 5
 μ_max = 20
 μ_step = 5.0
@@ -43,7 +43,7 @@ base_param_dict = @dict(
     nsims = nsims_vec,
     dt = dt_vec,
     tmax = tmax_vec,
-    β_force = β_force_vec,
+    beta_force = beta_force_vec,
     births_per_k = μ_vec,
     seed = seed,
 )

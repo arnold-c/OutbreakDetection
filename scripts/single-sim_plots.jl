@@ -66,10 +66,10 @@ end
 end
 
 #%%
-@chain DataFrame(Tables.table(β_arr)) begin
+@chain DataFrame(Tables.table(beta_arr)) begin
     hcat(trange, _)
-    rename!([:time, :β_t])
-    stack(_, Not("time"); variable_name = :β, value_name = :Number)
+    rename!([:time, :beta_t])
+    stack(_, Not("time"); variable_name = :beta, value_name = :Number)
     data(_) *
     mapping(
         :time => (t -> t / 365) => "Time (years)", :Number;

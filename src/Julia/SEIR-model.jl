@@ -12,28 +12,28 @@ using Distributions
 using Random
 
 """
-    calculate_beta_amp(β_mean, β_force, t)
+    calculate_beta_amp(beta_mean, beta_force, t)
 
-Calculate the amplitude of the transmission rate β as a function of time.
-`β_mean` is the mean transmission rate, `β_force` is the amplitude of the cosine function.
+Calculate the amplitude of the transmission rate beta as a function of time.
+`beta_mean` is the mean transmission rate, `beta_force` is the amplitude of the cosine function.
 """
-function calculate_beta_amp(β_mean, β_force, t)
-    return β_mean * (1 + β_force * cos(2pi * t / 365))
+function calculate_beta_amp(beta_mean, beta_force, t)
+    return beta_mean * (1 + beta_force * cos(2pi * t / 365))
 end
 
 """
-    seir_mod(u, p, trange; retβarr = false, type = "stoch")
+    seir_mod(u, p, trange; retbetaarr = false, type = "stoch")
 
 A Tau-leaping SEIR model with commuter style importers.
-the model can return an array of transmission rates if `retβarr = true`, and can be set to be deterministic or stochastic.
+the model can return an array of transmission rates if `retbetaarr = true`, and can be set to be deterministic or stochastic.
 
 ```julia-repl
-seir_array, change_array, jump_array, β_arr = seir_mod(
-    u₀, p, trange; retβarr = true, type = "stoch"
+seir_array, change_array, jump_array, beta_arr = seir_mod(
+    u₀, p, trange; retbetaarr = true, type = "stoch"
 );
 ```
 """
-function seir_mod(u, p, trange; retβarr = false, type = "stoch", seed = 1234)
+function seir_mod(u, p, trange; retbetaarr = false, type = "stoch", seed = 1234)
     tlength = length(trange)
     dt = step(trange)
 
@@ -43,7 +43,7 @@ function seir_mod(u, p, trange; retβarr = false, type = "stoch", seed = 1234)
 
     jump_arr = zeros(Float64, 9, tlength)
 
-    if retβarr == true
+    if retbetaarr == true
         beta_arr = zeros(Float64, tlength)
         seir_mod!(
             state_arr, change_arr, jump_arr, beta_arr, u, p, trange; dt = dt,
@@ -92,11 +92,11 @@ function seir_mod!(
     state_arr, change_arr, jump_arr, beta_arr, u, p, trange; dt, type = "stoch",
     seed = 1234,
 )
-    β_mean, β_force = p
+    beta_mean, beta_force = p
 
     for (j, t) in pairs(trange)
-        β_t = calculate_beta_amp(β_mean, β_force, t)
-        beta_arr[j] = β_t
+        beta_t = calculate_beta_amp(beta_mean, beta_force, t)
+        beta_arr[j] = beta_t
 
         if j == 1
             state_arr[:, j] = u
@@ -129,11 +129,11 @@ function seir_mod_loop!(
     N = state_arr[5, j - 1]
 
     # Unpack the parameters for easier use
-    β_mean, β_force, σ, γ, μ, ε, R₀ = p
-    β_t = calculate_beta_amp(β_mean, β_force, t)
+    beta_mean, beta_force, σ, γ, μ, ε, R₀ = p
+    beta_t = calculate_beta_amp(beta_mean, beta_force, t)
 
     # Calculate the rates of each event
-    infec_rate = β_t * S * I        # 1
+    infec_rate = beta_t * S * I        # 1
     latent_rate = σ * E             # 2
     recov_rate = γ * I              # 3
     birth_rate = μ * N              # 4

@@ -46,11 +46,11 @@ Random.seed!(1234);
 u₀ = [999.0, 10.0, 0.0, 0.0]
 
 μ = 1
-β = 1000
+beta = 1000
 σ = 365/8
 γ = 365/5
 ε = 100
-p = (β, σ, γ, μ, ε)
+p = (beta, σ, γ, μ, ε)
 ```
 
 ```{julia}
@@ -62,7 +62,7 @@ fig
 
 ```{julia}
 # 0.5 .* (sin.(2π .* x) .+ 1)
-expose_rate(u, p, t) = p[1] * 0.5 * (sin(2π * t) + 1) * u[1] * u[2]/ (u[1] + u[2] + u[3] + u[4])  # β * ϕ * S * I / N
+expose_rate(u, p, t) = p[1] * 0.5 * (sin(2π * t) + 1) * u[1] * u[2]/ (u[1] + u[2] + u[3] + u[4])  # beta * ϕ * S * I / N
 function expose_affect!(integrator)
     integrator.u[1] -= 1         # S -> S - 1
     integrator.u[2] += 1         # E -> E + 1

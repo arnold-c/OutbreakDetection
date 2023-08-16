@@ -23,7 +23,7 @@ function run_ensemble_jump_prob(params_dict; prog = prog)
                 "r_$(p[:u₀_prop][:r])",
                 "nsims_$(p[:nsims])",
                 "births_per_k_$(p[:births_per_k])",
-                "beta_force_$(p[:β_force])",
+                "beta_force_$(p[:beta_force])",
                 "tmax_$(p[:tmax])",
                 "deltat_$(p[:dt])",
             );
@@ -32,7 +32,7 @@ function run_ensemble_jump_prob(params_dict; prog = prog)
                 p;
                 allowedtypes = (Symbol, Dict, String, Real),
                 accesses = [
-                    :N, :u₀_prop, :nsims, :tmax, :dt, :births_per_k, :β_force
+                    :N, :u₀_prop, :nsims, :tmax, :dt, :births_per_k, :beta_force
                 ],
                 expand = ["u₀_prop"],
                 sort = false,
@@ -47,7 +47,7 @@ end
     run_jump_prob(param_dict)
 """
 function run_jump_prob(param_dict)
-    @unpack N, u₀_prop, transmission_p, time_p, nsims, dt, β_force,
+    @unpack N, u₀_prop, transmission_p, time_p, nsims, dt, beta_force,
     births_per_k, seed = param_dict
     @unpack s, e, i, r = u₀_prop
     @unpack R₀, σ, γ = transmission_p
@@ -57,10 +57,10 @@ function run_jump_prob(param_dict)
     u0_dict = Dict(zip([:S, :E, :I, :R, :N], u₀))
 
     μ = births_per_k / (1000 * 365)
-    β₀ = calculate_beta(R₀, γ, μ, 1, N)
+    beta_mean = calculate_beta(R₀, γ, μ, 1, N)
     ε = (1.06 * μ * (R₀ - 1)) / sqrt(N) # Commuter imports - see p210 Keeling & Rohani
 
-    p = (β₀, β_force, σ, γ, μ, ε, R₀)
+    p = (beta_mean, beta_force, σ, γ, μ, ε, R₀)
 
     ensemble_seir_arr = zeros(Int64, size(u₀, 1), tlength, nsims)
     ensemble_change_arr = zeros(Int64, size(u₀, 1), tlength, nsims)
@@ -89,7 +89,7 @@ function summarize_ensemble_jump_prob(params_dict; prog = prog)
                 "r_$(p[:u₀_prop][:r])",
                 "nsims_$(p[:nsims])",
                 "births_per_k_$(p[:births_per_k])",
-                "beta_force_$(p[:β_force])",
+                "beta_force_$(p[:beta_force])",
                 "tmax_$(p[:tmax])",
                 "deltat_$(p[:dt])",
             ),
@@ -98,7 +98,7 @@ function summarize_ensemble_jump_prob(params_dict; prog = prog)
                 p;
                 allowedtypes = (Symbol, Dict, String, Real),
                 accesses = [
-                    :N, :u₀_prop, :nsims, :tmax, :dt, :births_per_k, :β_force,
+                    :N, :u₀_prop, :nsims, :tmax, :dt, :births_per_k, :beta_force,
                     :quantiles,
                 ],
                 expand = ["u₀_prop"],
@@ -114,7 +114,7 @@ end
     jump_prob_summary(param_dict)
 """
 function jump_prob_summary(param_dict)
-    @unpack N, u₀_prop, nsims, dt, tmax, β_force, births_per_k, quantiles =
+    @unpack N, u₀_prop, nsims, dt, tmax, beta_force, births_per_k, quantiles =
         param_dict
     @unpack s, e, i, r = u₀_prop
 
@@ -123,7 +123,7 @@ function jump_prob_summary(param_dict)
         param_dict,
         "jld2";
         allowedtypes = (Symbol, Dict, String, Real),
-        accesses = [:N, :u₀_prop, :nsims, :tmax, :dt, :births_per_k, :β_force],
+        accesses = [:N, :u₀_prop, :nsims, :tmax, :dt, :births_per_k, :beta_force],
         expand = ["u₀_prop"],
         sort = false,
     )
@@ -135,7 +135,7 @@ function jump_prob_summary(param_dict)
             "r_$r",
             "nsims_$nsims",
             "births_per_k_$births_per_k",
-            "beta_force_$β_force",
+            "beta_force_$beta_force",
             "tmax_$tmax",
             "deltat_$dt",
         ),
@@ -157,7 +157,7 @@ function jump_prob_summary(param_dict)
         ensemble_seir_arr; quantiles = qs
     )
 
-    caption = "nsims = $nsims, N = $N, S = $S, I = $I, R = $R, β_force = $β_force,\nbirths per k/annum = $births_per_k dt = $dt, quantile int = $quantiles"
+    caption = "nsims = $nsims, N = $N, S = $S, I = $I, R = $R, beta_force = $beta_force,\nbirths per k/annum = $births_per_k dt = $dt, quantile int = $quantiles"
 
     return @strdict ensemble_seir_summary caption u0_dict param_dict
 end

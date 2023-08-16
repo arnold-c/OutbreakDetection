@@ -73,10 +73,10 @@ end
 function create_sir_beta_dfs(sol, states = [:S, :I, :R])
     state_df = create_sir_df(sol, states)
 
-    beta_df = select(state_df, [:time, :β])
+    beta_df = select(state_df, [:time, :beta])
     unique!(beta_df)
 
-    select!(state_df, Not(:β))
+    select!(state_df, Not(:beta))
 
     return state_df, beta_df
 end
@@ -129,9 +129,9 @@ function create_sir_all_sims_array(ensemble_sol::EnsembleSolution, nsims::Int)
 end
 
 function create_sir_all_sims_array!(
-    ensemble_sol::EnsembleSolution, nsims::Int, β::Bool
+    ensemble_sol::EnsembleSolution, nsims::Int, beta::Bool
 )
-    if β == false
+    if beta == false
         return create_sir_all_sims_array!(ensemble_sol, nsims)
     end
 
