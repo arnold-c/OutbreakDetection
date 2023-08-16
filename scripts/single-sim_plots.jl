@@ -9,9 +9,7 @@ draw_sir_plot(
     seir_df;
     annual = true,
     colors = seircolors,
-    labels = state_labels,
-    #= ylims = (0, 1000), =#
-    #= xlims = (90, 95), =#
+    labels = seir_state_labels
 )
 
 #%%
@@ -60,7 +58,7 @@ end
 #%%
 @chain DataFrame(Tables.table(seir_array')) begin
     hcat(trange, _)
-    rename!(["time", state_labels...])
+    rename!(["time", seir_state_labels...])
     data(_) *
     mapping(:I, :S; color = :time) *
     visual(Lines)

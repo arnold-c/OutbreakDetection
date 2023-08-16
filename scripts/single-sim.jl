@@ -11,6 +11,7 @@ includet(funsdir("transmission-functions.jl"))
 includet(funsdir("plotting-functions.jl"))
 includet(funsdir("cleaning-functions.jl"))
 includet(funsdir("SEIR-model.jl"))
+includet(funsdir("structs.jl"))
 
 #%%
 N = 5e5
@@ -19,11 +20,7 @@ e = 0.01
 i = 0.01
 r = 1.0 - (s + e + i)
 u₀ = convert.(Int64, [N * s, N * e, N * i, N * r, N])
-τ = 1.0
-tlower = 0.0
-tmax = 365.0 * 100
-trange = tlower:τ:tmax
-tlength = length(trange)
+singlesim_time_p = SimTimeParameters(0.0, 365.0 * 100, 1.0)
 
 latent_per = 8
 dur_inf = 5
@@ -45,8 +42,6 @@ seir_array, change_array, jump_array, β_arr = seir_mod(
     u₀, p, trange; retβarr = true, type = "stoch"
 );
 
-seir_df = create_sir_df(seir_array, trange, [:S, :E, :I, :R, :N])
-
-seircolors = ["dodgerblue4", "green", "firebrick3", "chocolate2", "purple"]
-state_labels = ["S", "E", "I", "R", "N"]
-
+seir_df = create_sir_df(
+    seir_array, singlesim_time_p.trange, [:S, :E, :I, :R, :N]
+)

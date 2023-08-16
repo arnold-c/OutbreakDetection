@@ -10,6 +10,10 @@ set_aog_theme!()
 # Set depending on size of screen
 update_theme!(; resolution = (1300, 900))
 
+seircolors = ["dodgerblue4", "green", "firebrick3", "chocolate2", "purple"]
+seir_state_labels = ["S", "E", "I", "R", "N"]
+
+
 function create_sir_plot(sol_df; labels = ["S", "I", "R", "N"], annual = annual)
     time_function(t) = annual ==true ? t / 365.0 : t
     if annual == true
@@ -50,10 +54,10 @@ end
 
 
 function sir_quantiles_array_base_plot(
-    sim_quantiles, lower_index, med_index, upper_index, δt, colors, labels,
+    sim_quantiles, lower_index, med_index, upper_index, timeparams::SimTimeParameters, colors, labels,
     annual; xlims, ylims, caption,
 )
-    times = tlower:δt:tmax
+    times = timeparams.trange
     xlab = "Time (days)"
     if annual == true
         times = times ./ 365
