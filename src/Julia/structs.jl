@@ -1,5 +1,5 @@
 struct EnsembleTransmissionParameters
-    R₀::Float64
+    R_0::Float64
     sigma::Float64
     gamma::Float64
 end

@@ -26,10 +26,10 @@ seed = 1234
 
 latent_per_days = 8
 dur_inf_days = 5
-R₀ = 10.0
+R_0 = 10.0
 sigma = 1 / latent_per_days
 gamma = 1 / dur_inf_days
-transmission_p = EnsembleTransmissionParameters(R₀, sigma, gamma)
+transmission_p = EnsembleTransmissionParameters(R_0, sigma, gamma)
 tmin = 0.0
 tmax = 365.0 * 100
 tstep = 1.0
