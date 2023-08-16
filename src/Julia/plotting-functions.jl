@@ -111,7 +111,7 @@ end
 
 function create_sir_quantiles_plot(
     sim_quantiles = sim_quantiles;
-    δt = δt,
+    tstep = tstep,
     colors = ["dodgerblue4", "firebrick3", "chocolate2", "purple"],
     labels = ["S", "I", "R", "N"],
     annual = false,
@@ -124,7 +124,7 @@ function create_sir_quantiles_plot(
     upper_index = 3
 
     return sir_quantiles_array_base_plot(
-        sim_quantiles, lower_index, med_index, upper_index, δt,
+        sim_quantiles, lower_index, med_index, upper_index, tstep,
         colors,
         labels,
         annual;

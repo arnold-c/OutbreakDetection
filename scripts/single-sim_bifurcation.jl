@@ -31,7 +31,7 @@ prog = Progress(n_mus)
 
     params = (beta_mean, beta_force, sigma, gamma, mu_run, epsilon, R_0)
     seir_mod!(seir, change, jump,
-        init_states, params, trange; dt = τ, type = "det",
+        init_states, params, trange; tstep = tstep, type = "det",
     )
     next!(prog)
 end
@@ -90,7 +90,7 @@ epsilon = 1.06 * mu * (R_0 - 1) / sqrt(N)
 
     local p = (beta_mean, beta_force, sigma, gamma, mu, epsilon, R_0)
 
-    seir_mod!(seir, change, jump, init_states, p, trange; dt = τ, type = "det")
+    seir_mod!(seir, change, jump, init_states, p, trange; tstep = tstep, type = "det")
 end
 
 years = (40 * 365):365:(tlength - 365)
@@ -145,7 +145,7 @@ prog = Progress(length(mu_vec) * length(beta_force_vec))
 
     params = (beta_mean, beta_force, sigma, gamma, mu, epsilon, R_0)
 
-    seir_mod!(seir, change, jump, init_states, params, trange; dt = τ, type = "det")
+    seir_mod!(seir, change, jump, init_states, params, trange; tstep = tstep, type = "det")
     next!(prog)
 end
 

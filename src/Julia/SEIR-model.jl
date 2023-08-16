@@ -35,7 +35,7 @@ seir_array, change_array, jump_array, beta_arr = seir_mod(
 """
 function seir_mod(u, p, trange; retbetaarr = false, type = "stoch", seed = 1234)
     tlength = length(trange)
-    dt = step(trange)
+    tstep = step(trange)
 
     state_arr = zeros(Float64, size(u, 1), tlength)
 
@@ -46,13 +46,13 @@ function seir_mod(u, p, trange; retbetaarr = false, type = "stoch", seed = 1234)
     if retbetaarr == true
         beta_arr = zeros(Float64, tlength)
         seir_mod!(
-            state_arr, change_arr, jump_arr, beta_arr, u, p, trange; dt = dt,
+            state_arr, change_arr, jump_arr, beta_arr, u, p, trange; tstep = tstep,
             type = type, seed = seed,
         )
         return state_arr, change_arr, jump_arr, beta_arr
     else
         seir_mod!(
-            state_arr, change_arr, jump_arr, u, p, trange; dt = dt, type = type,
+            state_arr, change_arr, jump_arr, u, p, trange; tstep = tstep, type = type,
             seed = seed,
         )
         return state_arr, change_arr, jump_arr
@@ -60,12 +60,12 @@ function seir_mod(u, p, trange; retbetaarr = false, type = "stoch", seed = 1234)
 end
 
 """
-    seir_mod!(state_arr, change_arr, jump_arr, u, p, trange; dt, type = "stoch")
+    seir_mod!(state_arr, change_arr, jump_arr, u, p, trange; tstep, type = "stoch")
 
 The in-place function to run the SEIR model, without producing the transmission rate array.
 """
 function seir_mod!(
-    state_arr, change_arr, jump_arr, u, p, trange; dt, type = "stoch",
+    state_arr, change_arr, jump_arr, u, p, trange; tstep, type = "stoch",
     seed = 1234,
 )
     for (j, t) in pairs(trange)
@@ -84,12 +84,12 @@ function seir_mod!(
 end
 
 """
-    seir_mod!(state_arr, change_arr, jump_arr, beta_arr, u, p, trange; dt, type = "stoch")
+    seir_mod!(state_arr, change_arr, jump_arr, beta_arr, u, p, trange; tstep, type = "stoch")
 
 The in-place function to run the SEIR model and produce the transmission rate array.
 """
 function seir_mod!(
-    state_arr, change_arr, jump_arr, beta_arr, u, p, trange; dt, type = "stoch",
+    state_arr, change_arr, jump_arr, beta_arr, u, p, trange; tstep, type = "stoch",
     seed = 1234,
 )
     beta_mean, beta_force = p
@@ -157,7 +157,7 @@ function seir_mod_loop!(
         )
     elseif type == "det"
         jump_arr[:, j] = map(
-            r -> r * dt,
+            r -> r * tstep,
             rates,
         )
     else

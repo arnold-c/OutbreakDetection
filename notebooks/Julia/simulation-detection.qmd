@@ -38,9 +38,9 @@ set_aog_theme!()
 
 ```{julia}
 tmax = 10.0
-δt = 0.1/365
+tstep = 0.1/365
 tspan = (0.0, tmax)
-tlength = length(tspan[1]:δt:tspan[2])
+tlength = length(tspan[1]:tstep:tspan[2])
 Random.seed!(1234);
 
 init_states = [999.0, 10.0, 0.0, 0.0]
@@ -195,7 +195,7 @@ function run_sir_sim(; init_states, tspan, p)
         prob, Coevolve(), gillespie_jumps..., save_positions = (false, false);
         dep_graph
         )
-    jump_sol = solve(jump_prob, SSAStepper(), saveat = δt)
+    jump_sol = solve(jump_prob, SSAStepper(), saveat = tstep)
     return jump_sol;
 end
 ```

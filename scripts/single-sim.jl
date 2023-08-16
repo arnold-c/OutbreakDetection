@@ -33,13 +33,13 @@ beta_mean = calculate_beta(R_0, gamma, mu, 1, N)
 # Adjust the scale of the seasonal variation in infectivity i.e. beta_force scales the amplitude of cosine function
 beta_force = 0.2
 epsilon = (1.06 * mu * (R_0 - 1)) / sqrt(N) # Commuter imports - see p210 Keeling & Rohani
-p = (beta_mean, beta_force, sigma, gamma, mu, epsilon, R_0)
+singlesim_p = (beta_mean, beta_force, sigma, gamma, mu, epsilon, R_0)
 
 Random.seed!(1234)
 
 #%%
 seir_array, change_array, jump_array, beta_arr = seir_mod(
-    init_states, p, trange; retbetaarr = true, type = "stoch"
+    init_states, singlesim_p, trange; retbetaarr = true, type = "stoch"
 );
 
 seir_df = create_sir_df(

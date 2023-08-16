@@ -25,14 +25,14 @@ function run_ensemble_jump_prob(params_dict; prog = prog)
                 "births_per_k_$(p[:births_per_k])",
                 "beta_force_$(p[:beta_force])",
                 "tmax_$(p[:tmax])",
-                "deltat_$(p[:dt])",
+                "tstep_$(p[:tstep])",
             );
             prefix = "SEIR_tau_sol",
             filename = savename(
                 p;
                 allowedtypes = (Symbol, Dict, String, Real),
                 accesses = [
-                    :N, :init_states_prop, :nsims, :tmax, :dt, :births_per_k, :beta_force
+                    :N, :init_states_prop, :nsims, :tmax, :tstep, :births_per_k, :beta_force
                 ],
                 expand = ["init_states_prop"],
                 sort = false,
@@ -47,7 +47,7 @@ end
     run_jump_prob(param_dict)
 """
 function run_jump_prob(param_dict)
-    @unpack N, init_states_prop, transmission_p, time_p, nsims, dt, beta_force,
+    @unpack N, init_states_prop, transmission_p, time_p, nsims, tstep, beta_force,
     births_per_k, seed = param_dict
     @unpack s, e, i, r = init_states_prop
     @unpack R_0, sigma, gamma = transmission_p
@@ -71,7 +71,7 @@ function run_jump_prob(param_dict)
         @views change = ensemble_change_arr[:, :, k]
         @views jump = ensemble_jump_arr[:, :, k]
 
-        seir_mod!(seir, change, jump, init_states, p, trange; dt = tstep, seed = seed)
+        seir_mod!(seir, change, jump, init_states, p, trange; tstep = tstep, seed = seed)
     end
 
     return @strdict ensemble_seir_arr ensemble_change_arr ensemble_jump_arr init_states_dict param_dict
@@ -91,14 +91,14 @@ function summarize_ensemble_jump_prob(params_dict; prog = prog)
                 "births_per_k_$(p[:births_per_k])",
                 "beta_force_$(p[:beta_force])",
                 "tmax_$(p[:tmax])",
-                "deltat_$(p[:dt])",
+                "tstep_$(p[:tstep])",
             ),
             prefix = "SEIR_tau_quants";
             filename = savename(
                 p;
                 allowedtypes = (Symbol, Dict, String, Real),
                 accesses = [
-                    :N, :init_states_prop, :nsims, :tmax, :dt, :births_per_k, :beta_force,
+                    :N, :init_states_prop, :nsims, :tmax, :tstep, :births_per_k, :beta_force,
                     :quantiles,
                 ],
                 expand = ["init_states_prop"],
@@ -114,7 +114,7 @@ end
     jump_prob_summary(param_dict)
 """
 function jump_prob_summary(param_dict)
-    @unpack N, init_states_prop, nsims, dt, tmax, beta_force, births_per_k, quantiles =
+    @unpack N, init_states_prop, nsims, tstep, tmax, beta_force, births_per_k, quantiles =
         param_dict
     @unpack s, e, i, r = init_states_prop
 
@@ -123,7 +123,7 @@ function jump_prob_summary(param_dict)
         param_dict,
         "jld2";
         allowedtypes = (Symbol, Dict, String, Real),
-        accesses = [:N, :init_states_prop, :nsims, :tmax, :dt, :births_per_k, :beta_force],
+        accesses = [:N, :init_states_prop, :nsims, :tmax, :tstep, :births_per_k, :beta_force],
         expand = ["init_states_prop"],
         sort = false,
     )
@@ -137,7 +137,7 @@ function jump_prob_summary(param_dict)
             "births_per_k_$births_per_k",
             "beta_force_$beta_force",
             "tmax_$tmax",
-            "deltat_$dt",
+            "tstep_$dt",
         ),
         sim_name,
     )
@@ -157,7 +157,7 @@ function jump_prob_summary(param_dict)
         ensemble_seir_arr; quantiles = qs
     )
 
-    caption = "nsims = $nsims, N = $N, S = $S, I = $I, R = $R, beta_force = $beta_force,\nbirths per k/annum = $births_per_k dt = $dt, quantile int = $quantiles"
+    caption = "nsims = $nsims, N = $N, S = $S, I = $I, R = $R, beta_force = $beta_force,\nbirths per k/annum = $births_per_k tstep = $tstep, quantile int = $quantiles"
 
     return @strdict ensemble_seir_summary caption init_states_dict param_dict
 end
@@ -195,7 +195,7 @@ function get_ensemble_file_dir(spec)
         "births_per_k_$(spec.births_per_k)",
         "beta_force_$(spec.beta_force)",
         "tmax_$(spec.time_parameters.tmax)",
-        "deltat_$(spec.time_parameters.tstep)",
+        "tstep_$(spec.time_parameters.tstep)",
     )
     return datadir(dirpath)
 end

@@ -88,9 +88,9 @@ function create_sir_sim_array!(; jump_sol)
     return nothing
 end
 
-function create_sir_all_sims_array!(; nsims, prob, alg, δt)
+function create_sir_all_sims_array!(; nsims, prob, alg, tstep)
     for i in 1:nsims
-        jump_sol = solve(prob, alg; saveat = δt)
+        jump_sol = solve(prob, alg; saveat = tstep)
         create_sir_sim_array!(; jump_sol = jump_sol)
 
         all_sims_array[:, :, i] = sir_array

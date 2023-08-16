@@ -34,7 +34,7 @@ includet(funsdir("SEIR-model.jl"))
 
 create_sir_quantiles_plot(
     ensemble_seir_summary; labels = state_labels, colors = seircolors,
-    annual = true, caption = caption, δt = param_dict[:dt], xlims = (80, 100),
+    annual = true, caption = caption, tstep = param_dict[:tstep], xlims = (80, 100),
     ylims = (0, 1_000),
 )
 
@@ -126,7 +126,7 @@ above5ax_periodsum = Axis(
 
 linkxaxes!(above5ax_prev, above5ax_inc, above5ax_periodsum)
 
-times = collect(0:param_dict[:dt]:tmax) ./ 365
+times = collect(0:param_dict[:tstep]:tmax) ./ 365
 
 lines!(above5ax_prev, times, ensemble_seir_arr[2, :, 1])
 lines!(above5ax_inc, times, inc_infec_arr[:, 1, 1])
@@ -179,7 +179,7 @@ init_noise = [10.0]
 tspan = (tlower, tmax)
 noise_prob = SDEProblem(background_ode!, background_noise!, init_noise, tspan, p)
 noise_sol = solve(
-    noise_prob, SRIW1(); callback = sde_cb, dt = param_dict[:dt],
+    noise_prob, SRIW1(); callback = sde_cb, tstep = param_dict[:tstep],
     adaptive = false,
 )
 noise_df = rename(DataFrame(noise_sol), [:time, :noise])
@@ -202,7 +202,7 @@ noise_arr = zeros(
     )
 
     noise_sol = solve(
-        noise_prob, SRIW1(); callback = sde_cb, dt = param_dict[:dt],
+        noise_prob, SRIW1(); callback = sde_cb, tstep = param_dict[:tstep],
         adaptive = false,
     )
 
