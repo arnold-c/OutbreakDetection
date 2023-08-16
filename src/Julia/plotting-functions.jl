@@ -8,7 +8,7 @@ WGLMakie.activate!()
 #= CairoMakie.activate!(type = "pdf") =#
 set_aog_theme!()
 # Set depending on size of screen
-update_theme!(; resolution = (1300, 900))
+update_theme!(; resolution = (1_300, 900))
 
 seircolors = ["dodgerblue4", "green", "firebrick3", "chocolate2", "purple"]
 seir_state_labels = ["S", "E", "I", "R", "N"]

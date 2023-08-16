@@ -13,7 +13,7 @@ mu_max = 100
 mu_step = 2.0
 n_mus = length(mu_min:mu_step:mu_max)
 mu_vec = zeros(Float64, n_mus)
-mu_vec .= collect(mu_min:mu_step:mu_max) ./ (1000 * 365)
+mu_vec .= collect(mu_min:mu_step:mu_max) ./ (1_000 * 365)
 
 epsilon_vec = (1.06 .* mu_vec .* (R_0 - 1)) ./ sqrt(N)
 
@@ -53,7 +53,7 @@ bifurc_mu_seir_arr[2, (40 * 365):(40 * 365 + 364), 10]
 #%%
 bifurc_mu_fig = Figure()
 bifurc_mu_ax = Axis(
-    bifurc_mu_fig[1, 1]; xlabel = "mu (per 1000, per annum)", ylabel = "Max. I"
+    bifurc_mu_fig[1, 1]; xlabel = "mu (per 1_000, per annum)", ylabel = "Max. I"
 )
 
 for year in eachindex(years)
@@ -80,7 +80,7 @@ bifurc_beta_force_seir_arr = zeros(Float64, size(u₀, 1), tlength, n_beta_force
 bifurc_beta_force_change_arr = zeros(Float64, size(u₀, 1), tlength, n_beta_forces);
 bifurc_beta_force_jump_arr = zeros(Float64, 9, tlength, n_beta_forces);
 
-mu = 50 / (1000 * 365)
+mu = 50 / (1_000 * 365)
 epsilon = 1.06 * mu * (R_0 - 1) / sqrt(N)
 
 @showprogress for (k, beta_force) in pairs(beta_force_vec)
@@ -180,11 +180,11 @@ end
 #%%
 # Because Julia is column-major, we need to transpose the heatmap as it reads the data one column at a time, and in our original matrix, each column represents a different beta_force value.
 bifurc_mu_beta_force_fig, bifurc_mu_beta_force_ax, bifurc_mu_beta_force_hm = heatmap(
-    mu_vec .* (1000 * 365), beta_force_vec, bifurc_mu_beta_force_cycle_summary[:, :, 2]'
+    mu_vec .* (1_000 * 365), beta_force_vec, bifurc_mu_beta_force_cycle_summary[:, :, 2]'
 )
 Colorbar(bifurc_mu_beta_force_fig[:, end + 1], bifurc_mu_beta_force_hm)
 
-bifurc_mu_beta_force_ax.xlabel = "mu (per 1000, per annum)"
+bifurc_mu_beta_force_ax.xlabel = "mu (per 1_000, per annum)"
 bifurc_mu_beta_force_ax.ylabel = "beta_force (seasonality)"
 
 bifurc_mu_beta_force_fig

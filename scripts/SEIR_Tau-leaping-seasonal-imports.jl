@@ -35,7 +35,7 @@ includet(funsdir("SEIR-model.jl"))
 create_sir_quantiles_plot(
     ensemble_seir_summary; labels = state_labels, colors = seircolors,
     annual = true, caption = caption, δt = param_dict[:dt], xlims = (80, 100),
-    ylims = (0, 1000),
+    ylims = (0, 1_000),
 )
 
 #%%
@@ -144,7 +144,7 @@ map(
     ax -> xlims!(ax, (92, 94)),
     [above5ax_prev, above5ax_inc, above5ax_periodsum],
 )
-ylims!(above5ax_periodsum, (0, 10000))
+ylims!(above5ax_periodsum, (0, 10_000))
 ylims!(above5ax_inc, (0, 300))
 
 axislegend(

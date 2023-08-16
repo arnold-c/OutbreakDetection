@@ -9,7 +9,7 @@ includet(funsdir("ensemble-functions.jl"))
 
 #%%
 N_vec = convert.(Int64, [5e5])
-nsims_vec = [1000]
+nsims_vec = [1_000]
 u₀_prop_map = [
     Dict(:s => 0.1, :e => 0.01, :i => 0.01, :r => 0.88)
 ]
@@ -72,9 +72,9 @@ summarize_ensemble_jump_prob(summ_param_dict; prog = prog)
 #%%
 ensemble_spec = EnsembleSpecification(
     ("seasonal-infectivity-import", "tau-leaping"),
-    500000,
+    500_000,
     0.88,
-    1000,
+    1_000,
     20,
     0.2,
     ensemble_time_p,

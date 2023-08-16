@@ -56,7 +56,7 @@ function run_jump_prob(param_dict)
     u₀ = convert.(Int64, [s * N, e * N, i * N, r * N, N])
     u0_dict = Dict(zip([:S, :E, :I, :R, :N], u₀))
 
-    mu = births_per_k / (1000 * 365)
+    mu = births_per_k / (1_000 * 365)
     beta_mean = calculate_beta(R_0, gamma, mu, 1, N)
     epsilon = (1.06 * mu * (R_0 - 1)) / sqrt(N) # Commuter imports - see p210 Keeling & Rohani
 

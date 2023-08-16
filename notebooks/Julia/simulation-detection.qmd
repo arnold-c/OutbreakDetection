@@ -46,7 +46,7 @@ Random.seed!(1234);
 u₀ = [999.0, 10.0, 0.0, 0.0]
 
 mu = 1
-beta = 1000
+beta = 1_000
 sigma = 365/8
 gamma = 365/5
 epsilon = 100

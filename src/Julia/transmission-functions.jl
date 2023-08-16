@@ -12,7 +12,7 @@ using FLoops
 Calculate the value beta for a given set of parameters and contact matrix.
 
 ```jldoctest
-julia> calculate_beta(2.0, 1 / 8, 0.0, ones(1, 1), [1000])
+julia> calculate_beta(2.0, 1 / 8, 0.0, ones(1, 1), [1_000])
 0.00025
 ```
 
@@ -100,7 +100,7 @@ end
 Calculate the basic reproduction number R_0 for a given set of parameters and contact matrix.
 
 ```jldoctest
-julia> calculateR0(0.00025, 1 / 8, 0.0, ones(1, 1), [1000])
+julia> calculateR0(0.00025, 1 / 8, 0.0, ones(1, 1), [1_000])
 2.0
 ```
 

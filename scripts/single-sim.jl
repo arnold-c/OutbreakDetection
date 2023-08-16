@@ -14,7 +14,7 @@ includet(funsdir("SEIR-model.jl"))
 includet(funsdir("structs.jl"))
 
 #%%
-N = 5e5
+N = 500_000
 s = 0.1
 e = 0.01
 i = 0.01
