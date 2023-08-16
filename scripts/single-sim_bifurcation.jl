@@ -15,7 +15,7 @@ n_mus = length(mu_min:mu_step:mu_max)
 mu_vec = zeros(Float64, n_mus)
 mu_vec .= collect(mu_min:mu_step:mu_max) ./ (1000 * 365)
 
-ε_vec = (1.06 .* mu_vec .* (R₀ - 1)) ./ sqrt(N)
+epsilon_vec = (1.06 .* mu_vec .* (R₀ - 1)) ./ sqrt(N)
 
 bifurc_mu_seir_arr = zeros(Float64, size(u₀, 1), tlength, n_mus);
 bifurc_mu_change_arr = zeros(Float64, size(u₀, 1), tlength, n_mus);
@@ -23,13 +23,13 @@ bifurc_mu_jump_arr = zeros(Float64, 9, tlength, n_mus);
 
 prog = Progress(n_mus)
 @floop for (k, mu_run) in pairs(mu_vec)
-    ε = ε_vec[k]
+    epsilon = epsilon_vec[k]
 
     seir = @view bifurc_mu_seir_arr[:, :, k]
     change = @view bifurc_mu_change_arr[:, :, k]
     jump = @view bifurc_mu_jump_arr[:, :, k]
 
-    params = (beta_mean, beta_force, sigma, gamma, mu_run, ε, R₀)
+    params = (beta_mean, beta_force, sigma, gamma, mu_run, epsilon, R₀)
     seir_mod!(seir, change, jump,
         u₀, params, trange; dt = τ, type = "det",
     )
@@ -81,14 +81,14 @@ bifurc_beta_force_change_arr = zeros(Float64, size(u₀, 1), tlength, n_beta_for
 bifurc_beta_force_jump_arr = zeros(Float64, 9, tlength, n_beta_forces);
 
 mu = 50 / (1000 * 365)
-ε = 1.06 * mu * (R₀ - 1) / sqrt(N)
+epsilon = 1.06 * mu * (R₀ - 1) / sqrt(N)
 
 @showprogress for (k, beta_force) in pairs(beta_force_vec)
     seir = @view bifurc_beta_force_seir_arr[:, :, k]
     change = @view bifurc_beta_force_change_arr[:, :, k]
     jump = @view bifurc_beta_force_jump_arr[:, :, k]
 
-    local p = (beta_mean, beta_force, sigma, gamma, mu, ε, R₀)
+    local p = (beta_mean, beta_force, sigma, gamma, mu, epsilon, R₀)
 
     seir_mod!(seir, change, jump, u₀, p, trange; dt = τ, type = "det")
 end
@@ -137,13 +137,13 @@ prog = Progress(length(mu_vec) * length(beta_force_vec))
     mu = mu_pair[2]
     l = beta_force_pair[1]
     beta_force = beta_force_pair[2]
-    ε = ε_vec[k]
+    epsilon = epsilon_vec[k]
 
     seir = @view bifurc_mu_beta_force_seir_arr[:, :, k, l]
     change = @view bifurc_mu_beta_force_change_arr[:, :, k, l]
     jump = @view bifurc_mu_beta_force_jump_arr[:, :, k, l]
 
-    params = (beta_mean, beta_force, sigma, gamma, mu, ε, R₀)
+    params = (beta_mean, beta_force, sigma, gamma, mu, epsilon, R₀)
 
     seir_mod!(seir, change, jump, u₀, params, trange; dt = τ, type = "det")
     next!(prog)

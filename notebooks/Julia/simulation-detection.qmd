@@ -49,8 +49,8 @@ mu = 1
 beta = 1000
 sigma = 365/8
 gamma = 365/5
-ε = 100
-p = (beta, sigma, gamma, mu, ε)
+epsilon = 100
+p = (beta, sigma, gamma, mu, epsilon)
 ```
 
 ```{julia}

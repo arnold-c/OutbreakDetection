@@ -129,7 +129,7 @@ function seir_mod_loop!(
     N = state_arr[5, j - 1]
 
     # Unpack the parameters for easier use
-    beta_mean, beta_force, sigma, gamma, mu, ε, R₀ = p
+    beta_mean, beta_force, sigma, gamma, mu, epsilon, R₀ = p
     beta_t = calculate_beta_amp(beta_mean, beta_force, t)
 
     # Calculate the rates of each event
@@ -141,7 +141,7 @@ function seir_mod_loop!(
     E_death_rate = mu * E            # 6
     I_death_rate = mu * I            # 7
     R_death_rate = mu * R            # 8
-    import_rate = ε * N / R₀        # 9
+    import_rate = epsilon * N / R₀        # 9
 
     rates = [
         infec_rate, latent_rate, recov_rate, birth_rate, S_death_rate,

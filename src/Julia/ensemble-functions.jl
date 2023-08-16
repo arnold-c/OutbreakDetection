@@ -58,9 +58,9 @@ function run_jump_prob(param_dict)
 
     mu = births_per_k / (1000 * 365)
     beta_mean = calculate_beta(R₀, gamma, mu, 1, N)
-    ε = (1.06 * mu * (R₀ - 1)) / sqrt(N) # Commuter imports - see p210 Keeling & Rohani
+    epsilon = (1.06 * mu * (R₀ - 1)) / sqrt(N) # Commuter imports - see p210 Keeling & Rohani
 
-    p = (beta_mean, beta_force, sigma, gamma, mu, ε, R₀)
+    p = (beta_mean, beta_force, sigma, gamma, mu, epsilon, R₀)
 
     ensemble_seir_arr = zeros(Int64, size(u₀, 1), tlength, nsims)
     ensemble_change_arr = zeros(Int64, size(u₀, 1), tlength, nsims)

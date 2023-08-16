@@ -32,8 +32,8 @@ mu = 1 / (62.5 * 365)
 beta_mean = calculate_beta(R₀, gamma, mu, 1, N)
 # Adjust the scale of the seasonal variation in infectivity i.e. beta_force scales the amplitude of cosine function
 beta_force = 0.2
-ε = (1.06 * mu * (R₀ - 1)) / sqrt(N) # Commuter imports - see p210 Keeling & Rohani
-p = (beta_mean, beta_force, sigma, gamma, mu, ε, R₀)
+epsilon = (1.06 * mu * (R₀ - 1)) / sqrt(N) # Commuter imports - see p210 Keeling & Rohani
+p = (beta_mean, beta_force, sigma, gamma, mu, epsilon, R₀)
 
 Random.seed!(1234)
 
