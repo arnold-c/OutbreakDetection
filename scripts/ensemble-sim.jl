@@ -33,7 +33,7 @@ transmission_p = EnsembleTransmissionParameters(R₀, σ, γ)
 tmin = 0.0
 tmax = 365.0 * 100
 tstep = 1.0
-time_p = EnsembleTimeParameters(tmin, tmax, tstep)
+ensemble_time_p = EnsembleTimeParameters(tmin, tmax, tstep)
 
 base_param_dict = @dict(
     N = N_vec,
@@ -77,7 +77,7 @@ ensemble_spec = EnsembleSpecification(
     1000,
     20,
     0.2,
-    time_p
+    ensemble_time_p,
 )
 
 
@@ -89,3 +89,5 @@ ensemble_quants = get_ensemble_file(
     "95", ensemble_spec
 )
 
+@unpack ensemble_seir_arr, ensemble_jump_arr, ensemble_change_arr = ensemble_sol
+@unpack ensemble_seir_summary, caption, param_dict = ensemble_quants
