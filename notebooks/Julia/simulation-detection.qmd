@@ -48,9 +48,9 @@ u₀ = [999.0, 10.0, 0.0, 0.0]
 μ = 1
 beta = 1000
 sigma = 365/8
-γ = 365/5
+gamma = 365/5
 ε = 100
-p = (beta, sigma, γ, μ, ε)
+p = (beta, sigma, gamma, μ, ε)
 ```
 
 ```{julia}
@@ -97,7 +97,7 @@ function infec_affect!(integrator)
 end
 infec_jump = ConstantRateJump(infec_rate, infec_affect!)
 
-recov_rate(u, p, t) = p[3] * u[3]   # γ * I
+recov_rate(u, p, t) = p[3] * u[3]   # gamma * I
 function recov_affect!(integrator)
     integrator.u[3] -= 1         # I -> I - 1
     integrator.u[4] += 1         # R -> R + 1

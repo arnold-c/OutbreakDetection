@@ -1,7 +1,7 @@
 struct EnsembleTransmissionParameters
     R₀::Float64
     sigma::Float64
-    γ::Float64
+    gamma::Float64
 end
 
 struct SimTimeParameters
