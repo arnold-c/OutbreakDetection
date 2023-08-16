@@ -29,7 +29,7 @@ prog = Progress(n_μs)
     change = @view bifurc_μ_change_arr[:, :, k]
     jump = @view bifurc_μ_jump_arr[:, :, k]
 
-    params = (beta_mean, beta_force, σ, γ, μ_run, ε, R₀)
+    params = (beta_mean, beta_force, sigma, γ, μ_run, ε, R₀)
     seir_mod!(seir, change, jump,
         u₀, params, trange; dt = τ, type = "det",
     )
@@ -88,7 +88,7 @@ bifurc_beta_force_jump_arr = zeros(Float64, 9, tlength, n_beta_forces);
     change = @view bifurc_beta_force_change_arr[:, :, k]
     jump = @view bifurc_beta_force_jump_arr[:, :, k]
 
-    local p = (beta_mean, beta_force, σ, γ, μ, ε, R₀)
+    local p = (beta_mean, beta_force, sigma, γ, μ, ε, R₀)
 
     seir_mod!(seir, change, jump, u₀, p, trange; dt = τ, type = "det")
 end
@@ -143,7 +143,7 @@ prog = Progress(length(μ_vec) * length(beta_force_vec))
     change = @view bifurc_μ_beta_force_change_arr[:, :, k, l]
     jump = @view bifurc_μ_beta_force_jump_arr[:, :, k, l]
 
-    params = (beta_mean, beta_force, σ, γ, μ, ε, R₀)
+    params = (beta_mean, beta_force, sigma, γ, μ, ε, R₀)
 
     seir_mod!(seir, change, jump, u₀, params, trange; dt = τ, type = "det")
     next!(prog)

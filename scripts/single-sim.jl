@@ -25,7 +25,7 @@ singlesim_time_p = SimTimeParameters(0.0, 365.0 * 100, 1.0)
 latent_per = 8
 dur_inf = 5
 R₀ = 10.0
-σ = 1 / latent_per
+sigma = 1 / latent_per
 γ = 1 / dur_inf
 μ = 1 / (62.5 * 365)
 # beta_mean is the average transmission rate
@@ -33,7 +33,7 @@ beta_mean = calculate_beta(R₀, γ, μ, 1, N)
 # Adjust the scale of the seasonal variation in infectivity i.e. beta_force scales the amplitude of cosine function
 beta_force = 0.2
 ε = (1.06 * μ * (R₀ - 1)) / sqrt(N) # Commuter imports - see p210 Keeling & Rohani
-p = (beta_mean, beta_force, σ, γ, μ, ε, R₀)
+p = (beta_mean, beta_force, sigma, γ, μ, ε, R₀)
 
 Random.seed!(1234)
 

@@ -47,10 +47,10 @@ u₀ = [999.0, 10.0, 0.0, 0.0]
 
 μ = 1
 beta = 1000
-σ = 365/8
+sigma = 365/8
 γ = 365/5
 ε = 100
-p = (beta, σ, γ, μ, ε)
+p = (beta, sigma, γ, μ, ε)
 ```
 
 ```{julia}
@@ -89,7 +89,7 @@ expose_jump = VariableRateJump(expose_rate, expose_affect!; lrate, urate, ratein
 # end
 # import_expose_jump = ConstantRateJump(import_expose_rate, import_expose_affect!)
 
-infec_rate(u, p, t) = p[2] * u[2]   # σ * E
+infec_rate(u, p, t) = p[2] * u[2]   # sigma * E
 function infec_affect!(integrator)
     integrator.u[2] -= 1         # E -> E - 1
     integrator.u[3] += 1         # I -> I + 1
