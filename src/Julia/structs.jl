@@ -5,16 +5,15 @@ struct EnsembleTransmissionParameters
 end
 
 struct SimTimeParameters
-    tlower
+    tmin
     tmax
     tstep
     trange
     tlength
-    # Use an inner constructor to calculate the trange and tlength, and ensure
-    # that the struct pointer can be redefined below without rewriting a const method
-    function SimTimeParameters(tmin, tmax, tstep)
-        return new(tmin, tmax, tstep, tmin:tstep:tmax, length(tmin:tstep:tmax))
-    end
+end
+
+function SimTimeParameters(; tmin, tmax, tstep)
+    return SimTimeParameters(tmin, tmax, tstep, tmin:tstep:tmax, length(tmin:tstep:tmax))
 end
 
 struct EnsembleSpecification
@@ -27,3 +26,14 @@ struct EnsembleSpecification
     time_parameters::SimTimeParameters
 end
 
+@kwdef struct DynamicsParameters1
+    beta_mean::Float64
+    beta_force::Float64 = 0.2
+    sigma::Float64 = 0.125
+    gamma::Float64 = 0.2
+    mu::Float64 = 4.38e-5
+    epsilon::Float64 = 5.91e-7
+    R_0::Float64 = 10.0
+end
+
+DynamicsParameters = DynamicsParameters1

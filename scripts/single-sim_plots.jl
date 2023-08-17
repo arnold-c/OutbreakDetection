@@ -3,6 +3,7 @@ using DrWatson
 @quickactivate "OutbreakDetection"
 
 includet(scriptsdir("single-sim.jl"))
+@unpack trange = singlesim_time_p;
 
 #%%
 draw_sir_plot(
