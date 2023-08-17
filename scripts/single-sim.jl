@@ -15,11 +15,15 @@ includet(funsdir("structs.jl"))
 
 #%%
 N = 500_000
-s = 0.1
-e = 0.01
-i = 0.01
-r = 1.0 - (s + e + i)
-init_states = convert.(Int64, [N * s, N * e, N * i, N * r, N])
+s_init_prop = 0.1
+e_init_prop = 0.01
+i_init_prop = 0.01
+r_init_prop = 1.0 - (s_init_prop + e_init_prop + i)
+init_states =
+    convert.(
+        Int64,
+        [N * s_init_prop, N * e_init_prop, N * i_init_prop, N * r_init_prop, N],
+    )
 singlesim_time_p = SimTimeParameters(0.0, 365.0 * 100, 1.0)
 
 latent_per = 8

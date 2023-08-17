@@ -11,7 +11,12 @@ includet(funsdir("ensemble-functions.jl"))
 N_vec = convert.(Int64, [5e5])
 nsims_vec = [1_000]
 init_states_prop_map = [
-    Dict(:s => 0.1, :e => 0.01, :i => 0.01, :r => 0.88)
+    Dict(
+        :s_init_prop => 0.1,
+        :e_init_prop => 0.01,
+        :i_init_prop => 0.01,
+        :r_init_prop => 0.88,
+    ),
 ]
 dt_vec = [1.0]
 tmax_vec = [365.0 * 100]
@@ -79,7 +84,6 @@ ensemble_spec = EnsembleSpecification(
     0.2,
     ensemble_time_p,
 )
-
 
 ensemble_sol = get_ensemble_file(
     "sol", ensemble_spec

@@ -32,7 +32,8 @@ function run_ensemble_jump_prob(params_dict; prog = prog)
                 p;
                 allowedtypes = (Symbol, Dict, String, Real),
                 accesses = [
-                    :N, :init_states_prop, :nsims, :tmax, :tstep, :births_per_k, :beta_force
+                    :N, :init_states_prop, :nsims, :tmax, :tstep, :births_per_k,
+                    :beta_force,
                 ],
                 expand = ["init_states_prop"],
                 sort = false,
@@ -47,13 +48,25 @@ end
     run_jump_prob(param_dict)
 """
 function run_jump_prob(param_dict)
-    @unpack N, init_states_prop, transmission_p, time_p, nsims, tstep, beta_force,
+    @unpack N, init_states_prop, transmission_p, time_p, nsims, tstep,
+    beta_force,
     births_per_k, seed = param_dict
-    @unpack s, e, i, r = init_states_prop
+    @unpack s_init_prop, e_init_prop, i_init_prop, r_init_prop =
+        init_states_prop
     @unpack R_0, sigma, gamma = transmission_p
     @unpack tstep, tlength, trange = time_p
 
-    init_states = convert.(Int64, [s * N, e * N, i * N, r * N, N])
+    init_states =
+        convert.(
+            Int64,
+            [
+                s_init_prop * N,
+                e_init_prop * N,
+                i_init_prop * N,
+                r_init_prop * N,
+                N,
+            ],
+        )
     init_states_dict = Dict(zip([:S, :E, :I, :R, :N], init_states))
 
     mu = births_per_k / (1_000 * 365)
@@ -71,7 +84,16 @@ function run_jump_prob(param_dict)
         @views change = ensemble_change_arr[:, :, k]
         @views jump = ensemble_jump_arr[:, :, k]
 
-        seir_mod!(seir, change, jump, init_states, p, trange; tstep = tstep, seed = seed)
+        seir_mod!(
+            seir,
+            change,
+            jump,
+            init_states,
+            p,
+            trange;
+            tstep = tstep,
+            seed = seed,
+        )
     end
 
     return @strdict ensemble_seir_arr ensemble_change_arr ensemble_jump_arr init_states_dict param_dict
@@ -98,7 +120,8 @@ function summarize_ensemble_jump_prob(params_dict; prog = prog)
                 p;
                 allowedtypes = (Symbol, Dict, String, Real),
                 accesses = [
-                    :N, :init_states_prop, :nsims, :tmax, :tstep, :births_per_k, :beta_force,
+                    :N, :init_states_prop, :nsims, :tmax, :tstep, :births_per_k,
+                    :beta_force,
                     :quantiles,
                 ],
                 expand = ["init_states_prop"],
@@ -114,16 +137,27 @@ end
     jump_prob_summary(param_dict)
 """
 function jump_prob_summary(param_dict)
-    @unpack N, init_states_prop, nsims, tstep, tmax, beta_force, births_per_k, quantiles =
+    @unpack N,
+    init_states_prop, nsims, tstep, tmax, beta_force, births_per_k,
+    quantiles =
         param_dict
-    @unpack s, e, i, r = init_states_prop
+    @unpack s_init_prop, e_init_prop, i_init_prop, r_init_prop =
+        init_states_prop
 
     sim_name = savename(
         "SEIR_tau_sol",
         param_dict,
         "jld2";
         allowedtypes = (Symbol, Dict, String, Real),
-        accesses = [:N, :init_states_prop, :nsims, :tmax, :tstep, :births_per_k, :beta_force],
+        accesses = [
+            :N,
+            :init_states_prop,
+            :nsims,
+            :tmax,
+            :tstep,
+            :births_per_k,
+            :beta_force,
+        ],
         expand = ["init_states_prop"],
         sort = false,
     )
@@ -144,9 +178,9 @@ function jump_prob_summary(param_dict)
 
     sol_data = load(sim_path)
     @unpack ensemble_seir_arr, init_states_dict = sol_data
-    S = init_states_dict[:S]
-    I = init_states_dict[:I]
-    R = init_states_dict[:R]
+    S_init = init_states_dict[:S]
+    I_init = init_states_dict[:I]
+    R_init = init_states_dict[:R]
 
     qlow = round(0.5 - quantiles / 200; digits = 3)
     qhigh = round(0.5 + quantiles / 200; digits = 3)
@@ -157,7 +191,7 @@ function jump_prob_summary(param_dict)
         ensemble_seir_arr; quantiles = qs
     )
 
-    caption = "nsims = $nsims, N = $N, S = $S, I = $I, R = $R, beta_force = $beta_force,\nbirths per k/annum = $births_per_k tstep = $tstep, quantile int = $quantiles"
+    caption = "nsims = $nsims, N = $N, S = $S_init, I = $I_init, R = $R_init, beta_force = $beta_force,\nbirths per k/annum = $births_per_k tstep = $tstep, quantile int = $quantiles"
 
     return @strdict ensemble_seir_summary caption init_states_dict param_dict
 end

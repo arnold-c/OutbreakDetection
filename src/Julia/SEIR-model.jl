@@ -22,37 +22,39 @@ function calculate_beta_amp(beta_mean, beta_force, t)
 end
 
 """
-    seir_mod(u, p, trange; retbetaarr = false, type = "stoch")
+    seir_mod(states, params, trange; retbetaarr = false, type = "stoch")
 
 A Tau-leaping SEIR model with commuter style importers.
 the model can return an array of transmission rates if `retbetaarr = true`, and can be set to be deterministic or stochastic.
 
 ```julia-repl
 seir_array, change_array, jump_array, beta_arr = seir_mod(
-    init_states, p, trange; retbetaarr = true, type = "stoch"
+    init_states, params, trange; retbetaarr = true, type = "stoch"
 );
 ```
 """
-function seir_mod(u, p, trange; retbetaarr = false, type = "stoch", seed = 1234)
+function seir_mod(states, params, trange; retbetaarr = false, type = "stoch", seed = 1234)
     tlength = length(trange)
     tstep = step(trange)
 
-    state_arr = zeros(Float64, size(u, 1), tlength)
+    state_arr = zeros(Float64, size(states, 1), tlength)
 
-    change_arr = zeros(Float64, size(u, 1), tlength)
+    change_arr = zeros(Float64, size(states, 1), tlength)
 
     jump_arr = zeros(Float64, 9, tlength)
 
     if retbetaarr == true
         beta_arr = zeros(Float64, tlength)
         seir_mod!(
-            state_arr, change_arr, jump_arr, beta_arr, u, p, trange; tstep = tstep,
+            state_arr, change_arr, jump_arr, beta_arr, states, params, trange;
+            tstep = tstep,
             type = type, seed = seed,
         )
         return state_arr, change_arr, jump_arr, beta_arr
     else
         seir_mod!(
-            state_arr, change_arr, jump_arr, u, p, trange; tstep = tstep, type = type,
+            state_arr, change_arr, jump_arr, states, params, trange; tstep = tstep,
+            type = type,
             seed = seed,
         )
         return state_arr, change_arr, jump_arr
@@ -60,22 +62,22 @@ function seir_mod(u, p, trange; retbetaarr = false, type = "stoch", seed = 1234)
 end
 
 """
-    seir_mod!(state_arr, change_arr, jump_arr, u, p, trange; tstep, type = "stoch")
+    seir_mod!(state_arr, change_arr, jump_arr, states, params, trange; tstep, type = "stoch")
 
 The in-place function to run the SEIR model, without producing the transmission rate array.
 """
 function seir_mod!(
-    state_arr, change_arr, jump_arr, u, p, trange; tstep, type = "stoch",
+    state_arr, change_arr, jump_arr, states, params, trange; tstep, type = "stoch",
     seed = 1234,
 )
     for (j, t) in pairs(trange)
         if j == 1
-            state_arr[:, j] = u
+            state_arr[:, j] = states
             continue
         end
 
         seir_mod_loop!(
-            state_arr, change_arr, jump_arr, j, p, t, dt; type = type,
+            state_arr, change_arr, jump_arr, j, params, t, tstep; type = type,
             seed = seed,
         )
     end
@@ -84,28 +86,29 @@ function seir_mod!(
 end
 
 """
-    seir_mod!(state_arr, change_arr, jump_arr, beta_arr, u, p, trange; tstep, type = "stoch")
+    seir_mod!(state_arr, change_arr, jump_arr, beta_arr, states, params, trange; tstep, type = "stoch")
 
 The in-place function to run the SEIR model and produce the transmission rate array.
 """
 function seir_mod!(
-    state_arr, change_arr, jump_arr, beta_arr, u, p, trange; tstep, type = "stoch",
+    state_arr, change_arr, jump_arr, beta_arr, states, params, trange; tstep,
+    type = "stoch",
     seed = 1234,
 )
-    beta_mean, beta_force = p
+    beta_mean, beta_force = params
 
     for (j, t) in pairs(trange)
         beta_t = calculate_beta_amp(beta_mean, beta_force, t)
         beta_arr[j] = beta_t
 
         if j == 1
-            state_arr[:, j] = u
+            state_arr[:, j] = states
 
             continue
         end
 
         seir_mod_loop!(
-            state_arr, change_arr, jump_arr, j, p, t, dt; type = type,
+            state_arr, change_arr, jump_arr, j, params, t, tstep; type = type,
             seed = seed,
         )
     end
@@ -114,12 +117,12 @@ function seir_mod!(
 end
 
 """
-    seir_mod_loop!(state_arr, change_arr, jump_arr, j, p, t, dt; type = type)
+    seir_mod_loop!(state_arr, change_arr, jump_arr, j, params, t, tstep; type = type)
 
 The inner loop that is called by `seir_mod!()` function.
 """
 function seir_mod_loop!(
-    state_arr, change_arr, jump_arr, j, p, t, dt; type = type, seed = 1234
+    state_arr, change_arr, jump_arr, j, params, t, tstep; type = type, seed = 1234
 )
     # Unpack the state variables for easier use
     S = state_arr[1, j - 1]
@@ -129,7 +132,7 @@ function seir_mod_loop!(
     N = state_arr[5, j - 1]
 
     # Unpack the parameters for easier use
-    beta_mean, beta_force, sigma, gamma, mu, epsilon, R_0 = p
+    beta_mean, beta_force, sigma, gamma, mu, epsilon, R_0 = params
     beta_t = calculate_beta_amp(beta_mean, beta_force, t)
 
     # Calculate the rates of each event
@@ -152,7 +155,7 @@ function seir_mod_loop!(
         Random.seed!(seed)
 
         jump_arr[:, j] = map(
-            r -> rand(Poisson(r * dt)),
+            r -> rand(Poisson(r * tstep)),
             rates,
         )
     elseif type == "det"
