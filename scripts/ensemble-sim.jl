@@ -18,15 +18,13 @@ init_states_prop_map = [
         :r_init_prop => 0.88,
     ),
 ]
-dt_vec = [1.0]
+tstep_vec = [1.0]
 tmax_vec = [365.0 * 100]
 beta_force_vec = collect(0.0:0.1:0.4)
-mu_min = 5
-mu_max = 20
-mu_step = 5.0
-n_mus = length(mu_min:mu_step:mu_max)
-mu_vec = zeros(Float64, n_mus)
-mu_vec = convert.(Int64, collect(mu_min:mu_step:mu_max))
+births_per_k_min = 5
+births_per_k_max = 20
+births_per_k_step = 5
+births_per_k_vec = collect(births_per_k_min:births_per_k_step:births_per_k_max)
 seed = 1234
 
 latent_per_days = 8
@@ -46,10 +44,10 @@ base_param_dict = @dict(
     transmission_p = transmission_p,
     time_p = time_p,
     nsims = nsims_vec,
-    tstep = dt_vec,
+    tstep = tstep_vec,
     tmax = tmax_vec,
     beta_force = beta_force_vec,
-    births_per_k = mu_vec,
+    births_per_k = births_per_k_vec,
     seed = seed,
 )
 
