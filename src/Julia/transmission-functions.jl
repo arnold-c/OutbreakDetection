@@ -5,7 +5,6 @@ using DataFrames, DataFramesMeta, LinearAlgebra
 using ModelingToolkit, DifferentialEquations
 using FLoops
 
-
 """
     calculate_beta(R_0, gamma, mu, contact_mat, pop_matrix)
 
@@ -21,7 +20,11 @@ julia> calculate_beta(2.0, 1 / 8, 0.0, ones(1, 1), [1_000])
 function calculate_beta(
     R_0::T, gamma::T, mu::T, contact_mat::Array{T}, pop_matrix::Array{T}
 ) where {T<:AbstractFloat}
-    size(contact_mat, 1) == size(contact_mat, 2) ? nothing : error("contact_mat must be square")
+    if size(contact_mat, 1) == size(contact_mat, 2)
+        nothing
+    else
+        error("contact_mat must be square")
+    end
     if size(contact_mat, 1) == size(pop_matrix, 1)
         nothing
     else
@@ -52,7 +55,11 @@ function calculate_beta(
     ode::S, nic::T, nac::T, R_0::U, param::Dict{Num,U}, contact_mat::Array{U},
     pop_matrix::Array{U},
 ) where {S<:ODESystem,T<:Int,U<:AbstractFloat}
-    size(contact_mat, 1) == size(contact_mat, 2) ? nothing : error("contact_mat must be square")
+    if size(contact_mat, 1) == size(contact_mat, 2)
+        nothing
+    else
+        error("contact_mat must be square")
+    end
     if size(contact_mat, 1) == size(pop_matrix, 1)
         nothing
     else
@@ -77,7 +84,8 @@ function calculate_beta(
 end
 
 function calculate_beta(
-    ode::S, nic::T, nac::T, R_0::U, param::Vector{Pair{Num,U}}, contact_mat::Array{U},
+    ode::S, nic::T, nac::T, R_0::U, param::Vector{Pair{Num,U}},
+    contact_mat::Array{U},
     pop_matrix::Array{U},
 ) where {S<:ODESystem,T<:Int,U<:AbstractFloat}
     return calculate_beta(
@@ -90,7 +98,8 @@ function calculate_beta(
     pop_matrix::Array{T},
 ) where {S<:ODESystem,T<:Int,U<:AbstractFloat}
     return calculate_beta(
-        ode, nic, nac, R_0, Dict(param), contact_mat, convert.(Float64, pop_matrix)
+        ode, nic, nac, R_0, Dict(param), contact_mat,
+        convert.(Float64, pop_matrix),
     )
 end
 
@@ -113,7 +122,11 @@ julia> calculateR0(0.00025, 1 / 8, 0.0, ones(1, 1), [1_000])
 function calculateR0(
     beta::T, gamma::T, mu::T, contact_mat::Array{T}, pop_matrix::Array{T}
 ) where {T<:AbstractFloat}
-    size(contact_mat, 1) == size(contact_mat, 2) ? nothing : error("contact_mat must be square")
+    if size(contact_mat, 1) == size(contact_mat, 2)
+        nothing
+    else
+        error("contact_mat must be square")
+    end
     if size(contact_mat, 1) == size(pop_matrix, 1)
         nothing
     else
@@ -170,4 +183,13 @@ function calculateR0(
     return ngmR0(
         ode, nic, nac, Dict(param), S⁺
     )
+end
+
+"""
+    calculate_import_rate(mu, R_0, N)
+
+Calulate the rate of new infectious individuals imported into the simulation using the commuter import formula defined in p210 of Keeling & Rohani
+"""
+function calculate_import_rate(mu, R_0, N)
+    return (1.06 * mu * (R_0 - 1)) / sqrt(N)
 end
