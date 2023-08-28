@@ -6,16 +6,17 @@ using ProgressMeter
 
 includet(srcdir("Julia/DrWatson-helpers.jl"))
 includet(funsdir("ensemble-functions.jl"))
+includet(funsdir("structs.jl"))
 
 #%%
 N_vec = convert.(Int64, [5e5])
 nsims_vec = [1_000]
-init_states_prop_map = [
+init_states_prop_dict = [
     Dict(
-        :s_init_prop => 0.1,
-        :e_init_prop => 0.01,
-        :i_init_prop => 0.01,
-        :r_init_prop => 0.88,
+        :s_prop => 0.1,
+        :e_prop => 0.01,
+        :i_prop => 0.01,
+        :r_prop => 0.88,
     ),
 ]
 tstep_vec = [1.0]
@@ -32,20 +33,23 @@ dur_inf_days = 5
 R_0 = 10.0
 sigma = 1 / latent_per_days
 gamma = 1 / dur_inf_days
-transmission_p = EnsembleTransmissionParameters(R_0, sigma, gamma)
-tmin = 0.0
-tmax = 365.0 * 100
-tstep = 1.0
-ensemble_time_p = EnsembleTimeParameters(tmin, tmax, tstep)
+
+ensemble_base_dynamics_p = DynamicsParameters(;
+    sigma = sigma,
+    gamma = gamma,
+    R_0 = R_0,
+)
+
+ensemble_time_p = SimTimeParameters(;
+    tmin = 0.0, tmax = 365.0 * 100.0, tstep = 1.0
+)
 
 base_param_dict = @dict(
     N = N_vec,
-    init_states_prop = init_states_prop_map,
-    transmission_p = transmission_p,
-    time_p = time_p,
+    init_states_prop = init_states_prop_dict,
+    base_dynamics_p = ensemble_base_dynamics_p,
+    time_p = ensemble_time_p,
     nsims = nsims_vec,
-    tstep = tstep_vec,
-    tmax = tmax_vec,
     beta_force = beta_force_vec,
     births_per_k = births_per_k_vec,
     seed = seed,
