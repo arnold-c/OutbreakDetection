@@ -7,9 +7,6 @@ using IterTools
 
 includet(scriptsdir("single-sim.jl"))
 
-using GLMakie
-GLMakie.activate!(; float = true)
-
 #%%
 mu_min = 10
 mu_max = 100

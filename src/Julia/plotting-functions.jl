@@ -1,14 +1,12 @@
 using DrWatson
 @quickactivate "OutbreakDetection"
 
-using WGLMakie, AlgebraOfGraphics#, ColorSchemes, Colors
+using GLMakie, AlgebraOfGraphics#, ColorSchemes, Colors
 
-# defaults to http://localhost:9384/browser-display
-WGLMakie.activate!()
-#= CairoMakie.activate!(type = "pdf") =#
+GLMakie.activate!(; float = true)
 set_aog_theme!()
 # Set depending on size of screen
-update_theme!(; resolution = (1_300, 900))
+update_theme!(; resolution = (850, 600))
 
 seircolors = ["dodgerblue4", "green", "firebrick3", "chocolate2", "purple"]
 seir_state_labels = ["S", "E", "I", "R", "N"]
