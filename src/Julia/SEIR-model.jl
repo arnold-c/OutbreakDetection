@@ -79,6 +79,8 @@ function seir_mod!(
     type = "stoch",
     seed = 1234,
 )
+    Random.seed!(seed)
+
     for (j, t) in pairs(time_params.trange)
         if j == 1
             state_arr[:, j] = states
