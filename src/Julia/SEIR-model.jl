@@ -88,7 +88,6 @@ function seir_mod!(
         seir_mod_loop!(
             state_arr, change_arr, jump_arr, j, dynamics_params, time_params, t;
             type = type,
-            seed = seed,
         )
     end
 
