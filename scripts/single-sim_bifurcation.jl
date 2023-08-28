@@ -15,7 +15,7 @@ n_mus = length(mu_min:mu_step:mu_max)
 mu_vec = zeros(Float64, n_mus)
 mu_vec .= collect(mu_min:mu_step:mu_max) ./ (1_000 * 365)
 
-@unpack init_states = singlesim_init_states
+@unpack init_states = singlesim_states_p
 @unpack tlength = singlesim_time_p
 
 epsilon_vec = zeros(Float64, n_mus)
