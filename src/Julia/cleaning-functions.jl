@@ -1,3 +1,10 @@
+using DrWatson
+@quickactivate "OutbreakDetection"
+
+using DataFrames, DataFramesMeta
+using ModelingToolkit, DifferentialEquations
+using FLoops
+
 function create_sir_df(sir_array::Matrix, trange, states = [:S, :I, :R, :N])
     if size(sir_array, 1) == length(states)
         sir_array = sir_array'
@@ -66,10 +73,10 @@ end
 function create_sir_beta_dfs(sol, states = [:S, :I, :R])
     state_df = create_sir_df(sol, states)
 
-    beta_df = select(state_df, [:time, :β])
+    beta_df = select(state_df, [:time, :beta])
     unique!(beta_df)
 
-    select!(state_df, Not(:β))
+    select!(state_df, Not(:beta))
 
     return state_df, beta_df
 end
@@ -81,9 +88,9 @@ function create_sir_sim_array!(; jump_sol)
     return nothing
 end
 
-function create_sir_all_sims_array!(; nsims, prob, alg, δt)
+function create_sir_all_sims_array!(; nsims, prob, alg, tstep)
     for i in 1:nsims
-        jump_sol = solve(prob, alg; saveat = δt)
+        jump_sol = solve(prob, alg; saveat = tstep)
         create_sir_sim_array!(; jump_sol = jump_sol)
 
         all_sims_array[:, :, i] = sir_array
@@ -91,7 +98,7 @@ function create_sir_all_sims_array!(; nsims, prob, alg, δt)
 end
 
 function create_sir_all_sims_array_multithread!(prob, nsims, alg, saveat)
-    Threads.@threads for i in 1:nsims
+    @floop for i in 1:nsims
         all_sims_array[1:3, :, i] = Array(solve(prob, alg; saveat = saveat))
         all_sims_array[4, :, i] = sum(all_sims_array[1:3, :, i]; dims = 1)
     end
@@ -100,7 +107,7 @@ end
 function create_sir_all_sims_array!(
     ensemble_sol::EnsembleSolution, nsims::Int, array = all_sims_array
 )
-    Threads.@threads for i in 1:nsims
+    @floop for i in 1:nsims
         if size(ensemble_sol.u[i], 2) != size(array, 2)
             skip
         else
@@ -122,9 +129,9 @@ function create_sir_all_sims_array(ensemble_sol::EnsembleSolution, nsims::Int)
 end
 
 function create_sir_all_sims_array!(
-    ensemble_sol::EnsembleSolution, nsims::Int, β::Bool
+    ensemble_sol::EnsembleSolution, nsims::Int, beta::Bool
 )
-    if β == false
+    if beta == false
         return create_sir_all_sims_array!(ensemble_sol, nsims)
     end
 

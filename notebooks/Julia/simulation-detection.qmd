@@ -38,19 +38,19 @@ set_aog_theme!()
 
 ```{julia}
 tmax = 10.0
-δt = 0.1/365
+tstep = 0.1/365
 tspan = (0.0, tmax)
-tlength = length(tspan[1]:δt:tspan[2])
+tlength = length(tspan[1]:tstep:tspan[2])
 Random.seed!(1234);
 
-u₀ = [999.0, 10.0, 0.0, 0.0]
+init_states = [999.0, 10.0, 0.0, 0.0]
 
-μ = 1
-β = 1000
-σ = 365/8
-γ = 365/5
-ε = 100
-p = (β, σ, γ, μ, ε)
+mu = 1
+beta = 1_000
+sigma = 365/8
+gamma = 365/5
+epsilon = 100
+p = (beta, sigma, gamma, mu, epsilon)
 ```
 
 ```{julia}
@@ -62,7 +62,7 @@ fig
 
 ```{julia}
 # 0.5 .* (sin.(2π .* x) .+ 1)
-expose_rate(u, p, t) = p[1] * 0.5 * (sin(2π * t) + 1) * u[1] * u[2]/ (u[1] + u[2] + u[3] + u[4])  # β * ϕ * S * I / N
+expose_rate(u, p, t) = p[1] * 0.5 * (sin(2π * t) + 1) * u[1] * u[2]/ (u[1] + u[2] + u[3] + u[4])  # beta * ϕ * S * I / N
 function expose_affect!(integrator)
     integrator.u[1] -= 1         # S -> S - 1
     integrator.u[2] += 1         # E -> E + 1
@@ -89,7 +89,7 @@ expose_jump = VariableRateJump(expose_rate, expose_affect!; lrate, urate, ratein
 # end
 # import_expose_jump = ConstantRateJump(import_expose_rate, import_expose_affect!)
 
-infec_rate(u, p, t) = p[2] * u[2]   # σ * E
+infec_rate(u, p, t) = p[2] * u[2]   # sigma * E
 function infec_affect!(integrator)
     integrator.u[2] -= 1         # E -> E - 1
     integrator.u[3] += 1         # I -> I + 1
@@ -97,7 +97,7 @@ function infec_affect!(integrator)
 end
 infec_jump = ConstantRateJump(infec_rate, infec_affect!)
 
-recov_rate(u, p, t) = p[3] * u[3]   # γ * I
+recov_rate(u, p, t) = p[3] * u[3]   # gamma * I
 function recov_affect!(integrator)
     integrator.u[3] -= 1         # I -> I - 1
     integrator.u[4] += 1         # R -> R + 1
@@ -105,32 +105,32 @@ function recov_affect!(integrator)
 end
 recov_jump = ConstantRateJump(recov_rate, recov_affect!)
 
-birth_rate(u, p, t) = p[4] * (u[1] + u[2] + u[3] + u[4]) # μ * N
+birth_rate(u, p, t) = p[4] * (u[1] + u[2] + u[3] + u[4]) # mu * N
 function birth_affect!(integrator)
     integrator.u[1] += 1         # S -> S + 1
     nothing
 end
 birth_jump = ConstantRateJump(birth_rate, birth_affect!)
 
-S_death_rate(u, p, t) = p[4] * u[1] # μ * S
+S_death_rate(u, p, t) = p[4] * u[1] # mu * S
 function S_death_affect!(integrator)
     integrator.u[1] -= 1        # S -> S - 1
 end
 S_death_jump = ConstantRateJump(S_death_rate, S_death_affect!)
 
-E_death_rate(u, p, t) = p[4] * u[2] # μ * E
+E_death_rate(u, p, t) = p[4] * u[2] # mu * E
 function E_death_affect!(integrator)
     integrator.u[2] -= 1        # E -> E -1
 end
 E_death_jump = ConstantRateJump(E_death_rate, E_death_affect!)
 
-I_death_rate(u, p, t) = p[4] * u[3] # μ * I
+I_death_rate(u, p, t) = p[4] * u[3] # mu * I
 function I_death_affect!(integrator)
     integrator.u[3] -= 1        # I -> I - 1
 end
 I_death_jump = ConstantRateJump(I_death_rate, I_death_affect!)
 
-R_death_rate(u, p, t) = p[4] * u[4] # μ * R
+R_death_rate(u, p, t) = p[4] * u[4] # mu * R
 function R_death_affect!(integrator)
     integrator.u[4] -= 1        # R -> R - 1 
 end
@@ -155,7 +155,7 @@ dep_graph = [
     [1, 3, 4, 5, 8]    # Exposure jump depends on states changed by itself, birth, S_death, E_death, and infection jumps
     ]
 
-prob = DiscreteProblem(u₀, tspan, p)
+prob = DiscreteProblem(init_states, tspan, p)
 jump_prob = JumpProblem(prob, Coevolve(), gillespie_jumps...; dep_graph)
 sol = solve(jump_prob, SSAStepper())
 sol_array = zeros(6, length(sol))
@@ -189,13 +189,13 @@ draw(
 ```
 
 ```{julia}
-function run_sir_sim(; u₀, tspan, p)
-    prob = DiscreteProblem(u₀, tspan, p)
+function run_sir_sim(; init_states, tspan, p)
+    prob = DiscreteProblem(init_states, tspan, p)
     jump_prob = JumpProblem(
         prob, Coevolve(), gillespie_jumps..., save_positions = (false, false);
         dep_graph
         )
-    jump_sol = solve(jump_prob, SSAStepper(), saveat = δt)
+    jump_sol = solve(jump_prob, SSAStepper(), saveat = tstep)
     return jump_sol;
 end
 ```
@@ -225,7 +225,7 @@ all_sims_array = zeros(Float64, 6, tlength + 1, nsims)
 sim_means = zeros(Float64, 5, tlength + 1)
 
 @showprogress for i in 1:nsims
-    out_jump = run_sir_sim(u₀ = u₀, tspan = tspan, p = p)
+    out_jump = run_sir_sim(init_states = init_states, tspan = tspan, p = p)
     create_sim_array!(out_jump = out_jump)
 
     all_sims_array[:, :, i] = sir_array
