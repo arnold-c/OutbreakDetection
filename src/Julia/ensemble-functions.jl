@@ -93,6 +93,8 @@ function run_jump_prob(param_dict)
         @views change = ensemble_change_arr[:, :, k]
         @views jump = ensemble_jump_arr[:, :, k]
 
+        run_seed = seed + (k - 1)
+
         seir_mod!(
             seir,
             change,
@@ -100,7 +102,7 @@ function run_jump_prob(param_dict)
             ensemble_states_p.init_states,
             dynamics_p,
             time_p;
-            seed = seed,
+            seed = run_seed,
         )
     end
 
