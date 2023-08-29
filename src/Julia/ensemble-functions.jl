@@ -116,7 +116,7 @@ function summarize_ensemble_jump_prob(params_dict; prog = prog)
                 "seasonal-infectivity-import",
                 "tau-leaping",
                 "N_$(p[:N])",
-                "r_$(p[:init_states_prop][:r])",
+                "r_$(p[:init_states_prop][:r_prop])",
                 "nsims_$(p[:nsims])",
                 "births_per_k_$(p[:births_per_k])",
                 "beta_force_$(p[:beta_force])",
@@ -144,7 +144,7 @@ end
     jump_prob_summary(param_dict)
 """
 function jump_prob_summary(param_dict)
-    @unpack N, init_states_prop, nsims, beta_force, births_per_k, quantiles =
+    @unpack N, init_states_prop, nsims, beta_force, births_per_k, time_p, quantiles =
         param_dict
 
     sim_name = savename(
@@ -168,7 +168,7 @@ function jump_prob_summary(param_dict)
             "seasonal-infectivity-import",
             "tau-leaping",
             "N_$N",
-            "r_$(init_states_prop.r)",
+            "r_$(init_states_prop[:r_prop])",
             "nsims_$nsims",
             "births_per_k_$births_per_k",
             "beta_force_$beta_force",
