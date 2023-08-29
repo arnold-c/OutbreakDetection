@@ -97,3 +97,4 @@ ensemble_quants = get_ensemble_file(
 
 @unpack ensemble_seir_arr, ensemble_jump_arr, ensemble_change_arr = ensemble_sol
 @unpack ensemble_seir_summary, caption, param_dict = ensemble_quants
+@unpack time_p = param_dict
