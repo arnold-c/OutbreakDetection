@@ -1,19 +1,21 @@
 using DrWatson
 @quickactivate "OutbreakDetection"
 
-using GLMakie, AlgebraOfGraphics#, ColorSchemes, Colors
+using GLMakie
+using AlgebraOfGraphics
+using ColorSchemes
+using UnPack
 
-GLMakie.activate!(; float = true)
 set_aog_theme!()
 # Set depending on size of screen
 update_theme!(; resolution = (850, 600))
+GLMakie.activate!(; float = true)
 
 seircolors = ["dodgerblue4", "green", "firebrick3", "chocolate2", "purple"]
 seir_state_labels = ["S", "E", "I", "R", "N"]
 
-
 function create_sir_plot(sol_df; labels = ["S", "I", "R", "N"], annual = annual)
-    time_function(t) = annual ==true ? t / 365.0 : t
+    time_function(t) = annual == true ? t / 365.0 : t
     if annual == true
         time_label = "Time (years)"
     else
@@ -22,16 +24,21 @@ function create_sir_plot(sol_df; labels = ["S", "I", "R", "N"], annual = annual)
 
     return data(sol_df) *
            mapping(
-                :time => time_function => time_label, :Number;
+               :time => time_function => time_label, :Number;
                color = :State => sorter(labels...),
            ) *
            visual(Lines; linewidth = 4)
 end
 
 function draw_sir_plot(
-    sir_plot; colors = ["dodgerblue4", "firebrick3", "chocolate2", "purple"], xlims = xlims, ylims = ylims,
+    sir_plot; colors = ["dodgerblue4", "firebrick3", "chocolate2", "purple"],
+    xlims = xlims, ylims = ylims,
 )
-    return draw(sir_plot; palettes = (; color = colors), axis = (; limits = (xlims, ylims)),)
+    return draw(
+        sir_plot;
+        palettes = (; color = colors),
+        axis = (; limits = (xlims, ylims)),
+    )
 end
 
 function draw_sir_plot(
@@ -46,13 +53,13 @@ function draw_sir_plot(
         create_sir_plot(sol_df; labels = labels, annual = annual);
         colors = colors,
         xlims = xlims,
-        ylims = ylims
+        ylims = ylims,
     )
 end
 
-
 function sir_quantiles_array_base_plot(
-    sim_quantiles, lower_index, med_index, upper_index, timeparams, colors, labels,
+    sim_quantiles, lower_index, med_index, upper_index, timeparams, colors,
+    labels,
     annual; xlims, ylims, caption,
 )
     times = timeparams.trange
@@ -132,4 +139,47 @@ function create_sir_quantiles_plot(
     )
 end
 
+outbreakcols = [ColorSchemes.magma[i] for i in (200, 20)]
 
+function detect_outbreak_plot(
+    incidencearr, ensemblearr, timeparams; colormap = outbreakcols
+)
+    @unpack tmin, tstep, tmax = timeparams
+    times = collect(tmin:tstep:tmax) ./ 365
+
+    fig = Figure()
+    ax_prev = Axis(fig[1, 1]; ylabel = "Prevalence")
+    ax_inc = Axis(fig[2, 1]; ylabel = "Incidence")
+    ax_periodsum = Axis(
+        fig[3, 1]; xlabel = "Time (years)", ylabel = "Period Sum"
+    )
+
+    linkxaxes!(ax_prev, ax_inc, ax_periodsum)
+
+    lines!(ax_prev, times, ensemblearr[2, :, 1])
+    lines!(ax_inc, times, incidencearr[:, 1, 1])
+    barplot!(
+        ax_periodsum,
+        times,
+        incidencearr[:, 3, 1];
+        color = incidencearr[:, 4, 1],
+        colormap = colormap,
+    )
+
+    map(hidexdecorations!, [ax_prev, ax_inc])
+
+    map(
+        ax -> xlims!(ax, (92, 94)),
+        [ax_prev, ax_inc, ax_periodsum],
+    )
+    ylims!(ax_periodsum, (0, 10_000))
+    ylims!(ax_inc, (0, 300))
+
+    axislegend(
+        ax_periodsum,
+        [PolyElement(; color = col) for col in colormap],
+        ["Not Outbreak", "Outbreak"],
+    )
+
+    return fig
+end
