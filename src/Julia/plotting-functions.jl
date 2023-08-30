@@ -8,7 +8,8 @@ using UnPack
 
 set_aog_theme!()
 # Set depending on size of screen
-update_theme!(; resolution = (850, 600))
+update_theme!(; resolution = (2200, 1300))
+# update_theme!(; resolution = (850, 600))
 GLMakie.activate!(; float = true)
 
 seircolors = ["dodgerblue4", "green", "firebrick3", "chocolate2", "purple"]
@@ -142,10 +143,11 @@ end
 outbreakcols = [ColorSchemes.magma[i] for i in (200, 20)]
 
 function detect_outbreak_plot(
-    incidencearr, ensemblearr, timeparams; colormap = outbreakcols
+    incidencearr, ensemblearr, timeparams; colormap = outbreakcols, kwargs...
 )
     @unpack tmin, tstep, tmax = timeparams
     times = collect(tmin:tstep:tmax) ./ 365
+    kwargs_dict = Dict(kwargs)
 
     fig = Figure()
     ax_prev = Axis(fig[1, 1]; ylabel = "Prevalence")
@@ -168,17 +170,29 @@ function detect_outbreak_plot(
 
     map(hidexdecorations!, [ax_prev, ax_inc])
 
-    map(
-        ax -> xlims!(ax, (92, 94)),
-        [ax_prev, ax_inc, ax_periodsum],
-    )
-    ylims!(ax_periodsum, (0, 10_000))
-    ylims!(ax_inc, (0, 300))
+    if haskey(kwargs_dict, :xlims)
+        map(
+            ax -> xlims!(ax, kwargs_dict[:xlims]),
+            [ax_prev, ax_inc, ax_periodsum],
+        )
+    end
+
+    if haskey(kwargs_dict, :ylims_periodsum)
+        ylims!(ax_periodsum, kwargs_dict[:ylims_periodsum])
+    end
+
+    if haskey(kwargs_dict, :ylims_inc)
+        ylims!(ax_inc, kwargs_dict[:ylims_inc])
+    end
 
     axislegend(
         ax_periodsum,
         [PolyElement(; color = col) for col in colormap],
         ["Not Outbreak", "Outbreak"],
+        bgcolor = :white,
+        framecolor = :white,
+        framevisible = true,
+        padding = (10.0f0, 10.0f0, 8.0f0, 8.0f0)
     )
 
     return fig

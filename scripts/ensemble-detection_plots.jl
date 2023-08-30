@@ -19,4 +19,7 @@ detect_outbreak_plot(
     ensemble_seir_arr,
     param_dict[:time_p];
     colormap = outbreakcols,
+    xlims = (90, 100),
+    ylims_inc = (0, 150),
+    ylims_periodsum = (0, 1000),
 )
