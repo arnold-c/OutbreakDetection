@@ -7,11 +7,13 @@ using Random
 #%%
 # Revise will keep track of file change_arr and reload functions as necessary
 includet(srcdir("Julia/DrWatson-helpers.jl"))
-includet(funsdir("structs.jl"))
 includet(funsdir("transmission-functions.jl"))
 includet(funsdir("plotting-functions.jl"))
 includet(funsdir("cleaning-functions.jl"))
 includet(funsdir("SEIR-model.jl"))
+
+includet(funsdir("structs.jl"))
+using .ODStructs
 
 #%%
 singlesim_states_p = StateParameters(

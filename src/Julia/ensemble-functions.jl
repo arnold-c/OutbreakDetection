@@ -9,7 +9,9 @@ includet(srcdir("Julia/DrWatson-helpers.jl"))
 includet(funsdir("transmission-functions.jl"))
 includet(funsdir("cleaning-functions.jl"))
 includet(funsdir("SEIR-model.jl"))
+
 includet(funsdir("structs.jl"))
+using .ODStructs
 
 function run_ensemble_jump_prob(params_dict; prog = prog)
     for p in params_dict
