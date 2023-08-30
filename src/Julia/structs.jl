@@ -14,12 +14,14 @@ struct SimTimeParameters
     tmax
     tstep
     trange
+    tspan
     tlength
 end
 
 function SimTimeParameters(; tmin = 0.0, tmax = 365.0 * 100.0, tstep = 1.0)
     return SimTimeParameters(
-        tmin, tmax, tstep, tmin:tstep:tmax, length(tmin:tstep:tmax)
+        tmin, tmax, tstep, tmin:tstep:tmax, (tmin, tmax),
+        length(tmin:tstep:tmax),
     )
 end
 
