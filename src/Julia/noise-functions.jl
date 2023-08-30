@@ -1,0 +1,74 @@
+using DrWatson
+@quickactivate "OutbreakDetection"
+
+using DifferentialEquations
+using DataFrames
+
+includet(srcdir("Julia/DrWatson-helpers.jl"))
+includet(funsdir("ensemble-functions.jl"))
+includet(scriptsdir("ensemble-sim.jl"))
+
+function create_noise_arr(
+    jump_arr,
+    init_noise,
+    timeparams,
+    dynamicsparams;
+    callback = DiscreteCallback(
+        sde_condition, sde_affect!; save_positions = (false, false)
+    ),
+)
+    # Set noise arr to 3D array (even though not necessary), so it has the same 
+    # dimensions as the other arrays
+    noise_arr = zeros(
+        Float64, size(jump_arr, 2), 1, size(jump_arr, 3)
+    )
+
+    create_noise_arr!(
+        noise_arr, jump_arr, init_noise, timeparams, dynamicsparams;
+        callback = callback,
+    )
+
+    return noise_arr
+end
+
+function create_noise_arr!(
+    noise_arr,
+    jump_arr,
+    init_noise,
+    timeparams,
+    dynamicsparams;
+    callback = DiscreteCallback(
+        sde_condition, sde_affect!; save_positions = (false, false)
+    ),
+)
+    @floop for sim in axes(jump_arr, 3)
+        noise_prob = SDEProblem(
+            background_ode!,
+            background_noise!,
+            init_noise,
+            timeparams.tspan,
+            dynamicsparams,
+        )
+
+        noise_sol = solve(
+            noise_prob, SRIW1(); callback = callback,
+            dt = timeparams.tstep,
+            adaptive = false,
+        )
+
+        noise_arr[:, 1, sim] = @view(noise_sol[1, :])
+        # Set first noise incidence to 0 as no new noise in the first time step
+        noise_arr[1, 1, sim] = 0.0
+    end
+    return nothing
+end
+
+background_ode!(du, u, p, t) = (du .= 0.0)
+background_noise!(du, u, p, t) = (du .= 0.1)
+
+sde_condition(u, t, integrator) = true
+function sde_affect!(integrator)
+    if integrator.u[1] < 0.0
+        integrator.u[1] = -integrator.u[1]
+    end
+end

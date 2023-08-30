@@ -5,6 +5,7 @@ using GLMakie
 using AlgebraOfGraphics
 using ColorSchemes
 using UnPack
+using DataFrames
 
 set_aog_theme!()
 # Set depending on size of screen
@@ -145,8 +146,8 @@ outbreakcols = [ColorSchemes.magma[i] for i in (200, 20)]
 function detect_outbreak_plot(
     incidencearr, ensemblearr, timeparams; colormap = outbreakcols, kwargs...
 )
-    @unpack tmin, tstep, tmax = timeparams
-    times = collect(tmin:tstep:tmax) ./ 365
+    @unpack trange = timeparams
+    times = collect(trange) ./ 365
     kwargs_dict = Dict(kwargs)
 
     fig = Figure()
@@ -188,12 +189,31 @@ function detect_outbreak_plot(
     axislegend(
         ax_periodsum,
         [PolyElement(; color = col) for col in colormap],
-        ["Not Outbreak", "Outbreak"],
+        ["Not Outbreak", "Outbreak"];
         bgcolor = :white,
         framecolor = :white,
         framevisible = true,
-        padding = (10.0f0, 10.0f0, 8.0f0, 8.0f0)
+        padding = (10.0f0, 10.0f0, 8.0f0, 8.0f0),
     )
 
     return fig
+end
+
+function visualize_ensemble_noise(ensemble_noise_arr, timeparams)
+    times = collect(timeparams.trange) ./ 365
+    noise_fig = Figure()
+    noise_ax = Axis(
+        noise_fig[1, 1]; xlabel = "Time (years)", ylabel = "Noise Incidence"
+    )
+
+    for sim in axes(ensemble_noise_arr, 3)
+        lines!(
+            noise_ax,
+            times,
+            ensemble_noise_arr[:, 1, sim];
+            color = (:red, 0.1)
+        )
+    end
+
+    return noise_fig
 end
