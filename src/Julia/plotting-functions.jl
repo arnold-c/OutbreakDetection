@@ -307,3 +307,71 @@ function incidence_testing_plot(
 
     return inc_test_fig
 end
+
+function testing_plot(testingarr, timeparams)
+    times = collect(timeparams.trange) ./ 365
+
+    testing_fig = Figure()
+    testing_grid = testing_fig[1, 1] = GridLayout()
+    sim1_ax = Axis(
+        testing_grid[1, 1];
+        title = "Simulation 1",
+        xlabel = "Time (years)",
+        ylabel = "Number tested",
+    )
+    sim2_ax = Axis(
+        testing_grid[2, 1];
+        title = "Simulation 2",
+        xlabel = "Time (years)",
+        ylabel = "Number tested",
+    )
+    sim3_ax = Axis(
+        testing_grid[1, 2];
+        title = "Simulation 3",
+        xlabel = "Time (years)",
+        ylabel = "Number tested",
+    )
+    sim4_ax = Axis(
+        testing_grid[2, 2];
+        title = "Simulation 4",
+        xlabel = "Time (years)",
+        ylabel = "Number tested",
+    )
+
+    for (ind, label, col) in zip(
+        (1, 2, 5),
+        ("Infectious", "Noise", "Total Positive"),
+        (:red, :blue, :black),
+    )
+        lines!(
+            sim1_ax, times, testingarr[:, ind, 1]; color = col, label = label
+        )
+        lines!(
+            sim2_ax, times, testingarr[:, ind, 2]; color = col, label = label
+        )
+        lines!(
+            sim3_ax, times, testingarr[:, ind, 3]; color = col, label = label
+        )
+        lines!(
+            sim4_ax, times, testingarr[:, ind, 4]; color = col, label = label
+        )
+    end
+
+    linkxaxes!(sim1_ax, sim2_ax)
+    linkxaxes!(sim3_ax, sim4_ax)
+
+    linkyaxes!(sim1_ax, sim3_ax)
+    linkyaxes!(sim2_ax, sim4_ax)
+
+    map(hidexdecorations!, [sim1_ax, sim3_ax])
+    map(hideydecorations!, [sim3_ax, sim4_ax])
+
+    Legend(
+        testing_fig[2, :],
+        sim1_ax,
+        "Type of Individual";
+        orientation = :horizontal,
+    )
+
+    return testing_fig
+end

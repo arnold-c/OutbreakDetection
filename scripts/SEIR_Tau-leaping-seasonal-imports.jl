@@ -33,55 +33,6 @@ includet(funsdir("SEIR-model.jl"))
 
 
 #%%
-testing_fig = Figure()
-plot_test_sims = 4
-plot_test_coords = 1:(plot_test_sims ÷ 2)
-for (sim, ax) in
-    zip(1:plot_test_sims, IterTools.product(plot_test_coords, plot_test_coords))
-    row = ax[1]
-    col = ax[2]
-
-    fig_ax = Symbol("testing_ax_" * string(sim))
-
-    @eval $(fig_ax) = Axis(
-        testing_fig[$row, $col]; xlabel = "Time (years)",
-        ylabel = "Tested"
-    )
-
-    @eval lines!(
-        $(fig_ax), times, testing_arr[:, 1, $sim];
-        color = :red,
-        label = "Infectious",
-    )
-    @eval lines!(
-        $(fig_ax), times, testing_arr[:, 2, $sim];
-        color = :blue,
-        label = "Noise",
-    )
-    @eval lines!(
-        $(fig_ax), times, testing_arr[:, 5, $sim];
-        color = :black,
-        label = "Total Positive",
-    )
-end
-
-linkxaxes!(testing_ax_1, testing_ax_2)
-linkxaxes!(testing_ax_3, testing_ax_4)
-
-linkyaxes!(testing_ax_1, testing_ax_3)
-linkyaxes!(testing_ax_2, testing_ax_4)
-
-map(hidexdecorations!, [testing_ax_1, testing_ax_3])
-map(hideydecorations!, [testing_ax_3, testing_ax_4])
-
-Legend(
-    testing_fig[3, :],
-    testing_ax_1,
-    "Type of Individual";
-    orientation = :horizontal,
-)
-
-testing_fig
 
 #%%
 @proto struct OutbreakThresholdChars{A,B,C,D}

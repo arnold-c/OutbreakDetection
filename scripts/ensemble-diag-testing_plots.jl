@@ -14,3 +14,6 @@ incidence_testing_plot(
     detectthreshold;
     sim = 1,
 )
+
+#%%
+testing_plot(testing_arr, time_p)
