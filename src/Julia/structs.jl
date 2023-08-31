@@ -1,6 +1,6 @@
 module ODStructs
 export SimTimeParameters,
-    EnsembleSpecification, DynamicsParameters, StateParameters
+    EnsembleSpecification, DynamicsParameters, StateParameters, OutbreakThresholdChars
 
 using DrWatson
 @quickactivate "OutbreakDetection"
@@ -76,5 +76,22 @@ function StateParameters(;
         states, state_props
     )
 end
+
+struct OutbreakThresholdChars{A,B,C,D}
+    crosstab::A
+    tp::B
+    tn::B
+    fp::B
+    fn::B
+    sens::C
+    spec::C
+    ppv::C
+    npv::C
+    noutbreaks::B
+    ndetectoutbreaks::B
+    outbreakbounds::D
+    detectoutbreakbounds::D
+end
+
 
 end

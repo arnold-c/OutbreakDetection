@@ -33,25 +33,6 @@ includet(funsdir("SEIR-model.jl"))
 
 
 #%%
-
-#%%
-@proto struct OutbreakThresholdChars{A,B,C,D}
-    crosstab::A
-    tp::B
-    tn::B
-    fp::B
-    fn::B
-    sens::C
-    spec::C
-    ppv::C
-    npv::C
-    noutbreaks::B
-    ndetectoutbreaks::B
-    outbreakbounds::D
-    detectoutbreakbounds::D
-end
-
-#%%
 function calculate_ot_characterstics(test_arr, infec_arr, ind)
     crosstab = freqtable(testing_arr[:, 5, ind], inc_infec_arr[:, 4, ind])
 
