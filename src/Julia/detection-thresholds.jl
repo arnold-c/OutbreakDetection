@@ -31,8 +31,7 @@ function create_inc_infec_arr!(
         # Copy new infections to array
         incarr[:, 1, sim] = @view(ensemblejumparr[1, :, sim])
         # Calculate if new infection is above or below threshold
-        incarr[:, 2, sim] =
-            @view(incarr[:, 1, sim]) .>= outbreakthreshold
+        incarr[:, 2, sim] = @view(incarr[:, 1, sim]) .>= outbreakthreshold
 
         # Calculate the total number of infections above threshold in a consecutive string of days
         # Calculate the number of consecutive days of infection above or below threshold

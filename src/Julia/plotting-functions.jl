@@ -217,3 +217,93 @@ function visualize_ensemble_noise(ensemble_noise_arr, timeparams)
 
     return noise_fig
 end
+
+function incidence_testing_plot(
+    incarr,
+    testingarr,
+    timeparams,
+    detectthreshold;
+    sim = 1,
+    colormap = outbreakcols,
+    kwargs...,
+)
+    times = collect(timeparams.trange) ./ 365
+    kwargs_dict = Dict(kwargs)
+
+    inc_test_fig = Figure()
+    inc_test_ax1 = Axis(inc_test_fig[1, 1]; ylabel = "Incidence")
+    inc_test_ax2 = Axis(inc_test_fig[2, 1]; ylabel = "Test Positive")
+    inc_test_ax3 = Axis(
+        inc_test_fig[3, 1];
+        xlabel = "Time (years)",
+        ylabel = "7d Avg Test Positive",
+    )
+
+    lines!(
+        inc_test_ax1, times, incarr[:, 1, sim];
+        color = incarr[:, 4, sim],
+        colormap = colormap,
+    )
+    lines!(
+        inc_test_ax2, times, testingarr[:, 3, sim];
+        color = testingarr[:, 7, sim],
+        colormap = colormap,
+    )
+    lines!(
+        inc_test_ax3, times, testingarr[:, 6, sim];
+        color = testingarr[:, 7, sim],
+        colormap = colormap,
+    )
+
+    linkxaxes!(inc_test_ax1, inc_test_ax2, inc_test_ax3)
+
+    map(hidexdecorations!, [inc_test_ax1, inc_test_ax2])
+
+    if haskey(kwargs_dict, :xlims)
+        map(
+            ax -> xlims!(ax, kwargs_dict[:xlims]),
+            [inc_test_ax1, inc_test_ax2, inc_test_ax3],
+        )
+    end
+
+    if haskey(kwargs_dict, :ylims)
+        map(
+            ax -> ylims!(ax, kwargs_dict[:ylims]),
+            [inc_test_ax1, inc_test_ax2, inc_test_ax3],
+        )
+    end
+
+    hlines!(
+        inc_test_ax1, 5;
+        color = :black,
+        linestyle = :dash,
+        linewidth = 2,
+    )
+
+    map(
+        ax -> hlines!(
+            ax,
+            detectthreshold;
+            color = :black,
+            linestyle = :dash,
+            linewidth = 2,
+        ),
+        [inc_test_ax2, inc_test_ax3],
+    )
+
+    Legend(
+        inc_test_fig[1, 2],
+        [PolyElement(; color = col) for col in outbreakcols],
+        ["Not Outbreak", "Outbreak"],
+        "True\nOutbreak Status",
+    )
+
+    Legend(
+        inc_test_fig[2:3, 2],
+        [PolyElement(; color = col) for col in outbreakcols],
+        ["Not Outbreak", "Outbreak"],
+        "Detected\nOutbreak Status",
+    )
+
+    return inc_test_fig
+end
