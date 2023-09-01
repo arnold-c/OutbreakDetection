@@ -10,7 +10,7 @@ using DataFrames
 set_aog_theme!()
 # Set depending on size of screen
 update_theme!(; resolution = (2200, 1300))
-# update_theme!(; resolution = (850, 600))
+#= update_theme!(; resolution = (850, 600)) =#
 GLMakie.activate!(; float = true)
 
 seircolors = ["dodgerblue4", "green", "firebrick3", "chocolate2", "purple"]
@@ -375,3 +375,38 @@ function testing_plot(testingarr, timeparams)
 
     return testing_fig
 end
+
+function ensemble_outbreak_distribution_plot(testarr, infecarr)
+    outbreak_dist_fig = Figure()
+    outbreak_dist_ax = Axis(
+        outbreak_dist_fig[1, 1];
+        xlabel = "Proportion of Time Series with Outbreak",
+    )
+
+    hist!(
+        outbreak_dist_ax,
+        vec(sum(@view(infecarr[:, 4, :]); dims = 1)) ./ size(infecarr, 1);
+        bins = 0.0:0.01:0.7,
+        color = (:blue, 0.5),
+        strokecolor = :black,
+        strokewidth = 1,
+        normalization = :pdf,
+        label = "True Outbreaks",
+    )
+
+    hist!(
+        outbreak_dist_ax,
+        vec(sum(@view(testarr[:, 7, :]); dims = 1)) ./ size(testarr, 1);
+        bins = 0.0:0.01:0.7,
+        color = (:red, 0.5),
+        strokecolor = :black,
+        strokewidth = 1,
+        normalization = :pdf,
+        label = "Tested Outbreaks",
+    )
+
+    Legend(outbreak_dist_fig[1, 2], outbreak_dist_ax, "Outbreak Proportion")
+
+    return outbreak_dist_fig
+end
+

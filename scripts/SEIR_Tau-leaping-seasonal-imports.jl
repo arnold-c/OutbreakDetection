@@ -93,36 +93,7 @@ otchars_vec = zeros(Float64, length(OT_chars), 6);
 end
 
 #%%
-outbreak_dist_fig = Figure()
-outbreak_dist_ax = Axis(
-    outbreak_dist_fig[1, 1]; xlabel = "Proportion of Time Series with Outbreak"
-)
 
-hist!(
-    outbreak_dist_ax,
-    vec(sum(@view(inc_infec_arr[:, 4, :]); dims = 1)) ./ size(inc_infec_arr, 1);
-    bins = 0.0:0.01:0.7,
-    color = (:blue, 0.5),
-    strokecolor = :black,
-    strokewidth = 1,
-    normalization = :pdf,
-    label = "True Outbreaks",
-)
-
-hist!(
-    outbreak_dist_ax,
-    vec(sum(@view(testing_arr[:, 7, :]); dims = 1)) ./ size(testing_arr, 1);
-    bins = 0.0:0.01:0.7,
-    color = (:red, 0.5),
-    strokecolor = :black,
-    strokewidth = 1,
-    normalization = :pdf,
-    label = "Tested Outbreaks",
-)
-
-Legend(outbreak_dist_fig[1, 2], outbreak_dist_ax, "Outbreak Proportion")
-
-outbreak_dist_fig
 
 #%%
 noutbreaks_fig = Figure()

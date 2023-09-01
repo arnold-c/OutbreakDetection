@@ -12,8 +12,12 @@ incidence_testing_plot(
     testing_arr,
     time_p,
     detectthreshold;
-    sim = 1,
+    sim = 1
 )
 
 #%%
 testing_plot(testing_arr, time_p)
+
+#%%
+ensemble_outbreak_distribution_plot(testing_arr, inc_infec_arr)
+
