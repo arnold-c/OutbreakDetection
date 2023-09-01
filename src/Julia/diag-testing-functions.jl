@@ -1,8 +1,12 @@
 using DrWatson
 @quickactivate "OutbreakDetection"
 
-includet(srcdir("Julia/DrWatson-helpers.jl"))
+using StatsBase
+using FreqTables
+using ThreadsX
 
+includet(srcdir("Julia/DrWatson-helpers.jl"))
+include(funsdir("structs.jl"))
 
 function create_testing_arr(
     incarr, noisearr, perc_tested, testlag, testsens, testspec, detectthreshold,
@@ -100,7 +104,6 @@ function calculate_tested!(outarr, outarr_ind, inarr, perc_tested, sim)
     @. outarr[:, outarr_ind, sim] = round(@view(inarr[:, 1, sim]) * perc_tested)
 end
 
-
 function calculate_pos(
     tested_vec,
     lag,
@@ -187,10 +190,46 @@ function detectoutbreak(incvec, avgvec, threshold, avglag)
     return outbreak
 end
 
-function detectoutbreak!(outbreakvec, incvec, avgvec, threshold, avglag)
+function detectoutbreak!(outbreakvec, incvec, avgvec, threshold)
     @. outbreakvec = ifelse(incvec >= threshold || avgvec >= threshold, 1, 0)
 
     return nothing
 end
 
+function calculate_ot_characterstics(testarr, infecarr, ind)
+    crosstab = freqtable(testarr[:, 5, ind], infecarr[:, 4, ind])
 
+    tp = crosstab[2, 2]
+    tn = crosstab[1, 1]
+    fp = crosstab[2, 1]
+    fn = crosstab[1, 2]
+
+    sens = tp / (tp + fn)
+    spec = tn / (tn + fp)
+
+    ppv = tp / (tp + fp)
+    npv = tn / (tn + fn)
+
+    return crosstab, tp, tn, fp, fn, sens, spec, ppv, npv
+end
+
+function calculate_noutbreaks(outbreakrle)
+    return length(findall(==(1), outbreakrle[1]))
+end
+
+function calculate_OutbreakThresholdChars(testarr, infecarr)
+    OT_chars = ThreadsX.map(axes(infecarr, 3)) do sim
+        outbreakrle = rle(@view(infecarr[:, 4, sim]))
+        detectrle = rle(@view(testarr[:, 7, sim]))
+
+        OutbreakThresholdChars(
+            calculate_ot_characterstics(testarr, infecarr, sim)...,
+            calculate_noutbreaks(outbreakrle),
+            calculate_noutbreaks(detectrle),
+            reduce(hcat, collect(calculate_outbreak_thresholds(outbreakrle))),
+            reduce(hcat, collect(calculate_outbreak_thresholds(detectrle))),
+        )
+    end
+
+    return OT_chars
+end

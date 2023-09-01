@@ -33,3 +33,16 @@ create_testing_arr!(
     detectthreshold,
     moveavglag,
 )
+
+#%%
+OT_Chars = calculate_OutbreakThresholdChars(testing_arr, inc_infec_arr)
+
+#%%
+OT_Chars[1].crosstab
+OT_Chars[1].outbreakbounds
+OT_Chars[1].detectoutbreakbounds
+OT_Chars[1].noutbreaks
+OT_Chars[1].ndetectoutbreaks
+
+# Note that an outbreak isn't detected continously!
+testing_arr[80:100, :, 1]

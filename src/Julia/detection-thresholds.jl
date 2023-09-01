@@ -21,7 +21,7 @@ function create_inc_infec_arr(
     )
 
     return incarr
-end    
+end
 
 function create_inc_infec_arr!(
     incarr, ensemblejumparr, outbreakthreshold, minoutbreakdur, minoutbreaksize
@@ -66,8 +66,4 @@ function calculate_outbreak_thresholds(outbreakrle)
 
     return (outbreaklowers, outbreakuppers)
 end
-
-
-
-
 

@@ -32,53 +32,6 @@ includet(funsdir("SEIR-model.jl"))
 ################################################################################
 
 
-#%%
-function calculate_ot_characterstics(test_arr, infec_arr, ind)
-    crosstab = freqtable(testing_arr[:, 5, ind], inc_infec_arr[:, 4, ind])
-
-    tp = crosstab[2, 2]
-    tn = crosstab[1, 1]
-    fp = crosstab[2, 1]
-    fn = crosstab[1, 2]
-
-    sens = tp / (tp + fn)
-    spec = tn / (tn + fp)
-
-    ppv = tp / (tp + fp)
-    npv = tn / (tn + fn)
-
-    return crosstab, tp, tn, fp, fn, sens, spec, ppv, npv
-end
-
-function calculate_noutbreaks(outbreakrle)
-    return length(findall(==(1), outbreakrle[1]))
-end
-
-#%%
-OT_chars = ThreadsX.map(
-    axes(inc_infec_arr, 3)
-) do sim
-    outbreakrle = rle(@view(inc_infec_arr[:, 4, sim]))
-    detectrle = rle(@view(testing_arr[:, 7, sim]))
-
-    OutbreakThresholdChars(
-        calculate_ot_characterstics(testing_arr, inc_infec_arr, sim)...,
-        calculate_noutbreaks(outbreakrle),
-        calculate_noutbreaks(detectrle),
-        reduce(hcat, collect(calculate_outbreak_thresholds(outbreakrle))),
-        reduce(hcat, collect(calculate_outbreak_thresholds(detectrle))),
-    )
-end
-
-#%%
-OT_chars[1].crosstab
-OT_chars[1].outbreakbounds
-OT_chars[1].detectoutbreakbounds
-OT_chars[1].noutbreaks
-OT_chars[1].ndetectoutbreaks
-
-# Note that an outbreak isn't detected continously!
-testing_arr[80:100, :, 1]
 
 #%%
 otchars_vec = zeros(Float64, length(OT_chars), 6);
@@ -221,22 +174,6 @@ end
 testlag_vec = 0:1:2
 detectthreshold_vec = [1, collect(5:5:10)...]
 
-function create_OTchars_struct(incarr, testarr)
-    ThreadsX.map(
-        axes(incarr, 3)
-    ) do sim
-        outbreakrle = rle(@view(incarr[:, 4, sim]))
-        return detectrle = rle(@view(testarr[:, 5, sim]))
-
-        OutbreakThresholdChars(
-            calculate_ot_characterstics(testarr, incarr, sim)...,
-            calculate_noutbreaks(outbreakrle),
-            calculate_noutbreaks(detectrle),
-            reduce(hcat, collect(calculate_outbreak_thresholds(outbreakrle))),
-            reduce(hcat, collect(calculate_outbreak_thresholds(detectrle))),
-        )
-    end
-end
 
 function calculate_mean_ot_chars(
     testlag,
