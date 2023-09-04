@@ -9,7 +9,13 @@ includet(srcdir("Julia/DrWatson-helpers.jl"))
 include(funsdir("structs.jl"))
 
 function create_testing_arr(
-    incarr, noisearr, perc_tested, testlag, testsens, testspec, detectthreshold,
+    incarr,
+    noisearr,
+    perc_tested,
+    testlag,
+    testsens,
+    testspec,
+    detectthreshold,
     moveavglag,
 )
     testarr = zeros(Int64, size(incarr, 1), 6, size(incarr, 3))
@@ -25,9 +31,16 @@ function create_testing_arr(
 end
 
 function create_testing_arr!(
-    testarr, incarr, noisearr, posoddsarr, perc_tested, testlag, testsens,
+    testarr,
+    incarr,
+    noisearr,
+    posoddsarr,
+    perc_tested,
+    testlag,
+    testsens,
     testspec,
-    detectthreshold, moveavglag,
+    detectthreshold,
+    moveavglag,
 )
     ntested = size(testarr, 1)
 
@@ -104,13 +117,7 @@ function calculate_tested!(outarr, outarr_ind, inarr, perc_tested, sim)
     @. outarr[:, outarr_ind, sim] = round(@view(inarr[:, 1, sim]) * perc_tested)
 end
 
-function calculate_pos(
-    tested_vec,
-    lag,
-    sens,
-    spec;
-    noise = false,
-)
+function calculate_pos(tested_vec, lag, sens, spec; noise = false)
     ntested = length(tested_vec)
     npos = zeros(Int64, ntested)
 
@@ -128,13 +135,7 @@ function calculate_pos(
 end
 
 function calculate_pos!(
-    npos_vec,
-    tested_vec,
-    ntested,
-    lag,
-    sens,
-    spec;
-    noise = false
+    npos_vec, tested_vec, ntested, lag, sens, spec; noise = false
 )
     if noise
         for day in eachindex(tested_vec)
