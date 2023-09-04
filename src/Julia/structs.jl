@@ -83,8 +83,8 @@ struct OutbreakThresholdChars{A,B,C,D}
     tn::B
     fp::B
     fn::B
-    sens::C
-    spec::C
+    sensitivity::C
+    specificity::C
     ppv::C
     npv::C
     noutbreaks::B

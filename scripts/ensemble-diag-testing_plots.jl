@@ -24,8 +24,8 @@ ensemble_outbreak_distribution_plot(testing_arr, inc_infec_arr)
 #%%
 ensemble_OTChars_plot(
     OT_Chars,
-    :sens,
-    :spec;
+    :sensitivity,
+    :specificity;
     bins = 0.0:0.01:1.01,
     char1_label = "Sensitivity",
     char2_label = "Specificity",
