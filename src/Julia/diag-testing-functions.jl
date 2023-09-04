@@ -32,7 +32,7 @@ function create_testing_arr!(
     ntested = size(testarr, 1)
 
     # prog = Progress(size(incarr, 3))
-    @floop for sim in 1:size(incarr, 3)
+    @floop for sim in axes(incarr, 3)
         # Number of infectious individuals tested
         calculate_tested!(testarr, 1, incarr, perc_tested, sim)
 
@@ -78,7 +78,7 @@ function create_testing_arr!(
             @view(testarr[:, 7, sim]),
             @view(testarr[:, 5, sim]),
             @view(testarr[:, 6, sim]),
-            detectthreshold, moveavglag,
+            detectthreshold,
         )
 
         # # Posterior prob of infectious / total test positive
