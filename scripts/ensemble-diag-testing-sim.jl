@@ -2,10 +2,11 @@
 using DrWatson
 @quickactivate "OutbreakDetection"
 
-includet(srcdir("Julia/DrWatson-helpers.jl"))
-includet(scriptsdir("ensemble-detection.jl"))
-includet(scriptsdir("ensemble-noise-sim.jl"))
-includet(funsdir("diag-testing-functions.jl"))
+include("../src/OutbreakDetection.jl")
+using .OutbreakDetection
+
+include("ensemble-detection.jl")
+include("ensemble-noise-sim.jl")
 
 #%%
 testlag = 3
@@ -36,13 +37,3 @@ create_testing_arr!(
 
 #%%
 OT_Chars = calculate_OutbreakThresholdChars(testing_arr, inc_infec_arr)
-
-#%%
-OT_Chars[1].crosstab
-OT_Chars[1].outbreakbounds
-OT_Chars[1].detectoutbreakbounds
-OT_Chars[1].noutbreaks
-OT_Chars[1].ndetectoutbreaks
-
-# Note that an outbreak isn't detected continously!
-testing_arr[80:100, :, 1]

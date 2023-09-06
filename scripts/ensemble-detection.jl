@@ -2,11 +2,10 @@
 using DrWatson
 @quickactivate "OutbreakDetection"
 
-using ProgressMeter
+include("../src/OutbreakDetection.jl")
+using .OutbreakDetection
 
-includet(srcdir("Julia/DrWatson-helpers.jl"))
-includet(scriptsdir("ensemble-sim.jl"))
-includet(funsdir("detection-thresholds.jl"))
+include("ensemble-sim.jl")
 
 #%%
 outbreakthreshold = 5

@@ -4,11 +4,8 @@ using DrWatson
 
 using ProgressMeter
 
-includet(srcdir("Julia/DrWatson-helpers.jl"))
-includet(funsdir("ensemble-functions.jl"))
-
-includet(funsdir("structs.jl"))
-using .ODStructs
+include("../src/OutbreakDetection.jl")
+using .OutbreakDetection
 
 #%%
 N_vec = convert.(Int64, [5e5])

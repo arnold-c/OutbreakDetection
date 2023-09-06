@@ -44,7 +44,7 @@ export run_ensemble_jump_prob, run_jump_prob, summarize_ensemble_jump_prob,
 # @reexport using .EnsembleFunctions
 
 include("noise-functions.jl")
-export create_noise_arr, create_noise_arr!
+export create_noise_arr, create_noise_arr!, sde_affect!, sde_condition
 # @reexport using .NoiseFunctions
 
 include("plotting-functions.jl")

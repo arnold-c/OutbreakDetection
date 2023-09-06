@@ -2,9 +2,12 @@
 using DrWatson
 @quickactivate "OutbreakDetection"
 
-includet(srcdir("Julia/DrWatson-helpers.jl"))
-includet(funsdir("plotting-functions.jl"))
-includet(scriptsdir("ensemble-noise-sim.jl"))
+include("../src/OutbreakDetection.jl")
+using .OutbreakDetection
+
+include("ensemble-noise-sim.jl")
+
+include(srcdir("makie-plotting-setup.jl"))
 
 #%%
 visualize_ensemble_noise(ensemble_noise_arr, time_p)

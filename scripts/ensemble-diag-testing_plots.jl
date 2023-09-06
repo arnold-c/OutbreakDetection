@@ -2,9 +2,12 @@
 using DrWatson
 @quickactivate "OutbreakDetection"
 
-includet(srcdir("Julia/DrWatson-helpers.jl"))
-includet(scriptsdir("ensemble-diag-testing-sim.jl"))
-includet(funsdir("plotting-functions.jl"))
+include("../src/OutbreakDetection.jl")
+using .OutbreakDetection
+
+include("ensemble-diag-testing-sim.jl")
+
+include(srcdir("makie-plotting-setup.jl"))
 
 #%%
 incidence_testing_plot(

@@ -6,10 +6,10 @@ using ProgressMeter
 using DifferentialEquations
 using DataFrames
 
-includet(srcdir("Julia/DrWatson-helpers.jl"))
-includet(funsdir("ensemble-functions.jl"))
-includet(scriptsdir("ensemble-sim.jl"))
-includet(funsdir("noise-functions.jl"))
+include("../src/OutbreakDetection.jl")
+using .OutbreakDetection
+
+include("ensemble-sim.jl")
 
 #%%
 init_noise = [10.0]

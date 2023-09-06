@@ -2,14 +2,14 @@
 using DrWatson
 @quickactivate "OutbreakDetection"
 
-using ProgressMeter
 using ColorSchemes
-using GLMakie
-using AlgebraOfGraphics
 
-includet(srcdir("Julia/DrWatson-helpers.jl"))
-includet(scriptsdir("ensemble-detection.jl"))
-includet(funsdir("plotting-functions.jl"))
+include("../src/OutbreakDetection.jl")
+using .OutbreakDetection
+
+include("ensemble-detection.jl")
+
+include(srcdir("makie-plotting-setup.jl"))
 
 #%%
 outbreakcols = [ColorSchemes.magma[i] for i in (200, 20)]

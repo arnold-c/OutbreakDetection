@@ -4,8 +4,14 @@ using DrWatson
 
 using ProgressMeter
 using IterTools
+using FLoops
 
-includet(scriptsdir("single-sim.jl"))
+include("../src/OutbreakDetection.jl")
+using .OutbreakDetection
+
+include(srcdir("makie-plotting-setup.jl"))
+
+include("single-sim.jl")
 
 #%%
 mu_min = 10
@@ -186,18 +192,7 @@ prog = Progress(length(mu_vec) * length(beta_force_vec))
         sigma = singlesim_dynamics_p.sigma,
         gamma = singlesim_dynamics_p.gamma,
         mu = mu_run,
-        epsilon = epsilon_run,
-        R_0 = singlesim_dynamics_p.R_0,
-    )
-
-    seir_mod!(
-        seir,
-        change,
-        jump,
-        init_states,
-        bifurc_mu_beta_force_dynamics_p,
-        singlesim_time_p;
-        type = "det",
+  type = "det",
     )
     next!(prog)
 end
