@@ -1,13 +1,13 @@
-module ODStructs
-
-export SimTimeParameters, EnsembleSpecification, DynamicsParameters,
-    StateParameters, OutbreakThresholdChars, OutbreakDetectionSpecification,
-    OutbreakSpecification, IndividualTestSpecification, NoiseSpecification
+# module ODStructs
+#
+# export SimTimeParameters, EnsembleSpecification, DynamicsParameters,
+#     StateParameters, OutbreakThresholdChars, OutbreakDetectionSpecification,
+#     OutbreakSpecification, IndividualTestSpecification, NoiseSpecification
 
 using LabelledArrays
 
 include("transmission-functions.jl")
-using .TransmissionFunctions
+# using .TransmissionFunctions
 
 struct SimTimeParameters
     tmin
@@ -131,4 +131,4 @@ struct NoiseSpecification
     noise_array
 end
 
-end
+# end

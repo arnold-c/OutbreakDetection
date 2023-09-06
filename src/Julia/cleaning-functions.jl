@@ -1,8 +1,8 @@
-module CleaningFunctions
-
-export create_sir_df, create_sir_beta_dfs, create_sir_sim_array!,
-    create_sir_all_sims_array, create_sir_all_sims_array!,
-    create_sir_all_sim_quantiles, create_sir_all_sim_quantiles!
+# module CleaningFunctions
+#
+# export create_sir_df, create_sir_beta_dfs, create_sir_sim_array!,
+#     create_sir_all_sims_array, create_sir_all_sims_array!,
+#     create_sir_all_sim_quantiles, create_sir_all_sim_quantiles!
 
 using DataFrames, DataFramesMeta
 using ModelingToolkit, DifferentialEquations
@@ -177,4 +177,4 @@ function create_sir_all_sim_quantiles(all_sims_array; quantiles)
     return quantile_array
 end
 
-end
+# end

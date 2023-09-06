@@ -1,7 +1,7 @@
-module EnsembleFunctions
-
-export run_ensemble_jump_prob, run_jump_prob, summarize_ensemble_jump_prob,
-    jump_prob_summary, get_ensemble_file
+# module EnsembleFunctions
+#
+# export run_ensemble_jump_prob, run_jump_prob, summarize_ensemble_jump_prob,
+#     jump_prob_summary, get_ensemble_file
 
 using DrWatson
 using UnPack
@@ -255,4 +255,4 @@ function match_ensemble_file!(criteria, dirpath, container, file)
     end
 end
 
-end
+# end

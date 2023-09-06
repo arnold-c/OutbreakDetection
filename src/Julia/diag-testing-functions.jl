@@ -1,10 +1,10 @@
-module DiagTestingFunctions
-
-export create_testing_arr, create_testing_arr!, calculate_tested!,
-    calculate_pos, calculate_pos!, calculate_movingavg, calculate_movingavg!,
-    detectoutbreak, detectoutbreak!, calculate_ot_characterstics,
-    calculate_noutbreaks, calculate_OutbreakThresholdChars,
-    run_OutbreakThresholdChars_creation, OutbreakThresholdChars_creation
+# module DiagTestingFunctions
+#
+# export create_testing_arr, create_testing_arr!, calculate_tested!,
+#     calculate_pos, calculate_pos!, calculate_movingavg, calculate_movingavg!,
+#     detectoutbreak, detectoutbreak!, calculate_ot_characterstics,
+#     calculate_noutbreaks, calculate_OutbreakThresholdChars,
+#     run_OutbreakThresholdChars_creation, OutbreakThresholdChars_creation
 
 using StatsBase
 using FreqTables
@@ -352,4 +352,4 @@ function OutbreakThresholdChars_creation(OT_chars_param_dict)
     return OT_chars
 end
 
-end
+# end

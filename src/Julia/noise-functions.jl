@@ -1,6 +1,6 @@
-module NoiseFunctions
-
-export create_noise_arr, create_noise_arr!
+# module NoiseFunctions
+#
+# export create_noise_arr, create_noise_arr!
 
 using DifferentialEquations
 using DataFrames
@@ -74,4 +74,4 @@ function sde_affect!(integrator)
     end
 end
 
-end
+# end
