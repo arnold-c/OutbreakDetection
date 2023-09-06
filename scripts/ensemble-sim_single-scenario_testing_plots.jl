@@ -2,10 +2,7 @@
 using DrWatson
 @quickactivate "OutbreakDetection"
 
-include("../src/OutbreakDetection.jl")
-using .OutbreakDetection
-
-include("ensemble-diag-testing-sim.jl")
+include("ensemble-sim_single-scenario_testing.jl")
 
 include(srcdir("makie-plotting-setup.jl"))
 
