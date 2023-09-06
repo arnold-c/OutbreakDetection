@@ -3,7 +3,6 @@
 # export create_noise_arr, create_noise_arr!
 
 using DifferentialEquations
-using DataFrames
 using FLoops
 
 # include("ensemble-functions.jl")

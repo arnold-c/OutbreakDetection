@@ -4,7 +4,6 @@ using DrWatson
 
 using ProgressMeter
 using DifferentialEquations
-using DataFrames
 
 include("../src/OutbreakDetection.jl")
 using .OutbreakDetection

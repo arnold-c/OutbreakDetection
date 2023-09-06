@@ -3,6 +3,7 @@ using DrWatson
 @quickactivate "OutbreakDetection"
 
 using ProgressMeter
+using Chain
 
 include("../src/OutbreakDetection.jl")
 using .OutbreakDetection

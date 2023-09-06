@@ -1,6 +1,6 @@
 # module TransmissionFunctions
 
-using DataFrames, DataFramesMeta, LinearAlgebra
+using LinearAlgebra
 using ModelingToolkit, DifferentialEquations
 using FLoops
 
