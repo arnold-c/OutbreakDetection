@@ -1,13 +1,13 @@
 module ODStructs
-export SimTimeParameters,
-    EnsembleSpecification, DynamicsParameters, StateParameters, OutbreakThresholdChars
 
-using DrWatson
-@quickactivate "OutbreakDetection"
+export SimTimeParameters, EnsembleSpecification, DynamicsParameters,
+    StateParameters, OutbreakThresholdChars, OutbreakDetectionSpecification,
+    OutbreakSpecification, IndividualTestSpecification, NoiseSpecification
 
 using LabelledArrays
-include(srcdir("Julia/DrWatson-helpers.jl"))
-include(funsdir("transmission-functions.jl"))
+
+include("transmission-functions.jl")
+using .TransmissionFunctions
 
 struct SimTimeParameters
     tmin

@@ -1,5 +1,6 @@
-using DrWatson
-@quickactivate "OutbreakDetection"
+module DetectionThresholds
+
+export create_inc_infec_arr, create_inc_infec_arr!, calculate_outbreak_thresholds
 
 using ProgressMeter
 using FLoops
@@ -67,3 +68,4 @@ function calculate_outbreak_thresholds(outbreakrle)
     return (outbreaklowers, outbreakuppers)
 end
 
+end

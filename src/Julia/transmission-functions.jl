@@ -1,9 +1,10 @@
-using DrWatson
-@quickactivate "OutbreakDetection"
+module TransmissionFunctions
 
 using DataFrames, DataFramesMeta, LinearAlgebra
 using ModelingToolkit, DifferentialEquations
 using FLoops
+
+export calculate_beta, calculateR0, calculate_import_rate
 
 """
     calculate_beta(R_0, gamma, mu, contact_mat, pop_matrix)
@@ -192,4 +193,6 @@ Calulate the rate of new infectious individuals imported into the simulation usi
 """
 function calculate_import_rate(mu, R_0, N)
     return (1.06 * mu * (R_0 - 1)) / sqrt(N)
+end
+
 end

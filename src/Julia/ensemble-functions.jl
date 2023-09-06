@@ -1,16 +1,23 @@
-using DrWatson
-@quickactivate "OutbreakDetection"
+module EnsembleFunctions
 
+export run_ensemble_jump_prob, run_jump_prob, summarize_ensemble_jump_prob,
+    jump_prob_summary, get_ensemble_file
+
+using DrWatson
 using UnPack
 using FLoops
 using ProgressMeter
 
-includet(srcdir("Julia/DrWatson-helpers.jl"))
-includet(funsdir("transmission-functions.jl"))
-includet(funsdir("cleaning-functions.jl"))
-includet(funsdir("SEIR-model.jl"))
+include("transmission-functions.jl")
+using .TransmissionFunctions
 
-includet(funsdir("structs.jl"))
+include("cleaning-functions.jl")
+using .CleaningFunctions
+
+include("SEIR-model.jl")
+using .SEIRModel
+
+include("structs.jl")
 using .ODStructs
 
 function run_ensemble_jump_prob(dict_of_ensemble_params; prog = prog)
@@ -246,4 +253,6 @@ function match_ensemble_file!(criteria, dirpath, container, file)
     if occursin(criteria, file)
         push!(container, joinpath(dirpath, file))
     end
+end
+
 end

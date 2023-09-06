@@ -1,12 +1,22 @@
-using DrWatson
-@quickactivate "OutbreakDetection"
+module DiagTestingFunctions
+
+export create_testing_arr, create_testing_arr!, calculate_tested!,
+    calculate_pos, calculate_pos!, calculate_movingavg, calculate_movingavg!,
+    detectoutbreak, detectoutbreak!, calculate_ot_characterstics,
+    calculate_noutbreaks, calculate_OutbreakThresholdChars,
+    run_OutbreakThresholdChars_creation, OutbreakThresholdChars_creation
 
 using StatsBase
 using FreqTables
 using ThreadsX
+using FLoops
+using DrWatson
 
-includet(srcdir("Julia/DrWatson-helpers.jl"))
-include(funsdir("structs.jl"))
+include("detection-thresholds.jl")
+using .DetectionThresholds
+
+include("structs.jl")
+using .ODStructs
 
 function create_testing_arr(
     incarr,
@@ -233,4 +243,113 @@ function calculate_OutbreakThresholdChars(testarr, infecarr)
     end
 
     return OT_chars
+end
+
+function run_OutbreakThresholdChars_creation(
+    dict_of_OTchars_params; progress = true
+)
+    if progress
+        prog = Progress(length(dict_of_OTchars_params))
+    end
+
+    for OTChars_params in dict_of_OTchars_params
+        @produce_or_load(
+            OutbreakThresholdChars_creation,
+            OTChars_params,
+            datadir(
+                "seasonal-infectivity-import",
+                "tau-leaping",
+                "N_$(OTChars_params[:N])",
+                "r_$(OTChars_params[:init_states_prop][:r_prop])",
+                "nsims_$(OTChars_params[:nsims])",
+                "births_per_k_$(OTChars_params[:births_per_k])",
+                "beta_force_$(OTChars_params[:beta_force])",
+                "tmax_$(OTChars_params[:time_p].tmax)",
+                "tstep_$(OTChars_params[:time_p].tstep)",
+                "noise_$(OTChars_params[:noise_spec].noise_type)",
+                "min_outbreak_dur_$(OTChars_params[:outbreak_spec].min_outbreak_dur)",
+                "min_outbreak_size_$(OTChars_params[:outbreak_spec].min_outbreak_size)",
+                "min_outbreak_size_$(OTChars_params[:outbreak_spec].outbreak_threshold)",
+                "detectthreshold_$(OTChars_params[:outbreak_detect_spec].detection_threshold)",
+                "testlag_$(OTChars_params[:outbreak_detect_spec].test_result_lag)",
+                "moveavglag_$(OTChars_params[:outbreak_detect_spec].moving_average_lag)",
+                "perc_tested$(OTChars_params[:outbreak_detect_spec].percent_tested)",
+                "testsens_$(OTChars_params[:test_spec].sensitivity)",
+                "testsens_$(OTChars_params[:test_spec].specificity)",
+            );
+            prefix = "SEIR_tau_sol",
+            filename = savename(
+                OTChars_params;
+                allowedtypes = (Symbol, Dict, String, Real),
+                accesses = [
+                    :N,
+                    :init_states_prop,
+                    :nsims,
+                    :time_p,
+                    :births_per_k,
+                    :beta_force,
+                    :noise_spec,
+                    :outbreak_spec,
+                    :outbreak_detect_spec,
+                    :ind_test_spec,
+                ],
+                expand = ["init_states_prop"],
+                sort = false,
+            ),
+            loadfile = false
+        )
+        if progress
+            next!(prog)
+        end
+    end
+end
+
+function OutbreakThresholdChars_creation(OT_chars_param_dict)
+    @unpack ensemble_jump_arr,
+    outbreakthreshold,
+    minoutbreakdur,
+    minoutbreaksize,
+    noisearr,
+    perc_tested,
+    testlag,
+    testsens,
+    testspec,
+    detectthreshold,
+    moveavglag = OT_chars_param_dict
+
+    @info "Creating Incidence Array"
+    incarr = create_inc_infec_arr(
+        ensemble_jump_arr,
+        outbreakthreshold,
+        minoutbreakdur,
+        minoutbreaksize
+    )
+
+    @info "Creating Testing Array"
+    testarr = zeros(
+        Int64, size(incarr, 1), 6, size(incarr, 3)
+    )
+
+    @info "Creating Positive Odds Array"
+    posoddsarr = zeros(Float64, size(incarr, 1), 2, size(incarr, 3))
+
+    create_testing_arr!(
+        testarr,
+        incarr,
+        noisearr,
+        posoddsarr,
+        perc_tested,
+        testlag,
+        testsens,
+        testspec,
+        detectthreshold,
+        moveavglag,
+    )
+
+    @info "Calculating OT characteristics"
+    OT_chars = create_OTchars_struct(incarr, testarr)
+
+    return OT_chars
+end
+
 end

@@ -1,11 +1,16 @@
-using DrWatson
-@quickactivate "OutbreakDetection"
+module PlottingFunctions
+
+export seircolors, seir_state_labels, create_sir_plot, draw_sir_plot,
+    sir_quantiles_array_base_plot, create_sir_quantiles_plot, outbreakcols,
+    detect_outbreak_plot, visualize_ensemble_noise, incidence_testing_plot,
+    testing_plot, ensemble_outbreak_distribution_plot, ensemble_OTChars_plot
 
 using GLMakie
 using AlgebraOfGraphics
 using ColorSchemes
 using UnPack
 using DataFrames
+using FLoops
 
 set_aog_theme!()
 # Set depending on size of screen
@@ -460,4 +465,6 @@ function ensemble_OTChars_plot(
     Legend(fig[1, 2], ax, legendlabel)
 
     return fig
+end
+
 end

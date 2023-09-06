@@ -1,12 +1,13 @@
-using DrWatson
-@quickactivate "OutbreakDetection"
+module NoiseFunctions
+
+export create_noise_arr, create_noise_arr!
 
 using DifferentialEquations
 using DataFrames
+using FLoops
 
-includet(srcdir("Julia/DrWatson-helpers.jl"))
-includet(funsdir("ensemble-functions.jl"))
-includet(scriptsdir("ensemble-sim.jl"))
+include("ensemble-functions.jl")
+using .EnsembleFunctions
 
 function create_noise_arr(
     jump_arr,
@@ -17,7 +18,7 @@ function create_noise_arr(
         sde_condition, sde_affect!; save_positions = (false, false)
     ),
 )
-    # Set noise arr to 3D array (even though not necessary), so it has the same 
+    # Set noise arr to 3D array (even though not necessary), so it has the same
     # dimensions as the other arrays
     noise_arr = zeros(
         Float64, size(jump_arr, 2), 1, size(jump_arr, 3)
@@ -71,4 +72,6 @@ function sde_affect!(integrator)
     if integrator.u[1] < 0.0
         integrator.u[1] = -integrator.u[1]
     end
+end
+
 end
