@@ -93,5 +93,42 @@ struct OutbreakThresholdChars{A,B,C,D}
     detectoutbreakbounds::D
 end
 
+struct OutbreakSpecification
+    outbreak_threshold
+    minimum_outbreak_duration
+    minimum_outbreak_size
+end
+
+struct OutbreakDetectionSpecification
+    detection_threshold
+    moving_average_lag
+    percent_tested
+    test_result_lag
+
+    function OutbreakDetectionSpecification(
+        detection_threshold,
+        moving_average_lag,
+        percent_clinic,
+        percent_clinic_tested,
+        test_result_lag,
+    )
+        return OutbreakDetectionSpecification(
+            detection_threshold,
+            moving_average_lag,
+            percent_clinic * percent_clinic_tested,
+            test_result_lag,
+        )
+    end
+end
+
+struct IndividualTestSpecification
+    sensitivity
+    specificity
+end
+
+struct NoiseSpecification
+    noise_type
+    noise_array
+end
 
 end
