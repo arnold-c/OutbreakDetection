@@ -4,9 +4,6 @@ using DrWatson
 
 using ColorSchemes
 
-include("../src/OutbreakDetection.jl")
-using .OutbreakDetection
-
 include("ensemble-sim_single-scenario_infections.jl")
 
 include(srcdir("makie-plotting-setup.jl"))

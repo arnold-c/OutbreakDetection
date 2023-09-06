@@ -5,9 +5,6 @@ using DrWatson
 using ProgressMeter
 using DifferentialEquations
 
-include("../src/OutbreakDetection.jl")
-using .OutbreakDetection
-
 include("ensemble-sim_single-scenario_infections.jl")
 
 #%%
