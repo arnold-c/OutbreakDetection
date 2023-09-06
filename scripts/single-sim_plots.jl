@@ -2,7 +2,15 @@
 using DrWatson
 @quickactivate "OutbreakDetection"
 
-includet(scriptsdir("single-sim.jl"))
+using DataFrames
+using DataFramesMeta
+
+include("../src/OutbreakDetection.jl")
+using .OutbreakDetection
+
+include(srcdir("makie-plotting-setup.jl"))
+
+include("single-sim.jl")
 @unpack trange = singlesim_time_p;
 
 #%%
@@ -78,4 +86,3 @@ end
     visual(Lines; linewidth = 1)
     draw(; facet = (; linkyaxes = :none), axis = (; limits = ((0, 3), nothing)))
 end
-

@@ -2,14 +2,12 @@
 using DrWatson
 @quickactivate "OutbreakDetection"
 
-includet(srcdir("Julia/DrWatson-helpers.jl"))
-includet(scriptsdir("ensemble-sim.jl"))
-includet(funsdir("plotting-functions.jl"))
-includet(scriptsdir("ensemble-sim.jl"))
+include("../src/OutbreakDetection.jl")
+using .OutbreakDetection
 
-GLMakie.activate!(; float = true)
-set_aog_theme!()
-update_theme!(resolution = (2200, 1300))
+include("ensemble-sim.jl")
+
+include(srcdir("makie-plotting-setup.jl"))
 
 #%%
 create_sir_quantiles_plot(

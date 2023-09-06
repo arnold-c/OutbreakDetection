@@ -4,9 +4,8 @@ using DrWatson
 
 using ProgressMeter
 
-includet(srcdir("Julia/DrWatson-helpers.jl"))
-includet(funsdir("ensemble-functions.jl"))
-includet(funsdir("structs.jl"))
+include("../src/OutbreakDetection.jl")
+using .OutbreakDetection
 
 #%%
 N_vec = convert.(Int64, [5e5])
@@ -95,6 +94,6 @@ ensemble_quants = get_ensemble_file(
     "95", ensemble_spec
 )
 
-@unpack ensemble_seir_arr, ensemble_jump_arr, ensemble_change_arr = ensemble_sol
-@unpack ensemble_seir_summary, caption, param_dict = ensemble_quants
-@unpack time_p = param_dict
+@unpack ensemble_seir_arr, ensemble_jump_arr, ensemble_change_arr, ensemble_dynamics_p, ensemble_param_dict = ensemble_sol
+@unpack ensemble_seir_summary, caption = ensemble_quants
+@unpack time_p = ensemble_param_dict

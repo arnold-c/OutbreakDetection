@@ -1,10 +1,11 @@
+# module SEIRModel
+#
+# export calculate_beta_amp, seir_mod, seir_mod!, seir_mod_loop!
+#
 """
 This is a simulation of an SIR model that uses Tau-leaping, with commuter
 imports. All jumps are manually defined.
 """
-
-using DrWatson
-@quickactivate "OutbreakDetection"
 
 using DifferentialEquations
 using Statistics
@@ -205,3 +206,5 @@ function seir_mod_loop!(
 
     return nothing
 end
+
+# end

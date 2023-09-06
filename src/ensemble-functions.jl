@@ -1,35 +1,44 @@
-using DrWatson
-@quickactivate "OutbreakDetection"
+# module EnsembleFunctions
+#
+# export run_ensemble_jump_prob, run_jump_prob, summarize_ensemble_jump_prob,
+#     jump_prob_summary, get_ensemble_file
 
+using DrWatson
 using UnPack
 using FLoops
 using ProgressMeter
 
-includet(srcdir("Julia/DrWatson-helpers.jl"))
-includet(funsdir("transmission-functions.jl"))
-includet(funsdir("cleaning-functions.jl"))
-includet(funsdir("SEIR-model.jl"))
-includet(funsdir("structs.jl"))
+# include("transmission-functions.jl")
+# # using .TransmissionFunctions
+#
+# include("cleaning-functions.jl")
+# # using .CleaningFunctions
+#
+# include("SEIR-model.jl")
+# # using .SEIRModel
+#
+# include("structs.jl")
+# using .ODStructs
 
-function run_ensemble_jump_prob(params_dict; prog = prog)
-    for p in params_dict
+function run_ensemble_jump_prob(dict_of_ensemble_params; prog = prog)
+    for ensemble_params in dict_of_ensemble_params
         @produce_or_load(
             run_jump_prob,
-            p,
+            ensemble_params,
             datadir(
                 "seasonal-infectivity-import",
                 "tau-leaping",
-                "N_$(p[:N])",
-                "r_$(p[:init_states_prop][:r_prop])",
-                "nsims_$(p[:nsims])",
-                "births_per_k_$(p[:births_per_k])",
-                "beta_force_$(p[:beta_force])",
-                "tmax_$(p[:time_p].tmax)",
-                "tstep_$(p[:time_p].tstep)",
+                "N_$(ensemble_params[:N])",
+                "r_$(ensemble_params[:init_states_prop][:r_prop])",
+                "nsims_$(ensemble_params[:nsims])",
+                "births_per_k_$(ensemble_params[:births_per_k])",
+                "beta_force_$(ensemble_params[:beta_force])",
+                "tmax_$(ensemble_params[:time_p].tmax)",
+                "tstep_$(ensemble_params[:time_p].tstep)",
             );
             prefix = "SEIR_tau_sol",
             filename = savename(
-                p;
+                ensemble_params;
                 allowedtypes = (Symbol, Dict, String, Real),
                 accesses = [
                     :N, :init_states_prop, :nsims, :time_p, :births_per_k,
@@ -45,9 +54,9 @@ function run_ensemble_jump_prob(params_dict; prog = prog)
 end
 
 """
-    run_jump_prob(param_dict)
+    run_jump_prob(ensemble_param_dict)
 """
-function run_jump_prob(param_dict)
+function run_jump_prob(ensemble_param_dict)
     @unpack N,
     init_states_prop,
     base_dynamics_p,
@@ -55,7 +64,7 @@ function run_jump_prob(param_dict)
     nsims,
     beta_force,
     births_per_k,
-    seed = param_dict
+    seed = ensemble_param_dict
 
     @unpack tstep, tlength, trange = time_p
 
@@ -70,7 +79,7 @@ function run_jump_prob(param_dict)
     beta_mean = calculate_beta(R_0, gamma, mu, 1, N)
     epsilon = calculate_import_rate(mu, R_0, N)
 
-    dynamics_p = DynamicsParameters(;
+    ensemble_dynamics_p = DynamicsParameters(;
         beta_mean = beta_mean,
         beta_force = beta_force,
         sigma = base_dynamics_p.sigma,
@@ -100,34 +109,34 @@ function run_jump_prob(param_dict)
             change,
             jump,
             ensemble_states_p.init_states,
-            dynamics_p,
+            ensemble_dynamics_p,
             time_p;
             seed = run_seed,
         )
     end
 
-    return @strdict ensemble_seir_arr ensemble_change_arr ensemble_jump_arr dynamics_p ensemble_states_p time_p param_dict
+    return @strdict ensemble_seir_arr ensemble_change_arr ensemble_jump_arr ensemble_dynamics_p ensemble_states_p time_p ensemble_param_dict
 end
 
-function summarize_ensemble_jump_prob(params_dict; prog = prog)
-    for p in params_dict
+function summarize_ensemble_jump_prob(dict_of_ensemble_params; prog = prog)
+    for ensemble_params in dict_of_ensemble_params
         @produce_or_load(
             jump_prob_summary,
-            p,
+            ensemble_params,
             datadir(
                 "seasonal-infectivity-import",
                 "tau-leaping",
-                "N_$(p[:N])",
-                "r_$(p[:init_states_prop][:r_prop])",
-                "nsims_$(p[:nsims])",
-                "births_per_k_$(p[:births_per_k])",
-                "beta_force_$(p[:beta_force])",
-                "tmax_$(p[:time_p].tmax)",
-                "tstep_$(p[:time_p].tstep)",
+                "N_$(ensemble_params[:N])",
+                "r_$(ensemble_params[:init_states_prop][:r_prop])",
+                "nsims_$(ensemble_params[:nsims])",
+                "births_per_k_$(ensemble_params[:births_per_k])",
+                "beta_force_$(ensemble_params[:beta_force])",
+                "tmax_$(ensemble_params[:time_p].tmax)",
+                "tstep_$(ensemble_params[:time_p].tstep)",
             );
             prefix = "SEIR_tau_quants",
             filename = savename(
-                p;
+                ensemble_params;
                 allowedtypes = (Symbol, Dict, String, Real),
                 accesses = [
                     :N, :init_states_prop, :nsims, :time_p, :births_per_k,
@@ -145,13 +154,15 @@ end
 """
     jump_prob_summary(param_dict)
 """
-function jump_prob_summary(param_dict)
-    @unpack N, init_states_prop, nsims, beta_force, births_per_k, time_p, quantiles =
-        param_dict
+function jump_prob_summary(ensemble_param_dict)
+    @unpack N,
+    init_states_prop, nsims, beta_force, births_per_k, time_p,
+    quantiles =
+        ensemble_param_dict
 
     sim_name = savename(
         "SEIR_tau_sol",
-        param_dict,
+        ensemble_param_dict,
         "jld2";
         allowedtypes = (Symbol, Dict, String, Real),
         accesses = [
@@ -197,7 +208,7 @@ function jump_prob_summary(param_dict)
 
     caption = "nsims = $nsims, N = $N, S = $S_init, I = $I_init, R = $R_init, beta_force = $beta_force,\nbirths per k/annum = $births_per_k tstep = $(time_p.tstep), quantile int = $quantiles"
 
-    return @strdict ensemble_seir_summary caption ensemble_states_p param_dict
+    return @strdict ensemble_seir_summary caption ensemble_states_p ensemble_param_dict
 end
 
 function get_ensemble_file(type, spec)
@@ -243,3 +254,5 @@ function match_ensemble_file!(criteria, dirpath, container, file)
         push!(container, joinpath(dirpath, file))
     end
 end
+
+# end
