@@ -5,8 +5,8 @@ using DrWatson
 include("../src/OutbreakDetection.jl")
 using .OutbreakDetection
 
-include("ensemble-detection.jl")
-include("ensemble-noise-sim.jl")
+include("ensemble-sim_single-scenario_infections.jl")
+include("ensemble-sim_single-scenario_noise.jl")
 
 #%%
 testlag = 3

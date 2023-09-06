@@ -7,7 +7,7 @@ using ColorSchemes
 include("../src/OutbreakDetection.jl")
 using .OutbreakDetection
 
-include("ensemble-detection.jl")
+include("ensemble-sim_single-scenario_infections.jl")
 
 include(srcdir("makie-plotting-setup.jl"))
 
@@ -22,4 +22,10 @@ detect_outbreak_plot(
     xlims = (90, 100),
     ylims_inc = (0, 150),
     ylims_periodsum = (0, 1000),
+)
+
+#%%
+create_sir_quantiles_plot(
+    ensemble_seir_summary; labels = seir_state_labels, colors = seircolors,
+    annual = true, caption = caption, timeparams = time_p
 )

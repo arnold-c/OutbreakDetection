@@ -5,7 +5,7 @@ using DrWatson
 include("../src/OutbreakDetection.jl")
 using .OutbreakDetection
 
-include("ensemble-noise-sim.jl")
+include("ensemble-sim_single-scenario_noise.jl")
 
 include(srcdir("makie-plotting-setup.jl"))
 

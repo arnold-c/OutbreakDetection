@@ -9,7 +9,7 @@ using DataFrames
 include("../src/OutbreakDetection.jl")
 using .OutbreakDetection
 
-include("ensemble-sim.jl")
+include("ensemble-sim_single-scenario_infections.jl")
 
 #%%
 init_noise = [10.0]
