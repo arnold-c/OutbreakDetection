@@ -4,8 +4,8 @@ using DrWatson
 
 using Random
 
-# include("../src/OutbreakDetection.jl")
-using OutbreakDetection
+include("../src/OutbreakDetection.jl")
+using .OutbreakDetection
 
 
 #%%
@@ -25,21 +25,24 @@ dur_inf_days = 5
 R_0 = 10.0
 sigma = 1 / latent_per_days
 gamma = 1 / dur_inf_days
-mu = 1 / (62.5 * 365)
+life_expectancy_years = 62.5
+mu = 1 / (life_expectancy_years * 365)
+annual_births_per_k = 1000 / life_expectancy_years
 # beta_mean is the average transmission rate
 beta_mean = calculate_beta(R_0, gamma, mu, 1, singlesim_states_p.init_states.N)
 # Adjust the scale of the seasonal variation in infectivity i.e. beta_force scales the amplitude of cosine function
 beta_force = 0.2
 epsilon = calculate_import_rate(mu, R_0, singlesim_states_p.init_states.N)
 
-singlesim_dynamics_p = DynamicsParameters(;
-    beta_mean = beta_mean,
-    beta_force = beta_force,
-    sigma = sigma,
-    gamma = gamma,
-    mu = mu,
-    epsilon = epsilon,
-    R_0 = R_0,
+singlesim_dynamics_p = DynamicsParameters(
+    beta_mean,
+    beta_force,
+    sigma,
+    gamma,
+    mu,
+    annual_births_per_k,
+    epsilon,
+    R_0,
 )
 
 #%%
