@@ -13,7 +13,8 @@ export calculate_beta, calculateR0, calculate_import_rate
 include("structs.jl")
 export SimTimeParameters, EnsembleSpecification, DynamicsParameters,
     StateParameters, OutbreakThresholdChars, OutbreakDetectionSpecification,
-    OutbreakSpecification, IndividualTestSpecification, NoiseSpecification
+    OutbreakSpecification, IndividualTestSpecification, NoiseSpecification,
+    ScenarioSpecification
 # @reexport using .ODStructs
 
 include("SEIR-model.jl")
@@ -35,7 +36,8 @@ export create_testing_arr, create_testing_arr!, calculate_tested!,
     calculate_pos, calculate_pos!, calculate_movingavg, calculate_movingavg!,
     detectoutbreak, detectoutbreak!, calculate_ot_characterstics,
     calculate_noutbreaks, calculate_OutbreakThresholdChars,
-    run_OutbreakThresholdChars_creation, OutbreakThresholdChars_creation
+    run_OutbreakThresholdChars_creation, OutbreakThresholdChars_creation,
+    get_scenario_file
 # @reexport using .DiagTestingFunctions
 
 include("ensemble-functions.jl")
