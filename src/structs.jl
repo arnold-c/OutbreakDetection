@@ -155,4 +155,44 @@ struct NoiseSpecification
     noise_array
 end
 
+struct ScenarioSpecification
+    ensemble_specification::EnsembleSpecification
+    outbreak_specification::OutbreakSpecification
+    noise_specification::NoiseSpecification
+    outbreak_detection_specification::OutbreakDetectionSpecification
+    individual_test_specification::IndividualTestSpecification
+    dirpath::String
+end
+
+function ScenarioSpecification(
+    ensemble_specification::EnsembleSpecification,
+    outbreak_specification::OutbreakSpecification,
+    noise_specification::NoiseSpecification,
+    outbreak_detection_specification::OutbreakDetectionSpecification,
+    individual_test_specification::IndividualTestSpecification,
+)
+    dirpath = joinpath(
+        ensemble_specification.dirpath,
+        "noise_$(noise_specification.noise_type)",
+        "min_outbreak_dur_$(outbreak_specification.minimum_outbreak_duration)",
+        "min_outbreak_size_$(outbreak_specification.minimum_outbreak_size)",
+        "outbreak_threshold_$(outbreak_specification.outbreak_threshold)",
+        "detectthreshold_$(outbreak_detection_specification.detection_threshold)",
+        "testlag_$(outbreak_detection_specification.test_result_lag)",
+        "moveavglag_$(outbreak_detection_specification.moving_average_lag)",
+        "perc_tested_$(outbreak_detection_specification.percent_tested)",
+        "testsens_$(individual_test_specification.sensitivity)",
+        "testspec_$(individual_test_specification.specificity)",
+    )
+
+    return ScenarioSpecification(
+        ensemble_specification,
+        outbreak_specification,
+        noise_specification,
+        outbreak_detection_specification,
+        individual_test_specification,
+        dirpath,
+    )
+end
+
 # end
