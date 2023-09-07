@@ -28,7 +28,7 @@ function create_testing_arr(
     detectthreshold,
     moveavglag,
 )
-    testarr = zeros(Int64, size(incarr, 1), 6, size(incarr, 3))
+    testarr = zeros(Int64, size(incarr, 1), 8, size(incarr, 3))
     posoddsarr = zeros(Float64, size(incarr, 1), 2, size(incarr, 3))
 
     create_testing_arr!(
