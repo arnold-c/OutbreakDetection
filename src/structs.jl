@@ -104,6 +104,7 @@ struct OutbreakDetectionSpecification
     moving_average_lag
     percent_tested
     test_result_lag
+end
 
     function OutbreakDetectionSpecification(
         detection_threshold,
@@ -119,7 +120,6 @@ struct OutbreakDetectionSpecification
             test_result_lag,
         )
     end
-end
 
 struct IndividualTestSpecification
     sensitivity
