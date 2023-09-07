@@ -186,6 +186,11 @@ function calculateR0(
     )
 end
 
+function calculate_mu(annual_births_per_k)
+    life_expectancy_years = 1000 / annual_births_per_k
+    return 1 / (life_expectancy_years * 365)
+end
+
 """
     calculate_import_rate(mu, R_0, N)
 

@@ -7,7 +7,7 @@ module OutbreakDetection
 # using Reexport
 
 include("transmission-functions.jl")
-export calculate_beta, calculateR0, calculate_import_rate
+export calculate_beta, calculateR0, calculate_import_rate, calculate_mu
 # @reexport using .TransmissionFunctions
 
 include("structs.jl")
