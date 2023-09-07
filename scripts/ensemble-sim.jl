@@ -5,22 +5,22 @@ using DrWatson
 using ProgressMeter
 using Chain
 
-include("../src/OutbreakDetection.jl")
-using .OutbreakDetection
+# include("../src/OutbreakDetection.jl")
+using OutbreakDetection
 
 #%%
-N_vec = convert.(Int64, [5e5])
+model_types_vec = [("seasonal-infectivity-import", "tau-leaping")]
+N_vec = [500_000]
 nsims_vec = [1_000]
-init_states_prop_dict = [
-    Dict(
-        :s_prop => 0.1,
-        :e_prop => 0.01,
-        :i_prop => 0.01,
-        :r_prop => 0.88,
-    )
-]
+init_states_prop_dict = [Dict(:s_prop => 0.1, :e_prop => 0.01, :i_prop => 0.01, :r_prop => 0.88)]
+tmin_vec = [0.0]
 tstep_vec = [1.0]
 tmax_vec = [365.0 * 100]
+
+time_p_vec = vec(map(Iterators.product(tmin_vec, tstep_vec, tmax_vec)) do (tmin, tstep, tmax)
+    SimTimeParameters(; tmin = tmin, tmax = tmax, tstep = tstep)
+end)
+
 beta_force_vec = collect(0.0:0.1:0.4)
 births_per_k_min = 5
 births_per_k_max = 20
@@ -28,6 +28,12 @@ births_per_k_step = 5
 births_per_k_vec = collect(births_per_k_min:births_per_k_step:births_per_k_max)
 seed = 1234
 
+ensemble_spec_vec = create_combinations_vec(
+    EnsembleSpecification,
+    (model_types_vec, N_vec, init_states_prop_dict, nsims_vec, births_per_k_vec, beta_force_vec, time_p_vec),
+)
+
+#%%
 latent_per_days = 8
 dur_inf_days = 5
 R_0 = 10.0
@@ -45,13 +51,8 @@ ensemble_time_p = SimTimeParameters(;
 )
 
 base_param_dict = @dict(
-    N = N_vec,
-    init_states_prop = init_states_prop_dict,
+    ensemble_spec = ensemble_spec_vec,
     base_dynamics_p = ensemble_base_dynamics_p,
-    time_p = ensemble_time_p,
-    nsims = nsims_vec,
-    beta_force = beta_force_vec,
-    births_per_k = births_per_k_vec,
     seed = seed,
 )
 
