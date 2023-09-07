@@ -76,8 +76,10 @@ function run_jump_prob(ensemble_param_dict)
     )
 
     mu = births_per_k / (1_000 * 365)
-    beta_mean = calculate_beta(R_0, gamma, mu, 1, N)
-    epsilon = calculate_import_rate(mu, R_0, N)
+    beta_mean = calculate_beta(
+        base_dynamics_p.R_0, base_dynamics_p.gamma, mu, 1, N
+    )
+    epsilon = calculate_import_rate(mu, base_dynamics_p.R_0, N)
 
     ensemble_dynamics_p = DynamicsParameters(;
         beta_mean = beta_mean,
