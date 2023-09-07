@@ -53,7 +53,8 @@ sigma_vec = 1 ./ latent_per_days_vec
 gamma_vec = 1 ./ dur_inf_days_vec
 
 #%%
-ensemble_spec_combinations = Iterators.product(beta_force_vec,
+ensemble_spec_vec = create_ensemble_spec_combinations(
+    beta_force_vec,
     sigma_vec,
     gamma_vec,
     annual_births_per_k_vec,
@@ -62,36 +63,8 @@ ensemble_spec_combinations = Iterators.product(beta_force_vec,
     init_states_prop_dict,
     model_types_vec,
     time_p_vec,
-    nsims_vec
+    nsims_vec,
 )
-ensemble_spec_vec = Vector(undef, length(ensemble_spec_combinations))
-
-for (
-    i, (beta_force, sigma, gamma, annual_births_per_k, R_0, N, init_states_prop, model_type, time_p, nsims)
-) in enumerate(ensemble_spec_combinations)
-    mu = calculate_mu(annual_births_per_k)
-    beta_mean = calculate_beta(R_0, gamma, mu, 1, N)
-    epsilon = calculate_import_rate(mu, R_0, N)
-
-    ensemble_spec_vec[i] = EnsembleSpecification(
-        model_type,
-        StateParameters(
-            N, init_states_prop
-        ),
-        DynamicsParameters(
-            beta_mean,
-            beta_force,
-            sigma,
-            gamma,
-            mu,
-            annual_births_per_k,
-            epsilon,
-            R_0,
-        ),
-        time_p,
-        nsims,
-    )
-end
 
 #%%
 base_param_dict = @dict(
