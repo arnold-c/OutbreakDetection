@@ -35,7 +35,7 @@ include("diag-testing-functions.jl")
 export create_testing_arr, create_testing_arr!, calculate_tested!,
     calculate_pos, calculate_pos!, calculate_movingavg, calculate_movingavg!,
     detectoutbreak, detectoutbreak!, calculate_ot_characterstics,
-    calculate_noutbreaks, calculate_OutbreakThresholdChars,
+    calculate_noutbreaks, calculate_OutbreakThresholdChars, create_combinations_vec,
     run_OutbreakThresholdChars_creation, OutbreakThresholdChars_creation,
     get_scenario_file
 # @reexport using .DiagTestingFunctions
