@@ -87,6 +87,15 @@ struct StateParameters
     init_state_props
 end
 
+function StateParameters(N::Int64, init_state_props::Dict)
+    return StateParameters(;
+        N = N,
+        s_prop = init_state_props[:s_prop],
+        e_prop = init_state_props[:e_prop],
+        i_prop = init_state_props[:i_prop]
+    )
+end
+
 function StateParameters(;
     N = 500_00, s_prop = 0.1, e_prop = 0.01, i_prop = 0.01
 )
