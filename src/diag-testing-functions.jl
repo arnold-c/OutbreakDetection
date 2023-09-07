@@ -6,11 +6,12 @@
 #     calculate_noutbreaks, calculate_OutbreakThresholdChars,
 #     run_OutbreakThresholdChars_creation, OutbreakThresholdChars_creation
 
+using DrWatson
 using StatsBase
 using FreqTables
 using ThreadsX
 using FLoops
-using DrWatson
+using StructArrays
 
 # include("detection-thresholds.jl")
 # # using .DetectionThresholds
@@ -242,7 +243,7 @@ function calculate_OutbreakThresholdChars(testarr, infecarr)
         )
     end
 
-    return OT_chars
+    return StructArray(OT_chars)
 end
 
 function run_OutbreakThresholdChars_creation(
