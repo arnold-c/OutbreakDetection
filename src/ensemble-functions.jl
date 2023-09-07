@@ -109,7 +109,7 @@ function run_ensemble_jump_prob(dict_of_ensemble_params; prog = prog)
                 "annual_births_per_k_$(ensemble_params[:ensemble_spec].dynamics_parameters.annual_births_per_k)",
                 "beta_force_$(ensemble_params[:ensemble_spec].dynamics_parameters.beta_force)",
                 "tmax_$(ensemble_params[:ensemble_spec].time_parameters.tmax)",
-                "tstep_$(ensemble_params[:ensembel_spec].time_parameters.tstep)",
+                "tstep_$(ensemble_params[:ensemble_spec].time_parameters.tstep)",
             );
             prefix = "SEIR_tau_sol",
             filename = savename(
@@ -178,7 +178,7 @@ function summarize_ensemble_jump_prob(dict_of_ensemble_params; prog = prog)
                 "annual_births_per_k_$(ensemble_params[:ensemble_spec].dynamics_parameters.annual_births_per_k)",
                 "beta_force_$(ensemble_params[:ensemble_spec].dynamics_parameters.beta_force)",
                 "tmax_$(ensemble_params[:ensemble_spec].time_parameters.tmax)",
-                "tstep_$(ensemble_params[:ensembel_spec].time_parameters.tstep)",
+                "tstep_$(ensemble_params[:ensemble_spec].time_parameters.tstep)",
             );
             prefix = "SEIR_tau_quants",
             filename = savename(
