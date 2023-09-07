@@ -114,7 +114,6 @@ end
 
 struct EnsembleSpecification
     modeltypes::Tuple
-    init_states_prop::Dict
     state_parameters::StateParameters
     dynamics_parameters::DynamicsParameters
     time_parameters::SimTimeParameters
@@ -124,51 +123,24 @@ end
 
 function EnsembleSpecification(
     modeltypes::Tuple,
-    N::Int64,
-    init_states_prop,
-    base_dynamics_parameters::DynamicsParameters,
-    births_per_k::Int64,
-    beta_force::Float64,
+    state_parameters::StateParameters,
+    dynamics_parameters::DynamicsParameters,
     time_parameters::SimTimeParameters,
     nsims::Int64,
 )
-    state_parameters = StateParameters(;
-        N = N,
-        s_prop = init_states_prop[:s_prop],
-        e_prop = init_states_prop[:e_prop],
-        i_prop = init_states_prop[:i_prop],
-    )
-
-    mu = births_per_k / (1_000 * 365)
-    beta_mean = calculate_beta(
-        base_dynamics_parameters.R_0, base_dynamics_parameters.gamma, mu, 1, N
-    )
-    epsilon = calculate_import_rate(mu, base_dynamics_parameters.R_0, N)
-
-    dynamics_parameters = DynamicsParameters(;
-        beta_mean = beta_mean,
-        beta_force = beta_force,
-        sigma = base_dynamics_parameters.sigma,
-        gamma = base_dynamics_parameters.gamma,
-        mu = mu,
-        epsilon = epsilon,
-        R_0 = base_dynamics_parameters.R_0,
-    )
-
     dirpath = datadir(
         modeltypes...,
-        "N_$(N)",
-        "r_$(init_states_prop[:r_prop])",
+        "N_$(state_parameters.init_states.N)",
+        "r_$(state_parameters.init_state_props.r_prop)",
         "nsims_$(nsims)",
-        "births_per_k_$(births_per_k)",
-        "beta_force_$(beta_force)",
+        "births_per_k_$(dynamics_parameters.annual_births_per_k)",
+        "beta_force_$(dynamics_parameters.beta_force)",
         "tmax_$(time_parameters.tmax)",
         "tstep_$(time_parameters.tstep)",
     )
 
     return EnsembleSpecification(
         modeltypes,
-        init_states_prop,
         state_parameters,
         dynamics_parameters,
         time_parameters,
