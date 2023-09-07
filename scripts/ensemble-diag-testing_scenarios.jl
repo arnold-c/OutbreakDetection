@@ -3,7 +3,7 @@ using DrWatson
 @quickactivate "OutbreakDetection"
 
 # include("../src/OutbreakDetection.jl")
-# using .OutbreakDetection
+# using OutbreakDetection
 
 include("ensemble-sim_single-scenario_noise.jl")
 
@@ -109,3 +109,16 @@ scenarios_dict = dict_list(merge(base_param_dict, base_scenarios_dict))
 
 #%%
 run_OutbreakThresholdChars_creation(scenarios_dict; progress = true)
+
+#%%
+scenario = ScenarioSpecification(
+    ensemble_spec,
+    outbreak_spec,
+    NoiseSpecification("static", ensemble_noise_arr),
+    OutbreakDetectionSpecification(10, 7, 0.3, 0.3, 3),
+    IndividualTestSpecification(0.8, 0.8),
+)
+
+scenario_file = get_scenario_file(scenario)
+
+@unpack OT_chars = scenario_file
