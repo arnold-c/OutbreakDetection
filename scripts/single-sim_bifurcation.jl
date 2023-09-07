@@ -3,68 +3,79 @@ using DrWatson
 @quickactivate "OutbreakDetection"
 
 using ProgressMeter
-using IterTools
 using FLoops
-
-include("../src/OutbreakDetection.jl")
-using .OutbreakDetection
 
 include(srcdir("makie-plotting-setup.jl"))
 
 include("single-sim.jl")
 
 #%%
-mu_min = 10
-mu_max = 100
-mu_step = 2.0
-n_mus = length(mu_min:mu_step:mu_max)
-mu_vec = zeros(Float64, n_mus)
-mu_vec .= collect(mu_min:mu_step:mu_max) ./ (1_000 * 365)
+annual_birth_rate_per_k_min = 10
+annual_birth_rate_per_k_max = 100
+annual_birth_rate_per_k_step = 2.0
+annual_birth_rate_per_k_vec =
+    annual_birth_rate_per_k_min:annual_birth_rate_per_k_step:annual_birth_rate_per_k_max
+
+n_annual_birth_rate_per_k = length(annual_birth_rate_per_k_vec)
 
 @unpack init_states = singlesim_states_p
 @unpack tlength = singlesim_time_p
 
-epsilon_vec = zeros(Float64, n_mus)
-for (i, mu) in pairs(mu_vec)
-    epsilon_vec[i] = calculate_import_rate(mu, singlesim_dynamics_p.R_0, init_states.N)
-end
+bifurc_mu_seir_arr = zeros(
+    Float64, size(init_states, 1), tlength, n_annual_birth_rate_per_k
+);
+bifurc_mu_change_arr = zeros(
+    Float64, size(init_states, 1), tlength, n_annual_birth_rate_per_k
+);
+bifurc_mu_jump_arr = zeros(Float64, 9, tlength, n_annual_birth_rate_per_k);
 
-bifurc_mu_seir_arr = zeros(Float64, size(init_states, 1), tlength, n_mus);
-bifurc_mu_change_arr = zeros(Float64, size(init_states, 1), tlength, n_mus);
-bifurc_mu_jump_arr = zeros(Float64, 9, tlength, n_mus);
+prog = Progress(n_annual_birth_rate_per_k)
+@floop for (k, annual_birth_rate_per_k_run) in
+           pairs(annual_birth_rate_per_k_vec)
+    mu_run = calculate_mu(annual_birth_rate_per_k_run)
 
-prog = Progress(n_mus)
-@floop for (k, mu_run) in pairs(mu_vec)
-    epsilon_run = epsilon_vec[k]
+    epsilon_run = calculate_import_rate(
+        mu_run, singlesim_dynamics_p.R_0, init_states.N
+    )
 
     seir = @view bifurc_mu_seir_arr[:, :, k]
     change = @view bifurc_mu_change_arr[:, :, k]
     jump = @view bifurc_mu_jump_arr[:, :, k]
 
-    bifurc_mu_dynamics_p = DynamicsParameters(;
-        beta_mean = singlesim_dynamics_p.beta_mean,
-        beta_force = singlesim_dynamics_p.beta_force,
-        sigma = singlesim_dynamics_p.sigma,
-        gamma = singlesim_dynamics_p.gamma,
-        mu = mu_run,
-        epsilon = epsilon_run,
-        R_0 = singlesim_dynamics_p.R_0,
+    bifurc_mu_dynamics_p = DynamicsParameters(
+        singlesim_dynamics_p.beta_mean,
+        singlesim_dynamics_p.beta_force,
+        singlesim_dynamics_p.sigma,
+        singlesim_dynamics_p.gamma,
+        mu_run,
+        annual_birth_rate_per_k_run,
+        epsilon_run,
+        singlesim_dynamics_p.R_0,
     )
 
-    seir_mod!(seir, change, jump,
-        init_states, bifurc_mu_dynamics_p, singlesim_time_p; type = "det",
+    seir_mod!(
+        seir,
+        change,
+        jump,
+        init_states,
+        bifurc_mu_dynamics_p,
+        singlesim_time_p;
+        type = "det",
     )
     next!(prog)
 end
 
 years = (40 * 365):365:(tlength - 365)
-bifurc_mu_annual_summary = zeros(Float64, 5, length(years), n_mus);
+bifurc_mu_annual_summary = zeros(
+    Float64, 5, length(years), n_annual_birth_rate_per_k
+);
 
-for mu in eachindex(mu_vec), state in eachindex(seir_state_labels),
+for annual_birth_rate_per_k in eachindex(annual_birth_rate_per_k_vec),
+    state in eachindex(seir_state_labels),
     (year, day) in pairs(years)
 
-    bifurc_mu_annual_summary[state, year, mu] = maximum(
-        bifurc_mu_seir_arr[state, day:(day + 364), mu]
+    bifurc_mu_annual_summary[state, year, annual_birth_rate_per_k] = maximum(
+        bifurc_mu_seir_arr[state, day:(day + 364), annual_birth_rate_per_k]
     )
 end
 
@@ -74,13 +85,14 @@ bifurc_mu_seir_arr[2, (40 * 365):(40 * 365 + 364), 10]
 #%%
 bifurc_mu_fig = Figure()
 bifurc_mu_ax = Axis(
-    bifurc_mu_fig[1, 1]; xlabel = "mu (per 1_000, per annum)", ylabel = "Max. I"
+    bifurc_mu_fig[1, 1]; xlabel = "Birth rate (per 1_000, per annum)",
+    ylabel = "Max. I",
 )
 
 for year in eachindex(years)
     scatter!(
         bifurc_mu_ax,
-        mu_min:mu_step:mu_max,
+        annual_birth_rate_per_k_vec,
         bifurc_mu_annual_summary[2, year, :];
         markersize = 4,
         color = :black,
@@ -105,26 +117,29 @@ bifurc_beta_force_change_arr = zeros(
 );
 bifurc_beta_force_jump_arr = zeros(Float64, 9, tlength, n_beta_forces);
 
-beta_force_mu = 50 / (1_000 * 365)
-beta_force_epsilon = calculate_import_rate(mu, R_0, init_states.N)
+beta_force_annual_birth_rate_per_k = 50
+beta_force_mu = calculate_mu(beta_force_annual_birth_rate_per_k)
+beta_force_epsilon = calculate_import_rate(beta_force_mu, R_0, init_states.N)
 
 @showprogress for (k, beta_force_run) in pairs(beta_force_vec)
     seir = @view bifurc_beta_force_seir_arr[:, :, k]
     change = @view bifurc_beta_force_change_arr[:, :, k]
     jump = @view bifurc_beta_force_jump_arr[:, :, k]
 
-    bifurc_beta_force_dynamics_p = DynamicsParameters(;
-        beta_mean = singlesim_dynamics_p.beta_mean,
-        beta_force = beta_force_run,
-        sigma = singlesim_dynamics_p.sigma,
-        gamma = singlesim_dynamics_p.gamma,
-        mu = beta_force_mu,
-        epsilon = beta_force_epsilon,
-        R_0 = singlesim_dynamics_p.R_0,
+    bifurc_beta_force_dynamics_p = DynamicsParameters(
+        singlesim_dynamics_p.beta_mean,
+        beta_force_run,
+        singlesim_dynamics_p.sigma,
+        singlesim_dynamics_p.gamma,
+        beta_force_mu,
+        beta_force_annual_birth_rate_per_k,
+        beta_force_epsilon,
+        singlesim_dynamics_p.R_0,
     )
 
     seir_mod!(
-        seir, change, jump, init_states, bifurc_beta_force_dynamics_p, singlesim_time_p; type = "det"
+        seir, change, jump, init_states, bifurc_beta_force_dynamics_p,
+        singlesim_time_p; type = "det",
     )
 end
 
@@ -166,34 +181,57 @@ bifurc_beta_force_fig
 
 #%%
 bifurc_mu_beta_force_seir_arr = zeros(
-    Float64, size(init_states, 1), tlength, n_mus, n_beta_forces
+    Float64, size(init_states, 1), tlength, n_annual_birth_rate_per_k,
+    n_beta_forces,
 );
 bifurc_mu_beta_force_change_arr = zeros(
-    Float64, size(init_states, 1), tlength, n_mus, n_beta_forces
+    Float64, size(init_states, 1), tlength, n_annual_birth_rate_per_k,
+    n_beta_forces,
 );
-bifurc_mu_beta_force_jump_arr = zeros(Float64, 9, tlength, n_mus, n_beta_forces);
+bifurc_mu_beta_force_jump_arr = zeros(
+    Float64, 9, tlength, n_annual_birth_rate_per_k, n_beta_forces
+);
 
-prog = Progress(length(mu_vec) * length(beta_force_vec))
-@floop for (beta_force_pair, mu_pair) in
-           IterTools.product(pairs(beta_force_vec), pairs(mu_vec))
-    k = mu_pair[1]
-    mu_run = mu_pair[2]
+prog = Progress(length(annual_birth_rate_per_k_vec) * length(beta_force_vec))
+@floop for (annual_birth_rate_per_k_pair, beta_force_pair) in
+           Iterators.product(
+    pairs(annual_birth_rate_per_k_vec), pairs(beta_force_vec)
+)
+    k = annual_birth_rate_per_k_pair[1]
+    annual_birth_rate_per_k_run = annual_birth_rate_per_k_pair[2]
+    mu_run = calculate_mu(annual_birth_rate_per_k_run)
+
     l = beta_force_pair[1]
     beta_force_run = beta_force_pair[2]
-    epsilon_run = epsilon_vec[k]
+    epsilon_run = calculate_import_rate(
+        mu_run, singlesim_dynamics_p.R_0, init_states.N
+    )
 
     seir = @view bifurc_mu_beta_force_seir_arr[:, :, k, l]
     change = @view bifurc_mu_beta_force_change_arr[:, :, k, l]
     jump = @view bifurc_mu_beta_force_jump_arr[:, :, k, l]
 
-    bifurc_mu_beta_force_dynamics_p = DynamicsParameters(;
-        beta_mean = singlesim_dynamics_p.beta_mean,
-        beta_force = beta_force_run,
-        sigma = singlesim_dynamics_p.sigma,
-        gamma = singlesim_dynamics_p.gamma,
-        mu = mu_run,
-  type = "det",
+    bifurc_mu_beta_force_dynamics_p = DynamicsParameters(
+        singlesim_dynamics_p.beta_mean,
+        beta_force_run,
+        singlesim_dynamics_p.sigma,
+        singlesim_dynamics_p.gamma,
+        mu_run,
+        annual_birth_rate_per_k_run,
+        beta_force_epsilon,
+        singlesim_dynamics_p.R_0,
     )
+
+    seir_mod!(
+        seir,
+        change,
+        jump,
+        init_states,
+        bifurc_mu_beta_force_dynamics_p,
+        singlesim_time_p;
+        type = "det",
+    )
+
     next!(prog)
 end
 
@@ -201,11 +239,12 @@ end
 years = (40 * 365):365:(tlength - 365)
 
 bifurc_mu_beta_force_annual_summary = zeros(
-    Float64, size(init_states, 1), length(years), n_mus, n_beta_forces
+    Float64, size(init_states, 1), length(years), n_annual_birth_rate_per_k,
+    n_beta_forces,
 );
 prog = Progress(length(years) * 5 * length(beta_force_vec))
 @floop for (beta_force, state, years) in
-           IterTools.product(
+           Iterators.product(
     eachindex(beta_force_vec), eachindex(init_states), pairs(years)
 )
     year = years[1]
@@ -218,14 +257,22 @@ prog = Progress(length(years) * 5 * length(beta_force_vec))
     next!(prog)
 end
 
-bifurc_mu_beta_force_cycle_summary = zeros(Float64, n_beta_forces, n_mus, 5);
-prog = Progress(5 * length(beta_force_vec) * length(mu_vec))
-@floop for (beta_force, mu, state) in
-           IterTools.product(eachindex(beta_force_vec), eachindex(mu_vec), 1:5)
-    bifurc_mu_beta_force_cycle_summary[beta_force, mu, state] = length(
+bifurc_mu_beta_force_cycle_summary = zeros(
+    Float64, n_beta_forces, n_annual_birth_rate_per_k, 5
+);
+prog = Progress(
+    5 * length(beta_force_vec) * length(annual_birth_rate_per_k_vec)
+)
+@floop for (beta_force, annual_birth_rate_per_k, state) in
+           Iterators.product(
+    eachindex(beta_force_vec), eachindex(annual_birth_rate_per_k_vec), 1:5
+)
+    bifurc_mu_beta_force_cycle_summary[beta_force, annual_birth_rate_per_k, state] = length(
         Set(
             round.(
-                bifurc_mu_beta_force_annual_summary[state, :, mu, beta_force]
+                bifurc_mu_beta_force_annual_summary[
+                    state, :, annual_birth_rate_per_k, beta_force
+                ]
             ),
         ),
     )
@@ -235,12 +282,13 @@ end
 #%%
 # Because Julia is column-major, we need to transpose the heatmap as it reads the data one column at a time, and in our original matrix, each column represents a different beta_force value.
 bifurc_mu_beta_force_fig, bifurc_mu_beta_force_ax, bifurc_mu_beta_force_hm = heatmap(
-    mu_vec .* (1_000 * 365), beta_force_vec,
+    annual_birth_rate_per_k_vec,
+    beta_force_vec,
     bifurc_mu_beta_force_cycle_summary[:, :, 2]',
 )
-Colorbar(bifurc_mu_beta_force_fig[:, end + 1], bifurc_mu_beta_force_hm)
+Colorbar(bifurc_mu_beta_force_fig[:, end + 1], bifurc_mu_beta_force_hm; label = "Periodicity")
 
-bifurc_mu_beta_force_ax.xlabel = "mu (per 1_000, per annum)"
+bifurc_mu_beta_force_ax.xlabel = "Birth rate (per 1_000, per annum)"
 bifurc_mu_beta_force_ax.ylabel = "beta_force (seasonality)"
 
 bifurc_mu_beta_force_fig
