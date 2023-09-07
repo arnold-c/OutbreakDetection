@@ -2,7 +2,7 @@
 
 julia_version = "1.9.3"
 manifest_format = "2.0"
-project_hash = "6a14b863b2ab9f3d41649450a8a43c1169d28956"
+project_hash = "c50e7c68aeb8e031c750dd4244f3be2fbbf9c35d"
 
 [[deps.ADTypes]]
 git-tree-sha1 = "a4c8e0f8c09d4aa708289c1a5fc23e2d1970017a"
@@ -615,6 +615,12 @@ version = "0.6.7"
 deps = ["ArgTools", "FileWatching", "LibCURL", "NetworkOptions"]
 uuid = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
 version = "1.6.0"
+
+[[deps.DrWatson]]
+deps = ["Dates", "FileIO", "JLD2", "LibGit2", "MacroTools", "Pkg", "Random", "Requires", "Scratch", "UnPack"]
+git-tree-sha1 = "d79f58f511d90e721496f1cdfd2ef74a313f226b"
+uuid = "634d3b9d-ee7a-5ddf-bec9-22491ea816e1"
+version = "2.12.7"
 
 [[deps.DualNumbers]]
 deps = ["Calculus", "NaNMath", "SpecialFunctions"]
