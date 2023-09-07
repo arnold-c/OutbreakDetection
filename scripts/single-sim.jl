@@ -4,8 +4,8 @@ using DrWatson
 
 using Random
 
-include("../src/OutbreakDetection.jl")
-using .OutbreakDetection
+# include("../src/OutbreakDetection.jl")
+using OutbreakDetection
 
 
 #%%
