@@ -28,23 +28,20 @@ function run_ensemble_jump_prob(dict_of_ensemble_params; prog = prog)
             datadir(
                 "seasonal-infectivity-import",
                 "tau-leaping",
-                "N_$(ensemble_params[:N])",
-                "r_$(ensemble_params[:init_states_prop][:r_prop])",
-                "nsims_$(ensemble_params[:nsims])",
-                "births_per_k_$(ensemble_params[:births_per_k])",
-                "beta_force_$(ensemble_params[:beta_force])",
-                "tmax_$(ensemble_params[:time_p].tmax)",
-                "tstep_$(ensemble_params[:time_p].tstep)",
+                "N_$(ensemble_params[:ensemble_spec].state_parameters.N)",
+                "r_$(ensemble_params[:ensemble_spec].init_state_props.r_prop)",
+                "nsims_$(ensemble_params[:ensemble_spec].nsims)",
+                "births_per_k_$(ensemble_params[:ensemble_spec].dynamics_parameters.births_per_k)",
+                "beta_force_$(ensemble_params[:ensemble_spec].dynamics_parameters.beta_force)",
+                "tmax_$(ensemble_params[:ensemble_spec].time_parameters.tmax)",
+                "tstep_$(ensemble_params[:ensembel_spec].time_parameters.tstep)",
             );
             prefix = "SEIR_tau_sol",
             filename = savename(
                 ensemble_params;
                 allowedtypes = (Symbol, Dict, String, Real),
-                accesses = [
-                    :N, :init_states_prop, :nsims, :time_p, :births_per_k,
-                    :beta_force,
-                ],
-                expand = ["init_states_prop"],
+                accesses = [:ensemble_spec],
+                expand = ["ensemble_spec"],
                 sort = false,
             ),
             loadfile = false
@@ -57,45 +54,17 @@ end
     run_jump_prob(ensemble_param_dict)
 """
 function run_jump_prob(ensemble_param_dict)
-    @unpack N,
-    init_states_prop,
-    base_dynamics_p,
-    time_p,
-    nsims,
-    beta_force,
-    births_per_k,
-    seed = ensemble_param_dict
+    @unpack ensemble_spec, seed = ensemble_param_dict
+    @unpack state_parameters, dynamics_parameters, time_parameters, nsims =
+        ensemble_spec
 
-    @unpack tstep, tlength, trange = time_p
-
-    ensemble_states_p = StateParameters(;
-        N = N,
-        s_prop = init_states_prop[:s_prop],
-        e_prop = init_states_prop[:e_prop],
-        i_prop = init_states_prop[:i_prop],
-    )
-
-    mu = births_per_k / (1_000 * 365)
-    beta_mean = calculate_beta(
-        base_dynamics_p.R_0, base_dynamics_p.gamma, mu, 1, N
-    )
-    epsilon = calculate_import_rate(mu, base_dynamics_p.R_0, N)
-
-    ensemble_dynamics_p = DynamicsParameters(;
-        beta_mean = beta_mean,
-        beta_force = beta_force,
-        sigma = base_dynamics_p.sigma,
-        gamma = base_dynamics_p.gamma,
-        mu = mu,
-        epsilon = epsilon,
-        R_0 = base_dynamics_p.R_0,
-    )
+    @unpack tstep, tlength, trange = time_parameters
 
     ensemble_seir_arr = zeros(
-        Int64, size(ensemble_states_p.init_states, 1), tlength, nsims
+        Int64, length(state_parameters), tlength, nsims
     )
     ensemble_change_arr = zeros(
-        Int64, size(ensemble_states_p.init_states, 1), tlength, nsims
+        Int64, length(state_parameters), tlength, nsims
     )
     ensemble_jump_arr = zeros(Int64, 9, tlength, nsims)
 
@@ -110,14 +79,14 @@ function run_jump_prob(ensemble_param_dict)
             seir,
             change,
             jump,
-            ensemble_states_p.init_states,
-            ensemble_dynamics_p,
-            time_p;
+            state_parameters,
+            dynamics_parameters,
+            time_parameters;
             seed = run_seed,
         )
     end
 
-    return @strdict ensemble_seir_arr ensemble_change_arr ensemble_jump_arr ensemble_dynamics_p ensemble_states_p time_p ensemble_param_dict
+    return @strdict ensemble_seir_arr ensemble_change_arr ensemble_jump_arr dynamics_parameters state_parameters time_parameters ensemble_param_dict
 end
 
 function summarize_ensemble_jump_prob(dict_of_ensemble_params; prog = prog)
@@ -128,23 +97,20 @@ function summarize_ensemble_jump_prob(dict_of_ensemble_params; prog = prog)
             datadir(
                 "seasonal-infectivity-import",
                 "tau-leaping",
-                "N_$(ensemble_params[:N])",
-                "r_$(ensemble_params[:init_states_prop][:r_prop])",
-                "nsims_$(ensemble_params[:nsims])",
-                "births_per_k_$(ensemble_params[:births_per_k])",
-                "beta_force_$(ensemble_params[:beta_force])",
-                "tmax_$(ensemble_params[:time_p].tmax)",
-                "tstep_$(ensemble_params[:time_p].tstep)",
+                "N_$(ensemble_params[:ensemble_spec].state_parameters.N)",
+                "r_$(ensemble_params[:ensemble_spec].init_state_props.r_prop)",
+                "nsims_$(ensemble_params[:ensemble_spec].nsims)",
+                "births_per_k_$(ensemble_params[:ensemble_spec].dynamics_parameters.births_per_k)",
+                "beta_force_$(ensemble_params[:ensemble_spec].dynamics_parameters.beta_force)",
+                "tmax_$(ensemble_params[:ensemble_spec].time_parameters.tmax)",
+                "tstep_$(ensemble_params[:ensembel_spec].time_parameters.tstep)",
             );
             prefix = "SEIR_tau_quants",
             filename = savename(
                 ensemble_params;
                 allowedtypes = (Symbol, Dict, String, Real),
-                accesses = [
-                    :N, :init_states_prop, :nsims, :time_p, :births_per_k,
-                    :beta_force, :quantiles,
-                ],
-                expand = ["init_states_prop"],
+                accesses = [:ensemble_spec, :quantiles],
+                expand = ["ensemble_spec"],
                 sort = false,
             ),
             loadfile = false
@@ -157,47 +123,20 @@ end
     jump_prob_summary(param_dict)
 """
 function jump_prob_summary(ensemble_param_dict)
-    @unpack N,
-    init_states_prop, nsims, beta_force, births_per_k, time_p,
-    quantiles =
-        ensemble_param_dict
+    @unpack ensemble_spec, seed, quantiles = ensemble_param_dict
+    @unpack state_parameters, dynamics_parameters, time_parameters, nsims =
+        ensemble_spec
 
-    sim_name = savename(
-        "SEIR_tau_sol",
-        ensemble_param_dict,
-        "jld2";
-        allowedtypes = (Symbol, Dict, String, Real),
-        accesses = [
-            :N,
-            :init_states_prop,
-            :nsims,
-            :time_p,
-            :births_per_k,
-            :beta_force
-        ],
-        expand = ["init_states_prop"],
-        sort = false,
-    )
-    sim_path = joinpath(
-        datadir(
-            "seasonal-infectivity-import",
-            "tau-leaping",
-            "N_$N",
-            "r_$(init_states_prop[:r_prop])",
-            "nsims_$nsims",
-            "births_per_k_$births_per_k",
-            "beta_force_$beta_force",
-            "tmax_$(time_p.tmax)",
-            "tstep_$(time_p.tstep)",
-        ),
-        sim_name,
-    )
+    @unpack beta_force, births_per_k = dynamics_parameters
+    @unpack tstep, tlength, trange = time_parameters
 
-    sol_data = load(sim_path)
-    @unpack ensemble_seir_arr, ensemble_states_p = sol_data
-    S_init = ensemble_states_p.init_states[:S]
-    I_init = ensemble_states_p.init_states[:I]
-    R_init = ensemble_states_p.init_states[:R]
+    ensemble_sol_file = get_ensemble_file("sol", ensemble_spec)
+
+    @unpack ensemble_seir_arr, ensemble_states_p = ensemble_sol_file
+    N = state_parameters[:N]
+    S_init = state_parameters[:S]
+    I_init = state_parameters[:I]
+    R_init = state_parameters[:R]
 
     qlow = round(0.5 - quantiles / 200; digits = 3)
     qhigh = round(0.5 + quantiles / 200; digits = 3)
@@ -208,7 +147,7 @@ function jump_prob_summary(ensemble_param_dict)
         ensemble_seir_arr; quantiles = qs
     )
 
-    caption = "nsims = $nsims, N = $N, S = $S_init, I = $I_init, R = $R_init, beta_force = $beta_force,\nbirths per k/annum = $births_per_k tstep = $(time_p.tstep), quantile int = $quantiles"
+    caption = "nsims = $nsims, N = $N, S = $S_init, I = $I_init, R = $R_init, beta_force = $beta_force,\nbirths per k/annum = $births_per_k tstep = $(time_parameters.tstep), quantile int = $quantiles"
 
     return @strdict ensemble_seir_summary caption ensemble_states_p ensemble_param_dict
 end
