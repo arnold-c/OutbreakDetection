@@ -30,10 +30,6 @@ ensemble_quants = get_ensemble_file(
 @unpack time_p = ensemble_param_dict
 
 #%%
-outbreakthreshold = 5
-minoutbreakdur = 30
-minoutbreaksize = 500
+outbreak_spec = OutbreakSpecification(5, 30, 500)
 
-inc_infec_arr = create_inc_infec_arr(
-    ensemble_jump_arr, outbreakthreshold, minoutbreakdur, minoutbreaksize
-)
+inc_infec_arr = create_inc_infec_arr(ensemble_jump_arr, outbreak_spec)

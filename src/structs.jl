@@ -130,20 +130,20 @@ struct OutbreakDetectionSpecification
     test_result_lag
 end
 
-    function OutbreakDetectionSpecification(
+function OutbreakDetectionSpecification(
+    detection_threshold,
+    moving_average_lag,
+    percent_clinic,
+    percent_clinic_tested,
+    test_result_lag,
+)
+    return OutbreakDetectionSpecification(
         detection_threshold,
         moving_average_lag,
-        percent_clinic,
-        percent_clinic_tested,
+        percent_clinic * percent_clinic_tested,
         test_result_lag,
     )
-        return OutbreakDetectionSpecification(
-            detection_threshold,
-            moving_average_lag,
-            percent_clinic * percent_clinic_tested,
-            test_result_lag,
-        )
-    end
+end
 
 struct IndividualTestSpecification
     sensitivity
