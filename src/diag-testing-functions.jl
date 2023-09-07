@@ -246,12 +246,6 @@ function calculate_OutbreakThresholdChars(testarr, infecarr)
     return StructArray(OT_chars)
 end
 
-function create_combinations_vec(custom_function, combinations)
-    combs = Iterators.product(combinations...)
-
-    return vec(map(combination -> custom_function(combination...), combs))
-end
-
 function run_OutbreakThresholdChars_creation(
     dict_of_OTchars_params; progress = true
 )

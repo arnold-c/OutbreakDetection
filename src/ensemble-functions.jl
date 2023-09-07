@@ -20,6 +20,12 @@ using ProgressMeter
 # include("structs.jl")
 # using .ODStructs
 
+function create_combinations_vec(custom_function, combinations)
+    combs = Iterators.product(combinations...)
+
+    return vec(map(combination -> custom_function(combination...), combs))
+end
+
 function create_ensemble_spec_combinations(
     beta_force_vec,
     sigma_vec,
