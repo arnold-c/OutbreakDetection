@@ -31,19 +31,55 @@ const DUR_INF_DAYS = 5
 const R0 = 10.0
 const SIGMA = 1 / LATENT_PER_DAYS
 const GAMMA = 1 / DUR_INF_DAYS
-const MU = 1 / (62.5 * 365)
+const LIFE_EXPECTANCY_YEARS = 62.5
+const MU = 1 / (LIFE_EXPECTANCY_YEARS * 365)
 const BETA_MEAN = calculate_beta(R0, GAMMA, MU, 1, POPULATION_N)
 const BETA_FORCE = 0.2
 const EPSILON = calculate_import_rate(MU, R0, POPULATION_N)
 
-@kwdef struct DynamicsParameters
-    beta_mean::Float64 = BETA_MEAN
-    beta_force::Float64 = BETA_FORCE
-    sigma::Float64 = SIGMA
-    gamma::Float64 = GAMMA
-    mu::Float64 = MU
-    epsilon::Float64 = EPSILON
-    R_0::Float64 = R0
+struct DynamicsParameters
+    beta_mean::Float64
+    beta_force::Float64
+    sigma::Float64
+    gamma::Float64
+    mu::Float64
+    annual_births_per_k::Union{Int64,Float64}
+    epsilon::Float64
+    R_0::Float64
+end
+
+function DynamicsParameters(sigma::Float64, gamma::Float64, R_0::Float64)
+    annual_births_per_k = 1000 / LIFE_EXPECTANCY_YEARS
+
+    return DynamicsParameters(
+        BETA_MEAN,
+        BETA_FORCE,
+        sigma,
+        gamma,
+        MU,
+        annual_births_per_k,
+        EPSILON,
+        R_0,
+    )
+end
+
+function DynamicsParameters(
+    N::Int64, annual_births_per_k::Int64, beta_force::Float64
+)
+    mu = calculate_mu(annual_births_per_k)
+    beta_mean = calculate_beta(R0, GAMMA, mu, 1, N)
+    epsilon = calculate_import_rate(mu, R0, N)
+
+    return DynamicsParameters(
+        beta_mean,
+        beta_force,
+        SIGMA,
+        GAMMA,
+        mu,
+        annual_births_per_k,
+        epsilon,
+        R0,
+    )
 end
 
 struct StateParameters
