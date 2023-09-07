@@ -214,7 +214,7 @@ function jump_prob_summary(ensemble_param_dict)
 end
 
 function get_ensemble_file(type, spec)
-    dirpath = get_ensemble_file_dir(spec)
+    dirpath = spec.dirpath
     filecontainer = []
     for f in readdir(dirpath)
         match_ensemble_file!(type, dirpath, filecontainer, f)
@@ -235,20 +235,6 @@ function get_ensemble_file(type, spec)
         )
     end
     return load(filecontainer...)
-end
-
-function get_ensemble_file_dir(spec)
-    dirpath = joinpath(
-        spec.modeltypes...,
-        "N_$(spec.N)",
-        "r_$(spec.Rinit_prop)",
-        "nsims_$(spec.nsims)",
-        "births_per_k_$(spec.births_per_k)",
-        "beta_force_$(spec.beta_force)",
-        "tmax_$(spec.time_parameters.tmax)",
-        "tstep_$(spec.time_parameters.tstep)",
-    )
-    return datadir(dirpath)
 end
 
 function match_ensemble_file!(criteria, dirpath, container, file)

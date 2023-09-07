@@ -33,6 +33,30 @@ struct EnsembleSpecification
     births_per_k::Int64
     beta_force::Float64
     time_parameters::SimTimeParameters
+    dirpath::String
+end
+
+function EnsembleSpecification(
+    modeltypes::Tuple,
+    N::Int64,
+    init_states_prop,
+    nsims::Int64,
+    births_per_k::Int64,
+    beta_force::Float64,
+    time_parameters::SimTimeParameters,
+)
+    dirpath = datadir(
+        modeltypes...,
+        "N_$(N)",
+        "r_$(init_states_prop[:r_prop])",
+        "nsims_$(nsims)",
+        "births_per_k_$(births_per_k)",
+        "beta_force_$(beta_force)",
+        "tmax_$(time_parameters.tmax)",
+        "tstep_$(time_parameters.tstep)",
+    )
+
+    return EnsembleSpecification(modeltypes, N, init_states_prop[:r_prop], nsims, births_per_k, beta_force, time_parameters, dirpath)
 end
 
 const POPULATION_N = 500_000
