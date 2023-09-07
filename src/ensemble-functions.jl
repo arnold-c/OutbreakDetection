@@ -100,17 +100,7 @@ function run_ensemble_jump_prob(dict_of_ensemble_params; prog = prog)
         @produce_or_load(
             run_jump_prob,
             ensemble_params,
-            datadir(
-                "seasonal-infectivity-import",
-                "tau-leaping",
-                "N_$(ensemble_params[:ensemble_spec].state_parameters.init_states.N)",
-                "r_$(ensemble_params[:ensemble_spec].state_parameters.init_state_props.r_prop)",
-                "nsims_$(ensemble_params[:ensemble_spec].nsims)",
-                "annual_births_per_k_$(ensemble_params[:ensemble_spec].dynamics_parameters.annual_births_per_k)",
-                "beta_force_$(ensemble_params[:ensemble_spec].dynamics_parameters.beta_force)",
-                "tmax_$(ensemble_params[:ensemble_spec].time_parameters.tmax)",
-                "tstep_$(ensemble_params[:ensemble_spec].time_parameters.tstep)",
-            );
+            "$(ensemble_params[:ensemble_spec].dirpath)";
             prefix = "SEIR_tau_sol",
             filename = savename(
                 ensemble_params;
@@ -169,17 +159,7 @@ function summarize_ensemble_jump_prob(dict_of_ensemble_params; prog = prog)
         @produce_or_load(
             jump_prob_summary,
             ensemble_params,
-            datadir(
-                "seasonal-infectivity-import",
-                "tau-leaping",
-                "N_$(ensemble_params[:ensemble_spec].state_parameters.init_states.N)",
-                "r_$(ensemble_params[:ensemble_spec].state_parameters.init_state_props.r_prop)",
-                "nsims_$(ensemble_params[:ensemble_spec].nsims)",
-                "annual_births_per_k_$(ensemble_params[:ensemble_spec].dynamics_parameters.annual_births_per_k)",
-                "beta_force_$(ensemble_params[:ensemble_spec].dynamics_parameters.beta_force)",
-                "tmax_$(ensemble_params[:ensemble_spec].time_parameters.tmax)",
-                "tstep_$(ensemble_params[:ensemble_spec].time_parameters.tstep)",
-            );
+            "$(ensemble_params[:ensemble_spec].dirpath)";
             prefix = "SEIR_tau_quants",
             filename = savename(
                 ensemble_params;
