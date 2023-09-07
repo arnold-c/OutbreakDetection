@@ -31,9 +31,9 @@ noise_spec_vec = [NoiseSpecification("static", ensemble_noise_arr)]
 #%%
 detectthreshold_vec = collect(5:5:20)
 moveavglag_vec = [7]
-perc_clinic_vec = collect(0.3)
-perc_clinic_test_vec = collect(0.3)
-testlag_vec = collect(3)
+perc_clinic_vec = [0.3]
+perc_clinic_test_vec = [0.3]
+testlag_vec = [3]
 
 outbreak_detection_spec_combinations = Iterators.product(
     detectthreshold_vec,
@@ -67,14 +67,45 @@ test_spec_vec = vec(
 )
 
 #%%
-scenarios_dict = dict_list(
-    @dict(
-        outbreak_spec = outbreak_spec_vec,
-        noise_spec = noise_spec_vec,
-        outbreak_detect_spec = outbreak_detection_spec_vec,
-        ind_test_spec = test_spec_vec,
-    )
+base_scenarios_dict = @dict(
+    outbreak_spec = outbreak_spec_vec,
+    noise_spec = noise_spec_vec,
+    outbreak_detect_spec = outbreak_detection_spec_vec,
+    ind_test_spec = test_spec_vec,
 )
 
 #%%
+N_vec = convert.(Int64, [5e5])
+nsims_vec = [1_000]
+init_states_prop_dict = [
+    Dict(
+        :s_prop => 0.1,
+        :e_prop => 0.01,
+        :i_prop => 0.01,
+        :r_prop => 0.88,
+    )
+]
+tstep_vec = [1.0]
+tmax_vec = [365.0 * 100]
+beta_force_vec = [0.2]
+births_per_k_vec = [10]
 
+ensemble_time_p = SimTimeParameters(;
+    tmin = 0.0, tmax = 365.0 * 100.0, tstep = 1.0
+)
+
+base_param_dict = @dict(
+    N = N_vec,
+    init_states_prop = init_states_prop_dict,
+    time_p = ensemble_time_p,
+    nsims = nsims_vec,
+    beta_force = beta_force_vec,
+    births_per_k = births_per_k_vec,
+    seed = seed,
+)
+
+#%%
+scenarios_dict = dict_list(merge(base_param_dict, base_scenarios_dict))
+
+#%%
+run_OutbreakThresholdChars_creation(scenarios_dict; progress = true)
