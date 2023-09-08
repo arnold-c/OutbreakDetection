@@ -419,17 +419,8 @@ function OutbreakThresholdChars_creation(OT_chars_param_dict)
     return @strdict OT_chars
 end
 
-function get_scenario_file(spec)
-    dirpath = spec.dirpath
-    filecontainer = []
-
-    for file in readdir(dirpath)
-        push!(filecontainer, joinpath(dirpath, file))
-    end
-
-    if length(filecontainer) != 1
-        println("Matched $(length(filecontainer)) files, when should be 1")
-    end
+function get_scenario_file(type, spec)
+    filecontainer = collect_ensemble_file(type, spec)
     return load(filecontainer...)
 end
 

@@ -195,14 +195,7 @@ function jump_prob_summary(ensemble_param_dict)
 end
 
 function get_ensemble_file(type, spec)
-    dirpath = spec.dirpath
-    filecontainer = []
-    for f in readdir(dirpath)
-        match_ensemble_file!(type, dirpath, filecontainer, f)
-    end
-    if length(filecontainer) != 1
-        println("Matched $(length(filecontainer)) files, when should be 1")
-    end
+    filecontainer = collect_ensemble_file(type, spec)
     if type != "solution"
         try
             parse(Int, type)
@@ -216,6 +209,17 @@ function get_ensemble_file(type, spec)
         )
     end
     return load(filecontainer...)
+end
+
+function collect_ensemble_file(type, spec)
+    dirpath = spec.dirpath
+    filecontainer = []
+    for f in readdir(dirpath)
+        match_ensemble_file!(type, dirpath, filecontainer, f)
+    end
+    if length(filecontainer) != 1
+        println("Matched $(length(filecontainer)) files, when should be 1")
+    end
 end
 
 function match_ensemble_file!(criteria, dirpath, container, file)
