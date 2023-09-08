@@ -83,12 +83,12 @@ run_ensemble_jump_prob(sol_param_dict; prog = prog)
 #%%
 quantile_ints = [95, 80]
 
-summ_param_dict = @chain base_param_dict begin
+quantile_param_dict = @chain base_param_dict begin
     deepcopy(_)
     push!(_, :quantiles => quantile_ints)
     dict_list(_)
 end;
 
 #%%
-prog = Progress(length(summ_param_dict))
-summarize_ensemble_jump_prob(summ_param_dict; prog = prog)
+prog = Progress(length(quantile_param_dict))
+summarize_ensemble_jump_prob(quantile_param_dict; prog = prog)
