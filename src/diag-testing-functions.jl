@@ -22,6 +22,27 @@ using StructArrays
 function create_testing_arr(
     incarr,
     noisearr,
+    outbreak_detect_spec::OutbreakDetectionSpecification,
+    individual_test_spec::IndividualTestSpecification,
+)
+    testarr = zeros(Int64, size(incarr, 1), 8, size(incarr, 3))
+    posoddsarr = zeros(Float64, size(incarr, 1), 2, size(incarr, 3))
+
+    create_testing_arr!(
+        testarr,
+        incarr,
+        noisearr,
+        posoddsarr,
+        outbreak_detect_spec::OutbreakDetectionSpecification,
+        individual_test_spec::IndividualTestSpecification,
+    )
+
+    return testarr
+end
+
+function create_testing_arr(
+    incarr,
+    noisearr,
     perc_tested,
     testlag,
     testsens,
@@ -46,12 +67,36 @@ function create_testing_arr!(
     incarr,
     noisearr,
     posoddsarr,
+    outbreak_detect_spec::OutbreakDetectionSpecification,
+    individual_test_spec::IndividualTestSpecification,
+)
+    create_testing_arr!(
+        testarr,
+        incarr,
+        noisearr,
+        posoddsarr,
+        outbreak_detect_spec.detection_threshold,
+        outbreak_detect_spec.moving_average_lag,
+        outbreak_detect_spec.percent_tested,
+        outbreak_detect_spec.test_result_lag,
+        individual_test_spec.sensitivity,
+        individual_test_spec.specificity,
+    )
+
+    return nothing
+end
+
+function create_testing_arr!(
+    testarr,
+    incarr,
+    noisearr,
+    posoddsarr,
+    detectthreshold,
+    moveavglag,
     perc_tested,
     testlag,
     testsens,
     testspec,
-    detectthreshold,
-    moveavglag,
 )
     ntested = size(testarr, 1)
 

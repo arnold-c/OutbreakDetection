@@ -10,7 +10,6 @@ moveavglag = 7
 detectthreshold = 10
 perc_clinic = 0.3
 perc_clinic_test = 0.8
-perc_tested = perc_clinic * perc_clinic_test
 testsens = 0.9
 testspec = 0.9
 
@@ -23,12 +22,8 @@ create_testing_arr!(
     inc_infec_arr,
     ensemble_noise_arr,
     post_odds_arr,
-    perc_tested,
-    testlag,
-    testsens,
-    testspec,
-    detectthreshold,
-    moveavglag,
+    OutbreakDetectionSpecification(detectthreshold, moveavglag, perc_clinic, perc_clinic_test, testlag),
+    IndividualTestSpecification(testsens, testspec),
 )
 
 #%%
