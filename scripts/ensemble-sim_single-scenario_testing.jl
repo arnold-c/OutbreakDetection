@@ -14,8 +14,8 @@ perc_tested = perc_clinic * perc_clinic_test
 testsens = 0.9
 testspec = 0.9
 
-testing_arr = zeros(Int64, time_p.tlength, 8, size(inc_infec_arr, 3));
-post_odds_arr = zeros(Float64, time_p.tlength, 2, size(inc_infec_arr, 3));
+testing_arr = zeros(Int64, time_parameters.tlength, 8, size(inc_infec_arr, 3));
+post_odds_arr = zeros(Float64, time_parameters.tlength, 2, size(inc_infec_arr, 3));
 
 #%%
 create_testing_arr!(
@@ -32,4 +32,4 @@ create_testing_arr!(
 )
 
 #%%
-OT_Chars = calculate_OutbreakThresholdChars(testing_arr, inc_infec_arr)
+single_scenario_OT_Chars = calculate_OutbreakThresholdChars(testing_arr, inc_infec_arr)

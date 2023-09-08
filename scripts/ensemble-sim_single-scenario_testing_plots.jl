@@ -10,20 +10,20 @@ include(srcdir("makie-plotting-setup.jl"))
 incidence_testing_plot(
     inc_infec_arr,
     testing_arr,
-    time_p,
+    time_parameters,
     detectthreshold;
     sim = 1
 )
 
 #%%
-testing_plot(testing_arr, time_p)
+testing_plot(testing_arr, time_parameters)
 
 #%%
 ensemble_outbreak_distribution_plot(testing_arr, inc_infec_arr)
 
 #%%
 ensemble_OTChars_plot(
-    OT_Chars,
+    single_scenario_OT_Chars,
     :sensitivity,
     :specificity;
     bins = 0.0:0.01:1.01,
@@ -34,11 +34,11 @@ ensemble_OTChars_plot(
 )
 
 #%%
-ensemble_OTChars_plot(OT_Chars, :noutbreaks, :ndetectoutbreaks)
+ensemble_OTChars_plot(single_scenario_OT_Chars, :noutbreaks, :ndetectoutbreaks)
 
 #%%
 ensemble_OTChars_plot(
-    OT_Chars,
+    single_scenario_OT_Chars,
     :ppv,
     :npv;
     bins = 0.0:0.01:1.01,

@@ -16,7 +16,7 @@ sde_cb = DiscreteCallback(
 ensemble_noise_arr = create_noise_arr(
     ensemble_jump_arr,
     init_noise,
-    time_p,
-    ensemble_dynamics_p;
+    time_parameters,
+    dynamics_parameters;
     callback = sde_cb,
 )
