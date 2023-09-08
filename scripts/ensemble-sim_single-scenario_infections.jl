@@ -23,7 +23,7 @@ ensemble_spec = EnsembleSpecification(
 )
 
 ensemble_sol = get_ensemble_file(
-    "sol", ensemble_spec
+    "solution", ensemble_spec
 )
 
 ensemble_quants = get_ensemble_file(

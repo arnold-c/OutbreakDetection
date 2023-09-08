@@ -101,14 +101,7 @@ function run_ensemble_jump_prob(dict_of_ensemble_params; prog = prog)
             run_jump_prob,
             ensemble_params,
             "$(ensemble_params[:ensemble_spec].dirpath)";
-            prefix = "SEIR_tau_sol",
-            filename = savename(
-                ensemble_params;
-                allowedtypes = (Symbol, Dict, String, Real),
-                accesses = [:ensemble_spec],
-                expand = ["ensemble_spec"],
-                sort = false,
-            ),
+            filename = "ensemble-solution",
             loadfile = false
         )
         next!(prog)
@@ -160,14 +153,7 @@ function summarize_ensemble_jump_prob(dict_of_ensemble_params; prog = prog)
             jump_prob_summary,
             ensemble_params,
             "$(ensemble_params[:ensemble_spec].dirpath)";
-            prefix = "SEIR_tau_quants",
-            filename = savename(
-                ensemble_params;
-                allowedtypes = (Symbol, Dict, String, Real),
-                accesses = [:ensemble_spec, :quantiles],
-                expand = ["ensemble_spec"],
-                sort = false,
-            ),
+            filename = "ensemble-quantiles_$(ensemble_params[:quantiles])",
             loadfile = false
         )
         next!(prog)
@@ -186,7 +172,7 @@ function jump_prob_summary(ensemble_param_dict)
     @unpack tstep, tlength, trange = time_parameters
     @unpack init_states, init_state_props = state_parameters
 
-    ensemble_sol_file = get_ensemble_file("sol", ensemble_spec)
+    ensemble_sol_file = get_ensemble_file("solution", ensemble_spec)
 
     @unpack ensemble_seir_arr, ensemble_states_p = ensemble_sol_file
     N = init_states[:N]
@@ -217,14 +203,14 @@ function get_ensemble_file(type, spec)
     if length(filecontainer) != 1
         println("Matched $(length(filecontainer)) files, when should be 1")
     end
-    if type != "sol"
+    if type != "solution"
         try
             parse(Int, type)
         catch
             println("The quantile could not be parsed correctly")
         end
     end
-    if type != "sol" && length(filecontainer) == 0
+    if type != "solution" && length(filecontainer) == 0
         println(
             "It looks like are trying to return a quantile file. Check that the quantile simulation has been run",
         )
