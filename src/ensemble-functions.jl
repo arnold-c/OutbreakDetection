@@ -220,6 +220,7 @@ function collect_ensemble_file(type, spec)
     if length(filecontainer) != 1
         println("Matched $(length(filecontainer)) files, when should be 1")
     end
+    return filecontainer
 end
 
 function match_ensemble_file!(criteria, dirpath, container, file)
