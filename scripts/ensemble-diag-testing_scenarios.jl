@@ -9,29 +9,60 @@ include("ensemble-sim_single-scenario_noise.jl")
 
 #%%
 model_types_vec = [("seasonal-infectivity-import", "tau-leaping")]
+
+#%%
 N_vec = [500_000]
 nsims_vec = [1_000]
-init_states_prop_dict = [Dict(:s_prop => 0.1, :e_prop => 0.01, :i_prop => 0.01, :r_prop => 0.88)]
+init_states_prop_dict = [
+    Dict(:s_prop => 0.1, :e_prop => 0.01, :i_prop => 0.01, :r_prop => 0.88)
+]
+
+ensemble_state_p_vec = create_combinations_vec(
+    StateParameters, (N_vec, init_states_prop_dict)
+)
+
+#%%
 tmin_vec = [0.0]
 tstep_vec = [1.0]
 tmax_vec = [365.0 * 100]
 
-time_p_vec = vec(map(Iterators.product(tmin_vec, tstep_vec, tmax_vec)) do (tmin, tstep, tmax)
-    SimTimeParameters(; tmin = tmin, tmax = tmax, tstep = tstep)
-end)
+time_p_vec = vec(
+    map(
+        Iterators.product(tmin_vec, tstep_vec, tmax_vec)
+    ) do (tmin, tstep, tmax)
+        SimTimeParameters(; tmin = tmin, tmax = tmax, tstep = tstep)
+    end,
+)
 
+#%%
 beta_force_vec = [0.2]
-# births_per_k_min = 5
-# births_per_k_max = 20
-# births_per_k_step = 5
-# births_per_k_vec = collect(births_per_k_min:births_per_k_step:births_per_k_max)
-births_per_k_vec = [5]
+# annual_births_per_k_min = 5
+# annual_births_per_k_max = 20
+# annual_births_per_k_step = 5
+annual_births_per_k_vec = [5]
 seed = 1234
 
-ensemble_spec_vec = create_combinations_vec(
-    EnsembleSpecification,
-    (model_types_vec, N_vec, init_states_prop_dict, nsims_vec, births_per_k_vec, beta_force_vec, time_p_vec),
+#%%
+latent_per_days_vec = [8]
+dur_inf_days_vec = [5]
+R_0_vec = [10.0]
+sigma_vec = 1 ./ latent_per_days_vec
+gamma_vec = 1 ./ dur_inf_days_vec
+
+#%%
+ensemble_spec_vec = create_ensemble_spec_combinations(
+    beta_force_vec,
+    sigma_vec,
+    gamma_vec,
+    annual_births_per_k_vec,
+    R_0_vec,
+    N_vec,
+    init_states_prop_dict,
+    model_types_vec,
+    time_p_vec,
+    nsims_vec,
 )
+
 
 #%%
 outbreak_threshold_vec = [5]
@@ -68,46 +99,18 @@ test_spec_vec = create_combinations_vec(
 )
 
 #%%
+ensemble_scenarios = create_combinations_vec(
+    ScenarioSpecification,
+    (ensemble_spec_vec, outbreak_spec_vec, noise_spec_vec, outbreak_detection_spec_vec, test_spec_vec),
+)
+
+#%%
 base_scenarios_dict = @dict(
-    ensemble_spec = ensemble_spec_vec,
-    outbreak_spec = outbreak_spec_vec,
-    noise_spec = noise_spec_vec,
-    outbreak_detect_spec = outbreak_detection_spec_vec,
-    ind_test_spec = test_spec_vec,
+    scenario_spec = ensemble_scenarios,
 )
 
 #%%
-N_vec = convert.(Int64, [5e5])
-nsims_vec = [1_000]
-init_states_prop_dict = [
-    Dict(
-        :s_prop => 0.1,
-        :e_prop => 0.01,
-        :i_prop => 0.01,
-        :r_prop => 0.88,
-    )
-]
-tstep_vec = [1.0]
-tmax_vec = [365.0 * 100]
-beta_force_vec = [0.2]
-births_per_k_vec = [10]
-
-ensemble_time_p = SimTimeParameters(;
-    tmin = 0.0, tmax = 365.0 * 100.0, tstep = 1.0
-)
-
-base_param_dict = @dict(
-    N = N_vec,
-    init_states_prop = init_states_prop_dict,
-    time_p = ensemble_time_p,
-    nsims = nsims_vec,
-    beta_force = beta_force_vec,
-    births_per_k = births_per_k_vec,
-    seed = seed,
-)
-
-#%%
-scenarios_dict = dict_list(merge(base_param_dict, base_scenarios_dict))
+scenarios_dict = dict_list(base_scenarios_dict)
 
 #%%
 run_OutbreakThresholdChars_creation(scenarios_dict; progress = true)

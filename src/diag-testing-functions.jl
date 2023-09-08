@@ -302,51 +302,8 @@ function run_OutbreakThresholdChars_creation(
         @produce_or_load(
             OutbreakThresholdChars_creation,
             OTChars_params,
-            datadir(
-                "seasonal-infectivity-import",
-                "tau-leaping",
-                "N_$(OTChars_params[:N])",
-                "r_$(OTChars_params[:init_states_prop][:r_prop])",
-                "nsims_$(OTChars_params[:nsims])",
-                "births_per_k_$(OTChars_params[:births_per_k])",
-                "beta_force_$(OTChars_params[:beta_force])",
-                "tmax_$(OTChars_params[:time_p].tmax)",
-                "tstep_$(OTChars_params[:time_p].tstep)",
-                "noise_$(OTChars_params[:noise_spec].noise_type)",
-                "min_outbreak_dur_$(OTChars_params[:outbreak_spec].minimum_outbreak_duration)",
-                "min_outbreak_size_$(OTChars_params[:outbreak_spec].minimum_outbreak_size)",
-                "outbreak_threshold_$(OTChars_params[:outbreak_spec].outbreak_threshold)",
-                "detectthreshold_$(OTChars_params[:outbreak_detect_spec].detection_threshold)",
-                "testlag_$(OTChars_params[:outbreak_detect_spec].test_result_lag)",
-                "moveavglag_$(OTChars_params[:outbreak_detect_spec].moving_average_lag)",
-                "perc_tested_$(OTChars_params[:outbreak_detect_spec].percent_tested)",
-                "testsens_$(OTChars_params[:ind_test_spec].sensitivity)",
-                "testspec_$(OTChars_params[:ind_test_spec].specificity)",
-            );
-            prefix = "SEIR_tau_sol",
-            filename = savename(
-                OTChars_params;
-                allowedtypes = (Symbol, Dict, String, Real),
-                accesses = [
-                    :N,
-                    :init_states_prop,
-                    :nsims,
-                    :time_p,
-                    :births_per_k,
-                    :beta_force,
-                    :noise_spec,
-                    :outbreak_spec,
-                    :outbreak_detect_spec,
-                    :ind_test_spec,
-                ],
-                expand = [
-                    "init_states_prop",
-                    "outbreak_spec",
-                    "outbreak_detect_spec",
-                    "ind_test_spec",
-                ],
-                sort = false,
-            ),
+            "$(OTChars_params[:scenario_spec].dirpath)";
+            filename = "ensemble-scenario",
             loadfile = false
         )
         if progress
@@ -356,48 +313,34 @@ function run_OutbreakThresholdChars_creation(
 end
 
 function OutbreakThresholdChars_creation(OT_chars_param_dict)
-    @unpack N,
-    init_states_prop,
-    nsims,
-    time_p,
-    births_per_k,
-    beta_force,
-    noise_spec,
-    outbreak_spec,
-    outbreak_detect_spec,
-    ind_test_spec = OT_chars_param_dict
-
-    ensemble_spec = EnsembleSpecification(
-        ("seasonal-infectivity-import", "tau-leaping"),
-        N,
-        init_states_prop[:r_prop],
-        nsims,
-        births_per_k,
-        beta_force,
-        time_p,
-    )
+    @unpack scenario_spec = OT_chars_param_dict
+    @unpack ensemble_specification,
+    noise_specification,
+    outbreak_specification,
+    outbreak_detection_specification,
+    individual_test_specification = scenario_spec
 
     ensemble_sol = get_ensemble_file(
-        "sol", ensemble_spec
+        "sol", ensemble_specification
     )
 
     @unpack ensemble_jump_arr = ensemble_sol
 
     @info "Creating Incidence Array"
-    incarr = create_inc_infec_arr(ensemble_jump_arr, outbreak_spec)
+    incarr = create_inc_infec_arr(ensemble_jump_arr, outbreak_specification)
 
     testarr = zeros(Int64, size(incarr, 1), 8, size(incarr, 3))
 
     posoddsarr = zeros(Float64, size(incarr, 1), 2, size(incarr, 3))
 
-    @unpack noise_array = noise_spec
+    @unpack noise_array = noise_specification
 
     @unpack detection_threshold,
     moving_average_lag,
     percent_tested,
-    test_result_lag = outbreak_detect_spec
+    test_result_lag = outbreak_detection_specification
 
-    @unpack sensitivity, specificity = ind_test_spec
+    @unpack sensitivity, specificity = individual_test_specification
 
     @info "Creating Testing Array"
     create_testing_arr!(
@@ -405,12 +348,8 @@ function OutbreakThresholdChars_creation(OT_chars_param_dict)
         incarr,
         noise_array,
         posoddsarr,
-        percent_tested,
-        test_result_lag,
-        sensitivity,
-        specificity,
-        detection_threshold,
-        moving_average_lag,
+        outbreak_detection_specification,
+        individual_test_specification,
     )
 
     @info "Calculating OT characteristics"
