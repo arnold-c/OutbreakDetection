@@ -8,19 +8,19 @@ using StatsBase
 using UnPack
 
 function create_inc_infec_arr(
-    ensemble_jump_arr, outbreak_specification::OutbreakSpecification
+    ensemble_jump_arr, outbreak_specification::OutbreakSpecification; progress::Bool = true
 )
     @unpack outbreak_threshold, minimum_outbreak_duration, minimum_outbreak_size = outbreak_specification
 
     incarr = create_inc_infec_arr(
-        ensemble_jump_arr, outbreak_threshold, minimum_outbreak_duration, minimum_outbreak_size
+        ensemble_jump_arr, outbreak_threshold, minimum_outbreak_duration, minimum_outbreak_size; progress = progress
     )
 
     return incarr
 end
 
 function create_inc_infec_arr(
-    ensemble_jump_arr, outbreakthreshold, minoutbreakdur, minoutbreaksize
+    ensemble_jump_arr, outbreakthreshold, minoutbreakdur, minoutbreaksize; progress::Bool = true
 )
     incarr = zeros(
         Int64, size(ensemble_jump_arr, 2), 4, size(ensemble_jump_arr, 3)
@@ -31,16 +31,20 @@ function create_inc_infec_arr(
         ensemble_jump_arr,
         outbreakthreshold,
         minoutbreakdur,
-        minoutbreaksize,
+        minoutbreaksize;
+        progress = progress
     )
 
     return incarr
 end
 
 function create_inc_infec_arr!(
-    incarr, ensemblejumparr, outbreakthreshold, minoutbreakdur, minoutbreaksize
+    incarr, ensemblejumparr, outbreakthreshold, minoutbreakdur, minoutbreaksize; progress::Bool = true
 )
-    prog = Progress(size(ensemblejumparr, 3))
+    if progress
+        prog = Progress(size(ensemblejumparr, 3))
+    end
+
     @floop for sim in axes(ensemblejumparr, 3)
         # Copy new infections to array
         incarr[:, 1, sim] = @view(ensemblejumparr[1, :, sim])
@@ -65,7 +69,9 @@ function create_inc_infec_arr!(
             end
         end
 
-        next!(prog)
+        if progress
+            next!(prog)
+        end
     end
 end
 
