@@ -4,7 +4,7 @@ using DrWatson
 
 using ColorSchemes
 
-include("ensemble-sim_single-scenario_infections.jl")
+include("ensemble-sim_single-scenario.jl")
 
 include(srcdir("makie-plotting-setup.jl"))
 
@@ -12,9 +12,9 @@ include(srcdir("makie-plotting-setup.jl"))
 outbreakcols = [ColorSchemes.magma[i] for i in (200, 20)]
 
 detect_outbreak_plot(
-    inc_infec_arr,
+    incarr,
     ensemble_seir_arr,
-    time_parameters;
+    ensemble_single_scenario_spec.ensemble_specification.time_parameters;
     colormap = outbreakcols,
     xlims = (90, 100),
     ylims_inc = (0, 150),
@@ -23,6 +23,10 @@ detect_outbreak_plot(
 
 #%%
 create_sir_quantiles_plot(
-    ensemble_seir_summary; labels = seir_state_labels, colors = seircolors,
-    annual = true, caption = caption, timeparams = time_parameters
+    ensemble_seir_summary;
+    labels = seir_state_labels,
+    colors = seircolors,
+    annual = true,
+    caption = caption,
+    timeparams = ensemble_single_scenario_spec.ensemble_specification.time_parameters,
 )

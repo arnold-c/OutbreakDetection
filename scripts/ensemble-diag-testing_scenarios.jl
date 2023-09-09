@@ -90,7 +90,13 @@ testlag_vec = [3]
 
 outbreak_detection_spec_vec = create_combinations_vec(
     OutbreakDetectionSpecification,
-    (detectthreshold_vec, moveavglag_vec, perc_clinic_vec, perc_clinic_test_vec, testlag_vec),
+    (
+        detectthreshold_vec,
+        moveavglag_vec,
+        perc_clinic_vec,
+        perc_clinic_test_vec,
+        testlag_vec,
+    ),
 )
 
 #%%
@@ -99,13 +105,19 @@ testspec_vec = collect(0.8:0.1:1.0)
 
 test_spec_vec = create_combinations_vec(
     IndividualTestSpecification,
-    (testsens_vec, testspec_vec),
+    (testsens_vec, testspec_vec)
 )
 
 #%%
 ensemble_scenarios = create_combinations_vec(
     ScenarioSpecification,
-    (ensemble_spec_vec, outbreak_spec_vec, noise_spec_vec, outbreak_detection_spec_vec, test_spec_vec),
+    (
+        ensemble_spec_vec,
+        outbreak_spec_vec,
+        noise_spec_vec,
+        outbreak_detection_spec_vec,
+        test_spec_vec,
+    ),
 )
 
 #%%
@@ -118,17 +130,3 @@ scenarios_dict = dict_list(base_scenarios_dict)
 
 #%%
 run_OutbreakThresholdChars_creation(scenarios_dict; progress = true)
-
-#%%
-scenario = ScenarioSpecification(
-    ensemble_spec,
-    outbreak_spec,
-    NoiseSpecification("static", ensemble_noise_arr),
-    OutbreakDetectionSpecification(10, 7, 0.3, 0.3, 3),
-    IndividualTestSpecification(0.8, 0.8),
-)
-
-scenario_file = get_scenario_file(scenario)
-
-@unpack OT_chars = scenario_file
-
