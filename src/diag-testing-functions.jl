@@ -358,7 +358,6 @@ function OutbreakThresholdChars_creation(OT_chars_param_dict)
     return @strdict OT_chars,
     incarr,
     testarr,
-    noise_array,
     posoddsarr,
     scenario_spec
 end
