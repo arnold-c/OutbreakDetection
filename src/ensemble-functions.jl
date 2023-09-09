@@ -144,7 +144,7 @@ function run_jump_prob(ensemble_param_dict)
         )
     end
 
-    return @strdict ensemble_seir_arr ensemble_change_arr ensemble_jump_arr dynamics_parameters state_parameters time_parameters ensemble_param_dict
+    return @strdict ensemble_seir_arr ensemble_change_arr ensemble_jump_arr ensemble_param_dict
 end
 
 function summarize_ensemble_jump_prob(dict_of_ensemble_params; prog = prog)
