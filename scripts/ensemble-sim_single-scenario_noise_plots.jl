@@ -8,5 +8,6 @@ include(srcdir("makie-plotting-setup.jl"))
 
 #%%
 visualize_ensemble_noise(
-    ensemble_noise_arr, ensemble_single_scenario_spec.time_parameters
+    ensemble_single_scenario_noise_spec.noise_array,
+    ensemble_single_scenario_noise_spec.time_parameters
 )

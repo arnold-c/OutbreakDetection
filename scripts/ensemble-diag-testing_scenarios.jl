@@ -2,10 +2,8 @@
 using DrWatson
 @quickactivate "OutbreakDetection"
 
-# include("../src/OutbreakDetection.jl")
-# using OutbreakDetection
-
-include("ensemble-sim_single-scenario_noise.jl")
+include("../src/OutbreakDetection.jl")
+using .OutbreakDetection
 
 #%%
 model_types_vec = [("seasonal-infectivity-import", "tau-leaping")]
@@ -63,7 +61,6 @@ ensemble_spec_vec = create_ensemble_spec_combinations(
     nsims_vec,
 )
 
-
 #%%
 outbreak_threshold_vec = [5]
 min_outbreak_dur_vec = [30]
@@ -75,7 +72,14 @@ outbreak_spec_vec = create_combinations_vec(
 )
 
 #%%
-noise_spec_vec = [NoiseSpecification("static", ensemble_noise_arr)]
+init_noise_vec = [[10.0]]
+noise_ode_vec = [0.0]
+noise_vec = [0.1]
+
+noise_spec_vec = create_combinations_vec(
+    create_static_NoiseSpecification,
+    (init_noise_vec, time_p_vec, noise_ode_vec, noise_vec, nsims_vec),
+)
 
 #%%
 detectthreshold_vec = collect(5:5:20)
