@@ -239,10 +239,10 @@ function calculate_movingavg!(invec, outvec, testlag, avglag; Float = true)
     end
 end
 
-function detectoutbreak(incvec, avgvec, threshold, avglag)
+function detectoutbreak(incvec, avgvec, threshold)
     outbreak = zeros(Int64, length(incvec))
 
-    detectoutbreak!(outbreak, incvec, avgvec, threshold, avglag)
+    detectoutbreak!(outbreak, incvec, avgvec, threshold)
 
     return outbreak
 end
