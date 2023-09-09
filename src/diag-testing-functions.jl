@@ -355,7 +355,12 @@ function OutbreakThresholdChars_creation(OT_chars_param_dict)
     @info "Calculating OT characteristics"
     OT_chars = calculate_OutbreakThresholdChars(testarr, incarr)
 
-    return @strdict OT_chars
+    return @strdict OT_chars,
+    incarr,
+    testarr,
+    noise_array,
+    posoddsarr,
+    scenario_spec
 end
 
 function get_scenario_file(type, spec)
