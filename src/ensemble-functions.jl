@@ -174,7 +174,7 @@ function jump_prob_summary(ensemble_param_dict)
 
     ensemble_sol_file = get_ensemble_file("solution", ensemble_spec)
 
-    @unpack ensemble_seir_arr, state_parameters = ensemble_sol_file
+    @unpack ensemble_seir_arr = ensemble_sol_file
     N = init_states[:N]
     S_init = init_states[:S]
     I_init = init_states[:I]
@@ -191,7 +191,7 @@ function jump_prob_summary(ensemble_param_dict)
 
     caption = "nsims = $nsims, N = $N, S = $S_init, I = $I_init, R = $R_init, beta_force = $beta_force,\nbirths per k/annum = $annual_births_per_k tstep = $(time_parameters.tstep), quantile int = $quantiles"
 
-    return @strdict ensemble_seir_summary caption state_parameters ensemble_param_dict
+    return @strdict ensemble_seir_summary caption ensemble_param_dict
 end
 
 function get_ensemble_file(type, spec)
