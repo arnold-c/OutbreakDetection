@@ -201,6 +201,33 @@ end
 struct NoiseSpecification
     noise_type
     noise_array
+    time_parameters
+end
+
+function create_static_NoiseSpecification(
+    init_noise::Vector{Float64},
+    time_parameters::SimTimeParameters,
+    ode_value::Float64,
+    noise_value::Float64,
+    nsims;
+    callback = DiscreteCallback(
+        sde_condition, sde_affect!; save_positions = (false, false)
+    ),
+)
+    ode_function!(du, u, p, t) = (du .= ode_value)
+    noise_function!(du, u, p, t) = (du .= noise_value)
+
+    return NoiseSpecification(
+        "static",
+        create_static_noise_arr(
+            init_noise,
+            time_parameters,
+            nsims;
+            ode_function = ode_function!,
+            noise_function = noise_function!
+        ),
+        time_parameters,
+    )
 end
 
 struct ScenarioSpecification
