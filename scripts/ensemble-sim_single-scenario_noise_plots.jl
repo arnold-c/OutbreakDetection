@@ -7,4 +7,6 @@ include("ensemble-sim_single-scenario_noise.jl")
 include(srcdir("makie-plotting-setup.jl"))
 
 #%%
-visualize_ensemble_noise(ensemble_noise_arr, time_parameters)
+visualize_ensemble_noise(
+    ensemble_noise_arr, ensemble_single_scenario_spec.time_parameters
+)

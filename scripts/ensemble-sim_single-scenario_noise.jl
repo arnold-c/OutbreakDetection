@@ -15,8 +15,8 @@ sde_cb = DiscreteCallback(
 
 ensemble_noise_arr = create_static_noise_arr(
     init_noise,
-    time_parameters,
-    dynamics_parameters;
+    ensemble_single_scenario_spec.time_parameters,
+    ensemble_single_scenario_spec.dynamics_parameters,
     ensemble_single_scenario_nsims;
     callback = sde_cb,
 )
