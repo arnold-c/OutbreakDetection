@@ -4,9 +4,7 @@ using DrWatson
 
 using UnPack
 
-# include("ensemble-sim.jl")
-include("../src/OutbreakDetection.jl")
-using .OutbreakDetection
+include("ensemble-diag-testing_scenarios.jl")
 
 #%%
 ensemble_single_scenario_spec = ScenarioSpecification(
