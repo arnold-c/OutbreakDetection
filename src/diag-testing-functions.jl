@@ -321,7 +321,7 @@ function OutbreakThresholdChars_creation(OT_chars_param_dict)
     individual_test_specification = scenario_spec
 
     ensemble_sol = get_ensemble_file(
-        "sol", ensemble_specification
+        "solution", ensemble_specification
     )
 
     @unpack ensemble_jump_arr = ensemble_sol
