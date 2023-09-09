@@ -48,7 +48,7 @@ export create_combinations_vec, create_ensemble_spec_combinations,
 # @reexport using .EnsembleFunctions
 
 include("noise-functions.jl")
-export create_noise_arr, create_noise_arr!, sde_affect!, sde_condition
+export create_static_noise_arr, create_static_noise_arr!, sde_affect!, sde_condition
 # @reexport using .NoiseFunctions
 
 include("plotting-functions.jl")

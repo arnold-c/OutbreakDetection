@@ -8,11 +8,11 @@ using FLoops
 # include("ensemble-functions.jl")
 # using .EnsembleFunctions
 
-function create_noise_arr(
-    jump_arr,
+function create_static_noise_arr(
     init_noise,
     timeparams,
-    dynamicsparams;
+    dynamicsparams,
+    nsims;
     callback = DiscreteCallback(
         sde_condition, sde_affect!; save_positions = (false, false)
     ),
@@ -20,20 +20,19 @@ function create_noise_arr(
     # Set noise arr to 3D array (even though not necessary), so it has the same
     # dimensions as the other arrays
     noise_arr = zeros(
-        Float64, size(jump_arr, 2), 1, size(jump_arr, 3)
+        Float64, timeparams.tlength, 1, nsims
     )
 
-    create_noise_arr!(
-        noise_arr, jump_arr, init_noise, timeparams, dynamicsparams;
-        callback = callback,
+    create_static_noise_arr!(
+        noise_arr, init_noise, timeparams, dynamicsparams;
+        callback = callback
     )
 
     return noise_arr
 end
 
-function create_noise_arr!(
+function create_static_noise_arr!(
     noise_arr,
-    jump_arr,
     init_noise,
     timeparams,
     dynamicsparams;
@@ -41,7 +40,7 @@ function create_noise_arr!(
         sde_condition, sde_affect!; save_positions = (false, false)
     ),
 )
-    @floop for sim in axes(jump_arr, 3)
+    @floop for sim in axes(noise_arr, 3)
         noise_prob = SDEProblem(
             background_ode!,
             background_noise!,

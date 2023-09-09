@@ -13,10 +13,10 @@ sde_cb = DiscreteCallback(
     sde_condition, sde_affect!; save_positions = (false, false)
 )
 
-ensemble_noise_arr = create_noise_arr(
-    ensemble_jump_arr,
+ensemble_noise_arr = create_static_noise_arr(
     init_noise,
     time_parameters,
     dynamics_parameters;
+    ensemble_single_scenario_nsims;
     callback = sde_cb,
 )
