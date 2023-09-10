@@ -326,7 +326,6 @@ function OutbreakThresholdChars_creation(OT_chars_param_dict)
 
     @unpack ensemble_jump_arr = ensemble_sol
 
-    @info "Creating Incidence Array"
     incarr = create_inc_infec_arr(
         ensemble_jump_arr, outbreak_specification; progress = false
     )
@@ -344,7 +343,6 @@ function OutbreakThresholdChars_creation(OT_chars_param_dict)
 
     @unpack sensitivity, specificity = individual_test_specification
 
-    @info "Creating Testing Array"
     create_testing_arr!(
         testarr,
         incarr,
@@ -354,10 +352,8 @@ function OutbreakThresholdChars_creation(OT_chars_param_dict)
         individual_test_specification,
     )
 
-    @info "Calculating OT characteristics"
     OT_chars = calculate_OutbreakThresholdChars(testarr, incarr)
 
-    @info "Done!"
     return @strdict OT_chars incarr testarr posoddsarr scenario_spec
 end
 
