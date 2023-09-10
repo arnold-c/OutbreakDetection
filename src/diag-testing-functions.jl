@@ -327,7 +327,9 @@ function OutbreakThresholdChars_creation(OT_chars_param_dict)
     @unpack ensemble_jump_arr = ensemble_sol
 
     @info "Creating Incidence Array"
-    incarr = create_inc_infec_arr(ensemble_jump_arr, outbreak_specification)
+    incarr = create_inc_infec_arr(
+        ensemble_jump_arr, outbreak_specification; progress = false
+    )
 
     testarr = zeros(Int64, size(incarr, 1), 8, size(incarr, 3))
 
