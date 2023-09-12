@@ -488,7 +488,7 @@ function compare_ensemble_OTchars_plots(
     # end
         gl = fig[x, y] = GridLayout()
         ax = Axis(
-            gl[1, 1];
+            gl[2, 1];
             xlabel = xlabel,
             ylabel = ylabel,
         )
@@ -510,7 +510,7 @@ function compare_ensemble_OTchars_plots(
         )
 
         Label(
-            gl[2, :],
+            gl[1, :],
             "$(char1_label): $(getfield(OT_char_tuple.ind_test_spec, char1)), $(char2_label): $(getfield(OT_char_tuple.ind_test_spec, char2)), $(char3_label): $(getfield(OT_char_tuple.outbreak_detect_spec, char3))";
             word_wrap = true,
         )
