@@ -67,7 +67,7 @@ ensemble_OTChars_plot(
     char1_label = "Sensitivity",
     char2_label = "Specificity",
     xlabel = "Proportion",
-    legendlabel = "Characterstic",
+    legendlabel = "Characteristic",
 )
 
 #%%
@@ -88,5 +88,5 @@ ensemble_OTChars_plot(
     char1_color = :green,
     char2_color = :purple,
     xlabel = "Proportion",
-    legendlabel = "Characterstic",
+    legendlabel = "Characteristic",
 )
