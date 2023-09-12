@@ -2,7 +2,8 @@
 using DrWatson
 @quickactivate "OutbreakDetection"
 
-include("ensemble-sim.jl")
+include("../src/OutbreakDetection.jl")
+using .OutbreakDetection
 
 #%%
 model_types_vec = [("seasonal-infectivity-import", "tau-leaping")]
