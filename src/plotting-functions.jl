@@ -522,7 +522,7 @@ function compare_ensemble_OTchars_plots(
             PolyElement(; color = col) for
             col in [(char1_color, 0.5), (char2_color, 0.5)]
         ],
-        ["Not Outbreak", "Outbreak"];
+        [char1_label, char2_label],;
         label = legendlabel)
     return fig
 end
