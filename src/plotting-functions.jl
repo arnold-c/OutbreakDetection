@@ -476,12 +476,15 @@ function compare_ensemble_OTchars_plots(
     ylabel = "Density",
     legendlabel = "Chacteristic",
 )
-
-    xlength = length(Set(getfield.(getfield.(char_struct_vec, :ind_test_spec), char1)))
-    ylength = length(Set(getfield.(getfield.(char_struct_vec, :outbreak_detect_spec), char3)))
+    xlength = length(
+        Set(getfield.(getfield.(char_struct_vec, :ind_test_spec), :sensitivity))
+    )
+    ylength = length(
+        Set(getfield.(getfield.(char_struct_vec, :outbreak_detect_spec), char3))
+    )
 
     xs = repeat(1:xlength, ylength)
-    ys = repeat(1:ylength, inner = xlength)
+    ys = repeat(1:ylength; inner = xlength)
 
     fig = Figure()
     for (OT_char_tuple, x, y) in zip(char_struct_vec, xs, ys)
@@ -510,19 +513,22 @@ function compare_ensemble_OTchars_plots(
 
         Label(
             gl[1, :],
-            "$(char1_label): $(getfield(OT_char_tuple.ind_test_spec, char1)), $(char2_label): $(getfield(OT_char_tuple.ind_test_spec, char2)), $(char3_label): $(getfield(OT_char_tuple.outbreak_detect_spec, char3))";
+            "Sensitivity: $(OT_char_tuple.ind_test_spec.sensitivity), Specificity: $(OT_char_tuple.ind_test_spec.specificity), $(char3_label): $(getfield(OT_char_tuple.outbreak_detect_spec, char3))";
             word_wrap = true,
         )
         colsize!(gl, 1, Relative(1))
     end
 
-    Legend(fig[:, end + 1],
+    Legend(
+        fig[:, end + 1],
         [
             PolyElement(; color = col) for
             col in [(char1_color, 0.5), (char2_color, 0.5)]
         ],
-        [char1_label, char2_label],;
-        label = legendlabel)
+        [char1_label, char2_label],
+        ;
+        label = legendlabel,
+    )
     return fig
 end
 
