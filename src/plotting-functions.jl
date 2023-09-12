@@ -461,4 +461,60 @@ function ensemble_OTChars_plot(
     return fig
 end
 
+
+function compare_ensemble_OTchars_plots(
+    char_struct_vec,
+    char1:::Symbol,
+    char2:::Symbol,
+    char3:::Symbol,
+    char1_label,
+    char2_label,
+    char3_label;
+    bins 0.0:0.01:1.01,
+    char1_color = :blue,
+    char2_color = :red,
+    xlabel = "Characteristic Value",
+    legendlabel = "Characteristic",
+
+)
+    fig = Figure()
+    for (i, ((x, (char1_val, char2_val)), (y, char3_val))) in enumerate(
+        Iterators.product(
+            enumerate(zip(sensitivity_vec, specificity_vec)),
+            enumerate(detectthreshold_vec),
+        ),
+    )
+        gl = fig[x, y] = GridLayout()
+        ax = Axis(
+            gl[1, 1];
+            xlabel = "Characteristic Value",
+            ylabel = "Density",
+        )
+
+        hist!(
+            ax,
+            getproperty(char_struct_vec[i], char1);
+            bins = 0.0:0.01:1.01,
+            color = (:blue, 0.5),
+            normalization = :pdf,
+        )
+
+        hist!(
+            ax,
+            getproperty(char_struct_vec[i], char2);
+            bins = 0.0:0.01:1.01,
+            color = (:red, 0.5),
+            normalization = :pdf,
+        )
+
+        Label(
+            gl[2, :],
+            "$(char1_label): $(char1_val), $(char2_label): $(char2_val), $(char3_label): $(char3_val)";
+            word_wrap = true
+        )
+        colsize!(gl, 1, Relative(1))
+    end
+
+end
+
 # end

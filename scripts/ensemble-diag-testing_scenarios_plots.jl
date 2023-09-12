@@ -70,43 +70,6 @@ for (i, ((sens, spec), detectthrehold)) in enumerate(
     next!(prog)
 end
 
-#%%
-OT_sens_spec_fig = Figure()
-for (i, ((x, (sens, spec)), (y, detectthrehold))) in enumerate(
-    Iterators.product(
-        enumerate(zip(sensitivity_vec, specificity_vec)),
-        enumerate(detectthreshold_vec),
-    ),
-)
-    gl = OT_sens_spec_fig[x, y] = GridLayout()
-    ax = Axis(
-        gl[1, 1];
-        xlabel = "Characteristic Value",
-        ylabel = "Density",
     )
 
-    hist!(
-        ax,
-        ensemble_chars_vec[i].sensitivity;
-        bins = 0.0:0.01:1.01,
-        color = (:blue, 0.5),
-        normalization = :pdf,
-    )
-
-    hist!(
-        ax,
-        ensemble_chars_vec[i].specificity;
-        bins = 0.0:0.01:1.01,
-        color = (:red, 0.5),
-        normalization = :pdf,
-    )
-
-    Label(
-        gl[2, :],
-        "Individual Sensitivity/Specificity: $(sens), Detection Threshold: $(detectthrehold)";
-        word_wrap = true
-    )
-    colsize!(gl, 1, Relative(1))
 end
-
-OT_sens_spec_fig
