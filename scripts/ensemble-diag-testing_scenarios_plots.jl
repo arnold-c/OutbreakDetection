@@ -36,6 +36,11 @@ for (i, ((sens, spec), detectthrehold)) in enumerate(
         detectthreshold_vec
     ),
 )
+    ind_test_spec = IndividualTestSpecification(sens, spec)
+    outbreak_detect_spec = OutbreakDetectionSpecification(
+        detectthrehold, 7, 0.3, 0.3, 3
+    )
+
     ensemble_spec =
         let time_params = SimTimeParameters(;
                 tmin = 0.0, tmax = 365.0 * 100, tstep = 1.0
@@ -58,18 +63,18 @@ for (i, ((sens, spec), detectthrehold)) in enumerate(
                 ),
                 OutbreakSpecification(5, 30, 500),
                 ensemble_static_noise_arr,
-                OutbreakDetectionSpecification(10, 7, 0.3, 0.3, 3),
-                IndividualTestSpecification(sens, spec),
+                outbreak_detect_spec,
+                ind_test_spec,
             )
         end
 
     ensemble_chars_file = get_scenario_file("scenario", ensemble_spec)
 
-    ensemble_chars_vec[i] = ensemble_chars_file["OT_chars"]
-
-    next!(prog)
-end
-
+    ensemble_chars_vec[i] = (
+        OT_chars = ensemble_chars_file["OT_chars"],
+        outbreak_detect_spec = outbreak_detect_spec,
+        ind_test_spec = ind_test_spec,
     )
 
+    next!(prog)
 end
