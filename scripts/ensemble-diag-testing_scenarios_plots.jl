@@ -95,10 +95,10 @@ compare_ensemble_OTchars_plots(
     ensemble_chars_vec,
     :ppv,
     :npv,
-    :detection_threshold,
-    "PPV",
-    "NPV",
-    "Detection Threshold";
+    :detection_threshold;
+    char1_label = "PPV",
+    char2_label = "NPV",
+    char3_label = "Detection Threshold",
     char1_color = :green,
     char2_color = :purple
 )

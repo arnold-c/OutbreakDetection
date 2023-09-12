@@ -465,16 +465,16 @@ function compare_ensemble_OTchars_plots(
     char_struct_vec,
     char1::Symbol,
     char2::Symbol,
-    char3::Symbol,
-    char1_label,
-    char2_label,
-    char3_label;
+    char3::Symbol;
+    char1_label = "Sensitivity",
+    char2_label = "Specificity",
+    char3_label = "Outbreak Detection",
     bins = 0.0:0.01:1.01,
     char1_color = :blue,
     char2_color = :red,
     xlabel = "Characteristic Value",
     ylabel = "Density",
-    legendlabel = "Chacteristic",
+    legendlabel = "Outbreak Chacteristic",
 )
     xlength = length(
         Set(getfield.(getfield.(char_struct_vec, :ind_test_spec), :sensitivity))
