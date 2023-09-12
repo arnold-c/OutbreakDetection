@@ -10,10 +10,15 @@ using UnPack
 function create_inc_infec_arr(
     ensemble_jump_arr, outbreak_specification::OutbreakSpecification
 )
-    @unpack outbreak_threshold, minimum_outbreak_duration, minimum_outbreak_size = outbreak_specification
+    @unpack outbreak_threshold,
+    minimum_outbreak_duration,
+    minimum_outbreak_size = outbreak_specification
 
     incarr = create_inc_infec_arr(
-        ensemble_jump_arr, outbreak_threshold, minimum_outbreak_duration, minimum_outbreak_size
+        ensemble_jump_arr,
+        outbreak_threshold,
+        minimum_outbreak_duration,
+        minimum_outbreak_size,
     )
 
     return incarr
@@ -31,7 +36,7 @@ function create_inc_infec_arr(
         ensemble_jump_arr,
         outbreakthreshold,
         minoutbreakdur,
-        minoutbreaksize
+        minoutbreaksize,
     )
 
     return incarr
