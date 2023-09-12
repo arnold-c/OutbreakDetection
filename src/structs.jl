@@ -9,13 +9,18 @@ using LabelledArrays
 # include("transmission-functions.jl")
 # using .TransmissionFunctions
 
-struct SimTimeParameters
-    tmin
-    tmax
-    tstep
-    trange
-    tspan
-    tlength
+struct SimTimeParameters{
+    T1<:AbstractFloat,
+    T2<:StepRangeLen,
+    T3<:Tuple{T1,T1},
+    T4<:Int
+}
+    tmin::T1
+    tmax::T1
+    tstep::T1
+    trange::T2
+    tspan::T3
+    tlength::T4
 end
 
 function SimTimeParameters(; tmin = 0.0, tmax = 365.0 * 100.0, tstep = 1.0)
@@ -37,15 +42,15 @@ const BETA_MEAN = calculate_beta(R0, GAMMA, MU, 1, POPULATION_N)
 const BETA_FORCE = 0.2
 const EPSILON = calculate_import_rate(MU, R0, POPULATION_N)
 
-struct DynamicsParameters
-    beta_mean::Float64
-    beta_force::Float64
-    sigma::Float64
-    gamma::Float64
-    mu::Float64
-    annual_births_per_k::Union{Int64,Float64}
-    epsilon::Float64
-    R_0::Float64
+struct DynamicsParameters{T1<:AbstractFloat,T2<:Union{<:Integer,T1}}
+    beta_mean::T1
+    beta_force::T1
+    sigma::T1
+    gamma::T1
+    mu::T1
+    annual_births_per_k::T2
+    epsilon::T1
+    R_0::T1
 end
 
 function DynamicsParameters(sigma::Float64, gamma::Float64, R_0::Float64)
@@ -82,9 +87,9 @@ function DynamicsParameters(
     )
 end
 
-struct StateParameters
-    init_states
-    init_state_props
+struct StateParameters{T1<:LArray{<:Integer}, T2<:LArray{<:AbstractFloat}}
+    init_states::T1
+    init_state_props::T2
 end
 
 function StateParameters(N::Int64, init_state_props::Dict)
@@ -92,7 +97,7 @@ function StateParameters(N::Int64, init_state_props::Dict)
         N = N,
         s_prop = init_state_props[:s_prop],
         e_prop = init_state_props[:e_prop],
-        i_prop = init_state_props[:i_prop]
+        i_prop = init_state_props[:i_prop],
     )
 end
 
@@ -112,13 +117,20 @@ function StateParameters(;
     )
 end
 
-struct EnsembleSpecification
-    modeltypes::Tuple
-    state_parameters::StateParameters
-    dynamics_parameters::DynamicsParameters
-    time_parameters::SimTimeParameters
-    nsims::Int64
-    dirpath::String
+struct EnsembleSpecification{
+    T1<:Tuple,
+    T2<:StateParameters,
+    T3<:DynamicsParameters,
+    T4<:SimTimeParameters,
+    T5<:Integer,
+    T6<:AbstractString,
+}
+    modeltypes::T1
+    state_parameters::T2
+    dynamics_parameters::T3
+    time_parameters::T4
+    nsims::T5
+    dirpath::T6
 end
 
 function EnsembleSpecification(
@@ -149,33 +161,35 @@ function EnsembleSpecification(
     )
 end
 
-struct OutbreakThresholdChars{A,B,C,D}
-    crosstab::A
-    tp::B
-    tn::B
-    fp::B
-    fn::B
-    sensitivity::C
-    specificity::C
-    ppv::C
-    npv::C
-    noutbreaks::B
-    ndetectoutbreaks::B
-    outbreakbounds::D
-    detectoutbreakbounds::D
+struct OutbreakThresholdChars{
+    T1<:AbstractArray,T2<:Integer,T3<:AbstractFloat,T4<:AbstractMatrix{T2}
+}
+    crosstab::T1
+    tp::T2
+    tn::T2
+    fp::T2
+    fn::T2
+    sensitivity::T3
+    specificity::T3
+    ppv::T3
+    npv::T3
+    noutbreaks::T2
+    ndetectoutbreaks::T2
+    outbreakbounds::T4
+    detectoutbreakbounds::T4
 end
 
-struct OutbreakSpecification
-    outbreak_threshold
-    minimum_outbreak_duration
-    minimum_outbreak_size
+struct OutbreakSpecification{T1<:Integer}
+    outbreak_threshold::T1
+    minimum_outbreak_duration::T1
+    minimum_outbreak_size::T1
 end
 
-struct OutbreakDetectionSpecification
-    detection_threshold
-    moving_average_lag
-    percent_tested
-    test_result_lag
+struct OutbreakDetectionSpecification{T1<:Integer,T2<:AbstractFloat}
+    detection_threshold::T1
+    moving_average_lag::T1
+    percent_tested::T2
+    test_result_lag::T1
 end
 
 function OutbreakDetectionSpecification(
@@ -193,15 +207,17 @@ function OutbreakDetectionSpecification(
     )
 end
 
-struct IndividualTestSpecification
-    sensitivity
-    specificity
+struct IndividualTestSpecification{T1<:AbstractFloat}
+    sensitivity::T1
+    specificity::T1
 end
 
-struct NoiseSpecification
-    noise_type
-    noise_array
-    time_parameters
+struct NoiseSpecification{
+    T1<:AbstractString,T2<:AbstractArray,T3<:SimTimeParameters
+}
+    noise_type::T1
+    noise_array::T2
+    time_parameters::T3
 end
 
 function create_static_NoiseSpecification(
@@ -223,20 +239,28 @@ function create_static_NoiseSpecification(
             init_noise,
             time_parameters,
             nsims;
+            callback = callback,
             ode_function = ode_function!,
-            noise_function = noise_function!
+            noise_function = noise_function!,
         ),
         time_parameters,
     )
 end
 
-struct ScenarioSpecification
-    ensemble_specification::EnsembleSpecification
-    outbreak_specification::OutbreakSpecification
-    noise_specification::NoiseSpecification
-    outbreak_detection_specification::OutbreakDetectionSpecification
-    individual_test_specification::IndividualTestSpecification
-    dirpath::String
+struct ScenarioSpecification{
+    T1<:EnsembleSpecification,
+    T2<:OutbreakSpecification,
+    T3<:NoiseSpecification,
+    T4<:OutbreakDetectionSpecification,
+    T5<:IndividualTestSpecification,
+    T6<:AbstractString,
+}
+    ensemble_specification::T1
+    outbreak_specification::T2
+    noise_specification::T3
+    outbreak_detection_specification::T4
+    individual_test_specification::T5
+    dirpath::T6
 end
 
 function ScenarioSpecification(
