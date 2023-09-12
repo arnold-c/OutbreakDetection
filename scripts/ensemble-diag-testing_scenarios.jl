@@ -33,10 +33,7 @@ time_p_vec = vec(
 
 #%%
 beta_force_vec = [0.2]
-# annual_births_per_k_min = 5
-# annual_births_per_k_max = 20
-# annual_births_per_k_step = 5
-annual_births_per_k_vec = [5]
+annual_births_per_k_vec = collect(5:5:20)
 seed = 1234
 
 #%%
@@ -81,7 +78,7 @@ noise_spec_vec = create_combinations_vec(
 )
 
 #%%
-detectthreshold_vec = collect(5:5:20)
+detectthreshold_vec = [collect(2:1:4)..., collect(5:5:20)...]
 moveavglag_vec = [7]
 perc_clinic_vec = [0.3]
 perc_clinic_test_vec = [0.3]
