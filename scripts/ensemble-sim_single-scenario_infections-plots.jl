@@ -14,7 +14,7 @@ create_sir_quantiles_plot(
     labels = seir_state_labels,
     colors = seircolors,
     annual = true,
-    caption = caption,
+    caption = ensemble_single_scenario_quantiles["caption"],
     timeparams = ensemble_single_scenario_spec.ensemble_specification.time_parameters,
 )
 
