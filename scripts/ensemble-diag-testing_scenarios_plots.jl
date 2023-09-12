@@ -2,22 +2,24 @@
 using DrWatson
 @quickactivate "OutbreakDetection"
 
-using GLMakie
+using ProgressMeter
 
-include("ensemble-diag-testing_scenarios.jl")
+include("../src/OutbreakDetection.jl")
+using .OutbreakDetection
 
 include(srcdir("makie-plotting-setup.jl"))
 
 #%%
-sensitivity_vec = collect(0.8:0.1:1.0)
-specificity_vec = collect(0.8:0.1:1.0)
-detectthreshold_vec = collect(5:5:20)
+sensitivity_vec = collect(0.8:0.2:1.0)
+specificity_vec = collect(0.8:0.2:1.0)
+detectthreshold_vec = collect(5:15:20)
 
 #%%
 ensemble_chars_vec = Vector(
     undef, length(sensitivity_vec) * length(detectthreshold_vec)
 )
 
+#%%
 ensemble_static_noise_arr = create_static_NoiseSpecification(
     [10.0],
     SimTimeParameters(;
@@ -84,10 +86,10 @@ compare_ensemble_OTchars_plots(
     ensemble_chars_vec,
     :sensitivity,
     :specificity,
-    :detection_threshold,
-    "Sensitivity",
-    "Specificity",
-    "Detection Threshold",
+    :detection_threshold;
+    char1_label = "Sensitivity",
+    char2_label = "Specificity",
+    char3_label = "Detection Threshold",
 )
 
 #%%
