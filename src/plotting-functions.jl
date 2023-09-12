@@ -461,60 +461,70 @@ function ensemble_OTChars_plot(
     return fig
 end
 
-
 function compare_ensemble_OTchars_plots(
     char_struct_vec,
-    char1:::Symbol,
-    char2:::Symbol,
-    char3:::Symbol,
+    char1::Symbol,
+    char2::Symbol,
+    char3::Symbol,
     char1_label,
     char2_label,
     char3_label;
-    bins 0.0:0.01:1.01,
+    bins = 0.0:0.01:1.01,
     char1_color = :blue,
     char2_color = :red,
     xlabel = "Characteristic Value",
-    legendlabel = "Characteristic",
-
+    ylabel = "Density",
+    legendlabel = "Chacteristic",
 )
+
+    xlength = length(Set(getfield.(getfield.(char_struct_vec, :ind_test_spec), char1)))
+    ylength = length(Set(getfield.(getfield.(char_struct_vec, :outbreak_detect_spec), char3)))
+    xs = repeat(1:xlength, ylength)
+    ys = repeat(1:ylength, inner = xlength)
+
     fig = Figure()
-    for (i, ((x, (char1_val, char2_val)), (y, char3_val))) in enumerate(
-        Iterators.product(
-            enumerate(zip(sensitivity_vec, specificity_vec)),
-            enumerate(detectthreshold_vec),
-        ),
-    )
+    for ((i, (OT_char_tuple)), x, y) in zip(pairs(char_struct_vec), xs, ys)
+    #     println("i = $(i), x = $(x), y = $(y)")
+    # end
         gl = fig[x, y] = GridLayout()
         ax = Axis(
             gl[1, 1];
-            xlabel = "Characteristic Value",
-            ylabel = "Density",
+            xlabel = xlabel,
+            ylabel = ylabel,
         )
 
         hist!(
             ax,
-            getproperty(char_struct_vec[i], char1);
-            bins = 0.0:0.01:1.01,
-            color = (:blue, 0.5),
+            getproperty(OT_char_tuple.OT_chars, char1);
+            bins = bins,
+            color = (char1_color, 0.5),
             normalization = :pdf,
         )
 
         hist!(
             ax,
-            getproperty(char_struct_vec[i], char2);
-            bins = 0.0:0.01:1.01,
-            color = (:red, 0.5),
+            getproperty(OT_char_tuple.OT_chars, char2);
+            bins = bins,
+            color = (char2_color, 0.5),
             normalization = :pdf,
         )
 
         Label(
             gl[2, :],
-            "$(char1_label): $(char1_val), $(char2_label): $(char2_val), $(char3_label): $(char3_val)";
-            word_wrap = true
+            "$(char1_label): $(getfield(OT_char_tuple.ind_test_spec, char1)), $(char2_label): $(getfield(OT_char_tuple.ind_test_spec, char2)), $(char3_label): $(getfield(OT_char_tuple.outbreak_detect_spec, char3))";
+            word_wrap = true,
         )
         colsize!(gl, 1, Relative(1))
     end
 
+    Legend(fig[:, end + 1],
+        [
+            PolyElement(; color = col) for
+            col in [(char1_color, 0.5), (char2_color, 0.5)]
+        ],
+        ["Not Outbreak", "Outbreak"];
+        label = legendlabel)
+    return fig
 end
 
 # end

@@ -78,3 +78,14 @@ for (i, ((sens, spec), detectthrehold)) in enumerate(
 
     next!(prog)
 end
+
+#%%
+compare_ensemble_OTchars_plots(
+    ensemble_chars_vec,
+    :sensitivity,
+    :specificity,
+    :detection_threshold,
+    "Sensitivity",
+    "Specificity",
+    "Detection Threshold",
+)
