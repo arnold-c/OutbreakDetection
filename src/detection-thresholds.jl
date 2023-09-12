@@ -8,19 +8,19 @@ using StatsBase
 using UnPack
 
 function create_inc_infec_arr(
-    ensemble_jump_arr, outbreak_specification::OutbreakSpecification; progress::Bool = true
+    ensemble_jump_arr, outbreak_specification::OutbreakSpecification
 )
     @unpack outbreak_threshold, minimum_outbreak_duration, minimum_outbreak_size = outbreak_specification
 
     incarr = create_inc_infec_arr(
-        ensemble_jump_arr, outbreak_threshold, minimum_outbreak_duration, minimum_outbreak_size; progress = progress
+        ensemble_jump_arr, outbreak_threshold, minimum_outbreak_duration, minimum_outbreak_size
     )
 
     return incarr
 end
 
 function create_inc_infec_arr(
-    ensemble_jump_arr, outbreakthreshold, minoutbreakdur, minoutbreaksize; progress::Bool = true
+    ensemble_jump_arr, outbreakthreshold, minoutbreakdur, minoutbreaksize
 )
     incarr = zeros(
         Int64, size(ensemble_jump_arr, 2), 4, size(ensemble_jump_arr, 3)
@@ -31,21 +31,16 @@ function create_inc_infec_arr(
         ensemble_jump_arr,
         outbreakthreshold,
         minoutbreakdur,
-        minoutbreaksize;
-        progress = progress
+        minoutbreaksize
     )
 
     return incarr
 end
 
 function create_inc_infec_arr!(
-    incarr, ensemblejumparr, outbreakthreshold, minoutbreakdur, minoutbreaksize; progress::Bool = true
+    incarr, ensemblejumparr, outbreakthreshold, minoutbreakdur, minoutbreaksize
 )
-    if progress
-        prog = Progress(size(ensemblejumparr, 3))
-    end
-
-    @floop for sim in axes(ensemblejumparr, 3)
+    for sim in axes(ensemblejumparr, 3)
         # Copy new infections to array
         incarr[:, 1, sim] = @view(ensemblejumparr[1, :, sim])
         # Calculate if new infection is above or below threshold
@@ -67,10 +62,6 @@ function create_inc_infec_arr!(
             if upper - lower >= minoutbreakdur && period_sum >= minoutbreaksize
                 incarr[lower:upper, 4, sim] .= 1
             end
-        end
-
-        if progress
-            next!(prog)
         end
     end
 end

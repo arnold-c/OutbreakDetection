@@ -100,8 +100,7 @@ function create_testing_arr!(
 )
     ntested = size(testarr, 1)
 
-    # prog = Progress(size(incarr, 3))
-    @floop for sim in axes(incarr, 3)
+    for sim in axes(incarr, 3)
         # Number of infectious individuals tested
         calculate_tested!(testarr, 1, incarr, perc_tested, sim)
 
@@ -163,7 +162,6 @@ function create_testing_arr!(
         @. testarr[:, 8, sim] =
             @view(testarr[:, 7, sim]) == @view(incarr[:, 4, sim])
 
-        # next!(prog)
     end
 
     return nothing
@@ -327,7 +325,7 @@ function OutbreakThresholdChars_creation(OT_chars_param_dict)
     @unpack ensemble_jump_arr = ensemble_sol
 
     incarr = create_inc_infec_arr(
-        ensemble_jump_arr, outbreak_specification; progress = false
+        ensemble_jump_arr, outbreak_specification
     )
 
     testarr = zeros(Int64, size(incarr, 1), 8, size(incarr, 3))
