@@ -115,15 +115,9 @@ function create_inc_infec_arr2!(
         ## Calculate upper and lower indices of consecutive days of infection
         above5lowers, above5uppers = calculate_outbreak_thresholds(above5rle)
 
-        for (lower, upper) in zip(above5lowers, above5uppers)
-            # Calculate number of infections between lower and upper indices
-            period_sum = sum(@view(ensemblejumparr[1, lower:upper, sim]))
-            incarr[lower:upper, 3, sim] .= period_sum
-
-            # Determine if there is an outbreak between lower and upper indices
-            if upper - lower >= minoutbreakdur && period_sum >= minoutbreaksize
-                incarr[lower:upper, 4, sim] .= 1
-            end
+        map(zip(above5lowers, above5uppers)) do (lower, upper)
+            calculate_period_sum!(incarr, ensemblejumparr, lower, upper, sim)
+            classify_outbreak!(incarr, lower, upper, sim, minoutbreakdur, minoutbreaksize)
         end
     end
 end
@@ -138,4 +132,13 @@ function calculate_outbreak_thresholds2(outbreakrle)
     return (outbreaklowers, outbreakuppers)
 end
 
+function calculate_period_sum!(incarr, jumparr, lower, upper, sim)
+    incarr[lower:upper, 3, sim] .= sum(@view(jumparr[1, lower:upper, sim]))
+end
+
+function classify_outbreak!(incarr, lower, upper, sim, minoutbreakdur, minoutbreaksize)
+    if lower - upper >= minoutbreakdur && incarr[lower, 3, sim] >= minoutbreaksize
+        incarr[lower:upper, 4, sim] .= 1
+    end
+end
 # end
