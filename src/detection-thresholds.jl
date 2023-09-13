@@ -115,7 +115,7 @@ function create_inc_infec_arr2!(
         ## Calculate upper and lower indices of consecutive days of infection
         above5lowers, above5uppers = calculate_outbreak_thresholds2(above5rle)
 
-        map(zip(above5lowers, above5uppers)) do (lower, upper)
+        for (lower, upper) in zip(above5lowers, above5uppers)
             calculate_period_sum!(incarr, ensemblejumparr, lower, upper, sim)
             classify_outbreak!(incarr, lower, upper, sim, minoutbreakdur, minoutbreaksize)
         end
