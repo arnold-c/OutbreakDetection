@@ -113,7 +113,7 @@ function create_inc_infec_arr2!(
         above5rle = rle(vec(@view(ensemblejumparr[1, :, sim]) .>= outbreakthreshold))
 
         ## Calculate upper and lower indices of consecutive days of infection
-        above5lowers, above5uppers = calculate_outbreak_thresholds(above5rle)
+        above5lowers, above5uppers = calculate_outbreak_thresholds2(above5rle)
 
         map(zip(above5lowers, above5uppers)) do (lower, upper)
             calculate_period_sum!(incarr, ensemblejumparr, lower, upper, sim)
