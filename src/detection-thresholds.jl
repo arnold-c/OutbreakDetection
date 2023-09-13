@@ -39,6 +39,19 @@ function create_inc_infec_arr(
 end
 
 function create_inc_infec_arr!(
+    incarr, ensemble_jump_arr, outbreak_specification::OutbreakSpecification
+)
+    create_inc_infec_arr!(
+        incarr,
+        ensemble_jump_arr,
+        outbreak_specification.outbreak_threshold,
+        outbreak_specification.minimum_outbreak_duration,
+        outbreak_specification.minimum_outbreak_size,
+    )
+    return nothing
+end
+
+function create_inc_infec_arr!(
     incarr, ensemblejumparr, outbreakthreshold, minoutbreakdur, minoutbreaksize
 )
     for sim in axes(ensemblejumparr, 3)
