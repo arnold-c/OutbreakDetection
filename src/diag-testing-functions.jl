@@ -54,9 +54,16 @@ function create_testing_arr(
     posoddsarr = zeros(Float64, size(incarr, 1), 2, size(incarr, 3))
 
     create_testing_arr!(
-        testarr, incarr, noisearr, posoddsarr, perc_tested, testlag, testsens,
+        testarr,
+        incarr,
+        noisearr,
+        posoddsarr,
+        perc_tested,
+        testlag,
+        testsens,
         testspec,
-        detectthreshold, moveavglag,
+        detectthreshold,
+        moveavglag,
     )
 
     return testarr
@@ -161,7 +168,6 @@ function create_testing_arr!(
         # Triggered outbreak equal to actual outbreak status
         @. testarr[:, 8, sim] =
             @view(testarr[:, 7, sim]) == @view(incarr[:, 4, sim])
-
     end
 
     return nothing
