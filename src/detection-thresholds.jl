@@ -108,11 +108,11 @@ end
 function create_inc_infec_arr2!(
     incarr, ensemblejumparr, outbreakthreshold, minoutbreakdur, minoutbreaksize
 )
+    incarr[:, 2, :] .= @view(ensemblejumparr[1, :, :]) .>= outbreakthreshold
+
     for sim in axes(ensemblejumparr, 3)
         # Calculate the number of consecutive days of infection above or below threshold
-        above5rle = rle(
-            vec(@view(ensemblejumparr[1, :, sim]) .>= outbreakthreshold)
-        )
+        above5rle = rle(@view(incarr[:, 2, sim]))
 
         ## Calculate upper and lower indices of consecutive days of infection
         above5lowers, above5uppers = calculate_outbreak_thresholds2(above5rle)
