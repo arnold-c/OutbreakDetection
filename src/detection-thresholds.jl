@@ -128,4 +128,14 @@ function create_inc_infec_arr2!(
     end
 end
 
+function calculate_outbreak_thresholds2(outbreakrle)
+    # Calculate upper and lower indices of consecutive days of infection
+    outbreakaccum = accumulate(+, outbreakrle[2])
+    upperbound_indices = findall(isequal(1), outbreakrle[1])
+    outbreakuppers = @view(outbreakaccum[upperbound_indices])
+    outbreaklowers = map(x -> x - 1 == 0 ? 1 : outbreakaccum[x - 1] + 1, upperbound_indices)
+
+    return (outbreaklowers, outbreakuppers)
+end
+
 # end
