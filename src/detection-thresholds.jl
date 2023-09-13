@@ -54,68 +54,13 @@ end
 function create_inc_infec_arr!(
     incarr, ensemblejumparr, outbreakthreshold, minoutbreakdur, minoutbreaksize
 )
-    for sim in axes(ensemblejumparr, 3)
-        # Copy new infections to array
-        incarr[:, 1, sim] = @view(ensemblejumparr[1, :, sim])
-        # Calculate if new infection is above or below threshold
-        incarr[:, 2, sim] = @view(incarr[:, 1, sim]) .>= outbreakthreshold
+    incarr[:, 2, :] .= @view(ensemblejumparr[1, :, :]) .>= outbreakthreshold
 
-        # Calculate the total number of infections above threshold in a consecutive string of days
-        # Calculate the number of consecutive days of infection above or below threshold
+    for sim in axes(ensemblejumparr, 3)
         above5rle = rle(@view(incarr[:, 2, sim]))
 
         ## Calculate upper and lower indices of consecutive days of infection
         above5lowers, above5uppers = calculate_outbreak_thresholds(above5rle)
-
-        for (lower, upper) in zip(above5lowers, above5uppers)
-            # Calculate number of infections between lower and upper indices
-            period_sum = sum(@view(incarr[lower:upper, 1, sim]))
-            incarr[lower:upper, 3, sim] .= period_sum
-
-            # Determine if there is an outbreak between lower and upper indices
-            if upper - lower >= minoutbreakdur && period_sum >= minoutbreaksize
-                incarr[lower:upper, 4, sim] .= 1
-            end
-        end
-    end
-end
-
-function calculate_outbreak_thresholds(outbreakrle)
-    # Calculate upper and lower indices of consecutive days of infection
-    outbreakaccum = accumulate(+, outbreakrle[2])
-    outbreakuppers = outbreakaccum[findall(==(1), outbreakrle[1])]
-    outbreaklowers = filter(
-        x -> x <= maximum(outbreakuppers),
-        outbreakaccum[findall(==(0), outbreakrle[1])] .+ 1,
-    )
-
-    return (outbreaklowers, outbreakuppers)
-end
-
-function create_inc_infec_arr2!(
-    incarr, ensemble_jump_arr, outbreak_specification::OutbreakSpecification
-)
-    create_inc_infec_arr2!(
-        incarr,
-        ensemble_jump_arr,
-        outbreak_specification.outbreak_threshold,
-        outbreak_specification.minimum_outbreak_duration,
-        outbreak_specification.minimum_outbreak_size,
-    )
-    return nothing
-end
-
-function create_inc_infec_arr2!(
-    incarr, ensemblejumparr, outbreakthreshold, minoutbreakdur, minoutbreaksize
-)
-    incarr[:, 2, :] .= @view(ensemblejumparr[1, :, :]) .>= outbreakthreshold
-
-    for sim in axes(ensemblejumparr, 3)
-        # Calculate the number of consecutive days of infection above or below threshold
-        above5rle = rle(@view(incarr[:, 2, sim]))
-
-        ## Calculate upper and lower indices of consecutive days of infection
-        above5lowers, above5uppers = calculate_outbreak_thresholds2(above5rle)
 
         for (lower, upper) in zip(above5lowers, above5uppers)
             calculate_period_sum!(incarr, ensemblejumparr, lower, upper, sim)
@@ -126,7 +71,7 @@ function create_inc_infec_arr2!(
     end
 end
 
-function calculate_outbreak_thresholds2(outbreakrle)
+function calculate_outbreak_thresholds(outbreakrle)
     # Calculate upper and lower indices of consecutive days of infection
     outbreakaccum = accumulate(+, outbreakrle[2])
     upperbound_indices = findall(isequal(1), outbreakrle[1])
