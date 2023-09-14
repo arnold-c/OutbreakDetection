@@ -73,8 +73,8 @@ function create_inc_infec_arr!(
 function create_inc_infec_arr_long!(
     incarr, ensemblejumparr, outbreakthreshold, minoutbreakdur, minoutbreaksize
 )
-    incarr[:, 1, :] .= @view(ensemblejumparr[:, :, 1])
-    for sim in axes(ensemblejumparr, 2)
+    incarr[:, 1, :] .= @view(ensemblejumparr[:, 1, :])
+    for sim in axes(ensemblejumparr, 3)
         incarr[:, 2, sim] .= @view(incarr[:, 1, sim]) .>= outbreakthreshold
 
         abovethresholdrle = rle(@view(incarr[:, 2, sim]))
