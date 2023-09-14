@@ -297,8 +297,8 @@ function seir_mod_long_loop!(
         end
     end
 
-    previous_states = @view(state_arr[i - 1, :])
-    current_changes = @view(change_arr[i, :])
+    previous_states = @view state_arr[i - 1, :]
+    current_changes = @view change_arr[i, :]
     @turbo @. state_arr[i, :] = previous_states + current_changes
 
     return nothing
