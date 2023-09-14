@@ -275,7 +275,7 @@ function seir_mod_long_loop!(
         end
     elseif type == "det"
         @simd for r in eachindex(rates)
-            jump_arr[i, r] = r * time_params.tstep
+            jump_arr[i, r] = rates[r] * time_params.tstep
         end
     else
         return ("Type must be stoch or det")
