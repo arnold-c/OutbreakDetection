@@ -115,10 +115,10 @@ end
 function classify_outbreak!(
     incarr, lower, upper, sim, minoutbreakdur, minoutbreaksize
 )
-    if lower - upper >= minoutbreakdur &&
-        incarr[lower, 3, sim] >= minoutbreaksize
+    if upper - lower >= minoutbreakdur && incarr[lower, 3, sim] >= minoutbreaksize
 
         incarr[lower:upper, 4, sim] .= 1
     end
+    return nothing
 end
 # end
