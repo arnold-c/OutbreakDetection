@@ -70,6 +70,24 @@ function create_inc_infec_arr!(
             )
         end
     end
+function create_inc_infec_arr_long!(
+    incarr, ensemblejumparr, outbreakthreshold, minoutbreakdur, minoutbreaksize
+)
+    incarr[:, 1, :] .= @view(ensemblejumparr[:, :, 1])
+    for sim in axes(ensemblejumparr, 2)
+        incarr[:, 2, sim] .= @view(incarr[:, 1, sim]) .>= outbreakthreshold
+
+        abovethresholdrle = rle(@view(incarr[:, 2, sim]))
+        abovethresholdlowers, abovethresholduppers = calculate_outbreak_thresholds(abovethresholdrle)
+
+        for (lower, upper) in zip(abovethresholdlowers, abovethresholduppers)
+            calculate_period_sum2!(incarr, lower, upper, sim)
+            incarr[lower:upper, 3, sim] .= sum(
+                view(incarr, lower:upper, 1, sim)
+            )
+        end
+    end
+    return nothing
 end
 
 function calculate_outbreak_thresholds(outbreakrle)
@@ -87,7 +105,11 @@ end
 function calculate_period_sum!(incarr, jumparr, lower, upper, sim)
     return incarr[lower:upper, 3, sim] .= sum(
         view(jumparr,1, lower:upper, sim)
+function calculate_period_sum2!(incarr, lower, upper, sim)
+    incarr[lower:upper, 3, sim] .= sum(
+        view(incarr, lower:upper, 1, sim)
     )
+    return nothing
 end
 
 function classify_outbreak!(
