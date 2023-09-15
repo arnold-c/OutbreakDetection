@@ -7,7 +7,7 @@ module OutbreakDetection
 # using Reexport
 
 include("transmission-functions.jl")
-export calculate_beta, calcualate_beta_amp, calculateR0, calculate_import_rate,
+export calculate_beta, calculate_beta_amp, calculateR0, calculate_import_rate,
     calculate_mu
 # @reexport using .TransmissionFunctions
 
@@ -29,7 +29,7 @@ export create_sir_df, create_sir_beta_dfs, create_sir_sim_array!,
 # @reexport using .CleaningFunctions
 
 include("bifurcation-functions.jl")
-export birth_rate_bifurcation_long!
+export birth_rate_bifurcation_simulation!, birth_rate_birucation_summary
 
 include("detection-thresholds.jl")
 export create_inc_infec_arr,
@@ -59,6 +59,7 @@ export create_static_noise_arr, create_static_noise_arr!, sde_affect!,
 
 include("plotting-functions.jl")
 export seircolors, seir_state_labels, create_sir_plot, draw_sir_plot,
+    birth_rate_bifurcation_plot,
     sir_quantiles_array_base_plot, create_sir_quantiles_plot, outbreakcols,
     detect_outbreak_plot, visualize_ensemble_noise, incidence_testing_plot,
     testing_plot, ensemble_outbreak_distribution_plot, ensemble_OTChars_plot,

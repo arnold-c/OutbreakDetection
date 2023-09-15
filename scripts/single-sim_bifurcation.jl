@@ -10,6 +10,14 @@ include(srcdir("makie-plotting-setup.jl"))
 include("single-sim.jl")
 
 #%%
+@unpack init_states = singlesim_states_p
+@unpack tlength = singlesim_time_p
+
+beta_arr = Vector{Float64}(undef, tlength);
+rates = Vector{Float64}(undef, 9);
+years = (40 * 365):365:(tlength - 365)
+
+#%%
 annual_birth_rate_per_k_min = 10
 annual_birth_rate_per_k_max = 100
 annual_birth_rate_per_k_step = 2.0
@@ -18,88 +26,50 @@ annual_birth_rate_per_k_vec =
 
 n_annual_birth_rate_per_k = length(annual_birth_rate_per_k_vec)
 
-@unpack init_states = singlesim_states_p
-@unpack tlength = singlesim_time_p
-
+#%%
 bifurc_mu_seir_arr = zeros(
-    Float64, size(init_states, 1), tlength, n_annual_birth_rate_per_k
+    Float64, tlength, size(init_states, 1), n_annual_birth_rate_per_k
 );
 bifurc_mu_change_arr = zeros(
-    Float64, size(init_states, 1), tlength, n_annual_birth_rate_per_k
+    Float64, tlength, size(init_states, 1), n_annual_birth_rate_per_k
 );
-bifurc_mu_jump_arr = zeros(Float64, 9, tlength, n_annual_birth_rate_per_k);
-
-prog = Progress(n_annual_birth_rate_per_k)
-@floop for (k, annual_birth_rate_per_k_run) in
-           pairs(annual_birth_rate_per_k_vec)
-    mu_run = calculate_mu(annual_birth_rate_per_k_run)
-
-    epsilon_run = calculate_import_rate(
-        mu_run, singlesim_dynamics_p.R_0, init_states.N
-    )
-
-    seir = @view bifurc_mu_seir_arr[:, :, k]
-    change = @view bifurc_mu_change_arr[:, :, k]
-    jump = @view bifurc_mu_jump_arr[:, :, k]
-
-    bifurc_mu_dynamics_p = DynamicsParameters(
-        singlesim_dynamics_p.beta_mean,
-        singlesim_dynamics_p.beta_force,
-        singlesim_dynamics_p.sigma,
-        singlesim_dynamics_p.gamma,
-        mu_run,
-        annual_birth_rate_per_k_run,
-        epsilon_run,
-        singlesim_dynamics_p.R_0,
-    )
-
-    seir_mod!(
-        seir,
-        change,
-        jump,
-        init_states,
-        bifurc_mu_dynamics_p,
-        singlesim_time_p;
-        type = "det",
-    )
-    next!(prog)
-end
-
-years = (40 * 365):365:(tlength - 365)
-bifurc_mu_annual_summary = zeros(
-    Float64, 5, length(years), n_annual_birth_rate_per_k
+bifurc_mu_jump_arr = zeros(
+    Float64,
+    tlength,
+    (size(init_states, 1) - 1) * 2 + 1,
+    n_annual_birth_rate_per_k,
 );
 
-for annual_birth_rate_per_k in eachindex(annual_birth_rate_per_k_vec),
-    state in eachindex(seir_state_labels),
-    (year, day) in pairs(years)
-
-    bifurc_mu_annual_summary[state, year, annual_birth_rate_per_k] = maximum(
-        bifurc_mu_seir_arr[state, day:(day + 364), annual_birth_rate_per_k]
-    )
-end
-
-bifurc_mu_seir_arr[2, (40 * 365):(40 * 365 + 364), 1] ==
-bifurc_mu_seir_arr[2, (40 * 365):(40 * 365 + 364), 10]
 
 #%%
-bifurc_mu_fig = Figure()
-bifurc_mu_ax = Axis(
-    bifurc_mu_fig[1, 1]; xlabel = "Birth rate (per 1_000, per annum)",
-    ylabel = "Max. I",
+birth_rate_bifurcation_simulation!(
+    bifurc_mu_seir_arr,
+    bifurc_mu_change_arr,
+    bifurc_mu_jump_arr,
+    beta_arr,
+    init_states,
+    rates,
+    annual_birth_rate_per_k_vec,
+    singlesim_dynamics_p,
+    singlesim_time_p;
 )
 
-for year in eachindex(years)
-    scatter!(
-        bifurc_mu_ax,
-        annual_birth_rate_per_k_vec,
-        bifurc_mu_annual_summary[2, year, :];
-        markersize = 4,
-        color = :black,
-    )
-end
+#%%
+bifurc_mu_annual_summary = birth_rate_birucation_summary(
+    bifurc_mu_seir_arr,
+    annual_birth_rate_per_k_vec,
+    years;
+    state_labels = seir_state_labels,
+)
 
-bifurc_mu_fig
+#%%
+birth_rate_bifurcation_plot(
+    annual_birth_rate_per_k_vec,
+    bifurc_mu_annual_summary;
+    years = years,
+    xlabel = "Birth rate (per 1_000, per annum)",
+    ylabel = "Max. I",
+)
 
 #%%
 beta_force_min = 0.0
@@ -286,7 +256,11 @@ bifurc_mu_beta_force_fig, bifurc_mu_beta_force_ax, bifurc_mu_beta_force_hm = hea
     beta_force_vec,
     bifurc_mu_beta_force_cycle_summary[:, :, 2]',
 )
-Colorbar(bifurc_mu_beta_force_fig[:, end + 1], bifurc_mu_beta_force_hm; label = "Periodicity")
+Colorbar(
+    bifurc_mu_beta_force_fig[:, end + 1],
+    bifurc_mu_beta_force_hm;
+    label = "Periodicity",
+)
 
 bifurc_mu_beta_force_ax.xlabel = "Birth rate (per 1_000, per annum)"
 bifurc_mu_beta_force_ax.ylabel = "beta_force (seasonality)"
