@@ -14,15 +14,17 @@ include("single-sim.jl")
 @unpack trange = singlesim_time_p;
 
 #%%
-draw_sir_plot(
+singlesim_timeseries_plot = draw_sir_plot(
     seir_df;
     annual = true,
     colors = seircolors,
     labels = seir_state_labels
 )
 
+save(plotsdir("single-sim_timeseries.png"), singlesim_timeseries_plot)
+
 #%%
-@chain DataFrame(Tables.table(jump_array)) begin
+singlesim_jump_plot = @chain DataFrame(Tables.table(jump_array)) begin
     hcat(trange, _)
     rename!([
         "time",
@@ -50,9 +52,11 @@ draw_sir_plot(
     )
 end
 
+save(plotsdir("single-sim_jumps.png"), singlesim_jump_plot)
+
 #%%
 change_labels = ["dS", "dE", "dI", "dR", "dN"]
-@chain DataFrame(Tables.table(change_array)) begin
+singlesim_change_plot = @chain DataFrame(Tables.table(change_array)) begin
     hcat(trange, _)
     rename!([
         "time", change_labels...
@@ -71,8 +75,10 @@ change_labels = ["dS", "dE", "dI", "dR", "dN"]
     )
 end
 
+save(plotsdir("single-sim_changes.png"), singlesim_change_plot)
+
 #%%
-@chain DataFrame(Tables.table(seir_array)) begin
+singlesim_si_state_space_plot = @chain DataFrame(Tables.table(seir_array)) begin
     hcat(trange, _)
     rename!(["time", seir_state_labels...])
     data(_) *
@@ -80,6 +86,8 @@ end
     visual(Lines)
     draw
 end
+
+save(plotsdir("single-sim_SI-state-space.png"), singlesim_si_state_space_plot)
 
 #%%
 @chain DataFrame(Tables.table(beta_arr)) begin
