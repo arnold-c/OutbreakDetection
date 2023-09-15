@@ -81,6 +81,29 @@ function bifurcation_plot(
     return fig
 end
 
+function bifurcation_heatmap(
+    cycle_summary,
+    birth_rate_vec,
+    beta_force_vec,
+)
+    fig, ax, hm = heatmap(
+        birth_rate_vec,
+        beta_force_vec,
+        cycle_summary,
+    )
+
+    Colorbar(
+        fig[:, end + 1],
+        hm;
+        label = "Periodicity",
+    )
+
+    ax.xlabel = "Birth rate (per 1_000, per annum)"
+    ax.ylabel = "beta_force (seasonality)"
+
+    return fig
+end
+
 function sir_quantiles_array_base_plot(
     sim_quantiles, lower_index, med_index, upper_index, timeparams, colors,
     labels,
