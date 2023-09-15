@@ -7,7 +7,8 @@ module OutbreakDetection
 # using Reexport
 
 include("transmission-functions.jl")
-export calculate_beta, calculateR0, calculate_import_rate, calculate_mu
+export calculate_beta, calcualate_beta_amp, calculateR0, calculate_import_rate,
+    calculate_mu
 # @reexport using .TransmissionFunctions
 
 include("structs.jl")
@@ -18,7 +19,7 @@ export SimTimeParameters, EnsembleSpecification, DynamicsParameters,
 # @reexport using .ODStructs
 
 include("SEIR-model.jl")
-export calculate_beta_amp, seir_mod, seir_mod!, seir_mod_loop!
+export seir_mod, seir_mod!, seir_mod_loop!
 # @reexport using .SEIRModel
 
 include("cleaning-functions.jl")
@@ -27,9 +28,13 @@ export create_sir_df, create_sir_beta_dfs, create_sir_sim_array!,
     create_sir_all_sim_quantiles, create_sir_all_sim_quantiles!
 # @reexport using .CleaningFunctions
 
+include("bifurcation-functions.jl")
+export birth_rate_bifurcation_long!
+
 include("detection-thresholds.jl")
 export create_inc_infec_arr,
-    create_inc_infec_arr!, calculate_outbreak_thresholds
+    create_inc_infec_arr!, calculate_outbreak_thresholds,
+    create_inc_infec_arr_long!
 # @reexport using .DetectionThresholds
 
 include("diag-testing-functions.jl")

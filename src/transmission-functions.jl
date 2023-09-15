@@ -105,6 +105,16 @@ function calculate_beta(
 end
 
 """
+    calculate_beta_amp(beta_mean, beta_force, t)
+
+Calculate the amplitude of the transmission rate beta as a function of time.
+`beta_mean` is the mean transmission rate, `beta_force` is the amplitude of the cosine function.
+"""
+function calculate_beta_amp(beta_mean, beta_force, t)
+    return beta_mean * (1 + beta_force * cos(2pi * t / 365))
+end
+
+"""
     calculateR0(beta, gamma, mu, contact_mat, pop_matrix)
 
 Calculate the basic reproduction number R_0 for a given set of parameters and contact matrix.
