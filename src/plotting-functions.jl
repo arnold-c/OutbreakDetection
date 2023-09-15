@@ -58,7 +58,7 @@ function draw_sir_plot(
     )
 end
 
-function birth_rate_bifurcation_plot(
+function bifurcation_plot(
     x_vector,
     annual_summary;
     years,
