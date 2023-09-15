@@ -36,9 +36,8 @@ bifurc_mu_jump_arr = zeros(
     Float64,
     tlength,
     n_transitions,
-    n_annual_birth_rate_per_k,
+    n_annual_birth_rate_per_k
 );
-
 
 #%%
 birth_rate_bifurcation_simulation!(
@@ -82,7 +81,9 @@ bifurc_beta_force_seir_arr = zeros(
     Float64, tlength, size(init_states, 1), n_beta_forces
 );
 bifurc_beta_force_change_arr = similar(bifurc_beta_force_seir_arr);
-bifurc_beta_force_jump_arr = zeros(Float64, tlength, n_transitions, n_beta_forces);
+bifurc_beta_force_jump_arr = zeros(
+    Float64, tlength, n_transitions, n_beta_forces
+);
 
 beta_force_annual_birth_rate_per_k = 50
 
@@ -96,7 +97,7 @@ beta_force_bifurcation_simulation!(
     beta_force_vec,
     singlesim_dynamics_p,
     singlesim_time_p;
-    birth_rate = beta_force_annual_birth_rate_per_k
+    birth_rate = beta_force_annual_birth_rate_per_k,
 )
 
 bifurc_beta_force_annual_summary = bifurcation_summary(
@@ -136,7 +137,7 @@ birth_rate_beta_force_bifurcation_simulation!(
     annual_birth_rate_per_k_vec,
     beta_force_vec,
     singlesim_dynamics_p,
-    singlesim_time_p
+    singlesim_time_p,
 )
 
 #%%
@@ -145,18 +146,18 @@ bifurc_mu_beta_force_annual_summary = birth_rate_beta_force_bifurcation_annual_s
     bifurc_mu_beta_force_seir_arr,
     annual_birth_rate_per_k_vec,
     beta_force_vec,
-    years
+    years,
 )
 
 bifurc_mu_beta_force_cycle_summary = birth_rate_beta_force_bifurcation_cycle_summary(
     bifurc_mu_beta_force_annual_summary,
     annual_birth_rate_per_k_vec,
-    beta_force_vec
+    beta_force_vec,
 )
 
 #%%
 bifurcation_heatmap(
-    bifurc_mu_beta_force_cycle_summary,
     annual_birth_rate_per_k_vec,
-    beta_force_vec
+    beta_force_vec,
+    bifurc_mu_beta_force_cycle_summary,
 )

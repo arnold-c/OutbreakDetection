@@ -82,9 +82,9 @@ function bifurcation_plot(
 end
 
 function bifurcation_heatmap(
-    cycle_summary,
     birth_rate_vec,
     beta_force_vec,
+    cycle_summary,
 )
     fig, ax, hm = heatmap(
         birth_rate_vec,
