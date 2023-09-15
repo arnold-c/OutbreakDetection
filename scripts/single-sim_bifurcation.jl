@@ -61,13 +61,15 @@ bifurc_mu_annual_summary = bifurcation_summary(
 )
 
 #%%
-birth_rate_bifurcation_plot(
+birth_rate_bifurcation_plot = bifurcation_plot(
     annual_birth_rate_per_k_vec,
     bifurc_mu_annual_summary;
     years = years,
     xlabel = "Birth rate (per 1_000, per annum)",
     ylabel = "Max. I",
 )
+
+save(plotsdir("bifurcation_birth-rate.png"), birth_rate_bifurcation_plot)
 
 #%%
 beta_force_min = 0.0
@@ -108,13 +110,15 @@ bifurc_beta_force_annual_summary = bifurcation_summary(
 )
 
 #%%
-bifurcation_plot(
+beta_force_bifurcation_plot = bifurcation_plot(
     beta_force_vec,
     bifurc_beta_force_annual_summary;
     years = years,
     xlabel = "beta_force (seasonality)",
     ylabel = "Max. I",
 )
+
+save(plotsdir("bifurcation_beta-force.png"), beta_force_bifurcation_plot)
 
 #%%
 bifurc_mu_beta_force_seir_arr = zeros(
@@ -141,7 +145,6 @@ birth_rate_beta_force_bifurcation_simulation!(
 )
 
 #%%
-
 bifurc_mu_beta_force_annual_summary = birth_rate_beta_force_bifurcation_annual_summary(
     bifurc_mu_beta_force_seir_arr,
     annual_birth_rate_per_k_vec,
@@ -156,8 +159,10 @@ bifurc_mu_beta_force_cycle_summary = birth_rate_beta_force_bifurcation_cycle_sum
 )
 
 #%%
-bifurcation_heatmap(
+birth_rate_beta_force_bifurcation_heatmap = bifurcation_heatmap(
     annual_birth_rate_per_k_vec,
     beta_force_vec,
     bifurc_mu_beta_force_cycle_summary,
 )
+
+save(plotsdir("bifurcation_birth-rate_beta-force.png"), birth_rate_beta_force_bifurcation_heatmap)
