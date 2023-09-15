@@ -36,11 +36,11 @@ function seir_mod(
     Random.seed!(seed)
 
     state_arr = zeros(Float64, time_params.tlength, size(states, 1))
-    change_arr = zeros(Float64, time_params.tlength, size(states, 1))
+    change_arr = similar(state_arr)
     jump_arr = zeros(
-        Float64, time_params.tlength, 9
+        Float64, time_params.tlength, (size(states, 1) - 1) * 2 + 1
     )
-    beta_arr = zeros(Float64, tlength)
+    beta_arr = zeros(Float64, time_params.tlength)
 
     seir_mod!(
         state_arr,
@@ -48,7 +48,7 @@ function seir_mod(
         jump_arr,
         beta_arr,
         states,
-        Vector{Float64}(undef,9),
+        Vector{Float64}(undef, size(jump_arr, 2)),
         dynamics_params,
         time_params;
         type = type,
@@ -121,7 +121,6 @@ function seir_mod_loop!(
     time_params;
     type = type,
 )
-
     # Calculate the rates of each event
     @views rates[1] = beta_arr[i] .* state_arr[i - 1, 1] .* state_arr[i - 1, 2] # S -> E
     @views rates[2] = dynamics_params.sigma .* state_arr[i - 1, 2] # E -> I
