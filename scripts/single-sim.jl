@@ -3,13 +3,13 @@ using DrWatson
 @quickactivate "OutbreakDetection"
 
 using Random
+using BenchmarkTools
 
 include("../src/OutbreakDetection.jl")
 using .OutbreakDetection
 
-
 #%%
-singlesim_states_p = StateParameters(
+singlesim_states_p = StateParameters(;
     N = 500_000,
     s_prop = 0.1,
     e_prop = 0.01,
@@ -42,13 +42,13 @@ singlesim_dynamics_p = DynamicsParameters(
     mu,
     annual_births_per_k,
     epsilon,
-    R_0,
+    R_0
 )
 
 #%%
 seir_array, change_array, jump_array, beta_arr = seir_mod(
-    singlesim_states_p.init_states, singlesim_dynamics_p, singlesim_time_p; retbetaarr = true,
-    type = "stoch", seed = 1234
+    singlesim_states_p.init_states, singlesim_dynamics_p, singlesim_time_p;
+    type = "stoch", seed = 1234,
 );
 
 seir_df = create_sir_df(

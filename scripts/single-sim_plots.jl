@@ -22,11 +22,18 @@ draw_sir_plot(
 )
 
 #%%
-@chain DataFrame(Tables.table(jump_array')) begin
+@chain DataFrame(Tables.table(jump_array)) begin
     hcat(trange, _)
     rename!([
-        "time", "Infect", "Latent", "Recov", "Birth", "S_death", "E_death",
-        "I_death", "R_death",
+        "time",
+        "Infect",
+        "Latent",
+        "Recov",
+        "Birth",
+        "S_death",
+        "E_death",
+        "I_death",
+        "R_death",
         "Import",
     ])
     stack(_, Not("time"); variable_name = :Jump, value_name = :Number)
@@ -45,7 +52,7 @@ end
 
 #%%
 change_labels = ["dS", "dE", "dI", "dR", "dN"]
-@chain DataFrame(Tables.table(change_array')) begin
+@chain DataFrame(Tables.table(change_array)) begin
     hcat(trange, _)
     rename!([
         "time", change_labels...
@@ -65,7 +72,7 @@ change_labels = ["dS", "dE", "dI", "dR", "dN"]
 end
 
 #%%
-@chain DataFrame(Tables.table(seir_array')) begin
+@chain DataFrame(Tables.table(seir_array)) begin
     hcat(trange, _)
     rename!(["time", seir_state_labels...])
     data(_) *
