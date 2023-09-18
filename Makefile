@@ -63,5 +63,5 @@ clean:
 	rm -rf data/singlesim/*
 	rm -rf tmp/*
 	@echo "cleaning plot output files"
-	$(fd . 'plots/' -tf | xargs rm -r)
+	$(shell fd . 'plots/' -tf | xargs rm -r)
 	# rm -rf data/*
