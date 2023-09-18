@@ -36,5 +36,6 @@ single-sim_scripts: $(SINGLESIM_SCRIPTS)
 clean:
 	rm -rf data/singlesim/*
 	rm -rf tmp/*
-	rm -rf plots/*
+	@echo "cleaning plot output files"
+	$(fd . 'plots/' -ft | xargs rm)
 	# rm -rf data/*
