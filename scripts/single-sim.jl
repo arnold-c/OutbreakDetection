@@ -16,6 +16,11 @@ seir_array, change_array, jump_array, beta_arr = seir_mod(
     type = "stoch", seed = 1234,
 );
 
+seir_wide_array, change_wide_array, jump_wide_array, beta_wide_arr = seir_wide_mod(
+    singlesim_states_p.init_states, singlesim_dynamics_p, singlesim_time_p;
+    retbetaarr = true, type = "stoch", seed = 1234,
+);
+
 seir_df = create_sir_df(
     seir_array, singlesim_time_p.trange, [:S, :E, :I, :R, :N]
 )
