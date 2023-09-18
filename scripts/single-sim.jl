@@ -21,6 +21,15 @@ seir_wide_array, change_wide_array, jump_wide_array, beta_wide_arr = seir_wide_m
     retbetaarr = true, type = "stoch", seed = 1234,
 );
 
+seir_wide_array' == seir_array
+
+beta_wide_arr == beta_arr
+
+compare_betas = DataFrame("time" => trange, "long" => beta_arr, "wide" => beta_wide_arr)
+
+@subset(compare_betas, :long .!= :wide)
+
+#%%
 seir_df = create_sir_df(
     seir_array, singlesim_time_p.trange, [:S, :E, :I, :R, :N]
 )
