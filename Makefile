@@ -1,16 +1,16 @@
 include config.mk
 
 .PHONY: all
-all: tmp/single-sim_setup single-sim_scripts ensemble-targets
+all: single-sim-targets ensemble-targets
 
 # Single simulation targets
 .PHONY: single-sim_scripts
 single-sim_scripts: $(SINGLESIM_SCRIPTS)
 
-SINGLESIM_TARGETS = single-sim_setup single-sim
-.PHONY: $(SINGLESIM_TARGETS)
+SINGLESIM_TARGETS = single-sim_setup single-sim single-sim_plots single-sim_bifurcation
+.PHONY: $(SINGLESIM_TARGETS) single-sim-targets
 $(SINGLESIM_TARGETS): %: tmp/%
-
+single-sim-targets: $(SINGLESIM_TARGETS)
 
 tmp/single-sim_setup: src/single-sim_setup.jl
 	julia $^
@@ -20,12 +20,13 @@ tmp/single-sim: tmp/single-sim_setup
 	julia scripts/single-sim.jl
 	@touch $@
 
-ALL_SINGLE_SIM_SCRIPTS = $(wildcard scripts/single-sim_*.jl)
-SINGLESIM_SCRIPTS = $(patsubst scripts/%, tmp/%, $(ALL_SINGLE_SIM_SCRIPTS))
-
-$(SINGLESIM_SCRIPTS): tmp/%: scripts/% tmp/single-sim
+tmp/single-sim_plots: scripts/single-sim_plots.jl tmp/single-sim
 	julia $<
-	@touch $@
+	touch $@
+
+tmp/single-sim_bifurcation: scripts/single-sim_bifurcation.jl tmp/single-sim
+	julia $<
+	touch $@
 
 
 
@@ -62,5 +63,5 @@ clean:
 	rm -rf data/singlesim/*
 	rm -rf tmp/*
 	@echo "cleaning plot output files"
-	$(fd . 'plots/' -ft | xargs rm)
+	$(fd . 'plots/' -tf | xargs rm -r)
 	# rm -rf data/*
