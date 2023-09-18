@@ -5,14 +5,18 @@ using DrWatson
 using ProgressMeter
 using FLoops
 
+using OutbreakDetection
+
 include(srcdir("makie-plotting-setup.jl"))
 
-include("single-sim.jl")
-
 #%%
+@unpack singlesim_states_p, singlesim_time_p, singlesim_dynamics_p = load(
+    "data/singlesim/single-sim_setup.jld2"
+)
 @unpack init_states = singlesim_states_p
 @unpack tlength = singlesim_time_p
 
+#%%
 beta_arr = Vector{Float64}(undef, tlength);
 rates = Vector{Float64}(undef, 9);
 years = (40 * 365):365:(tlength - 365)
@@ -69,7 +73,10 @@ birth_rate_bifurcation_plot = bifurcation_plot(
     ylabel = "Max. I",
 )
 
-save(plotsdir("bifurcation_birth-rate.png"), birth_rate_bifurcation_plot)
+save(
+    plotsdir("singlesim/bifurcation_birth-rate.png"),
+    birth_rate_bifurcation_plot,
+)
 
 #%%
 beta_force_min = 0.0
@@ -118,7 +125,10 @@ beta_force_bifurcation_plot = bifurcation_plot(
     ylabel = "Max. I",
 )
 
-save(plotsdir("bifurcation_beta-force.png"), beta_force_bifurcation_plot)
+save(
+    plotsdir("singlesim/bifurcation_beta-force.png"),
+    beta_force_bifurcation_plot,
+)
 
 #%%
 bifurc_mu_beta_force_seir_arr = zeros(
@@ -165,4 +175,7 @@ birth_rate_beta_force_bifurcation_heatmap = bifurcation_heatmap(
     bifurc_mu_beta_force_cycle_summary,
 )
 
-save(plotsdir("bifurcation_birth-rate_beta-force.png"), birth_rate_beta_force_bifurcation_heatmap)
+save(
+    plotsdir("singlesim/bifurcation_birth-rate_beta-force.png"),
+    birth_rate_beta_force_bifurcation_heatmap,
+)

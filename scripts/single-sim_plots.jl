@@ -2,16 +2,18 @@
 using DrWatson
 @quickactivate "OutbreakDetection"
 
+using JLD2
 using DataFrames
 using DataFramesMeta
 
-include("../src/OutbreakDetection.jl")
-using .OutbreakDetection
+using OutbreakDetection
 
 include(srcdir("makie-plotting-setup.jl"))
 
-include("single-sim.jl")
+@unpack singlesim_time_p = load("data/singlesim/single-sim_setup.jld2")
 @unpack trange = singlesim_time_p;
+
+@unpack seir_array, change_array, jump_array, beta_arr, seir_df = load("data/singlesim/single-sim_arrays.jld2")
 
 #%%
 singlesim_timeseries_plot = draw_sir_plot(
@@ -21,7 +23,7 @@ singlesim_timeseries_plot = draw_sir_plot(
     labels = seir_state_labels
 )
 
-save(plotsdir("single-sim_timeseries.png"), singlesim_timeseries_plot)
+save(plotsdir("singlesim/single-sim_timeseries.png"), singlesim_timeseries_plot)
 
 #%%
 singlesim_jump_plot = @chain DataFrame(Tables.table(jump_array)) begin
@@ -52,7 +54,7 @@ singlesim_jump_plot = @chain DataFrame(Tables.table(jump_array)) begin
     )
 end
 
-save(plotsdir("single-sim_jumps.png"), singlesim_jump_plot)
+save(plotsdir("singlesim/single-sim_jumps.png"), singlesim_jump_plot)
 
 #%%
 change_labels = ["dS", "dE", "dI", "dR", "dN"]
@@ -75,7 +77,7 @@ singlesim_change_plot = @chain DataFrame(Tables.table(change_array)) begin
     )
 end
 
-save(plotsdir("single-sim_changes.png"), singlesim_change_plot)
+save(plotsdir("singlesim/single-sim_changes.png"), singlesim_change_plot)
 
 #%%
 singlesim_si_state_space_plot = @chain DataFrame(Tables.table(seir_array)) begin
@@ -87,10 +89,10 @@ singlesim_si_state_space_plot = @chain DataFrame(Tables.table(seir_array)) begin
     draw
 end
 
-save(plotsdir("single-sim_SI-state-space.png"), singlesim_si_state_space_plot)
+save(plotsdir("singlesim/single-sim_SI-state-space.png"), singlesim_si_state_space_plot)
 
 #%%
-@chain DataFrame(Tables.table(beta_arr)) begin
+singlesim_beta_plot = @chain DataFrame(Tables.table(beta_arr)) begin
     hcat(trange, _)
     rename!([:time, :beta_t])
     stack(_, Not("time"); variable_name = :beta, value_name = :Number)
@@ -101,3 +103,5 @@ save(plotsdir("single-sim_SI-state-space.png"), singlesim_si_state_space_plot)
     visual(Lines; linewidth = 1)
     draw(; facet = (; linkyaxes = :none), axis = (; limits = ((0, 3), nothing)))
 end
+
+save(plotsdir("singlesim/single-sim_beta.png"), singlesim_beta_plot)
