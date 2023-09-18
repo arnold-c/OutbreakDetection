@@ -13,9 +13,10 @@ using OutbreakDetection
 #%%
 seir_array, change_array, jump_array, beta_arr = seir_mod(
     singlesim_states_p.init_states, singlesim_dynamics_p, singlesim_time_p;
-    type = "stoch", seed = 1234,
+    type = "det", seed = 1234,
 );
 
+#%%
 seir_df = create_sir_df(
     seir_array, singlesim_time_p.trange, [:S, :E, :I, :R, :N]
 )
