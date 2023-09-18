@@ -325,17 +325,24 @@ function seir_mod_loop!(
     time_params;
     type = type,
 )
+    # Create views of the state variables for easier use
+    @views S = state_arr[i - 1, 1]
+    @views E = state_arr[i - 1, 2]
+    @views I = state_arr[i - 1, 3]
+    @views R = state_arr[i - 1, 4]
+    @views N = state_arr[i - 1, 5]
+    @views beta_t = beta_arr[i]
+
     # Calculate the rates of each event
-    @views rates[1] = beta_arr[i] .* state_arr[i - 1, 1] .* state_arr[i - 1, 2] # S -> E
-    @views rates[2] = dynamics_params.sigma .* state_arr[i - 1, 2] # E -> I
-    @views rates[3] = dynamics_params.gamma .* state_arr[i - 1, 3] # I -> R
-    @views rates[4] = dynamics_params.mu .* state_arr[i - 1, 5] # Birth -> S
-    @views rates[5] = dynamics_params.mu .* state_arr[i - 1, 1] # S -> death
-    @views rates[6] = dynamics_params.mu .* state_arr[i - 1, 3] # E -> death
-    @views rates[7] = dynamics_params.mu .* state_arr[i - 1, 2] # I -> death
-    @views rates[8] = dynamics_params.mu .* state_arr[i - 1, 4] # R -> death
-    @views rates[9] =
-        dynamics_params.epsilon .* state_arr[i - 1, 5] ./ dynamics_params.R_0 # Import -> S
+    rates[1] = beta_t * S * I              # S -> E
+    rates[2] = dynamics_params.sigma * E        # E -> I
+    rates[3] = dynamics_params.gamma * I        # I -> R
+    rates[4] = dynamics_params.mu * N           # Birth -> S
+    rates[5] = dynamics_params.mu * S           # S -> death
+    rates[6] = dynamics_params.mu * E           # E -> death
+    rates[7] = dynamics_params.mu * I           # I -> death
+    rates[8] = dynamics_params.mu * R           # R -> death
+    rates[9] = dynamics_params.epsilon * N / dynamics_params.R_0        # Import -> S
 
     # Calculate the number of jumps for each event
     if type == "stoch"
@@ -351,10 +358,8 @@ function seir_mod_loop!(
     end
 
     # Calculate the change in each state
-    @views change_arr[i, 1] =
-        jump_arr[i, 4] - jump_arr[i, 1] - jump_arr[i, 5] - jump_arr[i, 9]
-    @views change_arr[i, 2] =
-        jump_arr[i, 1] - jump_arr[i, 2] - jump_arr[i, 6] + jump_arr[i, 9]
+    @views change_arr[i, 1] = jump_arr[i, 4] - jump_arr[i, 1] - jump_arr[i, 5] - jump_arr[i, 9]
+    @views change_arr[i, 2] = jump_arr[i, 1] - jump_arr[i, 2] - jump_arr[i, 6] + jump_arr[i, 9]
     @views change_arr[i, 3] = jump_arr[i, 2] - jump_arr[i, 3] - jump_arr[i, 7]
     @views change_arr[i, 4] = jump_arr[i, 3] - jump_arr[i, 8]
     @views change_arr[i, 5] = sum(change_arr[i, 1:4])
@@ -368,8 +373,8 @@ function seir_mod_loop!(
         end
     end
 
-    previous_states = @view state_arr[i - 1, :]
-    current_changes = @view change_arr[i, :]
+    @views previous_states = state_arr[i - 1, :]
+    @views current_changes = change_arr[i, :]
     @turbo @. state_arr[i, :] = previous_states + current_changes
 
     return nothing

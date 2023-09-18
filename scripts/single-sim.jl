@@ -13,21 +13,23 @@ using OutbreakDetection
 #%%
 seir_array, change_array, jump_array, beta_arr = seir_mod(
     singlesim_states_p.init_states, singlesim_dynamics_p, singlesim_time_p;
-    type = "stoch", seed = 1234,
+    type = "det", seed = 1234,
 );
+seir_wide_array' == seir_array
 
 seir_wide_array, change_wide_array, jump_wide_array, beta_wide_arr = seir_wide_mod(
     singlesim_states_p.init_states, singlesim_dynamics_p, singlesim_time_p;
-    retbetaarr = true, type = "stoch", seed = 1234,
+    retbetaarr = true, type = "det", seed = 1234,
 );
 
-seir_wide_array' == seir_array
 
-beta_wide_arr == beta_arr
+change_array[1:10, :]
+change_wide_array'[1:10, :]
 
-compare_betas = DataFrame("time" => trange, "long" => beta_arr, "wide" => beta_wide_arr)
 
-@subset(compare_betas, :long .!= :wide)
+compare_jumps = DataFrame("time" => trange, "long" => jump_array[:, 1], "wide" => jump_wide_array[1, :])
+
+@subset(compare_jumps, :long .!= :wide)
 
 #%%
 seir_df = create_sir_df(
