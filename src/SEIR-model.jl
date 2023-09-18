@@ -280,7 +280,7 @@ function seir_mod!(
 )
     Random.seed!(seed)
 
-    @. beta_arr = calculate_beta_amp(
+    @turbo @. beta_arr = calculate_beta_amp(
         dynamics_params.beta_mean,
         dynamics_params.beta_force,
         time_params.trange,
