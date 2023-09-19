@@ -151,14 +151,11 @@ function birth_rate_beta_force_bifurcation_simulation!(
             epsilon_run,
             dynamics_parameters.R_0,
         )
-        seir = @view(beta_force_seir_arr[:, :, k, l])
-        change = @view(beta_force_change_arr[:, :, k, l])
-        jump = @view(beta_force_jump_arr[:, :, k, l])
 
         seir_mod!(
-            seir,
-            change,
-            jump,
+            @view(beta_force_seir_arr[:, :, k, l]),
+            @view(beta_force_change_arr[:, :, k, l]),
+            @view(beta_force_jump_arr[:, :, k, l]),
             beta_arr,
             initial_states,
             rates,
@@ -169,7 +166,6 @@ function birth_rate_beta_force_bifurcation_simulation!(
 
         next!(prog)
     end
-
 end
 
 function birth_rate_beta_force_bifurcation_annual_summary(
