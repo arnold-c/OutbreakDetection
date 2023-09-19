@@ -112,7 +112,14 @@ end
     run_jump_prob(ensemble_param_dict)
 """
 function run_jump_prob(ensemble_param_dict)
-    @unpack ensemble_spec, seed, quantiles = ensemble_param_dict
+    @unpack ensemble_spec,
+    seed,
+    quantile_vec,
+    outbreak_spec_vec,
+    noise_spec_vec,
+    outbreak_detection_spec_vec,
+    test_spec_vec = ensemble_param_dict
+
     @unpack state_parameters, dynamics_parameters, time_parameters, nsims =
         ensemble_spec
 
@@ -148,11 +155,30 @@ function run_jump_prob(ensemble_param_dict)
         )
     end
 
-    quantile_param_dict = dict_list(@dict(ensemble_spec, ensemble_seir_arr, quantiles))
+    quantile_param_dict = dict_list(
+        @dict(ensemble_spec, ensemble_seir_arr, quantiles = quantile_vec)
+    )
 
     summarize_ensemble_jump_prob(quantile_param_dict)
 
-    return @strdict ensemble_seir_arr ensemble_change_arr ensemble_jump_arr ensemble_param_dict
+    ensemble_scenarios = create_combinations_vec(
+        ScenarioSpecification,
+        (
+            ensemble_spec,
+            outbreak_spec_vec,
+            noise_spec_vec,
+            outbreak_detection_spec_vec,
+            test_spec_vec,
+        ),
+    )
+
+    scenarios_dict = dict_list(
+        @dict(scenario_spec = ensemble_scenarios, ensemble_jump_arr)
+    )
+
+    run_OutbreakThresholdChars_creation(scenario_param_dict)
+
+    return @strdict ensemble_seir_arr ensemble_spec
 end
 
 function summarize_ensemble_jump_prob(dict_of_ensemble_params; prog = prog)
@@ -196,16 +222,12 @@ function jump_prob_summary(ensemble_param_dict)
 
     caption = "nsims = $nsims, N = $N, S = $S_init, I = $I_init, R = $R_init, beta_force = $beta_force,\nbirths per k/annum = $annual_births_per_k, tstep = $(time_parameters.tstep), quantile int = $quantiles"
 
-    return @strdict ensemble_seir_summary caption
+    return @strdict ensemble_seir_summary caption quantiles
 end
 
 function run_OutbreakThresholdChars_creation(
-    dict_of_OTchars_params; progress = true
+    dict_of_OTchars_params
 )
-    if progress
-        prog = Progress(length(dict_of_OTchars_params))
-    end
-
     for OTChars_params in dict_of_OTchars_params
         @produce_or_load(
             OutbreakThresholdChars_creation,
@@ -214,25 +236,15 @@ function run_OutbreakThresholdChars_creation(
             filename = "ensemble-scenario",
             loadfile = false
         )
-        if progress
-            next!(prog)
-        end
     end
 end
 
 function OutbreakThresholdChars_creation(OT_chars_param_dict)
-    @unpack scenario_spec = OT_chars_param_dict
-    @unpack ensemble_specification,
-    noise_specification,
+    @unpack scenario_spec, ensemble_jump_arr = OT_chars_param_dict
+    @unpack noise_specification,
     outbreak_specification,
     outbreak_detection_specification,
     individual_test_specification = scenario_spec
-
-    ensemble_sol = get_ensemble_file(
-        "solution", ensemble_specification
-    )
-
-    @unpack ensemble_jump_arr = ensemble_sol
 
     incarr = create_inc_infec_arr(
         ensemble_jump_arr, outbreak_specification
@@ -262,14 +274,13 @@ function OutbreakThresholdChars_creation(OT_chars_param_dict)
 
     OT_chars = calculate_OutbreakThresholdChars(testarr, incarr)
 
-    return @strdict OT_chars incarr testarr posoddsarr scenario_spec
+    return @strdict OT_chars incarr testarr
 end
 
 function get_scenario_file(type, spec)
     filecontainer = collect_ensemble_file(type, spec)
     return load(filecontainer...)
 end
-
 
 function get_ensemble_file(type, spec)
     filecontainer = collect_ensemble_file(type, spec)
