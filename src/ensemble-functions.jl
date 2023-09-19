@@ -168,7 +168,7 @@ end
     jump_prob_summary(param_dict)
 """
 function jump_prob_summary(ensemble_param_dict)
-    @unpack ensemble_spec, seed, quantiles = ensemble_param_dict
+    @unpack ensemble_spec, ensemble_seir_arr, quantiles = ensemble_param_dict
     @unpack state_parameters, dynamics_parameters, time_parameters, nsims =
         ensemble_spec
 
@@ -176,13 +176,10 @@ function jump_prob_summary(ensemble_param_dict)
     @unpack tstep, tlength, trange = time_parameters
     @unpack init_states, init_state_props = state_parameters
 
-    ensemble_sol_file = get_ensemble_file("solution", ensemble_spec)
-
-    @unpack ensemble_seir_arr = ensemble_sol_file
-    N = init_states[:N]
-    S_init = init_states[:S]
-    I_init = init_states[:I]
-    R_init = init_states[:R]
+    @views N = init_states[:N]
+    @views S_init = init_states[:S]
+    @views I_init = init_states[:I]
+    @views R_init = init_states[:R]
 
     qlow = round(0.5 - quantiles / 200; digits = 3)
     qhigh = round(0.5 + quantiles / 200; digits = 3)
@@ -193,10 +190,82 @@ function jump_prob_summary(ensemble_param_dict)
         ensemble_seir_arr; quantiles = qs
     )
 
-    caption = "nsims = $nsims, N = $N, S = $S_init, I = $I_init, R = $R_init, beta_force = $beta_force,\nbirths per k/annum = $annual_births_per_k tstep = $(time_parameters.tstep), quantile int = $quantiles"
+    caption = "nsims = $nsims, N = $N, S = $S_init, I = $I_init, R = $R_init, beta_force = $beta_force,\nbirths per k/annum = $annual_births_per_k, tstep = $(time_parameters.tstep), quantile int = $quantiles"
 
-    return @strdict ensemble_seir_summary caption ensemble_param_dict
+    return @strdict ensemble_seir_summary caption
 end
+
+function run_OutbreakThresholdChars_creation(
+    dict_of_OTchars_params; progress = true
+)
+    if progress
+        prog = Progress(length(dict_of_OTchars_params))
+    end
+
+    for OTChars_params in dict_of_OTchars_params
+        @produce_or_load(
+            OutbreakThresholdChars_creation,
+            OTChars_params,
+            "$(OTChars_params[:scenario_spec].dirpath)";
+            filename = "ensemble-scenario",
+            loadfile = false
+        )
+        if progress
+            next!(prog)
+        end
+    end
+end
+
+function OutbreakThresholdChars_creation(OT_chars_param_dict)
+    @unpack scenario_spec = OT_chars_param_dict
+    @unpack ensemble_specification,
+    noise_specification,
+    outbreak_specification,
+    outbreak_detection_specification,
+    individual_test_specification = scenario_spec
+
+    ensemble_sol = get_ensemble_file(
+        "solution", ensemble_specification
+    )
+
+    @unpack ensemble_jump_arr = ensemble_sol
+
+    incarr = create_inc_infec_arr(
+        ensemble_jump_arr, outbreak_specification
+    )
+
+    testarr = zeros(Int64, size(incarr, 1), 8, size(incarr, 3))
+
+    posoddsarr = zeros(Float64, size(incarr, 1), 2, size(incarr, 3))
+
+    @unpack noise_array = noise_specification
+
+    @unpack detection_threshold,
+    moving_average_lag,
+    percent_tested,
+    test_result_lag = outbreak_detection_specification
+
+    @unpack sensitivity, specificity = individual_test_specification
+
+    create_testing_arr!(
+        testarr,
+        incarr,
+        noise_array,
+        posoddsarr,
+        outbreak_detection_specification,
+        individual_test_specification,
+    )
+
+    OT_chars = calculate_OutbreakThresholdChars(testarr, incarr)
+
+    return @strdict OT_chars incarr testarr posoddsarr scenario_spec
+end
+
+function get_scenario_file(type, spec)
+    filecontainer = collect_ensemble_file(type, spec)
+    return load(filecontainer...)
+end
+
 
 function get_ensemble_file(type, spec)
     filecontainer = collect_ensemble_file(type, spec)
