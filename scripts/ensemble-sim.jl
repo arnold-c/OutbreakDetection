@@ -5,6 +5,8 @@ using DrWatson
 using ProgressMeter
 using Chain
 
+using OutbreakDetection
+
 include("../src/OutbreakDetection.jl")
 using .OutbreakDetection
 
@@ -76,19 +78,10 @@ sol_param_dict = dict_list(
     base_param_dict
 )
 
+for dict in sol_param_dict
+    dict[:quantiles] = [95, 80]
+end
+
 #%%
 prog = Progress(length(sol_param_dict))
 run_ensemble_jump_prob(sol_param_dict; prog = prog)
-
-#%%
-quantile_ints = [95, 80]
-
-quantile_param_dict = @chain base_param_dict begin
-    deepcopy(_)
-    push!(_, :quantiles => quantile_ints)
-    dict_list(_)
-end;
-
-#%%
-prog = Progress(length(quantile_param_dict))
-summarize_ensemble_jump_prob(quantile_param_dict; prog = prog)

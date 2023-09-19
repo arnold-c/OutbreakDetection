@@ -112,7 +112,7 @@ end
     run_jump_prob(ensemble_param_dict)
 """
 function run_jump_prob(ensemble_param_dict)
-    @unpack ensemble_spec, seed = ensemble_param_dict
+    @unpack ensemble_spec, seed, quantiles = ensemble_param_dict
     @unpack state_parameters, dynamics_parameters, time_parameters, nsims =
         ensemble_spec
 
@@ -147,6 +147,10 @@ function run_jump_prob(ensemble_param_dict)
             seed = run_seed,
         )
     end
+
+    quantile_param_dict = dict_list(@dict(ensemble_spec, ensemble_seir_arr, quantiles))
+
+    summarize_ensemble_jump_prob(quantile_param_dict)
 
     return @strdict ensemble_seir_arr ensemble_change_arr ensemble_jump_arr ensemble_param_dict
 end
