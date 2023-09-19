@@ -12,7 +12,7 @@ function create_inc_infec_arr(
     ensemble_jump_arr, outbreak_specification::OutbreakSpecification
 )
     ensemble_inc_arr = zeros(
-        Int64, size(ensemble_jump_arr, 2), 4, size(ensemble_jump_arr, 3)
+        Int64, size(ensemble_jump_arr, 1), 4, size(ensemble_jump_arr, 3)
     );
 
     return create_inc_infec_arr!(
