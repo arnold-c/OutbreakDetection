@@ -92,15 +92,13 @@ function create_sir_sim_array!(; jump_sol)
 end
 
 function create_sir_all_sim_quantiles!(all_sims_array, sim_quantiles; quantiles)
-    @floop for state in 1:size(all_sims_array, 1)
-        for time in 1:size(all_sims_array, 2)
+    @floop for state in axes(all_sims_array, 2), time in axes(all_sims_array, 1)
             sim_quantiles[:, time, state] = quantile(
                 skipmissing(
-                    replace(all_sims_array[state, time, :], NaN => missing)
+                    replace(@view(all_sims_array[time, state, :]), NaN => missing)
                 ),
                 quantiles,
             )
-        end
     end
 end
 
