@@ -168,7 +168,7 @@ function run_jump_prob(ensemble_param_dict)
     ensemble_scenarios = create_combinations_vec(
         ScenarioSpecification,
         (
-            ensemble_spec,
+            [ensemble_spec],
             outbreak_spec_vec,
             noise_spec_vec,
             outbreak_detection_spec_vec,
