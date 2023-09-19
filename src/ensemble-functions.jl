@@ -185,7 +185,7 @@ function run_jump_prob(ensemble_param_dict)
     return @strdict ensemble_seir_arr ensemble_spec
 end
 
-function summarize_ensemble_jump_prob(dict_of_ensemble_params; prog = prog)
+function summarize_ensemble_jump_prob(dict_of_ensemble_params)
     for ensemble_params in dict_of_ensemble_params
         @produce_or_load(
             jump_prob_summary,
@@ -194,7 +194,6 @@ function summarize_ensemble_jump_prob(dict_of_ensemble_params; prog = prog)
             filename = "ensemble-quantiles_$(ensemble_params[:quantiles])",
             loadfile = false
         )
-        next!(prog)
     end
 end
 
