@@ -175,7 +175,7 @@ function run_jump_prob(ensemble_param_dict)
         ),
     )
 
-    scenarios_dict = dict_list(
+    scenario_param_dict = dict_list(
         @dict(scenario_spec = ensemble_scenarios, ensemble_jump_arr)
     )
 
