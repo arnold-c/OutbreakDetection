@@ -64,6 +64,53 @@ ensemble_spec_vec = create_ensemble_spec_combinations(
 )
 
 #%%
+outbreak_threshold_vec = [5]
+min_outbreak_dur_vec = [30]
+min_outbreak_size_vec = [500]
+
+outbreak_spec_vec = create_combinations_vec(
+    OutbreakSpecification,
+    (outbreak_threshold_vec, min_outbreak_dur_vec, min_outbreak_size_vec),
+)
+
+#%%
+init_noise_vec = [[10.0]]
+noise_ode_vec = [0.0]
+noise_vec = [0.1]
+
+noise_spec_vec = create_combinations_vec(
+    create_static_NoiseSpecification,
+    (init_noise_vec, time_p_vec, noise_ode_vec, noise_vec, nsims_vec),
+)
+
+#%%
+detectthreshold_vec = collect(5:5:20)
+moveavglag_vec = [7]
+perc_clinic_vec = [0.3]
+perc_clinic_test_vec = [0.3]
+testlag_vec = [3]
+
+outbreak_detection_spec_vec = create_combinations_vec(
+    OutbreakDetectionSpecification,
+    (
+        detectthreshold_vec,
+        moveavglag_vec,
+        perc_clinic_vec,
+        perc_clinic_test_vec,
+        testlag_vec,
+    ),
+)
+
+#%%
+testsens_vec = collect(0.8:0.1:1.0)
+testspec_vec = collect(0.8:0.1:1.0)
+
+test_spec_vec = create_combinations_vec(
+    IndividualTestSpecification,
+    (testsens_vec, testspec_vec)
+)
+
+#%%
 base_param_dict = @dict(
     ensemble_spec = ensemble_spec_vec,
     seed = seed,
@@ -74,8 +121,14 @@ sol_param_dict = dict_list(
 )
 
 for dict in sol_param_dict
-    dict[:quantiles] = [95, 80]
+    dict[:quantile_vec] = [95, 80]
+    dict[:outbreak_spec_vec] = outbreak_spec_vec
+    dict[:noise_spec_vec] = noise_spec_vec
+    dict[:outbreak_detection_spec_vec] = outbreak_detection_spec_vec
+    dict[:test_spec_vec] = test_spec_vec
 end
+
+sol_param_dict[1]
 
 #%%
 prog = Progress(length(sol_param_dict))
