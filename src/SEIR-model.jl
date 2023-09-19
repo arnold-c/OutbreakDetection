@@ -158,7 +158,6 @@ function seir_mod_loop!(
     @views change_arr[i, 2] = jump_arr[i, 1] - jump_arr[i, 2] - jump_arr[i, 6] + jump_arr[i, 9]
     @views change_arr[i, 3] = jump_arr[i, 2] - jump_arr[i, 3] - jump_arr[i, 7]
     @views change_arr[i, 4] = jump_arr[i, 3] - jump_arr[i, 8]
-    @views change_arr[i, 5] = sum(change_arr[i, 1:4])
 
     # Check that the change in each state does not result in a negative state,
     # and if it is, set the change to the negative of the current state (i.e.
@@ -169,6 +168,7 @@ function seir_mod_loop!(
         end
     end
 
+    @views change_arr[i, 5] = sum(change_arr[i, 1:4])
     @views previous_states = state_arr[i - 1, :]
     @views current_changes = change_arr[i, :]
     @turbo @. state_arr[i, :] = previous_states + current_changes
