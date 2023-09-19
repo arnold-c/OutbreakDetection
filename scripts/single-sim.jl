@@ -13,7 +13,7 @@ using OutbreakDetection
 #%%
 seir_array, change_array, jump_array, beta_arr = seir_mod(
     singlesim_states_p.init_states, singlesim_dynamics_p, singlesim_time_p;
-    type = "det", seed = 1234,
+    type = "stoch", seed = 1234,
 );
 
 #%%
