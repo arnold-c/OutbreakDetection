@@ -38,13 +38,8 @@ time_p_vec = vec(
 )
 
 #%%
-beta_force_vec = collect(0.0:0.1:0.4)
-annual_births_per_k_min = 5
-annual_births_per_k_max = 20
-annual_births_per_k_step = 5
-annual_births_per_k_vec = collect(
-    annual_births_per_k_min:annual_births_per_k_step:annual_births_per_k_max
-)
+beta_force_vec = [0.2]
+annual_births_per_k_vec = [10]
 seed = 1234
 
 #%%
