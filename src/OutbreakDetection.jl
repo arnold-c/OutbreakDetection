@@ -25,7 +25,6 @@ export seir_mod, seir_mod!, seir_mod_loop!
 
 include("cleaning-functions.jl")
 export create_sir_df, create_sir_beta_dfs, create_sir_sim_array!,
-    create_sir_all_sims_array, create_sir_all_sims_array!,
     create_sir_all_sim_quantiles, create_sir_all_sim_quantiles!
 # @reexport using .CleaningFunctions
 
@@ -37,24 +36,23 @@ export birth_rate_bifurcation_simulation!, bifurcation_summary,
     birth_rate_beta_force_bifurcation_cycle_summary
 
 include("detection-thresholds.jl")
-export create_inc_infec_arr,
-    create_inc_infec_arr!, calculate_outbreak_thresholds,
-    create_inc_infec_arr_long!
+export create_inc_infec_arr, create_inc_infec_arr!,
+    calculate_outbreak_thresholds
 # @reexport using .DetectionThresholds
 
 include("diag-testing-functions.jl")
 export create_testing_arr, create_testing_arr!, calculate_tested!,
     calculate_pos, calculate_pos!, calculate_movingavg, calculate_movingavg!,
     detectoutbreak, detectoutbreak!, calculate_ot_characterstics,
-    calculate_noutbreaks, calculate_OutbreakThresholdChars,
-    run_OutbreakThresholdChars_creation, OutbreakThresholdChars_creation,
-    get_scenario_file
+    calculate_noutbreaks, calculate_OutbreakThresholdChars
 # @reexport using .DiagTestingFunctions
 
 include("ensemble-functions.jl")
 export create_combinations_vec, create_ensemble_spec_combinations,
-    run_ensemble_jump_prob, run_jump_prob, summarize_ensemble_jump_prob,
-    jump_prob_summary, get_ensemble_file
+    run_ensemble_jump_prob, run_jump_prob,
+    summarize_ensemble_jump_prob, jump_prob_summary
+    run_OutbreakThresholdChars_creation, OutbreakThresholdChars_creation,
+    get_ensemble_file, get_scenario_file
 # @reexport using .EnsembleFunctions
 
 include("noise-functions.jl")
