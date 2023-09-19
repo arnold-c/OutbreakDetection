@@ -202,21 +202,26 @@ end
 function birth_rate_beta_force_bifurcation_cycle_summary(
     annual_summary,
     birth_rate_vec,
-    beta_force_vec,
+    beta_force_vec;
+    state_labels = seir_state_labels,
 )
     cycle_summary = zeros(
-        Float64, length(birth_rate_vec), length(beta_force_vec)
+        Float64, length(birth_rate_vec), length(beta_force_vec),
+        length(state_labels),
     )
 
-    @floop for beta_force in eachindex(beta_force_vec), birth_rate in eachindex(birth_rate_vec)
-        cycle_summary[birth_rate, beta_force] = length(
+    @floop for beta_force in eachindex(beta_force_vec),
+        birth_rate in eachindex(birth_rate_vec),
+        state in eachindex(state_labels)
+
+        cycle_summary[birth_rate, beta_force, state] = length(
             Set(
                 round.(
-                   @view annual_summary[
-                        :, 2, birth_rate, beta_force
+                    @view annual_summary[
+                        :, state, birth_rate, beta_force
                     ]
                 ),
-            ),
+            )
         )
     end
 
