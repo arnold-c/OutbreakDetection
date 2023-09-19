@@ -154,6 +154,9 @@ birth_rate_beta_force_bifurcation_simulation!(
     singlesim_time_p,
 )
 
+bifurc_mu_beta_force_seir_arr[:, :, 2, 1]
+sum(bifurc_mu_beta_force_seir_arr[:, :, 2, 1][end, 1:4])
+
 #%%
 bifurc_mu_beta_force_annual_summary = birth_rate_beta_force_bifurcation_annual_summary(
     bifurc_mu_beta_force_seir_arr,
@@ -169,10 +172,162 @@ bifurc_mu_beta_force_cycle_summary = birth_rate_beta_force_bifurcation_cycle_sum
 )
 
 #%%
+test_seir_array, test_change_array, test_jump_array, test_beta_arr = seir_mod(
+    init_states,
+    DynamicsParameters(
+        500_000, Integer(annual_birth_rate_per_k_vec[1]), beta_force_vec[1]
+    ), singlesim_time_p;
+    type = "det", seed = 1234,
+);
+
+test_seir_array == test_seir_array1
+test_change_array == test_change_array1
+test_jump_array == test_jump_array1
+
+lines(test_beta_arr[1:(365 * 2)])
+
+#%%
+comb = Iterators.product(
+    pairs(annual_birth_rate_per_k_vec[1]), pairs(beta_force_vec[1])
+)
+
+function test_fun(
+    beta_force_seir_arr,
+    beta_force_change_arr,
+    beta_force_jump_arr,
+    beta_arr,
+    initial_states,
+    rates,
+    birth_rate_vec,
+    beta_force_vec,
+    dynamics_parameters,
+    time_parameters,
+)
+    for birth_rate_pair in pairs(birth_rate_vec),
+        beta_force_pair in pairs(beta_force_vec)
+        k = birth_rate_pair[1]
+        birth_rate_run = birth_rate_pair[2]
+        mu_run = calculate_mu(birth_rate_run)
+
+        l = beta_force_pair[1]
+        beta_force_run = beta_force_pair[2]
+        epsilon_run = calculate_import_rate(
+            mu_run, dynamics_parameters.R_0, initial_states.N
+        )
+
+        run_dynamics_parameters = DynamicsParameters(
+            dynamics_parameters.beta_mean,
+            beta_force_run,
+            dynamics_parameters.sigma,
+            dynamics_parameters.gamma,
+            mu_run,
+            birth_rate_run,
+            epsilon_run,
+            dynamics_parameters.R_0,
+        )
+
+        seir_mod!(
+            beta_force_seir_arr,
+            beta_force_change_arr,
+            beta_force_jump_arr,
+            beta_arr,
+            initial_states,
+            rates,
+            run_dynamics_parameters,
+            time_parameters;
+            type = "det",
+        )
+    end
+    # for (birth_rate_pair, beta_force_pair) in comb
+    #     k = birth_rate_pair[1]
+    #     birth_rate_run = birth_rate_pair[2]
+    #     mu_run = calculate_mu(birth_rate_run)
+    #
+    #     l = beta_force_pair[1]
+    #     beta_force_run = beta_force_pair[2]
+    #     epsilon_run = calculate_import_rate(
+    #         mu_run, singlesim_dynamics_p.R_0, init_states.N
+    #     )
+    #
+    #     run_dynamics_parameters = DynamicsParameters(
+    #         singlesim_dynamics_p.beta_mean,
+    #         beta_force_run,
+    #         singlesim_dynamics_p.sigma,
+    #         singlesim_dynamics_p.gamma,
+    #         mu_run,
+    #         birth_rate_run,
+    #         epsilon_run,
+    #         singlesim_dynamics_p.R_0,
+    #     )
+    #
+    #     seir_mod!(
+    #         test_seir_array,
+    #         test_change_array,
+    #         test_jump_array,
+    #         test_beta_arr,
+    #         init_states,
+    #         Vector{Float64}(undef, 9),
+    #         run_dynamics_parameters,
+    #         singlesim_time_p;
+    #         type = "det",
+    #     )
+    # end
+    return nothing
+end
+
+test_seir_array .= 0
+test_change_array .= 0
+test_jump_array .= 0
+
+test_fun(
+    test_seir_array,
+    test_change_array,
+    test_jump_array,
+    test_beta_arr,
+    init_states,
+    rates,
+    annual_birth_rate_per_k_vec[1:2],
+    beta_force_vec[1:2],
+    singlesim_dynamics_p,
+    singlesim_time_p,
+)
+
+test_seir_array
+
+test_seir_df = create_sir_df(
+    test_seir_array, singlesim_time_p.trange, [:S, :E, :I, :R, :N]
+)
+draw_sir_plot(test_seir_df;
+    colors = ["dodgerblue4", "green", "firebrick3", "chocolate2", "purple"],
+    labels = ["S", "E", "I", "R", "N"])
+
+bifurc_wide = load("tmp/bifurc_mu_beta_force_arrays.jld2")
+
+bifurc_mu_beta_force_seir_arr[:, :, 1, 1]
+
+sum(bifurc_mu_beta_force_seir_arr[:, :, 1, 1][end, 1:4])
+
+bifurc_mu_beta_force_change_arr[:, :, 1, 1]
+sum(bifurc_mu_beta_force_change_arr[:, :, 1, 1][end, 1:4])
+beta_arr
+
+bifurc_wide["bifurc_mu_beta_force_seir_arr"][:, :, 1, 1]'
+sum(bifurc_wide["bifurc_mu_beta_force_seir_arr"][:, :, 1, 1]'[end, 1:4])
+
+bifurc_wide["bifurc_mu_beta_force_change_arr"][:, :, 1, 1]'
+
+bifurc_mu_beta_force_annual_summary[:, :, 1, 1]
+
+bifurc_wide["bifurc_mu_beta_force_annual_summary"][:, :, 1, 1]
+
+bifurc_mu_beta_force_change_arr[:, :, 1, 1]
+bifurc_wide["bifurc_mu_beta_force_change_arr"][:, :, 1, 1]'
+
+#%%
 birth_rate_beta_force_bifurcation_heatmap = bifurcation_heatmap(
     annual_birth_rate_per_k_vec,
     beta_force_vec,
-    bifurc_mu_beta_force_cycle_summary,
+    bifurc_mu_beta_force_cycle_summary[:, :, 2],
 )
 
 save(
