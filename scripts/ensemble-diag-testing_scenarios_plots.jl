@@ -3,6 +3,7 @@ using DrWatson
 @quickactivate "OutbreakDetection"
 
 using ProgressMeter
+using FLoops
 
 include("../src/OutbreakDetection.jl")
 using .OutbreakDetection
@@ -32,7 +33,7 @@ ensemble_static_noise_arr = create_static_NoiseSpecification(
 
 #%%
 prog = Progress(length(sensitivity_vec) * length(detectthreshold_vec))
-for (i, ((sens, spec), detectthrehold)) in enumerate(
+@floop for (i, ((sens, spec), detectthrehold)) in enumerate(
     Iterators.product(
         zip(sensitivity_vec, specificity_vec),
         detectthreshold_vec
@@ -59,7 +60,7 @@ for (i, ((sens, spec), detectthrehold)) in enumerate(
                             :r_prop => 0.88,
                         ),
                     ),
-                    DynamicsParameters(500_000, 5, 0.2),
+                    DynamicsParameters(500_000, 10, 0.2),
                     time_params,
                     1_000,
                 ),
@@ -70,7 +71,7 @@ for (i, ((sens, spec), detectthrehold)) in enumerate(
             )
         end
 
-    ensemble_chars_file = get_scenario_file("scenario", ensemble_spec)
+    ensemble_chars_file = OutbreakDetection.get_scenario_file("scenario", ensemble_spec)
 
     ensemble_chars_vec[i] = (
         OT_chars = ensemble_chars_file["OT_chars"],
@@ -82,7 +83,7 @@ for (i, ((sens, spec), detectthrehold)) in enumerate(
 end
 
 #%%
-compare_ensemble_OTchars_plots(
+compare_sens_spec_plot = compare_ensemble_OTchars_plots(
     ensemble_chars_vec,
     :sensitivity,
     :specificity,
@@ -92,8 +93,10 @@ compare_ensemble_OTchars_plots(
     char3_label = "Detection Threshold",
 )
 
+save(plotsdir("compare_sens_spec_plot.png"), compare_sens_spec_plot)
+
 #%%
-compare_ensemble_OTchars_plots(
+compare_ppv_npv_plot = compare_ensemble_OTchars_plots(
     ensemble_chars_vec,
     :ppv,
     :npv,
@@ -104,3 +107,5 @@ compare_ensemble_OTchars_plots(
     char1_color = :green,
     char2_color = :purple
 )
+
+save(plotsdir("compare_ppv_npv_plot.png"), compare_ppv_npv_plot)
