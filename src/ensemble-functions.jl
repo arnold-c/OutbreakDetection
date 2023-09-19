@@ -253,27 +253,9 @@ function OutbreakThresholdChars_creation(OT_chars_param_dict)
         ensemble_jump_arr, outbreak_specification
     )
 
-    testarr = zeros(Int64, size(incarr, 1), 8, size(incarr, 3))
-
-    posoddsarr = zeros(Float64, size(incarr, 1), 2, size(incarr, 3))
-
     @unpack noise_array = noise_specification
 
-    @unpack detection_threshold,
-    moving_average_lag,
-    percent_tested,
-    test_result_lag = outbreak_detection_specification
-
-    @unpack sensitivity, specificity = individual_test_specification
-
-    create_testing_arr!(
-        testarr,
-        incarr,
-        noise_array,
-        posoddsarr,
-        outbreak_detection_specification,
-        individual_test_specification,
-    )
+    testarr = create_testing_arr(incarr, noise_array, outbreak_detection_specification, individual_test_specification)
 
     OT_chars = calculate_OutbreakThresholdChars(testarr, incarr)
 
