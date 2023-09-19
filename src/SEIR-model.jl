@@ -76,13 +76,13 @@ function seir_mod!(
 )
     Random.seed!(seed)
 
-    @turbo @. beta_arr = calculate_beta_amp(
+    @. beta_arr = calculate_beta_amp(
         dynamics_params.beta_mean,
         dynamics_params.beta_force,
         time_params.trange,
     )
 
-    for (i, t) in pairs(time_params.trange)
+    for i in eachindex(time_params.trange)
         if i == 1
             state_arr[i, :] .= states
             continue
@@ -130,7 +130,7 @@ function seir_mod_loop!(
     @views beta_t = beta_arr[i]
 
     # Calculate the rates of each event
-    rates[1] = beta_t * S * I              # S -> E
+    rates[1] = beta_t * S * I                   # Contact: S -> E
     rates[2] = dynamics_params.sigma * E        # E -> I
     rates[3] = dynamics_params.gamma * I        # I -> R
     rates[4] = dynamics_params.mu * N           # Birth -> S
@@ -138,7 +138,7 @@ function seir_mod_loop!(
     rates[6] = dynamics_params.mu * E           # E -> death
     rates[7] = dynamics_params.mu * I           # I -> death
     rates[8] = dynamics_params.mu * R           # R -> death
-    rates[9] = dynamics_params.epsilon * N / dynamics_params.R_0        # Import -> S
+    rates[9] = dynamics_params.epsilon * N / dynamics_params.R_0        # Import: S -> E
 
     # Calculate the number of jumps for each event
     if type == "stoch"
@@ -169,9 +169,10 @@ function seir_mod_loop!(
     end
 
     @views change_arr[i, 5] = sum(change_arr[i, 1:4])
+
     @views previous_states = state_arr[i - 1, :]
     @views current_changes = change_arr[i, :]
-    @turbo @. state_arr[i, :] = previous_states + current_changes
+    @. state_arr[i, :] = previous_states + current_changes
 
     return nothing
 end
