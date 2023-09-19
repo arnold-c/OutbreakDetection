@@ -209,10 +209,10 @@ function jump_prob_summary(ensemble_param_dict)
     @unpack tstep, tlength, trange = time_parameters
     @unpack init_states, init_state_props = state_parameters
 
-    @views N = init_states[:N]
-    @views S_init = init_states[:S]
-    @views I_init = init_states[:I]
-    @views R_init = init_states[:R]
+    N = init_states[:N]
+    S_init = init_states[:S]
+    I_init = init_states[:I]
+    R_init = init_states[:R]
 
     qlow = round(0.5 - quantiles / 200; digits = 3)
     qhigh = round(0.5 + quantiles / 200; digits = 3)
