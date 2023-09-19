@@ -95,7 +95,8 @@ function create_ensemble_spec_combinations(
     return ensemble_spec_vec
 end
 
-function run_ensemble_jump_prob(dict_of_ensemble_params; prog = prog)
+function run_ensemble_jump_prob(dict_of_ensemble_params)
+    prog = Progress(length(dict_of_ensemble_params))
     @floop for ensemble_params in dict_of_ensemble_params
         @produce_or_load(
             run_jump_prob,

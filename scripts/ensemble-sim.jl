@@ -131,5 +131,4 @@ end
 sol_param_dict[1]
 
 #%%
-prog = Progress(length(sol_param_dict))
-run_ensemble_jump_prob(sol_param_dict; prog = prog)
+run_ensemble_jump_prob(sol_param_dict)
