@@ -91,67 +91,6 @@ function create_sir_sim_array!(; jump_sol)
     return nothing
 end
 
-function create_sir_all_sims_array!(; nsims, prob, alg, tstep)
-    for i in 1:nsims
-        jump_sol = solve(prob, alg; saveat = tstep)
-        create_sir_sim_array!(; jump_sol = jump_sol)
-
-        all_sims_array[:, :, i] = sir_array
-    end
-end
-
-function create_sir_all_sims_array_multithread!(prob, nsims, alg, saveat)
-    @floop for i in 1:nsims
-        all_sims_array[1:3, :, i] = Array(solve(prob, alg; saveat = saveat))
-        all_sims_array[4, :, i] = sum(all_sims_array[1:3, :, i]; dims = 1)
-    end
-end
-
-function create_sir_all_sims_array!(
-    ensemble_sol::EnsembleSolution, nsims::Int, array = all_sims_array
-)
-    @floop for i in 1:nsims
-        if size(ensemble_sol.u[i], 2) != size(array, 2)
-            skip
-        else
-            array[1:4, :, i] = Array(ensemble_sol.u[i])
-        end
-    end
-
-    return nothing
-end
-
-function create_sir_all_sims_array(ensemble_sol::EnsembleSolution, nsims::Int)
-    all_sims_array = zeros(
-        size(ensemble_sol.u[1], 1), size(ensemble_sol.u[1], 2), nsims
-    )
-
-    create_sir_all_sims_array!(ensemble_sol, nsims, all_sims_array)
-
-    return all_sims_array
-end
-
-function create_sir_all_sims_array!(
-    ensemble_sol::EnsembleSolution, nsims::Int, beta::Bool
-)
-    if beta == false
-        return create_sir_all_sims_array!(ensemble_sol, nsims)
-    end
-
-    for i in 1:nsims
-        if size(ensemble_sol.u[i], 2) != size(all_sims_array, 2)
-            skip
-        else
-            all_sims_array[1:3, :, i] = Array(ensemble_sol.u[i])[1:3, :]
-            all_sims_array[5, :, i] = Array(ensemble_sol.u[i])[4, :]
-        end
-    end
-
-    all_sims_array[4, :, :] = sum(all_sims_array[1:3, :, :]; dims = 1)
-
-    return nothing
-end
-
 function create_sir_all_sim_quantiles!(all_sims_array, sim_quantiles; quantiles)
     @floop for state in 1:size(all_sims_array, 1)
         for time in 1:size(all_sims_array, 2)
