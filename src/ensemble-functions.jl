@@ -97,7 +97,7 @@ end
 
 function run_ensemble_jump_prob(dict_of_ensemble_params)
     prog = Progress(length(dict_of_ensemble_params))
-    @floop for ensemble_params in dict_of_ensemble_params
+    for ensemble_params in dict_of_ensemble_params
         @produce_or_load(
             run_jump_prob,
             ensemble_params,
