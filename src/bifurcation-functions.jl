@@ -181,12 +181,13 @@ function birth_rate_beta_force_bifurcation_annual_summary(
         length(beta_force_vec),
     )
 
-    combinations = length(years) * length(state_labels) * length(beta_force_vec)
-    prog = Progress(combinations)
-
-    @floop for beta_force in eachindex(beta_force_vec),
-        state in eachindex(state_labels),
-        (year, day) in pairs(years)
+    combinations = Iterators.product(
+        eachindex(beta_force_vec), eachindex(state_labels), pairs(years)
+    )
+    prog = Progress(length(combinations))
+    @floop for (beta_force, state, years) in combinations
+        year = years[1]
+        day = years[2]
 
         annual_summary[year, state, :, beta_force] = maximum(
             @view state_arr[day:(day + 364), state, :, beta_force];
