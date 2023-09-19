@@ -16,7 +16,7 @@ function create_inc_infec_arr(
     );
 
     return create_inc_infec_arr!(
-        ensemble_inc_arr
+        ensemble_inc_arr,
         ensemble_jump_arr,
         outbreak_specification.outbreak_threshold,
         outbreak_specification.minimum_outbreak_duration,
