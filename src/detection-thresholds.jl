@@ -15,7 +15,7 @@ function create_inc_infec_arr(
         Int64, size(ensemble_jump_arr, 1), 4, size(ensemble_jump_arr, 3)
     );
 
-    return create_inc_infec_arr!(
+    create_inc_infec_arr!(
         ensemble_inc_arr,
         ensemble_jump_arr,
         outbreak_specification.outbreak_threshold,
@@ -23,6 +23,7 @@ function create_inc_infec_arr(
         outbreak_specification.minimum_outbreak_size,
     )
 
+    return ensemble_inc_arr
 end
 
 function create_inc_infec_arr!(
