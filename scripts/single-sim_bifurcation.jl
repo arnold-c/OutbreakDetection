@@ -154,6 +154,9 @@ birth_rate_beta_force_bifurcation_simulation!(
     singlesim_time_p,
 )
 
+bifurc_mu_beta_force_seir_arr[:, :, 2, 1]
+sum(bifurc_mu_beta_force_seir_arr[:, :, 2, 1][end, 1:4])
+
 #%%
 bifurc_mu_beta_force_annual_summary = birth_rate_beta_force_bifurcation_annual_summary(
     bifurc_mu_beta_force_seir_arr,
@@ -172,7 +175,7 @@ bifurc_mu_beta_force_cycle_summary = birth_rate_beta_force_bifurcation_cycle_sum
 birth_rate_beta_force_bifurcation_heatmap = bifurcation_heatmap(
     annual_birth_rate_per_k_vec,
     beta_force_vec,
-    bifurc_mu_beta_force_cycle_summary,
+    bifurc_mu_beta_force_cycle_summary[:, :, 2],
 )
 
 save(

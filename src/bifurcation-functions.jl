@@ -128,7 +128,9 @@ function birth_rate_beta_force_bifurcation_simulation!(
     )
     prog = Progress(length(combinations))
 
-    @floop for (birth_rate_pair, beta_force_pair) in combinations
+    for birth_rate_pair in pairs(birth_rate_vec),
+        beta_force_pair in pairs(beta_force_vec)
+
         k = birth_rate_pair[1]
         birth_rate_run = birth_rate_pair[2]
         mu_run = calculate_mu(birth_rate_run)
@@ -181,12 +183,13 @@ function birth_rate_beta_force_bifurcation_annual_summary(
         length(beta_force_vec),
     )
 
-    combinations = length(years) * length(state_labels) * length(beta_force_vec)
-    prog = Progress(combinations)
-
-    @floop for beta_force in eachindex(beta_force_vec),
-        state in eachindex(state_labels),
-        (year, day) in pairs(years)
+    combinations = Iterators.product(
+        eachindex(beta_force_vec), eachindex(state_labels), pairs(years)
+    )
+    prog = Progress(length(combinations))
+    @floop for (beta_force, state, years) in combinations
+        year = years[1]
+        day = years[2]
 
         annual_summary[year, state, :, beta_force] = maximum(
             @view state_arr[day:(day + 364), state, :, beta_force];
@@ -202,21 +205,26 @@ end
 function birth_rate_beta_force_bifurcation_cycle_summary(
     annual_summary,
     birth_rate_vec,
-    beta_force_vec,
+    beta_force_vec;
+    state_labels = seir_state_labels,
 )
     cycle_summary = zeros(
-        Float64, length(birth_rate_vec), length(beta_force_vec)
+        Float64, length(birth_rate_vec), length(beta_force_vec),
+        length(state_labels),
     )
 
-    @floop for beta_force in eachindex(beta_force_vec), birth_rate in eachindex(birth_rate_vec)
-        cycle_summary[birth_rate, beta_force] = length(
+    @floop for beta_force in eachindex(beta_force_vec),
+        birth_rate in eachindex(birth_rate_vec),
+        state in eachindex(state_labels)
+
+        cycle_summary[birth_rate, beta_force, state] = length(
             Set(
                 round.(
-                   @view annual_summary[
-                        :, 2, birth_rate, beta_force
+                    @view annual_summary[
+                        :, state, birth_rate, beta_force
                     ]
                 ),
-            ),
+            )
         )
     end
 
