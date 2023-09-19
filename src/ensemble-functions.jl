@@ -126,12 +126,15 @@ function run_jump_prob(ensemble_param_dict)
     @unpack tstep, tlength, trange = time_parameters
 
     ensemble_seir_arr = zeros(
-        Int64, size(state_parameters.init_states, 1), tlength, nsims
+        Int64, tlength, size(state_parameters.init_states, 1), nsims
     )
     ensemble_change_arr = zeros(
-        Int64, size(state_parameters.init_states, 1), tlength, nsims
+        Int64, tlength, size(state_parameters.init_states, 1), nsims
     )
-    ensemble_jump_arr = zeros(Int64, 9, tlength, nsims)
+
+    n_transitions = (size(state_parameters.init_states, 1) - 1) * 2 + 1
+
+    ensemble_jump_arr = zeros(Int64, tlength, n_transitions, nsims)
     ensemble_beta_arr = zeros(Float64, tlength)
 
     @floop for k in 1:nsims
@@ -147,7 +150,7 @@ function run_jump_prob(ensemble_param_dict)
             @view(ensemble_jump_arr[:, :, k]),
             ensemble_beta_arr,
             state_parameters.init_states,
-            Vector{Float64}(undef, 9),
+            Vector{Float64}(undef, n_transitions),
             dynamics_parameters,
             time_parameters;
             type = "stoch",
