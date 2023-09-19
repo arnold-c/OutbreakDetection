@@ -64,4 +64,4 @@ clean:
 	rm -rf tmp/*
 	@echo "cleaning plot output files"
 	$(shell fd . 'plots/' -tf | xargs rm -r)
-	# rm -rf data/*
+	rm -rf data/*
