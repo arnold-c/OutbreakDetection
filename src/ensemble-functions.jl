@@ -96,7 +96,7 @@ function create_ensemble_spec_combinations(
 end
 
 function run_ensemble_jump_prob(dict_of_ensemble_params; prog = prog)
-    for ensemble_params in dict_of_ensemble_params
+    @floop for ensemble_params in dict_of_ensemble_params
         @produce_or_load(
             run_jump_prob,
             ensemble_params,
@@ -137,7 +137,7 @@ function run_jump_prob(ensemble_param_dict)
     ensemble_jump_arr = zeros(Int64, tlength, n_transitions, nsims)
     ensemble_beta_arr = zeros(Float64, tlength)
 
-    @floop for k in 1:nsims
+    for k in 1:nsims
         @views seir = ensemble_seir_arr[:, :, k]
         @views change = ensemble_change_arr[:, :, k]
         @views jump = ensemble_jump_arr[:, :, k]
