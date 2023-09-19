@@ -125,6 +125,7 @@ function run_jump_prob(ensemble_param_dict)
         Int64, size(state_parameters.init_states, 1), tlength, nsims
     )
     ensemble_jump_arr = zeros(Int64, 9, tlength, nsims)
+    ensemble_beta_arr = zeros(Float64, tlength)
 
     @floop for k in 1:nsims
         @views seir = ensemble_seir_arr[:, :, k]
@@ -134,12 +135,15 @@ function run_jump_prob(ensemble_param_dict)
         run_seed = seed + (k - 1)
 
         seir_mod!(
-            seir,
-            change,
-            jump,
+            @view(ensemble_seir_arr[:, :, k]),
+            @view(ensemble_change_arr[:, :, k]),
+            @view(ensemble_jump_arr[:, :, k]),
+            ensemble_beta_arr,
             state_parameters.init_states,
+            Vector{Float64}(undef, 9),
             dynamics_parameters,
             time_parameters;
+            type = "stoch",
             seed = run_seed,
         )
     end
