@@ -128,7 +128,9 @@ function birth_rate_beta_force_bifurcation_simulation!(
     )
     prog = Progress(length(combinations))
 
-    @floop for (birth_rate_pair, beta_force_pair) in combinations
+    for birth_rate_pair in pairs(birth_rate_vec),
+        beta_force_pair in pairs(beta_force_vec)
+
         k = birth_rate_pair[1]
         birth_rate_run = birth_rate_pair[2]
         mu_run = calculate_mu(birth_rate_run)
@@ -149,11 +151,14 @@ function birth_rate_beta_force_bifurcation_simulation!(
             epsilon_run,
             dynamics_parameters.R_0,
         )
+        seir = @view(beta_force_seir_arr[:, :, k, l])
+        change = @view(beta_force_change_arr[:, :, k, l])
+        jump = @view(beta_force_jump_arr[:, :, k, l])
 
         seir_mod!(
-            @view(beta_force_seir_arr[:, :, k, l]),
-            @view(beta_force_change_arr[:, :, k, l]),
-            @view(beta_force_jump_arr[:, :, k, l]),
+            seir,
+            change,
+            jump,
             beta_arr,
             initial_states,
             rates,
@@ -164,6 +169,7 @@ function birth_rate_beta_force_bifurcation_simulation!(
 
         next!(prog)
     end
+
 end
 
 function birth_rate_beta_force_bifurcation_annual_summary(
