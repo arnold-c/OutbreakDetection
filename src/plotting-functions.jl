@@ -204,7 +204,7 @@ function detect_outbreak_plot(
 
     linkxaxes!(ax_prev, ax_inc, ax_periodsum)
 
-    lines!(ax_prev, times, ensemblearr[2, :, 1])
+    lines!(ax_prev, times, ensemblearr[:, 2, 1])
     lines!(ax_inc, times, incidencearr[:, 1, 1])
     barplot!(
         ax_periodsum,
