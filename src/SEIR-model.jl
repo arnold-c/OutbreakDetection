@@ -109,7 +109,6 @@ end
 
 The inner loop that is called by `seir_mod!()` function.
 """
-
 function seir_mod_loop!(
     state_arr,
     change_arr,
@@ -121,6 +120,9 @@ function seir_mod_loop!(
     time_params;
     type = type,
 )
+    # TODO: Benchmak StaticArrays implementation as potentially much faster.
+    # Would need to use permutedims(reshape(reinterperate(Float64, SVector), (...), (...))
+    # to get it into an array that could be used later on.
     # Create views of the state variables for easier use
     @views S = state_arr[i - 1, 1]
     @views E = state_arr[i - 1, 2]
