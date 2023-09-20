@@ -26,7 +26,7 @@ ensemble_single_scenario_spec =
                         :r_prop => 0.88,
                     ),
                 ),
-                DynamicsParameters(500_000, 5, 0.2),
+                DynamicsParameters(500_000, 10, 0.2),
                 time_params,
                 1_000,
             ),
@@ -66,11 +66,9 @@ ensemble_single_scenario_quantiles_plot = create_sir_quantiles_plot(
     timeparams = ensemble_single_scenario_spec.ensemble_specification.time_parameters,
 )
 
-save(plotsdir("ensemble-sim_single-scenario_quantiles.png"), ensemble_single_scenario_quantiles_plot)
+save(plotsdir("ensemble/single-scenario/ensemble-sim_single-scenario_quantiles.png"), ensemble_single_scenario_quantiles_plot)
 
 #%%
-outbreakcols = [ColorSchemes.magma[i] for i in (200, 20)]
-
 ensemble_single_scenario_detect_outbreak_plot = detect_outbreak_plot(
     ensemble_single_scenario_detection["incarr"],
     ensemble_single_scenario_sol["ensemble_seir_arr"],
@@ -81,7 +79,7 @@ ensemble_single_scenario_detect_outbreak_plot = detect_outbreak_plot(
     # ylims_periodsum = (0, 1000),
 )
 
-save(plotsdir("ensemble-sim_single-scenario_detect-outbreak.png"), ensemble_single_scenario_detect_outbreak_plot)
+save(plotsdir("ensemble/single-scenario/ensemble-sim_single-scenario_detect-outbreak.png"), ensemble_single_scenario_detect_outbreak_plot)
 
 #%%
 ensemble_single_scenario_noise_plot = visualize_ensemble_noise(
@@ -89,7 +87,7 @@ ensemble_single_scenario_noise_plot = visualize_ensemble_noise(
     ensemble_single_scenario_spec.noise_specification.time_parameters,
 )
 
-save(plotsdir("ensemble-sim_single-scenario_noise.png"), ensemble_single_scenario_noise_plot)
+save(plotsdir("ensemble/single-scenario/ensemble-sim_single-scenario_noise.png"), ensemble_single_scenario_noise_plot)
 
 #%%
 ensemble_single_scenario_incidence_testing_plot = incidence_testing_plot(
@@ -100,41 +98,51 @@ ensemble_single_scenario_incidence_testing_plot = incidence_testing_plot(
     sim = 1,
 )
 
-save(plotsdir("ensemble-sim_single-scenario_incidence-testing.png"), ensemble_single_scenario_incidence_testing_plot)
+save(plotsdir("ensemble/single-scenario/ensemble-sim_single-scenario_incidence-testing.png"), ensemble_single_scenario_incidence_testing_plot)
 
 #%%
-testing_plot(
+ensemble_single_scenario_testing_timeseries_plot = testing_plot(
     ensemble_single_scenario_detection["testarr"],
     ensemble_single_scenario_spec.ensemble_specification.time_parameters,
 )
 
+save(plotsdir("ensemble/single-scenario/ensemble-sim_single-scenario_testing-timeseries.png"), ensemble_single_scenario_testing_timeseries_plot)
+
 #%%
-ensemble_outbreak_distribution_plot(
+ensemble_single_scenario_outbreak_dist_plot = ensemble_outbreak_distribution_plot(
     ensemble_single_scenario_detection["testarr"],
     ensemble_single_scenario_detection["incarr"],
 )
 
+save(plotsdir("ensemble/single-scenario/ensemble-sim_single-scenario_outbreak-distribution.png"), ensemble_single_scenario_outbreak_dist_plot)
+
 #%%
-ensemble_OTChars_plot(
+ensemble_single_scenario_outbreak_detect_plot = ensemble_OTChars_plot(
+    ensemble_single_scenario_detection["OT_chars"],
+    :noutbreaks,
+    :ndetectoutbreaks,
+)
+
+save(plotsdir("ensemble/single-scenario/ensemble-sim_single-scenario_outbreak-detection.png"), ensemble_single_scenario_outbreak_detect_plot)
+
+#%%
+ensemble_single_scenario_sens_spec_dist_plot = ensemble_OTChars_plot(
     ensemble_single_scenario_detection["OT_chars"],
     :sensitivity,
     :specificity;
     bins = 0.0:0.01:1.01,
     char1_label = "Sensitivity",
     char2_label = "Specificity",
-    xlabel = "Proportion",
-    legendlabel = "Characteristic",
+    char1_color = :red,
+    char2_color = :blue,
+    xlabel = "Characteristic Value",
+    legendlabel = "Outbreak Characteristic",
 )
 
-#%%
-ensemble_OTChars_plot(
-    ensemble_single_scenario_detection["OT_chars"],
-    :noutbreaks,
-    :ndetectoutbreaks,
-)
+save(plotsdir("ensemble/single-scenario/ensemble-sim_single-scenario_sens-spec-distribution.png"), ensemble_single_scenario_sens_spec_dist_plot)
 
 #%%
-ensemble_OTChars_plot(
+ensemble_single_scenario_ppv_npv_dist_plot = ensemble_OTChars_plot(
     ensemble_single_scenario_detection["OT_chars"],
     :ppv,
     :npv;
@@ -143,6 +151,8 @@ ensemble_OTChars_plot(
     char2_label = "NPV",
     char1_color = :green,
     char2_color = :purple,
-    xlabel = "Proportion",
-    legendlabel = "Characteristic",
+    xlabel = "Characteristic Value",
+    legendlabel = "Outbreak Characteristic",
 )
+
+save(plotsdir("ensemble/single-scenario/ensemble-sim_single-scenario_ppv-npv-distribution.png"), ensemble_single_scenario_ppv_npv_dist_plot)
