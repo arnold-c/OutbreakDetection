@@ -50,9 +50,10 @@ export create_testing_arr, create_testing_arr!, calculate_tested!,
 include("ensemble-functions.jl")
 export create_combinations_vec, create_ensemble_spec_combinations,
     run_ensemble_jump_prob, run_jump_prob,
-    summarize_ensemble_jump_prob, jump_prob_summary
+    summarize_ensemble_jump_prob, jump_prob_summary,
     run_OutbreakThresholdChars_creation, OutbreakThresholdChars_creation,
     get_ensemble_file, get_scenario_file
+
 # @reexport using .EnsembleFunctions
 
 include("noise-functions.jl")
