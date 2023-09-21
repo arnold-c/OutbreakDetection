@@ -117,7 +117,7 @@ function run_jump_prob(ensemble_param_dict)
     @unpack ensemble_spec,
     seed,
     quantile_vec,
-    outbreak_spec_vec,
+    outbreak_spec_dict,
     noise_spec_vec,
     outbreak_detection_spec_vec,
     test_spec_vec = ensemble_param_dict
@@ -166,42 +166,16 @@ function run_jump_prob(ensemble_param_dict)
 
     summarize_ensemble_jump_prob(quantile_param_dict)
 
-    # TODO: create for all combinations of ensemble and outbreak definition specs
-    # Might need to next scenarios within incarr so that the incidence array can
-    # be passed to it (issues with which one to use in memory otherwise)
-    define_outbreak_spec_vec = Vector{NamedTuple}(undef, length(outbreak_spec_vec))
-    for (i, outbreak_spec) in pairs(outbreak_spec_vec)
-        define_outbreak_spec_vec[i] = (
-            outbreak_specification = outbreak_spec,
-            dirpath = joinpath(ensemble_spec.dirpath, outbreak_spec.dirpath),
-        )
+    for dict in outbreak_spec_dict
+        dict[:dirpath] = joinpath(ensemble_spec.dirpath, dict.outbreak_spec.outbreak_specification.dirpath)
+        dict[:ensemble_spec] = ensemble_spec
+        dict[:ensemble_jump_arr] = ensemble_jump_arr
+        dict[:noise_spec_vec] = noise_spec_vec
+        dict[:outbreak_detection_spec_vec] = outbreak_detection_spec_vec
+        dict[:test_spec_vec] = test_spec_vec
     end
 
-    outbreak_spec_param_dict = dict_list(
-        @dict(
-            ensemble_jump_arr,
-            define_outbreak_spec = define_outbreak_spec_vec
-        )
-    )
-
-    run_define_outbreaks(outbreak_spec_param_dict)
-
-    ensemble_scenarios = create_combinations_vec(
-        ScenarioSpecification,
-        (
-            [ensemble_spec],
-            outbreak_spec_vec,
-            noise_spec_vec,
-            outbreak_detection_spec_vec,
-            test_spec_vec,
-        ),
-    )
-
-    scenario_param_dict = dict_list(
-        @dict(scenario_spec = ensemble_scenarios, ensemble_jump_arr)
-    )
-
-    run_OutbreakThresholdChars_creation(scenario_param_dict)
+    run_define_outbreaks(outbreak_spec_dict)
 
     return @strdict ensemble_seir_arr ensemble_spec
 end
@@ -254,7 +228,7 @@ function run_define_outbreaks(dict_of_outbreak_spec_params)
         @produce_or_load(
             define_outbreaks,
             outbreak_spec_params,
-            "$(outbreak_spec_params[:incidence_arr_outbreak_spec].dirpath)";
+            "$(outbreak_spec_params.dirpath)";
             filename = "ensemble-incidence-array",
             loadfile = false
         )
@@ -262,12 +236,34 @@ function run_define_outbreaks(dict_of_outbreak_spec_params)
 end
 
 function define_outbreaks(incidence_param_dict)
-    @unpack ensemble_jump_arr, incidence_arr_outbreak_spec =
+    @unpack ensemble_spec,
+    ensemble_jump_arr,
+    outbreak_spec,
+    noise_spec_vec,
+    outbreak_detection_spec_vec,
+    test_spec_vec =
         incidence_param_dict
 
     ensemble_inc_arr = create_inc_infec_arr(
-        ensemble_jump_arr, incidence_arr_outbreak_spec.outbreak_specification
+        ensemble_jump_arr, outbreak_spec.outbreak_specification
     )
+
+    ensemble_scenarios = create_combinations_vec(
+        ScenarioSpecification,
+        (
+            [ensemble_spec],
+            [outbreak_spec],
+            noise_spec_vec,
+            outbreak_detection_spec_vec,
+            test_spec_vec,
+        ),
+    )
+
+    scenario_param_dict = dict_list(
+        @dict(scenario_spec = ensemble_scenarios, ensemble_jump_arr)
+    )
+
+    run_OutbreakThresholdChars_creation(scenario_param_dict)
 
     return @strdict ensemble_inc_arr
 end
