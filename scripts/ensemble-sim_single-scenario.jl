@@ -116,7 +116,7 @@ save(plotsdir("ensemble/single-scenario/ensemble-sim_single-scenario_quantiles.p
 
 #%%
 ensemble_single_scenario_detect_outbreak_plot = detect_outbreak_plot(
-    ensemble_single_scenario_detection["incarr"],
+    ensemble_single_scenario_detection["ensemble_inc_arr"],
     ensemble_single_scenario_sol["ensemble_seir_arr"],
     ensemble_single_scenario_spec.ensemble_specification.time_parameters;
     colormap = outbreakcols,
@@ -137,7 +137,7 @@ save(plotsdir("ensemble/single-scenario/ensemble-sim_single-scenario_noise.png")
 
 #%%
 ensemble_single_scenario_incidence_testing_plot = incidence_testing_plot(
-    ensemble_single_scenario_detection["incarr"],
+    ensemble_single_scenario_detection["ensemble_inc_arr"],
     ensemble_single_scenario_detection["testarr"],
     ensemble_single_scenario_spec.ensemble_specification.time_parameters,
     ensemble_single_scenario_spec.outbreak_detection_specification.detection_threshold;
@@ -157,7 +157,7 @@ save(plotsdir("ensemble/single-scenario/ensemble-sim_single-scenario_testing-tim
 #%%
 ensemble_single_scenario_outbreak_dist_plot = ensemble_outbreak_distribution_plot(
     ensemble_single_scenario_detection["testarr"],
-    ensemble_single_scenario_detection["incarr"],
+    ensemble_single_scenario_detection["ensemble_inc_arr"],
 )
 
 save(plotsdir("ensemble/single-scenario/ensemble-sim_single-scenario_outbreak-distribution.png"), ensemble_single_scenario_outbreak_dist_plot)
