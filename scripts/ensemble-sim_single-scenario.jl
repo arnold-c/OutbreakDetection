@@ -10,97 +10,76 @@ using OutbreakDetection
 include(srcdir("makie-plotting-setup.jl"))
 
 #%%
-ensemble_single_scenario_spec =
-    let time_params = SimTimeParameters(;
-            tmin = 0.0, tmax = 365.0 * 100, tstep = 1.0
-        )
-        ScenarioSpecification(
-            EnsembleSpecification(
-                ("seasonal-infectivity-import", "tau-leaping"),
-                StateParameters(
-                    500_000,
-                    Dict(
-                        :s_prop => 0.1,
-                        :e_prop => 0.01,
-                        :i_prop => 0.01,
-                        :r_prop => 0.88,
-                    ),
-                ),
-                DynamicsParameters(500_000, 10, 0.2),
-                time_params,
-                1_000,
-            ),
-            OutbreakSpecification(5, 30, 500),
-            create_static_NoiseSpecification(
-                [10.0],
-                time_params,
-                0.0,
-                0.1,
-                1_000
-            ),
-            OutbreakDetectionSpecification(10, 7, 0.3, 0.3, 3),
-            IndividualTestSpecification(0.8, 0.8),
-        )
-    end
+ensemble_single_time_spec = SimTimeParameters(;
+    tmin = 0.0, tmax = 365.0 * 100, tstep = 1.0
+)
+
+ensemble_single_ensemble_spec = EnsembleSpecification(
+    ("seasonal-infectivity-import", "tau-leaping"),
+    StateParameters(
+        500_000,
+        Dict(:s_prop => 0.1, :e_prop => 0.01, :i_prop => 0.01, :r_prop => 0.88),
+    ),
+    DynamicsParameters(500_000, 10, 0.2),
+    ensemble_single_time_spec,
+    1_000,
+)
+
+ensemble_single_outbreak_spec = OutbreakSpecification(5, 30, 500)
+ensemble_single_individual_test_spec = IndividualTestSpecification(0.8, 0.8)
+ensemble_single_noise_spec = create_static_NoiseSpecification(
+    [10.0],
+    ensemble_single_time_spec,
+    0.0,
+    0.1,
+    1_000
+)
+
+ensemble_single_scenario_spec = ScenarioSpecification(
+    ensemble_single_ensemble_spec,
+    ensemble_single_outbreak_spec,
+    ensemble_single_noise_spec,
+    OutbreakDetectionSpecification(10, 7, 0.3, 0.3, 3),
+    ensemble_single_individual_test_spec
+)
 
 #%%
 ensemble_single_scenario_sol = get_ensemble_file(
-    "solution", ensemble_single_scenario_spec.ensemble_specification
+    ensemble_single_scenario_spec.ensemble_specification
 )
 
 ensemble_single_scenario_quantiles = get_ensemble_file(
-    "95", ensemble_single_scenario_spec.ensemble_specification
+    ensemble_single_scenario_spec.ensemble_specification, 95
 )
 
-ensemble_single_scenario_detection = get_scenario_file(
-    "scenario", ensemble_single_scenario_spec
+ensemble_single_scenario_incarr = get_ensemble_file(
+    ensemble_single_ensemble_spec, ensemble_single_outbreak_spec
 )
 
-#%%
-ensemble_single_scenario_spec2 =
-    let time_params = SimTimeParameters(;
-            tmin = 0.0, tmax = 365.0 * 100, tstep = 1.0
-        )
-        ScenarioSpecification(
-            EnsembleSpecification(
-                ("seasonal-infectivity-import", "tau-leaping"),
-                StateParameters(
-                    500_000,
-                    Dict(
-                        :s_prop => 0.1,
-                        :e_prop => 0.01,
-                        :i_prop => 0.01,
-                        :r_prop => 0.88,
-                    ),
-                ),
-                DynamicsParameters(500_000, 10, 0.2),
-                time_params,
-                1_000,
-            ),
-            OutbreakSpecification(5, 30, 500),
-            create_static_NoiseSpecification(
-                [10.0],
-                time_params,
-                0.0,
-                0.1,
-                1_000
-            ),
-            OutbreakDetectionSpecification(100, 7, 0.3, 0.3, 3),
-            IndividualTestSpecification(0.8, 0.8),
-        )
-    end
-
-#%%
-ensemble_single_scenario_detection2 = get_scenario_file(
-    "scenario", ensemble_single_scenario_spec2
+ensemble_single_scenario_detection = get_ensemble_file(
+    ensemble_single_scenario_spec
 )
 
 #%%
-ensemble_single_scenario_detection["testarr"] == ensemble_single_scenario_detection2["testarr"]
+ensemble_single_scenario_spec2 = ScenarioSpecification(
+    ensemble_single_ensemble_spec,
+    ensemble_single_outbreak_spec,
+    ensemble_single_noise_spec,
+    OutbreakDetectionSpecification(100, 7, 0.3, 0.3, 3),
+    ensemble_single_individual_test_spec
+)
 
-ensemble_single_scenario_spec.dirpath
+#%%
+ensemble_single_scenario_detection2 = get_ensemble_file(
+    ensemble_single_scenario_spec2
+)
 
-ensemble_single_scenario_detection["OT_chars"].sensitivity == ensemble_single_scenario_detection2["OT_chars"].sensitivity
+#%%
+ensemble_single_scenario_detection["testarr"] ==
+ensemble_single_scenario_detection2["testarr"]
+
+ensemble_single_scenario_detection["OT_chars"].sensitivity ==
+ensemble_single_scenario_detection2["OT_chars"].sensitivity
 
 #%%
 ensemble_single_scenario_quantiles_plot = create_sir_quantiles_plot(
@@ -112,11 +91,16 @@ ensemble_single_scenario_quantiles_plot = create_sir_quantiles_plot(
     timeparams = ensemble_single_scenario_spec.ensemble_specification.time_parameters,
 )
 
-save(plotsdir("ensemble/single-scenario/ensemble-sim_single-scenario_quantiles.png"), ensemble_single_scenario_quantiles_plot)
+save(
+    plotsdir(
+        "ensemble/single-scenario/ensemble-sim_single-scenario_quantiles.png"
+    ),
+    ensemble_single_scenario_quantiles_plot,
+)
 
 #%%
 ensemble_single_scenario_detect_outbreak_plot = detect_outbreak_plot(
-    ensemble_single_scenario_detection["ensemble_inc_arr"],
+    ensemble_single_scenario_incarr["ensemble_inc_arr"],
     ensemble_single_scenario_sol["ensemble_seir_arr"],
     ensemble_single_scenario_spec.ensemble_specification.time_parameters;
     colormap = outbreakcols,
@@ -125,7 +109,12 @@ ensemble_single_scenario_detect_outbreak_plot = detect_outbreak_plot(
     # ylims_periodsum = (0, 1000),
 )
 
-save(plotsdir("ensemble/single-scenario/ensemble-sim_single-scenario_detect-outbreak.png"), ensemble_single_scenario_detect_outbreak_plot)
+save(
+    plotsdir(
+        "ensemble/single-scenario/ensemble-sim_single-scenario_detect-outbreak.png",
+    ),
+    ensemble_single_scenario_detect_outbreak_plot,
+)
 
 #%%
 ensemble_single_scenario_noise_plot = visualize_ensemble_noise(
@@ -133,18 +122,26 @@ ensemble_single_scenario_noise_plot = visualize_ensemble_noise(
     ensemble_single_scenario_spec.noise_specification.time_parameters,
 )
 
-save(plotsdir("ensemble/single-scenario/ensemble-sim_single-scenario_noise.png"), ensemble_single_scenario_noise_plot)
+save(
+    plotsdir("ensemble/single-scenario/ensemble-sim_single-scenario_noise.png"),
+    ensemble_single_scenario_noise_plot,
+)
 
 #%%
 ensemble_single_scenario_incidence_testing_plot = incidence_testing_plot(
-    ensemble_single_scenario_detection["ensemble_inc_arr"],
+    ensemble_single_scenario_incarr["ensemble_inc_arr"],
     ensemble_single_scenario_detection["testarr"],
     ensemble_single_scenario_spec.ensemble_specification.time_parameters,
     ensemble_single_scenario_spec.outbreak_detection_specification.detection_threshold;
     sim = 1,
 )
 
-save(plotsdir("ensemble/single-scenario/ensemble-sim_single-scenario_incidence-testing.png"), ensemble_single_scenario_incidence_testing_plot)
+save(
+    plotsdir(
+        "ensemble/single-scenario/ensemble-sim_single-scenario_incidence-testing.png",
+    ),
+    ensemble_single_scenario_incidence_testing_plot,
+)
 
 #%%
 ensemble_single_scenario_testing_timeseries_plot = testing_plot(
@@ -152,15 +149,25 @@ ensemble_single_scenario_testing_timeseries_plot = testing_plot(
     ensemble_single_scenario_spec.ensemble_specification.time_parameters,
 )
 
-save(plotsdir("ensemble/single-scenario/ensemble-sim_single-scenario_testing-timeseries.png"), ensemble_single_scenario_testing_timeseries_plot)
+save(
+    plotsdir(
+        "ensemble/single-scenario/ensemble-sim_single-scenario_testing-timeseries.png",
+    ),
+    ensemble_single_scenario_testing_timeseries_plot,
+)
 
 #%%
 ensemble_single_scenario_outbreak_dist_plot = ensemble_outbreak_distribution_plot(
     ensemble_single_scenario_detection["testarr"],
-    ensemble_single_scenario_detection["ensemble_inc_arr"],
+    ensemble_single_scenario_incarr["ensemble_inc_arr"],
 )
 
-save(plotsdir("ensemble/single-scenario/ensemble-sim_single-scenario_outbreak-distribution.png"), ensemble_single_scenario_outbreak_dist_plot)
+save(
+    plotsdir(
+        "ensemble/single-scenario/ensemble-sim_single-scenario_outbreak-distribution.png",
+    ),
+    ensemble_single_scenario_outbreak_dist_plot,
+)
 
 #%%
 ensemble_single_scenario_outbreak_detect_plot = ensemble_OTChars_plot(
@@ -169,7 +176,12 @@ ensemble_single_scenario_outbreak_detect_plot = ensemble_OTChars_plot(
     :ndetectoutbreaks,
 )
 
-save(plotsdir("ensemble/single-scenario/ensemble-sim_single-scenario_outbreak-detection.png"), ensemble_single_scenario_outbreak_detect_plot)
+save(
+    plotsdir(
+        "ensemble/single-scenario/ensemble-sim_single-scenario_outbreak-detection.png",
+    ),
+    ensemble_single_scenario_outbreak_detect_plot,
+)
 
 #%%
 ensemble_single_scenario_sens_spec_dist_plot = ensemble_OTChars_plot(
@@ -185,7 +197,12 @@ ensemble_single_scenario_sens_spec_dist_plot = ensemble_OTChars_plot(
     legendlabel = "Outbreak Characteristic",
 )
 
-save(plotsdir("ensemble/single-scenario/ensemble-sim_single-scenario_sens-spec-distribution.png"), ensemble_single_scenario_sens_spec_dist_plot)
+save(
+    plotsdir(
+        "ensemble/single-scenario/ensemble-sim_single-scenario_sens-spec-distribution.png",
+    ),
+    ensemble_single_scenario_sens_spec_dist_plot,
+)
 
 #%%
 ensemble_single_scenario_ppv_npv_dist_plot = ensemble_OTChars_plot(
@@ -201,4 +218,9 @@ ensemble_single_scenario_ppv_npv_dist_plot = ensemble_OTChars_plot(
     legendlabel = "Outbreak Characteristic",
 )
 
-save(plotsdir("ensemble/single-scenario/ensemble-sim_single-scenario_ppv-npv-distribution.png"), ensemble_single_scenario_ppv_npv_dist_plot)
+save(
+    plotsdir(
+        "ensemble/single-scenario/ensemble-sim_single-scenario_ppv-npv-distribution.png",
+    ),
+    ensemble_single_scenario_ppv_npv_dist_plot,
+)
