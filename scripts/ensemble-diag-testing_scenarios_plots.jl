@@ -5,6 +5,8 @@ using DrWatson
 using ProgressMeter
 using FLoops
 
+using OutbreakDetection
+
 include("../src/OutbreakDetection.jl")
 using .OutbreakDetection
 
@@ -83,7 +85,7 @@ prog = Progress(length(sensitivity_vec) * length(detectthreshold_vec))
 end
 
 #%%
-compare_sens_spec_plot = compare_ensemble_OTchars_plots(
+compare_outbreak_sens_spec_plot = compare_ensemble_OTchars_plots(
     ensemble_chars_vec,
     :sensitivity,
     :specificity,
@@ -93,10 +95,10 @@ compare_sens_spec_plot = compare_ensemble_OTchars_plots(
     char3_label = "Detection Threshold",
 )
 
-save(plotsdir("compare_sens_spec_plot.png"), compare_sens_spec_plot)
+save(plotsdir("ensemble/testing-comparison/compare_outbreak_sens_spec_plot.png"), compare_outbreak_sens_spec_plot)
 
 #%%
-compare_ppv_npv_plot = compare_ensemble_OTchars_plots(
+compare_outbreak_ppv_npv_plot = compare_ensemble_OTchars_plots(
     ensemble_chars_vec,
     :ppv,
     :npv,
@@ -108,4 +110,4 @@ compare_ppv_npv_plot = compare_ensemble_OTchars_plots(
     char2_color = :purple
 )
 
-save(plotsdir("compare_ppv_npv_plot.png"), compare_ppv_npv_plot)
+save(plotsdir("ensemble/testing-comparison/compare_outbreak_ppv_npv_plot.png"), compare_outbreak_ppv_npv_plot)
