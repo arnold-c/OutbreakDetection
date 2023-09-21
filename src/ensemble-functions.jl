@@ -167,7 +167,9 @@ function run_jump_prob(ensemble_param_dict)
     summarize_ensemble_jump_prob(quantile_param_dict)
 
     for dict in outbreak_spec_dict
-        dict[:dirpath] = joinpath(ensemble_spec.dirpath, dict[:outbreak_spec].dirpath)
+        dict[:dirpath] = joinpath(
+            ensemble_spec.dirpath, dict[:outbreak_spec].dirpath
+        )
         dict[:ensemble_spec] = ensemble_spec
         dict[:ensemble_jump_arr] = ensemble_jump_arr
         dict[:noise_spec_vec] = noise_spec_vec
@@ -228,7 +230,7 @@ function run_define_outbreaks(dict_of_outbreak_spec_params)
         @produce_or_load(
             define_outbreaks,
             outbreak_spec_params,
-            "$(outbreak_spec_params.dirpath)";
+            "$(outbreak_spec_params[:dirpath])";
             filename = "ensemble-incidence-array",
             loadfile = false
         )
