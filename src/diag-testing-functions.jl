@@ -209,7 +209,7 @@ function detectoutbreak!(outbreakvec, incvec, avgvec, threshold)
 end
 
 function calculate_ot_characterstics(testarr, infecarr, ind)
-    crosstab = freqtable(testarr[:, 5, ind], infecarr[:, 4, ind])
+    crosstab = freqtable(testarr[:, 7, ind], infecarr[:, 4, ind])
 
     tp = crosstab[2, 2]
     tn = crosstab[1, 1]
