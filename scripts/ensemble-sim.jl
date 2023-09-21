@@ -7,8 +7,8 @@ using Chain
 
 using OutbreakDetection
 
-include("../src/OutbreakDetection.jl")
-using .OutbreakDetection
+# include("../src/OutbreakDetection.jl")
+# using .OutbreakDetection
 
 #%%
 model_types_vec = [("seasonal-infectivity-import", "tau-leaping")]
@@ -84,7 +84,7 @@ noise_spec_vec = create_combinations_vec(
 )
 
 #%%
-detectthreshold_vec = collect(5:5:20)
+detectthreshold_vec = [collect(5:5:20)..., 35, 50]
 moveavglag_vec = [7]
 perc_clinic_vec = [0.3]
 perc_clinic_test_vec = [0.3]
