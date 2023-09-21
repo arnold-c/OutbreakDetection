@@ -40,21 +40,21 @@ tmp/ensemble-sim: scripts/ensemble-sim.jl
 	julia $^
 	@touch $@
 
-tmp/ensemble-sim_single-scenario: scripts/ensemble-sim_single-scenario.jl tmp/ensemble-sim
-	julia $<
-	@touch $@
-
 tmp/ensemble-diag-testing_scenarios_plots: scripts/ensemble-diag-testing_scenarios_plots.jl tmp/ensemble-sim
 	julia $<
 	@touch $@
 
+tmp/ensemble-sim_single-scenario: scripts/ensemble-sim_single-scenario.jl tmp/ensemble-sim
+	julia $<
+	@touch $@
 
 
-.PHONY: clean-all clean-tmp clean-ensemble-scenarios clean-plots clean-ensemble-sims clean-ensemble-quantiles clean-single-sim
+.PHONY: clean-all clean-tmp clean-all-ensemble clean-ensemble-scenarios clean-plots clean-ensemble-sims clean-ensemble-quantiles clean-single-sim
 clean-all:
 	clean-tmp
 	clean-single-sim
 	clean-plots
+	clean-all-ensemble
 	clean-ensemble-sims
 	clean-ensemble-quantiles
 
@@ -69,6 +69,10 @@ clean-single-sim:
 clean-plots:
 	@echo "cleaning plot output files"
 	$(shell fd -g 'plots/*.png' 'data/' -HI | xargs rm -r)
+
+clean-all-ensemble: clean-ensemble-sims clean-ensemble-quantiles clean-ensemble-scenarios
+	@echo "cleaning all ensemble files"
+	$(shell fd . 'data' -td --exclude 'singlesim' -HI | xargs rm -r)
 
 clean-ensemble-sims:
 	@echo "cleaning ensemble output files"
