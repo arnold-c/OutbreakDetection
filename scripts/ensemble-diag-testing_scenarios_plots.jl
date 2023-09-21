@@ -7,9 +7,6 @@ using FLoops
 
 using OutbreakDetection
 
-include("../src/OutbreakDetection.jl")
-using .OutbreakDetection
-
 include(srcdir("makie-plotting-setup.jl"))
 
 #%%
