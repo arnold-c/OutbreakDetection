@@ -166,6 +166,26 @@ function run_jump_prob(ensemble_param_dict)
 
     summarize_ensemble_jump_prob(quantile_param_dict)
 
+    # TODO: create for all combinations of ensemble and outbreak definition specs
+    # Might need to next scenarios within incarr so that the incidence array can
+    # be passed to it (issues with which one to use in memory otherwise)
+    incarr_outbreak_specs = Vector{NamedTuple}(undef, length(outbreak_spec_vec))
+    for (i, outbreak_spec) in pairs(outbreak_spec_vec)
+        incarr_outbreak_specs[i] = (
+            outbreak_specification = outbreak_spec,
+            dirpath = joinpath(ensemble_spec.dirpath, outbreak_spec.dirpath),
+        )
+    end
+
+    incidence_array_param_dict = dict_list(
+        @dict(
+            ensemble_jump_arr,
+            incidence_arr_outbreak_spec = incarr_outbreak_specs
+        )
+    )
+
+    run_incidence_array_creation(incidence_array_param_dict)
+
     ensemble_scenarios = create_combinations_vec(
         ScenarioSpecification,
         (
@@ -229,6 +249,29 @@ function jump_prob_summary(ensemble_param_dict)
     return @strdict ensemble_seir_summary caption quantiles
 end
 
+function run_incidence_array_creation(dict_of_incidence_params)
+    for incidence_params in dict_of_incidence_params
+        @produce_or_load(
+            incidence_array_creation,
+            incidence_params,
+            "$(incidence_params[:incidence_arr_outbreak_spec].dirpath)";
+            filename = "ensemble-incidence-array",
+            loadfile = false
+        )
+    end
+end
+
+function incidence_array_creation(incidence_param_dict)
+    @unpack ensemble_jump_arr, incidence_arr_outbreak_spec =
+        incidence_param_dict
+
+    ensemble_inc_arr = create_inc_infec_arr(
+        ensemble_jump_arr, incidence_arr_outbreak_spec.outbreak_specification
+    )
+
+    return @strdict ensemble_inc_arr
+end
+
 function run_OutbreakThresholdChars_creation(
     dict_of_OTchars_params
 )
@@ -244,23 +287,25 @@ function run_OutbreakThresholdChars_creation(
 end
 
 function OutbreakThresholdChars_creation(OT_chars_param_dict)
-    @unpack scenario_spec, ensemble_jump_arr = OT_chars_param_dict
+    @unpack scenario_spec, ensemble_inc_arr, ensemble_jump_arr =
+        OT_chars_param_dict
     @unpack noise_specification,
     outbreak_specification,
     outbreak_detection_specification,
     individual_test_specification = scenario_spec
 
-    incarr = create_inc_infec_arr(
-        ensemble_jump_arr, outbreak_specification
-    )
-
     @unpack noise_array = noise_specification
 
-    testarr, posoddsarr = create_testing_arrs(incarr, noise_array, outbreak_detection_specification, individual_test_specification)
+    testarr, posoddsarr = create_testing_arrs(
+        incarr,
+        noise_array,
+        outbreak_detection_specification,
+        individual_test_specification,
+    )
 
     OT_chars = calculate_OutbreakThresholdChars(testarr, incarr)
 
-    return @strdict OT_chars incarr testarr posoddsarr
+    return @strdict OT_chars testarr posoddsarr
 end
 
 function get_scenario_file(type, spec)

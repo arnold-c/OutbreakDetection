@@ -87,7 +87,7 @@ function DynamicsParameters(
     )
 end
 
-struct StateParameters{T1<:LArray{<:Integer}, T2<:LArray{<:AbstractFloat}}
+struct StateParameters{T1<:LArray{<:Integer},T2<:LArray{<:AbstractFloat}}
     init_states::T1
     init_state_props::T2
 end
@@ -179,10 +179,28 @@ struct OutbreakThresholdChars{
     detectoutbreakbounds::T4
 end
 
-struct OutbreakSpecification{T1<:Integer}
+struct OutbreakSpecification{T1<:Integer, T2<:AbstractString}
     outbreak_threshold::T1
     minimum_outbreak_duration::T1
     minimum_outbreak_size::T1
+    dirpath::T2
+end
+
+function OutbreakSpecification(
+    outbreak_threshold, minimum_outbreak_duration, minimum_outbreak_size
+)
+    dirpath = joinpath(
+        "min_outbreak_dur_$(minimum_outbreak_duration)",
+        "min_outbreak_size_$(minimum_outbreak_size)",
+        "outbreak_threshold_$(outbreak_threshold)",
+    )
+
+    return OutbreakSpecification(
+        outbreak_threshold,
+        minimum_outbreak_duration,
+        minimum_outbreak_size,
+        dirpath,
+    )
 end
 
 struct OutbreakDetectionSpecification{T1<:Integer,T2<:AbstractFloat}
@@ -272,10 +290,8 @@ function ScenarioSpecification(
 )
     dirpath = joinpath(
         ensemble_specification.dirpath,
+        outbreak_specification.dirpath,
         "noise_$(noise_specification.noise_type)",
-        "min_outbreak_dur_$(outbreak_specification.minimum_outbreak_duration)",
-        "min_outbreak_size_$(outbreak_specification.minimum_outbreak_size)",
-        "outbreak_threshold_$(outbreak_specification.outbreak_threshold)",
         "detectthreshold_$(outbreak_detection_specification.detection_threshold)",
         "testlag_$(outbreak_detection_specification.test_result_lag)",
         "moveavglag_$(outbreak_detection_specification.moving_average_lag)",
