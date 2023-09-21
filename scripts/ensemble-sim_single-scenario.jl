@@ -57,6 +57,52 @@ ensemble_single_scenario_detection = get_scenario_file(
 )
 
 #%%
+ensemble_single_scenario_spec2 =
+    let time_params = SimTimeParameters(;
+            tmin = 0.0, tmax = 365.0 * 100, tstep = 1.0
+        )
+        ScenarioSpecification(
+            EnsembleSpecification(
+                ("seasonal-infectivity-import", "tau-leaping"),
+                StateParameters(
+                    500_000,
+                    Dict(
+                        :s_prop => 0.1,
+                        :e_prop => 0.01,
+                        :i_prop => 0.01,
+                        :r_prop => 0.88,
+                    ),
+                ),
+                DynamicsParameters(500_000, 10, 0.2),
+                time_params,
+                1_000,
+            ),
+            OutbreakSpecification(5, 30, 500),
+            create_static_NoiseSpecification(
+                [10.0],
+                time_params,
+                0.0,
+                0.1,
+                1_000
+            ),
+            OutbreakDetectionSpecification(100, 7, 0.3, 0.3, 3),
+            IndividualTestSpecification(0.8, 0.8),
+        )
+    end
+
+#%%
+ensemble_single_scenario_detection2 = get_scenario_file(
+    "scenario", ensemble_single_scenario_spec2
+)
+
+#%%
+ensemble_single_scenario_detection["testarr"] == ensemble_single_scenario_detection2["testarr"]
+
+ensemble_single_scenario_spec.dirpath
+
+ensemble_single_scenario_detection["OT_chars"].sensitivity == ensemble_single_scenario_detection2["OT_chars"].sensitivity
+
+#%%
 ensemble_single_scenario_quantiles_plot = create_sir_quantiles_plot(
     ensemble_single_scenario_quantiles["ensemble_seir_summary"];
     labels = seir_state_labels,
