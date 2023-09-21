@@ -262,7 +262,11 @@ function define_outbreaks(incidence_param_dict)
     )
 
     scenario_param_dict = dict_list(
-        @dict(scenario_spec = ensemble_scenarios, ensemble_jump_arr)
+        @dict(
+            scenario_spec = ensemble_scenarios,
+            ensemble_jump_arr,
+            ensemble_inc_arr
+        )
     )
 
     run_OutbreakThresholdChars_creation(scenario_param_dict)
