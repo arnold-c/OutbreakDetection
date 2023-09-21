@@ -211,10 +211,10 @@ end
 function calculate_ot_characterstics(testarr, infecarr, ind)
     crosstab = freqtable(testarr[:, 7, ind], infecarr[:, 4, ind])
 
-    tp = crosstab[2, 2]
-    tn = crosstab[1, 1]
-    fp = crosstab[2, 1]
-    fn = crosstab[1, 2]
+    tp = freqtable_error_default_zero(crosstab, 1, 1)
+    fp = freqtable_error_default_zero(crosstab, 1, 0)
+    tn = freqtable_error_default_zero(crosstab, 0, 0)
+    fn = freqtable_error_default_zero(crosstab, 0, 1)
 
     sens = tp / (tp + fn)
     spec = tn / (tn + fp)
@@ -223,6 +223,20 @@ function calculate_ot_characterstics(testarr, infecarr, ind)
     npv = tn / (tn + fn)
 
     return crosstab, tp, tn, fp, fn, sens, spec, ppv, npv
+end
+
+# TODO: write tests that check the function works when crosstab produces a 2x2 table,
+# a 2x1, and a 1x1 table
+function freqtable_error_default_zero() end
+
+function freqtable_error_default_zero(
+    freqtable, testing_class::T, actual_class::T
+) where {T<:Integer}
+    return try
+        freqtable[Name(testing_class), Name(actual_class)]
+    catch
+        0
+    end
 end
 
 function calculate_noutbreaks(outbreakrle)
