@@ -19,7 +19,7 @@ using StructArrays
 # include("structs.jl")
 # using .ODStructs
 
-function create_testing_arr(
+function create_testing_arrs(
     incarr,
     noisearr,
     outbreak_detect_spec::OutbreakDetectionSpecification,
@@ -28,7 +28,7 @@ function create_testing_arr(
     testarr = zeros(Int64, size(incarr, 1), 8, size(incarr, 3))
     posoddsarr = zeros(Float64, size(incarr, 1), 2, size(incarr, 3))
 
-    create_testing_arr!(
+    create_testing_arrs!(
         testarr,
         incarr,
         noisearr,
@@ -41,10 +41,10 @@ function create_testing_arr(
         individual_test_spec.specificity,
     )
 
-    return testarr
+    return testarr, posoddsarr
 end
 
-function create_testing_arr!(
+function create_testing_arrs!(
     testarr,
     incarr,
     noisearr,

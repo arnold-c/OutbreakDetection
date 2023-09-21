@@ -256,11 +256,11 @@ function OutbreakThresholdChars_creation(OT_chars_param_dict)
 
     @unpack noise_array = noise_specification
 
-    testarr = create_testing_arr(incarr, noise_array, outbreak_detection_specification, individual_test_specification)
+    testarr, posoddsarr = create_testing_arrs(incarr, noise_array, outbreak_detection_specification, individual_test_specification)
 
     OT_chars = calculate_OutbreakThresholdChars(testarr, incarr)
 
-    return @strdict OT_chars incarr testarr
+    return @strdict OT_chars incarr testarr posoddsarr
 end
 
 function get_scenario_file(type, spec)

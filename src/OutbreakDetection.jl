@@ -41,7 +41,7 @@ export create_inc_infec_arr, create_inc_infec_arr!,
 # @reexport using .DetectionThresholds
 
 include("diag-testing-functions.jl")
-export create_testing_arr, create_testing_arr!, calculate_tested!,
+export create_testing_arrs, create_testing_arrs!, calculate_tested!,
     calculate_pos, calculate_pos!, calculate_movingavg, calculate_movingavg!,
     detectoutbreak, detectoutbreak!, calculate_ot_characterstics,
     calculate_noutbreaks, calculate_OutbreakThresholdChars
