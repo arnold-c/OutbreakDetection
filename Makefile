@@ -31,7 +31,7 @@ tmp/single-sim_bifurcation: scripts/single-sim_bifurcation.jl tmp/single-sim
 
 
 # Ensemble targets
-ENSEMBLE_TARGETS = ensemble-sim ensemble-sim_single_scenario ensemble-diag-testing_scenarios_plots
+ENSEMBLE_TARGETS = ensemble-sim ensemble-sim_single-scenario ensemble-diag-testing_scenarios_plots
 .PHONY: $(ENSEMBLE_TARGETS) ensemble-targets
 $(ENSEMBLE_TARGETS): %: tmp/%
 ensemble-targets: $(ENSEMBLE_TARGETS)
