@@ -73,6 +73,10 @@ outbreak_spec_vec = create_combinations_vec(
     (outbreak_threshold_vec, min_outbreak_dur_vec, min_outbreak_size_vec),
 )
 
+outbreak_spec_dict = dict_list(@dict(
+    outbreak_spec = outbreak_spec_vec,
+))
+
 #%%
 init_noise_vec = [[10.0]]
 noise_ode_vec = [0.0]
@@ -122,7 +126,7 @@ sol_param_dict = dict_list(
 
 for dict in sol_param_dict
     dict[:quantile_vec] = [95, 80]
-    dict[:outbreak_spec_vec] = outbreak_spec_vec
+    dict[:outbreak_spec_dict] = outbreak_spec_dict
     dict[:noise_spec_vec] = noise_spec_vec
     dict[:outbreak_detection_spec_vec] = outbreak_detection_spec_vec
     dict[:test_spec_vec] = test_spec_vec
