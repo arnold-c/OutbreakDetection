@@ -78,6 +78,9 @@ ensemble_single_scenario_detection2 = get_ensemble_file(
 ensemble_single_scenario_detection["testarr"] ==
 ensemble_single_scenario_detection2["testarr"]
 
+sum(ensemble_single_scenario_detection["testarr"][:, 7, 1])
+sum(ensemble_single_scenario_detection2["testarr"][:, 7, 1])
+
 ensemble_single_scenario_detection["OT_chars"].sensitivity ==
 ensemble_single_scenario_detection2["OT_chars"].sensitivity
 
