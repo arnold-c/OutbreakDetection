@@ -12,7 +12,7 @@ include(srcdir("makie-plotting-setup.jl"))
 #%%
 sensitivity_vec = collect(0.8:0.2:1.0)
 specificity_vec = collect(0.8:0.2:1.0)
-detectthreshold_vec = collect(5:15:20)
+detectthreshold_vec = [collect(5:15:20)..., 35, 50, 100]
 
 #%%
 ensemble_chars_vec = Vector(
