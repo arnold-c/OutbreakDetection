@@ -31,17 +31,13 @@ tmp/single-sim_bifurcation: scripts/single-sim_bifurcation.jl tmp/single-sim
 
 
 # Ensemble targets
-ENSEMBLE_TARGETS = ensemble-sim ensemble-diag-testing_scenarios ensemble-sim_single-scenario ensemble-sim_single_scenario_plots ensemble-diag-testing_scenarios_plots
+ENSEMBLE_TARGETS = ensemble-sim ensemble-sim_single_scenario_plots ensemble-diag-testing_scenarios_plots
 .PHONY: $(ENSEMBLE_TARGETS) ensemble-targets
 $(ENSEMBLE_TARGETS): %: tmp/%
 ensemble-targets: $(ENSEMBLE_TARGETS)
 
 tmp/ensemble-sim: scripts/ensemble-sim.jl
 	julia $^
-	@touch $@
-
-tmp/ensemble-diag-testing_scenarios: scripts/ensemble-diag-testing_scenarios.jl tmp/ensemble-sim
-	julia $<
 	@touch $@
 
 tmp/ensemble-sim_single-scenario: scripts/ensemble-sim_single_scenario.jl tmp/ensemble-sim tmp/ensemble-diag-testing_scenarios
@@ -52,7 +48,7 @@ tmp/ensemble-sim_single_scenario_plots: scripts/ensemble-sim_single_scenario_plo
 	julia $<
 	@touch $@
 
-tmp/ensemble-diag-testing_scenarios_plots: scripts/ensemble-diag-testing_scenarios_plots.jl tmp/ensemble-diag-testing_scenarios
+tmp/ensemble-diag-testing_scenarios_plots: scripts/ensemble-diag-testing_scenarios_plots.jl tmp/ensemble-sim
 	julia $<
 	@touch $@
 
