@@ -43,7 +43,7 @@ prog = Progress(length(sensitivity_vec) * length(detectthreshold_vec))
         detectthrehold, 7, 0.3, 0.3, 3
     )
 
-    ensemble_spec =
+    ensemble_scenario_spec =
         let time_params = SimTimeParameters(;
                 tmin = 0.0, tmax = 365.0 * 100, tstep = 1.0
             )
@@ -70,7 +70,7 @@ prog = Progress(length(sensitivity_vec) * length(detectthreshold_vec))
             )
         end
 
-    ensemble_chars_file = OutbreakDetection.get_scenario_file("scenario", ensemble_spec)
+    ensemble_chars_file = get_ensemble_file(ensemble_scenario_spec)
 
     ensemble_chars_vec[i] = (
         OT_chars = ensemble_chars_file["OT_chars"],
