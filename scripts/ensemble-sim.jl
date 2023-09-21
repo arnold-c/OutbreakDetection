@@ -73,9 +73,10 @@ outbreak_spec_vec = create_combinations_vec(
     (outbreak_threshold_vec, min_outbreak_dur_vec, min_outbreak_size_vec),
 )
 
-outbreak_spec_dict = dict_list(@dict(
-    outbreak_spec = outbreak_spec_vec,
-))
+outbreak_spec_dict = Vector{Dict}(undef, length(outbreak_spec_vec))
+for (i, spec) in pairs(outbreak_spec_vec)
+    outbreak_spec_dict[i] = Dict{Symbol, Any}(:outbreak_spec => spec)
+end
 
 #%%
 init_noise_vec = [[10.0]]
