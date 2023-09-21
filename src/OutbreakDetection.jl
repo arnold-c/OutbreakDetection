@@ -52,7 +52,7 @@ export create_combinations_vec, create_ensemble_spec_combinations,
     run_ensemble_jump_prob, run_jump_prob,
     summarize_ensemble_jump_prob, jump_prob_summary,
     run_OutbreakThresholdChars_creation, OutbreakThresholdChars_creation,
-    get_ensemble_file, get_scenario_file
+    get_ensemble_file
 
 # @reexport using .EnsembleFunctions
 

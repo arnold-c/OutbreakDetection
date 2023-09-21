@@ -310,30 +310,29 @@ function OutbreakThresholdChars_creation(OT_chars_param_dict)
     return @strdict OT_chars testarr posoddsarr
 end
 
-function get_scenario_file(type, spec)
-    filecontainer = collect_ensemble_file(type, spec)
-    return load(filecontainer...)
+function get_ensemble_file() end
+
+function get_ensemble_file(
+    ensemble_spec::EnsembleSpecification, outbreak_spec::OutbreakSpecification
+)
+    dirpath = joinpath(ensemble_spec.dirpath, outbreak_spec.dirpath)
+
+    return load(collect_ensemble_file("incidence-array", dirpath)...)
 end
 
-function get_ensemble_file(type, spec)
-    filecontainer = collect_ensemble_file(type, spec)
-    if type != "solution"
-        try
-            parse(Int, type)
-        catch
-            println("The quantile could not be parsed correctly")
-        end
-    end
-    if type != "solution" && length(filecontainer) == 0
-        println(
-            "It looks like are trying to return a quantile file. Check that the quantile simulation has been run",
-        )
-    end
-    return load(filecontainer...)
+function get_ensemble_file(spec::EnsembleSpecification)
+    return load(collect_ensemble_file("solution", spec.dirpath)...)
 end
 
-function collect_ensemble_file(type, spec)
-    dirpath = spec.dirpath
+function get_ensemble_file(spec::EnsembleSpecification, quantile::Int64)
+    return load(collect_ensemble_file("quantiles_$(quantile)", spec.dirpath)...)
+end
+
+function get_ensemble_file(spec::ScenarioSpecification)
+    return load(collect_ensemble_file("scenario", spec.dirpath)...)
+end
+
+function collect_ensemble_file(type, dirpath)
     filecontainer = []
     for f in readdir(dirpath)
         match_ensemble_file!(type, dirpath, filecontainer, f)
