@@ -11,6 +11,7 @@ using ColorSchemes
 using UnPack
 using DataFrames
 using FLoops
+using LaTeXStrings
 
 seircolors = ["dodgerblue4", "green", "firebrick3", "chocolate2", "purple"]
 seir_state_labels = ["S", "E", "I", "R", "N"]
@@ -559,7 +560,7 @@ function compare_ensemble_OTchars_plots(
 
         Label(
             gl[1, :],
-            "Sensitivity: $(OT_char_tuple.ind_test_spec.sensitivity), Specificity: $(OT_char_tuple.ind_test_spec.specificity), $(char3_label): $(getfield(OT_char_tuple.outbreak_detect_spec, char3))";
+            L"\text{\textbf{Individual Test} - Sensitivity: %$(OT_char_tuple.ind_test_spec.sensitivity), Specificity: %$(OT_char_tuple.ind_test_spec.specificity), %$(char3_label): %$(getfield(OT_char_tuple.outbreak_detect_spec, char3))}";
             word_wrap = true,
         )
         colsize!(gl, 1, Relative(1))
