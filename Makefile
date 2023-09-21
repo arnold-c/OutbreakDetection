@@ -50,10 +50,34 @@ tmp/ensemble-diag-testing_scenarios_plots: scripts/ensemble-diag-testing_scenari
 
 
 
-.PHONY: clean
-clean:
-	rm -rf data/singlesim/*
-	rm -rf tmp/*
+.PHONY: clean-all clean-tmp clean-ensemble-scenarios clean-plots clean-ensemble-sims clean-ensemble-quantiles clean-single-sim
+clean-all:
+	clean-tmp
+	clean-single-sim
+	clean-plots
+	clean-ensemble-sims
+	clean-ensemble-quantiles
+
+clean-tmp:
+	@echo "cleaning tmp files"
+	$(shell rm -rf tmp)
+
+clean-single-sim:
+	@echo "cleaning single-sim output files"
+	$(shell fd -g 'single-sim*.jld2' 'data/' -HI | xargs rm -r)
+
+clean-plots:
 	@echo "cleaning plot output files"
-	$(shell fd . 'plots/' -tf | xargs rm -r)
-	rm -rf data/*
+	$(shell fd -g 'plots/*.png' 'data/' -HI | xargs rm -r)
+
+clean-ensemble-sims:
+	@echo "cleaning ensemble output files"
+	$(shell fd -g 'ensemble-solution*.jld2' 'data/' -HI | xargs rm -r)
+
+clean-ensemble-quantiles:
+	@echo "cleaning ensemble quantiles"
+	$(shell fd -g 'ensemble-quantiles*.jld2' 'data/' -HI | xargs rm -r)
+
+clean-ensemble-scenarios:
+	@echo "cleaning ensemble scenario files"
+	$(shell fd -g 'ensemble-scenario*.jld2' 'data/' -HI | xargs rm -r)
