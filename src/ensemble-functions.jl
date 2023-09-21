@@ -247,7 +247,7 @@ function define_outbreaks(incidence_param_dict)
         incidence_param_dict
 
     ensemble_inc_arr = create_inc_infec_arr(
-        ensemble_jump_arr, outbreak_spec.outbreak_specification
+        ensemble_jump_arr, outbreak_spec
     )
 
     ensemble_scenarios = create_combinations_vec(
