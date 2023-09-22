@@ -93,8 +93,8 @@ function create_testing_arrs!(
 
         # Calculate moving average of TOTAL test positives
         calculate_movingavg!(
-            @view(testarr[:, 5, sim]),
             @view(testarr[:, 6, sim]),
+            @view(testarr[:, 5, sim]),
             testlag, moveavglag;
             Float = false,
         )
@@ -111,8 +111,8 @@ function create_testing_arrs!(
         @. @view(posoddsarr[:, 1, sim]) =
             @view(testarr[:, 3, sim]) / @view(testarr[:, 5, sim])
         calculate_movingavg!(
-            @view(posoddsarr[:, 1, sim]),
             @view(posoddsarr[:, 2, sim]),
+            @view(posoddsarr[:, 1, sim]),
             testlag, moveavglag,
         )
 
@@ -172,12 +172,12 @@ end
 function calculate_movingavg(invec, testlag, avglag)
     outvec = zeros(Float64, size(invec, 1), 1)
 
-    calculate_movingavg!(invec, outvec, testlag, avglag)
+    calculate_movingavg!(outvec, invec, testlag, avglag)
 
     return outvec
 end
 
-function calculate_movingavg!(invec, outvec, testlag, avglag; Float = true)
+function calculate_movingavg!(outvec, invec, testlag, avglag; Float = true)
     if Float
         avgfunc =
             (invec, day, avglag) -> mean(@view(invec[(day - avglag + 1):day]))
