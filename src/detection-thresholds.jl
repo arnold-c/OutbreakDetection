@@ -13,7 +13,7 @@ function create_inc_infec_arr(
 )
     ensemble_inc_arr = zeros(
         Int64, size(ensemble_jump_arr, 1), 4, size(ensemble_jump_arr, 3)
-    );
+    )
 
     create_inc_infec_arr!(
         ensemble_inc_arr,
@@ -34,11 +34,22 @@ function create_inc_infec_arr!(
         incarr[:, 2, sim] .= @view(incarr[:, 1, sim]) .>= outbreakthreshold
 
         abovethresholdrle = rle(@view(incarr[:, 2, sim]))
-        abovethresholdlowers, abovethresholduppers = calculate_outbreak_thresholds(abovethresholdrle)
+        abovethresholdlowers, abovethresholduppers = calculate_outbreak_thresholds(
+            abovethresholdrle
+        )
 
         for (lower, upper) in zip(abovethresholdlowers, abovethresholduppers)
-            calculate_period_sum!(incarr, lower, upper, sim)
-            classify_outbreak!(incarr, lower, upper, sim, minoutbreakdur, minoutbreaksize)
+            calculate_period_sum!(
+                incarr[lower:upper, 3, sim], @view(incarr[lower:upper, 1, sim])
+            )
+            classify_outbreak!(
+                incarr[lower:upper, 4, sim],
+                @view(incarr[lower:upper, 3, sim]),
+                upper,
+                lower,
+                minoutbreakdur,
+                minoutbreaksize,
+            )
         end
     end
     return nothing
@@ -56,19 +67,16 @@ function calculate_outbreak_thresholds(outbreakrle)
     return (outbreaklowers, outbreakuppers)
 end
 
-function calculate_period_sum!(incarr, lower, upper, sim)
-    incarr[lower:upper, 3, sim] .= sum(
-        view(incarr, lower:upper, 1, sim)
-    )
+function calculate_period_sum!(outvec, incvec)
+    outvec .= sum(incvec)
     return nothing
 end
 
 function classify_outbreak!(
-    incarr, lower, upper, sim, minoutbreakdur, minoutbreaksize
+    outvec, periodsumvec, upper_time, lower_time, minoutbreakdur, minoutbreaksize
 )
-    if upper - lower >= minoutbreakdur && incarr[lower, 3, sim] >= minoutbreaksize
-
-        incarr[lower:upper, 4, sim] .= 1
+    if upper_time - lower_time >= minoutbreakdur && periodsumvec >= minoutbreaksize
+        outvec .= 1
     end
     return nothing
 end
