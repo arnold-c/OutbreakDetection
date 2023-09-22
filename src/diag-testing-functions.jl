@@ -137,7 +137,7 @@ function calculate_positives(tested_vec, lag, tested_multiplier)
         tested_vec,
         ntested,
         lag,
-        tested_multiplier
+        tested_multiplier,
     )
 
     return npos
@@ -206,8 +206,8 @@ function detectoutbreak!(outbreakvec, incvec, avgvec, threshold)
     return nothing
 end
 
-function calculate_ot_characterstics(testarr, infecarr, ind)
-    crosstab = freqtable(testarr[:, 7, ind], infecarr[:, 4, ind])
+function calculate_ot_characterstics(testvec, infecvec)
+    crosstab = freqtable(testvec, infecvec)
 
     tp = freqtable_error_default_zero(crosstab, 1, 1)
     fp = freqtable_error_default_zero(crosstab, 1, 0)
@@ -247,7 +247,9 @@ function calculate_OutbreakThresholdChars(testarr, infecarr)
         detectrle = rle(@view(testarr[:, 7, sim]))
 
         OutbreakThresholdChars(
-            calculate_ot_characterstics(testarr, infecarr, sim)...,
+            calculate_ot_characterstics(
+                @view(testarr[:, 7, sim]), @view(infecarr[:, 4, sim])
+            )...,
             calculate_noutbreaks(outbreakrle),
             calculate_noutbreaks(detectrle),
             reduce(hcat, collect(calculate_outbreak_thresholds(outbreakrle))),
