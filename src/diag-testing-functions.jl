@@ -70,25 +70,21 @@ function create_testing_arrs!(
         )
 
         # Number of test positive INFECTED individuals
-        calculate_pos!(
+        calculate_true_positives!(
             @view(testarr[:, 3, sim]),
             @view(testarr[:, 1, sim]),
             ntested,
             testlag,
             testsens,
-            testspec;
-            noise = false,
         )
 
         # Number of test positive NOISE individuals
-        calculate_pos!(
+        calculate_noise_positives!(
             @view(testarr[:, 4, sim]),
             @view(testarr[:, 2, sim]),
             ntested,
             testlag,
-            testsens,
-            testspec;
-            noise = true,
+            testspec,
         )
 
         # Number of test positive TOTAL individuals
@@ -132,44 +128,42 @@ function calculate_tested!(outvec, invec, perc_tested)
     @. outvec = round(invec * perc_tested)
 end
 
-function calculate_pos(tested_vec, lag, sens, spec; noise = false)
+function calculate_positives(tested_vec, lag, tested_multiplier)
     ntested = length(tested_vec)
     npos = zeros(Int64, ntested)
 
-    calculate_pos!(
+    calculate_positives!(
         npos,
         tested_vec,
         ntested,
         lag,
-        sens,
-        spec;
-        noise = noise,
+        tested_multiplier
     )
 
     return npos
 end
 
-function calculate_pos!(
-    npos_vec, tested_vec, ntested, lag, sens, spec; noise = false
+function calculate_noise_positives!(outvec, tested_vec, tlength, lag, spec)
+    tested_multiplier = 1.0 - spec
+    calculate_positives!(outvec, tested_vec, tlength, lag, tested_multiplier)
+    return nothing
+end
+
+function calculate_true_positives!(outvec, tested_vec, tlength, lag, sens)
+    calculate_positives!(outvec, tested_vec, tlength, lag, sens)
+    return nothing
+end
+
+function calculate_positives!(
+    npos_vec, tested_vec, ntested, lag, tested_multiplier
 )
-    if noise
-        for day in eachindex(tested_vec)
-            if day + lag <= ntested
-                npos_vec[day + lag] = Int64(
-                    round(tested_vec[day] * (1.0 - spec))
-                )
-            end
-        end
-    else
-        for day in eachindex(tested_vec)
-            if day + lag <= ntested
-                npos_vec[day + lag] = Int64(
-                    round(tested_vec[day] * sens)
-                )
-            end
+    for day in eachindex(tested_vec)
+        if day + lag <= ntested
+            npos_vec[day + lag] = Int64(
+                round(tested_vec[day] * tested_multiplier)
+            )
         end
     end
-
     return nothing
 end
 
