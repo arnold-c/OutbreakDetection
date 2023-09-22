@@ -60,10 +60,14 @@ function create_testing_arrs!(
 
     for sim in axes(incarr, 3)
         # Number of infectious individuals tested
-        calculate_tested!(testarr, 1, incarr, perc_tested, sim)
+        calculate_tested!(
+            testarr[:, 1, sim], @view(incarr[:, 1, sim]), perc_tested
+        )
 
         # Number of noise individuals tested
-        calculate_tested!(testarr, 2, noisearr, perc_tested, sim)
+        calculate_tested!(
+            testarr[:, 2, sim], @view(noisearr[:, 1, sim]), perc_tested
+        )
 
         # Number of test positive INFECTED individuals
         calculate_pos!(
@@ -124,8 +128,8 @@ function create_testing_arrs!(
     return nothing
 end
 
-function calculate_tested!(outarr, outarr_ind, inarr, perc_tested, sim)
-    @. outarr[:, outarr_ind, sim] = round(@view(inarr[:, 1, sim]) * perc_tested)
+function calculate_tested!(outvec, invec, perc_tested)
+    @. outvec = round(invec * perc_tested)
 end
 
 function calculate_pos(tested_vec, lag, sens, spec; noise = false)
