@@ -3,52 +3,60 @@
 # export create_noise_arr, create_noise_arr!
 
 using DifferentialEquations
-using DataFrames
 using FLoops
 
 # include("ensemble-functions.jl")
 # using .EnsembleFunctions
 
-function create_noise_arr(
-    jump_arr,
+
+function create_static_noise_arr(
     init_noise,
-    timeparams,
-    dynamicsparams;
+    timeparams::SimTimeParameters,
+    # dynamicsparams,
+    nsims;
     callback = DiscreteCallback(
         sde_condition, sde_affect!; save_positions = (false, false)
     ),
+    ode_function = background_ode!,
+    noise_function = background_noise!,
 )
     # Set noise arr to 3D array (even though not necessary), so it has the same
     # dimensions as the other arrays
     noise_arr = zeros(
-        Float64, size(jump_arr, 2), 1, size(jump_arr, 3)
+        Float64, timeparams.tlength, 1, nsims
     )
 
-    create_noise_arr!(
-        noise_arr, jump_arr, init_noise, timeparams, dynamicsparams;
+    create_static_noise_arr!(
+        noise_arr,
+        init_noise,
+        timeparams;
+        # dynamicsparams;
         callback = callback,
+        ode_function = ode_function,
+        noise_function = noise_function,
     )
 
     return noise_arr
 end
 
-function create_noise_arr!(
+function create_static_noise_arr!(
     noise_arr,
-    jump_arr,
-    init_noise,
-    timeparams,
-    dynamicsparams;
+    init_noise::Vector{Float64},
+    timeparams::SimTimeParameters;
+    # dynamicsparams;
     callback = DiscreteCallback(
         sde_condition, sde_affect!; save_positions = (false, false)
     ),
+    ode_function = background_ode!,
+    noise_function = background_noise!,
 )
-    @floop for sim in axes(jump_arr, 3)
+    @floop for sim in axes(noise_arr, 3)
         noise_prob = SDEProblem(
-            background_ode!,
-            background_noise!,
+            ode_function,
+            noise_function,
             init_noise,
             timeparams.tspan,
-            dynamicsparams,
+            # dynamicsparams,
         )
 
         noise_sol = solve(

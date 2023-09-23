@@ -9,13 +9,18 @@ using LabelledArrays
 # include("transmission-functions.jl")
 # using .TransmissionFunctions
 
-struct SimTimeParameters
-    tmin
-    tmax
-    tstep
-    trange
-    tspan
-    tlength
+struct SimTimeParameters{
+    T1<:AbstractFloat,
+    T2<:StepRangeLen,
+    T3<:Tuple{T1,T1},
+    T4<:Int
+}
+    tmin::T1
+    tmax::T1
+    tstep::T1
+    trange::T2
+    tspan::T3
+    tlength::T4
 end
 
 function SimTimeParameters(; tmin = 0.0, tmax = 365.0 * 100.0, tstep = 1.0)
@@ -25,40 +30,75 @@ function SimTimeParameters(; tmin = 0.0, tmax = 365.0 * 100.0, tstep = 1.0)
     )
 end
 
-struct EnsembleSpecification
-    modeltypes::Tuple
-    N::Int64
-    Rinit_prop::Float64
-    nsims::Int64
-    births_per_k::Int64
-    beta_force::Float64
-    time_parameters::SimTimeParameters
-end
-
 const POPULATION_N = 500_000
 const LATENT_PER_DAYS = 8
 const DUR_INF_DAYS = 5
 const R0 = 10.0
 const SIGMA = 1 / LATENT_PER_DAYS
 const GAMMA = 1 / DUR_INF_DAYS
-const MU = 1 / (62.5 * 365)
+const LIFE_EXPECTANCY_YEARS = 62.5
+const MU = 1 / (LIFE_EXPECTANCY_YEARS * 365)
 const BETA_MEAN = calculate_beta(R0, GAMMA, MU, 1, POPULATION_N)
 const BETA_FORCE = 0.2
 const EPSILON = calculate_import_rate(MU, R0, POPULATION_N)
 
-@kwdef struct DynamicsParameters
-    beta_mean::Float64 = BETA_MEAN
-    beta_force::Float64 = BETA_FORCE
-    sigma::Float64 = SIGMA
-    gamma::Float64 = GAMMA
-    mu::Float64 = MU
-    epsilon::Float64 = EPSILON
-    R_0::Float64 = R0
+struct DynamicsParameters{T1<:AbstractFloat,T2<:Union{<:Integer,T1}}
+    beta_mean::T1
+    beta_force::T1
+    sigma::T1
+    gamma::T1
+    mu::T1
+    annual_births_per_k::T2
+    epsilon::T1
+    R_0::T1
 end
 
-struct StateParameters
-    init_states
-    init_state_props
+function DynamicsParameters(sigma::Float64, gamma::Float64, R_0::Float64)
+    annual_births_per_k = 1000 / LIFE_EXPECTANCY_YEARS
+
+    return DynamicsParameters(
+        BETA_MEAN,
+        BETA_FORCE,
+        sigma,
+        gamma,
+        MU,
+        annual_births_per_k,
+        EPSILON,
+        R_0,
+    )
+end
+
+function DynamicsParameters(
+    N::Int64, annual_births_per_k::Int64, beta_force::Float64
+)
+    mu = calculate_mu(annual_births_per_k)
+    beta_mean = calculate_beta(R0, GAMMA, mu, 1, N)
+    epsilon = calculate_import_rate(mu, R0, N)
+
+    return DynamicsParameters(
+        beta_mean,
+        beta_force,
+        SIGMA,
+        GAMMA,
+        mu,
+        annual_births_per_k,
+        epsilon,
+        R0,
+    )
+end
+
+struct StateParameters{T1<:LArray{<:Integer},T2<:LArray{<:AbstractFloat}}
+    init_states::T1
+    init_state_props::T2
+end
+
+function StateParameters(N::Int64, init_state_props::Dict)
+    return StateParameters(;
+        N = N,
+        s_prop = init_state_props[:s_prop],
+        e_prop = init_state_props[:e_prop],
+        i_prop = init_state_props[:i_prop],
+    )
 end
 
 function StateParameters(;
@@ -77,58 +117,197 @@ function StateParameters(;
     )
 end
 
-struct OutbreakThresholdChars{A,B,C,D}
-    crosstab::A
-    tp::B
-    tn::B
-    fp::B
-    fn::B
-    sensitivity::C
-    specificity::C
-    ppv::C
-    npv::C
-    noutbreaks::B
-    ndetectoutbreaks::B
-    outbreakbounds::D
-    detectoutbreakbounds::D
+struct EnsembleSpecification{
+    T1<:Tuple,
+    T2<:StateParameters,
+    T3<:DynamicsParameters,
+    T4<:SimTimeParameters,
+    T5<:Integer,
+    T6<:AbstractString,
+}
+    modeltypes::T1
+    state_parameters::T2
+    dynamics_parameters::T3
+    time_parameters::T4
+    nsims::T5
+    dirpath::T6
 end
 
-struct OutbreakSpecification
-    outbreak_threshold
-    minimum_outbreak_duration
-    minimum_outbreak_size
+function EnsembleSpecification(
+    modeltypes::Tuple,
+    state_parameters::StateParameters,
+    dynamics_parameters::DynamicsParameters,
+    time_parameters::SimTimeParameters,
+    nsims::Int64,
+)
+    dirpath = datadir(
+        modeltypes...,
+        "N_$(state_parameters.init_states.N)",
+        "r_$(state_parameters.init_state_props.r_prop)",
+        "nsims_$(nsims)",
+        "births_per_k_$(dynamics_parameters.annual_births_per_k)",
+        "beta_force_$(dynamics_parameters.beta_force)",
+        "tmax_$(time_parameters.tmax)",
+        "tstep_$(time_parameters.tstep)",
+    )
+
+    return EnsembleSpecification(
+        modeltypes,
+        state_parameters,
+        dynamics_parameters,
+        time_parameters,
+        nsims,
+        dirpath,
+    )
 end
 
-struct OutbreakDetectionSpecification
-    detection_threshold
-    moving_average_lag
-    percent_tested
-    test_result_lag
+struct OutbreakThresholdChars{
+    T1<:AbstractArray,T2<:Integer,T3<:AbstractFloat,T4<:AbstractMatrix{T2}
+}
+    crosstab::T1
+    tp::T2
+    tn::T2
+    fp::T2
+    fn::T2
+    sensitivity::T3
+    specificity::T3
+    ppv::T3
+    npv::T3
+    noutbreaks::T2
+    ndetectoutbreaks::T2
+    outbreakbounds::T4
+    detectoutbreakbounds::T4
+end
 
-    function OutbreakDetectionSpecification(
+struct OutbreakSpecification{T1<:Integer, T2<:AbstractString}
+    outbreak_threshold::T1
+    minimum_outbreak_duration::T1
+    minimum_outbreak_size::T1
+    dirpath::T2
+end
+
+function OutbreakSpecification(
+    outbreak_threshold, minimum_outbreak_duration, minimum_outbreak_size
+)
+    dirpath = joinpath(
+        "min_outbreak_dur_$(minimum_outbreak_duration)",
+        "min_outbreak_size_$(minimum_outbreak_size)",
+        "outbreak_threshold_$(outbreak_threshold)",
+    )
+
+    return OutbreakSpecification(
+        outbreak_threshold,
+        minimum_outbreak_duration,
+        minimum_outbreak_size,
+        dirpath,
+    )
+end
+
+struct OutbreakDetectionSpecification{T1<:Integer,T2<:AbstractFloat}
+    detection_threshold::T1
+    moving_average_lag::T1
+    percent_tested::T2
+    test_result_lag::T1
+end
+
+function OutbreakDetectionSpecification(
+    detection_threshold,
+    moving_average_lag,
+    percent_clinic,
+    percent_clinic_tested,
+    test_result_lag,
+)
+    return OutbreakDetectionSpecification(
         detection_threshold,
         moving_average_lag,
-        percent_clinic,
-        percent_clinic_tested,
+        percent_clinic * percent_clinic_tested,
         test_result_lag,
     )
-        return OutbreakDetectionSpecification(
-            detection_threshold,
-            moving_average_lag,
-            percent_clinic * percent_clinic_tested,
-            test_result_lag,
-        )
-    end
 end
 
-struct IndividualTestSpecification
-    sensitivity
-    specificity
+struct IndividualTestSpecification{T1<:AbstractFloat}
+    sensitivity::T1
+    specificity::T1
 end
 
-struct NoiseSpecification
-    noise_type
-    noise_array
+struct NoiseSpecification{
+    T1<:AbstractString,T2<:AbstractArray,T3<:SimTimeParameters
+}
+    noise_type::T1
+    noise_array::T2
+    time_parameters::T3
+end
+
+function create_static_NoiseSpecification(
+    init_noise::Vector{Float64},
+    time_parameters::SimTimeParameters,
+    ode_value::Float64,
+    noise_value::Float64,
+    nsims;
+    callback = DiscreteCallback(
+        sde_condition, sde_affect!; save_positions = (false, false)
+    ),
+)
+    ode_function!(du, u, p, t) = (du .= ode_value)
+    noise_function!(du, u, p, t) = (du .= noise_value)
+
+    return NoiseSpecification(
+        "static",
+        create_static_noise_arr(
+            init_noise,
+            time_parameters,
+            nsims;
+            callback = callback,
+            ode_function = ode_function!,
+            noise_function = noise_function!,
+        ),
+        time_parameters,
+    )
+end
+
+struct ScenarioSpecification{
+    T1<:EnsembleSpecification,
+    T2<:OutbreakSpecification,
+    T3<:NoiseSpecification,
+    T4<:OutbreakDetectionSpecification,
+    T5<:IndividualTestSpecification,
+    T6<:AbstractString,
+}
+    ensemble_specification::T1
+    outbreak_specification::T2
+    noise_specification::T3
+    outbreak_detection_specification::T4
+    individual_test_specification::T5
+    dirpath::T6
+end
+
+function ScenarioSpecification(
+    ensemble_specification::EnsembleSpecification,
+    outbreak_specification::OutbreakSpecification,
+    noise_specification::NoiseSpecification,
+    outbreak_detection_specification::OutbreakDetectionSpecification,
+    individual_test_specification::IndividualTestSpecification,
+)
+    dirpath = joinpath(
+        ensemble_specification.dirpath,
+        outbreak_specification.dirpath,
+        "noise_$(noise_specification.noise_type)",
+        "detectthreshold_$(outbreak_detection_specification.detection_threshold)",
+        "testlag_$(outbreak_detection_specification.test_result_lag)",
+        "moveavglag_$(outbreak_detection_specification.moving_average_lag)",
+        "perc_tested_$(outbreak_detection_specification.percent_tested)",
+        "testsens_$(individual_test_specification.sensitivity)",
+        "testspec_$(individual_test_specification.specificity)",
+    )
+
+    return ScenarioSpecification(
+        ensemble_specification,
+        outbreak_specification,
+        noise_specification,
+        outbreak_detection_specification,
+        individual_test_specification,
+        dirpath,
+    )
 end
 
 # end

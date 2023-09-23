@@ -2,31 +2,42 @@
 using DrWatson
 @quickactivate "OutbreakDetection"
 
+using JLD2
 using DataFrames
 using DataFramesMeta
 
-include("../src/OutbreakDetection.jl")
-using .OutbreakDetection
+using OutbreakDetection
 
 include(srcdir("makie-plotting-setup.jl"))
 
-include("single-sim.jl")
+@unpack singlesim_time_p = load("data/singlesim/single-sim_setup.jld2")
 @unpack trange = singlesim_time_p;
 
+@unpack seir_array, change_array, jump_array, beta_arr, seir_df = load("data/singlesim/single-sim_arrays.jld2")
+
 #%%
-draw_sir_plot(
+singlesim_timeseries_plot = draw_sir_plot(
     seir_df;
     annual = true,
     colors = seircolors,
     labels = seir_state_labels
 )
 
+save(plotsdir("singlesim/single-sim_timeseries.png"), singlesim_timeseries_plot)
+
 #%%
-@chain DataFrame(Tables.table(jump_array')) begin
+singlesim_jump_plot = @chain DataFrame(Tables.table(jump_array)) begin
     hcat(trange, _)
     rename!([
-        "time", "Infect", "Latent", "Recov", "Birth", "S_death", "E_death",
-        "I_death", "R_death",
+        "time",
+        "Infect",
+        "Latent",
+        "Recov",
+        "Birth",
+        "S_death",
+        "E_death",
+        "I_death",
+        "R_death",
         "Import",
     ])
     stack(_, Not("time"); variable_name = :Jump, value_name = :Number)
@@ -43,9 +54,11 @@ draw_sir_plot(
     )
 end
 
+save(plotsdir("singlesim/single-sim_jumps.png"), singlesim_jump_plot)
+
 #%%
 change_labels = ["dS", "dE", "dI", "dR", "dN"]
-@chain DataFrame(Tables.table(change_array')) begin
+singlesim_change_plot = @chain DataFrame(Tables.table(change_array)) begin
     hcat(trange, _)
     rename!([
         "time", change_labels...
@@ -64,8 +77,10 @@ change_labels = ["dS", "dE", "dI", "dR", "dN"]
     )
 end
 
+save(plotsdir("singlesim/single-sim_changes.png"), singlesim_change_plot)
+
 #%%
-@chain DataFrame(Tables.table(seir_array')) begin
+singlesim_si_state_space_plot = @chain DataFrame(Tables.table(seir_array)) begin
     hcat(trange, _)
     rename!(["time", seir_state_labels...])
     data(_) *
@@ -74,8 +89,10 @@ end
     draw
 end
 
+save(plotsdir("singlesim/single-sim_SI-state-space.png"), singlesim_si_state_space_plot)
+
 #%%
-@chain DataFrame(Tables.table(beta_arr)) begin
+singlesim_beta_plot = @chain DataFrame(Tables.table(beta_arr)) begin
     hcat(trange, _)
     rename!([:time, :beta_t])
     stack(_, Not("time"); variable_name = :beta, value_name = :Number)
@@ -86,3 +103,5 @@ end
     visual(Lines; linewidth = 1)
     draw(; facet = (; linkyaxes = :none), axis = (; limits = ((0, 3), nothing)))
 end
+
+save(plotsdir("singlesim/single-sim_beta.png"), singlesim_beta_plot)

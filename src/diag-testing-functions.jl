@@ -6,11 +6,12 @@
 #     calculate_noutbreaks, calculate_OutbreakThresholdChars,
 #     run_OutbreakThresholdChars_creation, OutbreakThresholdChars_creation
 
+using DrWatson
 using StatsBase
 using FreqTables
 using ThreadsX
 using FLoops
-using DrWatson
+using StructArrays
 
 # include("detection-thresholds.jl")
 # # using .DetectionThresholds
@@ -18,70 +19,72 @@ using DrWatson
 # include("structs.jl")
 # using .ODStructs
 
-function create_testing_arr(
+function create_testing_arrs(
     incarr,
     noisearr,
-    perc_tested,
-    testlag,
-    testsens,
-    testspec,
-    detectthreshold,
-    moveavglag,
+    outbreak_detect_spec::OutbreakDetectionSpecification,
+    individual_test_spec::IndividualTestSpecification,
 )
-    testarr = zeros(Int64, size(incarr, 1), 6, size(incarr, 3))
+    testarr = zeros(Int64, size(incarr, 1), 8, size(incarr, 3))
     posoddsarr = zeros(Float64, size(incarr, 1), 2, size(incarr, 3))
 
-    create_testing_arr!(
-        testarr, incarr, noisearr, posoddsarr, perc_tested, testlag, testsens,
-        testspec,
-        detectthreshold, moveavglag,
+    create_testing_arrs!(
+        testarr,
+        incarr,
+        noisearr,
+        posoddsarr,
+        outbreak_detect_spec.detection_threshold,
+        outbreak_detect_spec.moving_average_lag,
+        outbreak_detect_spec.percent_tested,
+        outbreak_detect_spec.test_result_lag,
+        individual_test_spec.sensitivity,
+        individual_test_spec.specificity,
     )
 
-    return testarr
+    return testarr, posoddsarr
 end
 
-function create_testing_arr!(
+function create_testing_arrs!(
     testarr,
     incarr,
     noisearr,
     posoddsarr,
+    detectthreshold,
+    moveavglag,
     perc_tested,
     testlag,
     testsens,
     testspec,
-    detectthreshold,
-    moveavglag,
 )
     ntested = size(testarr, 1)
 
-    # prog = Progress(size(incarr, 3))
-    @floop for sim in axes(incarr, 3)
+    for sim in axes(incarr, 3)
         # Number of infectious individuals tested
-        calculate_tested!(testarr, 1, incarr, perc_tested, sim)
+        calculate_tested!(
+            testarr[:, 1, sim], @view(incarr[:, 1, sim]), perc_tested
+        )
 
         # Number of noise individuals tested
-        calculate_tested!(testarr, 2, noisearr, perc_tested, sim)
+        calculate_tested!(
+            testarr[:, 2, sim], @view(noisearr[:, 1, sim]), perc_tested
+        )
 
         # Number of test positive INFECTED individuals
-        calculate_pos!(
+        calculate_true_positives!(
             @view(testarr[:, 3, sim]),
             @view(testarr[:, 1, sim]),
             ntested,
             testlag,
             testsens,
-            testspec;
-            noise = false,
         )
 
         # Number of test positive NOISE individuals
-        calculate_pos!(
+        calculate_noise_positives!(
             @view(testarr[:, 4, sim]),
             @view(testarr[:, 2, sim]),
             ntested,
             testlag,
-            testsens,
-            testspec;
-            noise = true,
+            testspec,
         )
 
         # Number of test positive TOTAL individuals
@@ -90,8 +93,8 @@ function create_testing_arr!(
 
         # Calculate moving average of TOTAL test positives
         calculate_movingavg!(
-            @view(testarr[:, 5, sim]),
             @view(testarr[:, 6, sim]),
+            @view(testarr[:, 5, sim]),
             testlag, moveavglag;
             Float = false,
         )
@@ -108,75 +111,71 @@ function create_testing_arr!(
         @. @view(posoddsarr[:, 1, sim]) =
             @view(testarr[:, 3, sim]) / @view(testarr[:, 5, sim])
         calculate_movingavg!(
-            @view(posoddsarr[:, 1, sim]),
             @view(posoddsarr[:, 2, sim]),
+            @view(posoddsarr[:, 1, sim]),
             testlag, moveavglag,
         )
 
         # Triggered outbreak equal to actual outbreak status
         @. testarr[:, 8, sim] =
             @view(testarr[:, 7, sim]) == @view(incarr[:, 4, sim])
-
-        # next!(prog)
     end
 
     return nothing
 end
 
-function calculate_tested!(outarr, outarr_ind, inarr, perc_tested, sim)
-    @. outarr[:, outarr_ind, sim] = round(@view(inarr[:, 1, sim]) * perc_tested)
+function calculate_tested!(outvec, invec, perc_tested)
+    @. outvec = round(invec * perc_tested)
 end
 
-function calculate_pos(tested_vec, lag, sens, spec; noise = false)
+function calculate_positives(tested_vec, lag, tested_multiplier)
     ntested = length(tested_vec)
     npos = zeros(Int64, ntested)
 
-    calculate_pos!(
+    calculate_positives!(
         npos,
         tested_vec,
         ntested,
         lag,
-        sens,
-        spec;
-        noise = noise,
+        tested_multiplier,
     )
 
     return npos
 end
 
-function calculate_pos!(
-    npos_vec, tested_vec, ntested, lag, sens, spec; noise = false
+function calculate_noise_positives!(outvec, tested_vec, tlength, lag, spec)
+    tested_multiplier = 1.0 - spec
+    calculate_positives!(outvec, tested_vec, tlength, lag, tested_multiplier)
+    return nothing
+end
+
+function calculate_true_positives!(outvec, tested_vec, tlength, lag, sens)
+    calculate_positives!(outvec, tested_vec, tlength, lag, sens)
+    return nothing
+end
+
+function calculate_positives!(
+    npos_vec, tested_vec, ntested, lag, tested_multiplier
 )
-    if noise
-        for day in eachindex(tested_vec)
-            if day + lag <= ntested
-                npos_vec[day + lag] = Int64(
-                    round(tested_vec[day] * (1.0 - spec))
-                )
-            end
-        end
-    else
-        for day in eachindex(tested_vec)
-            if day + lag <= ntested
-                npos_vec[day + lag] = Int64(
-                    round(tested_vec[day] * sens)
-                )
-            end
+    for day in eachindex(tested_vec)
+        if day + lag <= ntested
+            npos_vec[day + lag] = Int64(
+                round(tested_vec[day] * tested_multiplier)
+            )
         end
     end
-
     return nothing
 end
 
 function calculate_movingavg(invec, testlag, avglag)
     outvec = zeros(Float64, size(invec, 1), 1)
 
-    calculate_movingavg!(invec, outvec, testlag, avglag)
+    calculate_movingavg!(outvec, invec, testlag, avglag)
 
     return outvec
 end
 
-function calculate_movingavg!(invec, outvec, testlag, avglag; Float = true)
+function calculate_movingavg!(outvec, invec, testlag, avglag; Float = true)
     if Float
         avgfunc =
             (invec, day, avglag) -> mean(@view(invec[(day - avglag + 1):day]))
@@ -193,10 +192,10 @@ function calculate_movingavg!(invec, outvec, testlag, avglag; Float = true)
     end
 end
 
-function detectoutbreak(incvec, avgvec, threshold, avglag)
+function detectoutbreak(incvec, avgvec, threshold)
     outbreak = zeros(Int64, length(incvec))
 
-    detectoutbreak!(outbreak, incvec, avgvec, threshold, avglag)
+    detectoutbreak!(outbreak, incvec, avgvec, threshold)
 
     return outbreak
 end
@@ -207,13 +206,13 @@ function detectoutbreak!(outbreakvec, incvec, avgvec, threshold)
     return nothing
 end
 
-function calculate_ot_characterstics(testarr, infecarr, ind)
-    crosstab = freqtable(testarr[:, 5, ind], infecarr[:, 4, ind])
+function calculate_ot_characterstics(testvec, infecvec)
+    crosstab = freqtable(testvec, infecvec)
 
-    tp = crosstab[2, 2]
-    tn = crosstab[1, 1]
-    fp = crosstab[2, 1]
-    fn = crosstab[1, 2]
+    tp = freqtable_error_default_zero(crosstab, 1, 1)
+    fp = freqtable_error_default_zero(crosstab, 1, 0)
+    tn = freqtable_error_default_zero(crosstab, 0, 0)
+    fn = freqtable_error_default_zero(crosstab, 0, 1)
 
     sens = tp / (tp + fn)
     spec = tn / (tn + fp)
@@ -222,6 +221,20 @@ function calculate_ot_characterstics(testarr, infecarr, ind)
     npv = tn / (tn + fn)
 
     return crosstab, tp, tn, fp, fn, sens, spec, ppv, npv
+end
+
+# TODO: write tests that check the function works when crosstab produces a 2x2 table,
+# a 2x1, and a 1x1 table
+function freqtable_error_default_zero() end
+
+function freqtable_error_default_zero(
+    freqtable, testing_class::T, actual_class::T
+) where {T<:Integer}
+    return try
+        freqtable[Name(testing_class), Name(actual_class)]
+    catch
+        0
+    end
 end
 
 function calculate_noutbreaks(outbreakrle)
@@ -234,7 +247,9 @@ function calculate_OutbreakThresholdChars(testarr, infecarr)
         detectrle = rle(@view(testarr[:, 7, sim]))
 
         OutbreakThresholdChars(
-            calculate_ot_characterstics(testarr, infecarr, sim)...,
+            calculate_ot_characterstics(
+                @view(testarr[:, 7, sim]), @view(infecarr[:, 4, sim])
+            )...,
             calculate_noutbreaks(outbreakrle),
             calculate_noutbreaks(detectrle),
             reduce(hcat, collect(calculate_outbreak_thresholds(outbreakrle))),
@@ -242,114 +257,7 @@ function calculate_OutbreakThresholdChars(testarr, infecarr)
         )
     end
 
-    return OT_chars
-end
-
-function run_OutbreakThresholdChars_creation(
-    dict_of_OTchars_params; progress = true
-)
-    if progress
-        prog = Progress(length(dict_of_OTchars_params))
-    end
-
-    for OTChars_params in dict_of_OTchars_params
-        @produce_or_load(
-            OutbreakThresholdChars_creation,
-            OTChars_params,
-            datadir(
-                "seasonal-infectivity-import",
-                "tau-leaping",
-                "N_$(OTChars_params[:N])",
-                "r_$(OTChars_params[:init_states_prop][:r_prop])",
-                "nsims_$(OTChars_params[:nsims])",
-                "births_per_k_$(OTChars_params[:births_per_k])",
-                "beta_force_$(OTChars_params[:beta_force])",
-                "tmax_$(OTChars_params[:time_p].tmax)",
-                "tstep_$(OTChars_params[:time_p].tstep)",
-                "noise_$(OTChars_params[:noise_spec].noise_type)",
-                "min_outbreak_dur_$(OTChars_params[:outbreak_spec].min_outbreak_dur)",
-                "min_outbreak_size_$(OTChars_params[:outbreak_spec].min_outbreak_size)",
-                "min_outbreak_size_$(OTChars_params[:outbreak_spec].outbreak_threshold)",
-                "detectthreshold_$(OTChars_params[:outbreak_detect_spec].detection_threshold)",
-                "testlag_$(OTChars_params[:outbreak_detect_spec].test_result_lag)",
-                "moveavglag_$(OTChars_params[:outbreak_detect_spec].moving_average_lag)",
-                "perc_tested$(OTChars_params[:outbreak_detect_spec].percent_tested)",
-                "testsens_$(OTChars_params[:test_spec].sensitivity)",
-                "testsens_$(OTChars_params[:test_spec].specificity)",
-            );
-            prefix = "SEIR_tau_sol",
-            filename = savename(
-                OTChars_params;
-                allowedtypes = (Symbol, Dict, String, Real),
-                accesses = [
-                    :N,
-                    :init_states_prop,
-                    :nsims,
-                    :time_p,
-                    :births_per_k,
-                    :beta_force,
-                    :noise_spec,
-                    :outbreak_spec,
-                    :outbreak_detect_spec,
-                    :ind_test_spec,
-                ],
-                expand = ["init_states_prop"],
-                sort = false,
-            ),
-            loadfile = false
-        )
-        if progress
-            next!(prog)
-        end
-    end
-end
-
-function OutbreakThresholdChars_creation(OT_chars_param_dict)
-    @unpack ensemble_jump_arr,
-    outbreakthreshold,
-    minoutbreakdur,
-    minoutbreaksize,
-    noisearr,
-    perc_tested,
-    testlag,
-    testsens,
-    testspec,
-    detectthreshold,
-    moveavglag = OT_chars_param_dict
-
-    @info "Creating Incidence Array"
-    incarr = create_inc_infec_arr(
-        ensemble_jump_arr,
-        outbreakthreshold,
-        minoutbreakdur,
-        minoutbreaksize
-    )
-
-    @info "Creating Testing Array"
-    testarr = zeros(
-        Int64, size(incarr, 1), 6, size(incarr, 3)
-    )
-
-    @info "Creating Positive Odds Array"
-    posoddsarr = zeros(Float64, size(incarr, 1), 2, size(incarr, 3))
-
-    create_testing_arr!(
-        testarr,
-        incarr,
-        noisearr,
-        posoddsarr,
-        perc_tested,
-        testlag,
-        testsens,
-        testspec,
-        detectthreshold,
-        moveavglag,
-    )
-
-    @info "Calculating OT characteristics"
-    OT_chars = create_OTchars_struct(incarr, testarr)
-
-    return OT_chars
+    return StructArray(OT_chars)
 end
 
 # end

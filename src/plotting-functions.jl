@@ -11,6 +11,7 @@ using ColorSchemes
 using UnPack
 using DataFrames
 using FLoops
+using LaTeXStrings
 
 seircolors = ["dodgerblue4", "green", "firebrick3", "chocolate2", "purple"]
 seir_state_labels = ["S", "E", "I", "R", "N"]
@@ -56,6 +57,52 @@ function draw_sir_plot(
         xlims = xlims,
         ylims = ylims,
     )
+end
+
+function bifurcation_plot(
+    x_vector,
+    annual_summary;
+    years,
+    xlabel = "Birth rate (per 1_000, per annum)",
+    ylabel = "Max. I",
+)
+    fig = Figure()
+    ax = Axis(fig[1, 1]; xlabel = xlabel, ylabel = ylabel)
+
+    for year in eachindex(years)
+        scatter!(
+            ax,
+            x_vector,
+            annual_summary[year, 2, :];
+            markersize = 4,
+            color = :black,
+        )
+    end
+
+    return fig
+end
+
+function bifurcation_heatmap(
+    birth_rate_vec,
+    beta_force_vec,
+    cycle_summary,
+)
+    fig, ax, hm = heatmap(
+        birth_rate_vec,
+        beta_force_vec,
+        cycle_summary,
+    )
+
+    Colorbar(
+        fig[:, end + 1],
+        hm;
+        label = "Periodicity",
+    )
+
+    ax.xlabel = "Birth rate (per 1_000, per annum)"
+    ax.ylabel = "beta_force (seasonality)"
+
+    return fig
 end
 
 function sir_quantiles_array_base_plot(
@@ -158,7 +205,7 @@ function detect_outbreak_plot(
 
     linkxaxes!(ax_prev, ax_inc, ax_periodsum)
 
-    lines!(ax_prev, times, ensemblearr[2, :, 1])
+    lines!(ax_prev, times, ensemblearr[:, 2, 1])
     lines!(ax_inc, times, incidencearr[:, 1, 1])
     barplot!(
         ax_periodsum,
@@ -458,6 +505,77 @@ function ensemble_OTChars_plot(
 
     Legend(fig[1, 2], ax, legendlabel)
 
+    return fig
+end
+
+function compare_ensemble_OTchars_plots(
+    char_struct_vec,
+    char1::Symbol,
+    char2::Symbol,
+    char3::Symbol;
+    char1_label = "Sensitivity",
+    char2_label = "Specificity",
+    char3_label = "Outbreak Detection",
+    bins = 0.0:0.01:1.01,
+    char1_color = :blue,
+    char2_color = :red,
+    xlabel = "Characteristic Value",
+    ylabel = "Density",
+    legendlabel = "Outbreak Chacteristic",
+)
+    xlength = length(
+        Set(getfield.(getfield.(char_struct_vec, :ind_test_spec), :sensitivity))
+    )
+    ylength = length(
+        Set(getfield.(getfield.(char_struct_vec, :outbreak_detect_spec), char3))
+    )
+
+    xs = repeat(1:xlength, ylength)
+    ys = repeat(1:ylength; inner = xlength)
+
+    fig = Figure()
+    for (OT_char_tuple, x, y) in zip(char_struct_vec, xs, ys)
+        gl = fig[x, y] = GridLayout()
+        ax = Axis(
+            gl[2, 1];
+            xlabel = xlabel,
+            ylabel = ylabel,
+        )
+
+        hist!(
+            ax,
+            getproperty(OT_char_tuple.OT_chars, char1);
+            bins = bins,
+            color = (char1_color, 0.5),
+            normalization = :pdf,
+        )
+
+        hist!(
+            ax,
+            getproperty(OT_char_tuple.OT_chars, char2);
+            bins = bins,
+            color = (char2_color, 0.5),
+            normalization = :pdf,
+        )
+
+        Label(
+            gl[1, :],
+            L"\text{\textbf{Individual Test} - Sensitivity: %$(OT_char_tuple.ind_test_spec.sensitivity), Specificity: %$(OT_char_tuple.ind_test_spec.specificity), %$(char3_label): %$(getfield(OT_char_tuple.outbreak_detect_spec, char3))}";
+            word_wrap = true,
+        )
+        colsize!(gl, 1, Relative(1))
+    end
+
+    Legend(
+        fig[:, end + 1],
+        [
+            PolyElement(; color = col) for
+            col in [(char1_color, 0.5), (char2_color, 0.5)]
+        ],
+        [char1_label, char2_label],
+        ;
+        label = legendlabel,
+    )
     return fig
 end
 
