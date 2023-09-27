@@ -148,6 +148,7 @@ function EnsembleSpecification(
         "N_$(state_parameters.init_states.N)",
         "r_$(state_parameters.init_state_props.r_prop)",
         "nsims_$(nsims)",
+        "vaccination_coverage_$(dynamics_parameters.vaccination_coverage)",
         "births_per_k_$(dynamics_parameters.annual_births_per_k)",
         "beta_force_$(dynamics_parameters.beta_force)",
         "tmax_$(time_parameters.tmax)",
