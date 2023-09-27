@@ -51,9 +51,10 @@ struct DynamicsParameters{T1<:AbstractFloat,T2<:Union{<:Integer,T1}}
     annual_births_per_k::T2
     epsilon::T1
     R_0::T1
+    vaccination_coverage::T1
 end
 
-function DynamicsParameters(sigma::Float64, gamma::Float64, R_0::Float64)
+function DynamicsParameters(sigma::Float64, gamma::Float64, R_0::Float64; vaccination_coverage::Float64 = 0.8)
     annual_births_per_k = 1000 / LIFE_EXPECTANCY_YEARS
 
     return DynamicsParameters(
@@ -65,11 +66,12 @@ function DynamicsParameters(sigma::Float64, gamma::Float64, R_0::Float64)
         annual_births_per_k,
         EPSILON,
         R_0,
+        vaccination_coverage
     )
 end
 
 function DynamicsParameters(
-    N::Int64, annual_births_per_k::Int64, beta_force::Float64
+    N::Int64, annual_births_per_k::Int64, beta_force::Float64; vaccination_coverage::Float64 = 0.8
 )
     mu = calculate_mu(annual_births_per_k)
     beta_mean = calculate_beta(R0, GAMMA, mu, 1, N)
@@ -84,6 +86,7 @@ function DynamicsParameters(
         annual_births_per_k,
         epsilon,
         R0,
+        vaccination_coverage
     )
 end
 

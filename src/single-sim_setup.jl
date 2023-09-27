@@ -19,6 +19,7 @@ const LATENT_PER_DAYS = 8
 const DUR_INF_DAYS = 5
 const R_0 = 10.0
 const LIFE_EXPECTANCY_YEARS = 62.5
+const VACCINATION_COVERAGE = 0.8
 
 const SIGMA = 1 / LATENT_PER_DAYS
 const GAMMA = 1 / DUR_INF_DAYS
@@ -40,7 +41,8 @@ singlesim_dynamics_p = DynamicsParameters(
     MU,
     ANNUAL_BIRTHS_PER_K,
     EPSILON,
-    R_0
+    R_0,
+    VACCINATION_COVERAGE
 )
 
 jldsave("data/singlesim/single-sim_setup.jld2"; singlesim_states_p, singlesim_time_p, singlesim_dynamics_p)
