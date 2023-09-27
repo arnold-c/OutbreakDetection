@@ -13,9 +13,117 @@ using Distributions
 using Random
 using UnPack
 using LoopVectorization
+using StaticArrays
+
+function seir_static_mod(
+    states,
+    dynamics_params,
+    time_params;
+    type = "stoch",
+    seed = 1234
+)
+    Random.seed!(seed)
+
+    state_vec = Vector{typeof(states)}(undef, time_params.tlength)
+    change_vec = similar(state_vec)
+    jump_vec = Vector{SVector{10,Float64}}(undef, time_params.tlength)
+
+    beta_vec = map(
+        t -> calculate_beta_amp(
+            dynamics_params.beta_mean, dynamics_params.beta_force, t
+        ),
+        time_params.trange,
+    )
+
+    state_vec[1] = states
+    change_vec[1] = 0.0
+    jump_vec[1] = 0.0
+    for i in 1:(length(time_params.trange) - 1)
+        state_vec[i + 1], change_vec[i + 1], jump_vec[i + 1] = seir_static_mod_loop(
+            beta_vec[i],
+            states[i],
+            dynamics_params,
+            time_params;
+            type = type
+        )
+    end
+    return state_vec, change_vec, jump_vec, beta_vec
+end
+
+function seir_static_mod_loop(
+    beta_t, states, dynamics_params, time_params; type = "stoch"
+)
+    S, E, I, R, N = states
+
+    # Calculate the rates of each event
+    infec_rate = beta_t * S * I                   # Contact: S -> E
+    latent_rate = dynamics_params.sigma * E        # E -> I
+    recov_rate = dynamics_params.gamma * I        # I -> R
+    susc_birth_rate =
+        dynamics_params.mu * (1 - dynamics_params.vaccination_coverage) * N           # Birth -> S
+    S_death_rate = dynamics_params.mu * S           # S -> death
+    E_death_rate = dynamics_params.mu * E           # E -> death
+    I_death_rate = dynamics_params.mu * I           # I -> death
+    R_death_rate = dynamics_params.mu * R           # R -> death
+    import_rate = dynamics_params.epsilon * N / dynamics_params.R_0        # Import: S -> E
+    vacc_birth_rate =
+        dynamics_params.mu * dynamics_params.vaccination_coverage * N    # Birth -> R
+
+    rates = @SVector [
+        infec_rate,
+        latent_rate,
+        recov_rate,
+        susc_birth_rate,
+        S_death_rate,
+        E_death_rate,
+        I_death_rate,
+        R_death_rate,
+        import_rate,
+        vacc_birth_rate,
+    ]
+
+    # Calculate the number of jumps for each event
+    if type == "stoch"
+        jumps = map(r -> rand(Poisson(r * time_params.tstep)), rates)
+    elseif type == "det"
+        jumps = map(r -> r * time_params.tstep, rates)
+    else
+        return ("Type must be stoch or det")
+    end
+
+    # Calculate the change in each state
+    S_change = jumps[4] - jumps[1] - jumps[5] - jumps[9]
+    E_change = jumps[1] - jumps[2] - jumps[6] + jumps[9]
+    I_change = jumps[2] - jumps[3] - jumps[7]
+    R_change = jumps[3] - jumps[8] + jumps[10]
+
+    # Check that the change in each state does not result in a negative state,
+    # and if it is, set the change to the negative of the current state (i.e.
+    # set the new state value to 0)
+    for (state, change) in
+        zip(states, @SVector [S_change, E_change, I_change, R_change])
+        if state + change < 0
+            change = -state
+        end
+    end
+
+    N_change = sum(@SVector [S_change, E_change, I_change, R_change])
+
+    changes = @SVector [S_change, E_change, I_change, R_change]
+
+    new_S = S + S_change
+    new_E = E + E_change
+    new_I = I + I_change
+    new_R = R + R_change
+    new_N = N + N_change
+
+    new_states = @SVector [new_S, new_E, new_I, new_R, new_N]
+
+    return new_states, changes, jumps
+end
 
 """
-    seirv_mod(states, dynamics_params, trange; tstep, type = "stoch")
+    seir_mod(states, dynamics_params, trange; tstep, type = "stoch")
 
 The in-place function to run the SEIR model with a vaccinations going directly to the R compartment and produce the transmission rate array.
 """
@@ -49,7 +157,6 @@ function seir_mod(
     )
     return state_arr, change_arr, jump_arr, beta_arr
 end
-
 
 """
     seir_mod!(state_arr, change_arr, jump_arr, beta_arr, states, dynamics_params, trange; tstep, type = "stoch")
@@ -129,7 +236,8 @@ function seir_mod_loop!(
     rates[1] = beta_t * S * I                   # Contact: S -> E
     rates[2] = dynamics_params.sigma * E        # E -> I
     rates[3] = dynamics_params.gamma * I        # I -> R
-    rates[4] = dynamics_params.mu * (1 - dynamics_params.vaccination_coverage) * N           # Birth -> S
+    rates[4] =
+        dynamics_params.mu * (1 - dynamics_params.vaccination_coverage) * N           # Birth -> S
     rates[5] = dynamics_params.mu * S           # S -> death
     rates[6] = dynamics_params.mu * E           # E -> death
     rates[7] = dynamics_params.mu * I           # I -> death
