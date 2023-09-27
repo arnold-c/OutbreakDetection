@@ -65,12 +65,14 @@ clean-tmp:
 clean-single-sim:
 	@echo "cleaning single-sim output files"
 	$(shell fd -g 'single-sim*.jld2' 'data/' -HI | xargs rm -r)
+	@echo "cleaning single-sim plot files"
+	$(shell fd -g '*.png' 'plots/singlesim/' | xargs rm -r)
 	@echo "cleaning single-sim tmp files"
 	$(shell fd -g 'single-sim*' 'tmp/' | xargs rm)
 
 clean-plots:
 	@echo "cleaning plot output files"
-	$(shell fd -g 'plots/*.png' 'data/' -HI | xargs rm -r)
+	$(shell fd -g '*.png' 'plots/' -HI | xargs rm -r)
 
 clean-all-ensemble: clean-ensemble-sims clean-ensemble-quantiles clean-ensemble-scenarios
 	@echo "cleaning all ensemble output files"
@@ -95,3 +97,5 @@ clean-ensemble-scenarios:
 	$(shell fd -g 'ensemble-scenario*.jld2' 'data/' -HI | xargs rm -r)
 	@echo "cleaning ensemble scenario tmp files"
 	$(shell fd -g 'ensemble*scenario' 'tmp/' | xargs rm)
+	@echo "cleaning ensemble scenario plot files"
+	$(shell fd -g '*.png' 'plots/ensemble' | xargs rm -r)
