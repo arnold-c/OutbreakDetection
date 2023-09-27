@@ -11,7 +11,7 @@ include(srcdir("makie-plotting-setup.jl"))
 
 #%%
 @unpack singlesim_states_p, singlesim_time_p, singlesim_dynamics_p = load("data/singlesim/single-sim_setup.jld2")
-@unpack seir_array = load("data/singlesim/single-sim_arrays.jld2")
+@unpack seir_array, jump_array = load("data/singlesim/single-sim_arrays.jld2")
 
 #%%
 seirv_array, changev_array, jumpv_array, betav_arr = seirv_mod(
@@ -32,6 +32,11 @@ seirv_array, changev_array, jumpv_array, betav_arr = seirv_mod(
 );
 
 seir_array == seirv_array
+
+#%%
+novac_seir, novac_change, novac_jump, novac_beta = seir_mod(singlesim_states_p.init_states, singlesim_dynamics_p, singlesim_time_p; type = "stoch", seed = 1234)
+
+novac_seir == seir_array
 
 #%%
 seirv_df = create_sir_df(

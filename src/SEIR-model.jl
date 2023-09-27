@@ -139,7 +139,8 @@ function seirv_mod_loop!(
 
     # Calculate the number of jumps for each event
     if type == "stoch"
-        for r in eachindex(rates)
+        for r in 1:9
+        # for r in eachindex(rates)
             jump_arr[i, r] = rand(Poisson(rates[r] * time_params.tstep))
         end
 
