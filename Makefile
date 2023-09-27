@@ -59,29 +59,39 @@ clean-all:
 	clean-ensemble-quantiles
 
 clean-tmp:
-	@echo "cleaning tmp files"
+	@echo "cleaning all tmp files"
 	$(shell rm -rf tmp)
 
 clean-single-sim:
 	@echo "cleaning single-sim output files"
 	$(shell fd -g 'single-sim*.jld2' 'data/' -HI | xargs rm -r)
+	@echo "cleaning single-sim tmp files"
+	$(shell fd -g 'single-sim*' 'tmp/' | xargs rm)
 
 clean-plots:
 	@echo "cleaning plot output files"
 	$(shell fd -g 'plots/*.png' 'data/' -HI | xargs rm -r)
 
 clean-all-ensemble: clean-ensemble-sims clean-ensemble-quantiles clean-ensemble-scenarios
-	@echo "cleaning all ensemble files"
+	@echo "cleaning all ensemble output files"
 	$(shell fd . 'data' -td --exclude 'singlesim' -HI | xargs rm -r)
+	@echo "cleaning all ensemble tmp files"
+	$(shell fd 'ensemble' 'tmp/' | xargs rm -r)
 
 clean-ensemble-sims:
-	@echo "cleaning ensemble output files"
+	@echo "cleaning ensemble simulation output files"
 	$(shell fd -g 'ensemble-solution*.jld2' 'data/' -HI | xargs rm -r)
+	@echo "cleaning ensemble simulation tmp files"
+	$(shell fd -g 'ensemble-sim' 'tmp/' | xargs rm)
 
 clean-ensemble-quantiles:
 	@echo "cleaning ensemble quantiles"
 	$(shell fd -g 'ensemble-quantiles*.jld2' 'data/' -HI | xargs rm -r)
+	@echo "cleaning ensemble simulation tmp files"
+	$(shell fd -g 'ensemble-sim' 'tmp/' | xargs rm)
 
 clean-ensemble-scenarios:
 	@echo "cleaning ensemble scenario files"
 	$(shell fd -g 'ensemble-scenario*.jld2' 'data/' -HI | xargs rm -r)
+	@echo "cleaning ensemble scenario tmp files"
+	$(shell fd -g 'ensemble*scenario' 'tmp/' | xargs rm)
