@@ -33,12 +33,13 @@ singlesim_jump_plot = @chain DataFrame(Tables.table(jump_array)) begin
         "Infect",
         "Latent",
         "Recov",
-        "Birth",
+        "Susceptible Births",
         "S_death",
         "E_death",
         "I_death",
         "R_death",
         "Import",
+        "Protected Births"
     ])
     stack(_, Not("time"); variable_name = :Jump, value_name = :Number)
     data(_) *
