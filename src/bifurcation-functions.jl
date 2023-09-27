@@ -28,6 +28,7 @@ function birth_rate_bifurcation_simulation!(
             birth_rate_run,
             epsilon_run,
             dynamics_parameters.R_0,
+            dynamics_parameters.vaccination_coverage
         )
 
         seir_mod!(
@@ -94,6 +95,7 @@ function beta_force_bifurcation_simulation!(
             birth_rate,
             epsilon,
             dynamics_parameters.R_0,
+            dynamics_parameters.vaccination_coverage
         )
 
         seir_mod!(
@@ -150,6 +152,7 @@ function birth_rate_beta_force_bifurcation_simulation!(
             birth_rate_run,
             epsilon_run,
             dynamics_parameters.R_0,
+            dynamics_parameters.vaccination_coverage
         )
 
         seir_mod!(
