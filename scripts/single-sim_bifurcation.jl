@@ -18,9 +18,9 @@ include(srcdir("makie-plotting-setup.jl"))
 
 #%%
 beta_arr = Vector{Float64}(undef, tlength);
-rates = Vector{Float64}(undef, 9);
+n_transitions = (size(init_states, 1) - 1) * 2 + 2
+rates = Vector{Float64}(undef, 10);
 years = (40 * 365):365:(tlength - 365)
-n_transitions = (size(init_states, 1) - 1) * 2 + 1
 
 #%%
 annual_birth_rate_per_k_min = 10

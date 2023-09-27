@@ -15,16 +15,9 @@ using UnPack
 using LoopVectorization
 
 """
-    seir_mod(states, dynamics_params, trange; retbetaarr = false, type = "stoch")
+    seirv_mod(states, dynamics_params, trange; tstep, type = "stoch")
 
-A Tau-leaping SEIR model with commuter style importers.
-the model can return an array of transmission rates if `retbetaarr = true`, and can be set to be deterministic or stochastic.
-
-```julia-repl
-seir_array, change_array, jump_array, beta_arr = seir_mod(
-    init_states, dynamics_params, trange; retbetaarr = true, type = "stoch"
-);
-```
+The in-place function to run the SEIR model with a vaccinations going directly to the R compartment and produce the transmission rate array.
 """
 function seir_mod(
     states,
@@ -38,7 +31,7 @@ function seir_mod(
     state_arr = zeros(Float64, time_params.tlength, size(states, 1))
     change_arr = similar(state_arr)
     jump_arr = zeros(
-        Float64, time_params.tlength, (size(states, 1) - 1) * 2 + 1
+        Float64, time_params.tlength, (size(states, 1) - 1) * 2 + 2
     )
     beta_arr = zeros(Float64, time_params.tlength)
 
@@ -56,6 +49,7 @@ function seir_mod(
     )
     return state_arr, change_arr, jump_arr, beta_arr
 end
+
 
 """
     seir_mod!(state_arr, change_arr, jump_arr, beta_arr, states, dynamics_params, trange; tstep, type = "stoch")
@@ -135,12 +129,13 @@ function seir_mod_loop!(
     rates[1] = beta_t * S * I                   # Contact: S -> E
     rates[2] = dynamics_params.sigma * E        # E -> I
     rates[3] = dynamics_params.gamma * I        # I -> R
-    rates[4] = dynamics_params.mu * N           # Birth -> S
+    rates[4] = dynamics_params.mu * (1 - dynamics_params.vaccination_coverage) * N           # Birth -> S
     rates[5] = dynamics_params.mu * S           # S -> death
     rates[6] = dynamics_params.mu * E           # E -> death
     rates[7] = dynamics_params.mu * I           # I -> death
     rates[8] = dynamics_params.mu * R           # R -> death
     rates[9] = dynamics_params.epsilon * N / dynamics_params.R_0        # Import: S -> E
+    rates[10] = dynamics_params.mu * dynamics_params.vaccination_coverage * N    # Birth -> R
 
     # Calculate the number of jumps for each event
     if type == "stoch"
@@ -156,10 +151,12 @@ function seir_mod_loop!(
     end
 
     # Calculate the change in each state
-    @views change_arr[i, 1] = jump_arr[i, 4] - jump_arr[i, 1] - jump_arr[i, 5] - jump_arr[i, 9]
-    @views change_arr[i, 2] = jump_arr[i, 1] - jump_arr[i, 2] - jump_arr[i, 6] + jump_arr[i, 9]
+    @views change_arr[i, 1] =
+        jump_arr[i, 4] - jump_arr[i, 1] - jump_arr[i, 5] - jump_arr[i, 9]
+    @views change_arr[i, 2] =
+        jump_arr[i, 1] - jump_arr[i, 2] - jump_arr[i, 6] + jump_arr[i, 9]
     @views change_arr[i, 3] = jump_arr[i, 2] - jump_arr[i, 3] - jump_arr[i, 7]
-    @views change_arr[i, 4] = jump_arr[i, 3] - jump_arr[i, 8]
+    @views change_arr[i, 4] = jump_arr[i, 3] - jump_arr[i, 8] + jump_arr[i, 10]
 
     # Check that the change in each state does not result in a negative state,
     # and if it is, set the change to the negative of the current state (i.e.
