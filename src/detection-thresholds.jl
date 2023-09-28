@@ -27,18 +27,21 @@ function create_inc_infec_arr(
 end
 
 function create_inc_infec_arr!(
-    incarr, ensemblejumparr, outbreakthreshold, minoutbreakdur, minoutbreaksize
+    ensemble_inc_arr, ensemble_jump_arr, outbreakthreshold, minoutbreakdur,
+    minoutbreaksize,
 )
-    incarr[:, 1, :] .= @view(ensemblejumparr[:, 1, :])
-    for sim in axes(ensemblejumparr, 3)
-        incarr[:, 2, sim] .= @view(incarr[:, 1, sim]) .>= outbreakthreshold
+    @inbounds ensemble_inc_arr[:, 1, :] .= @view(ensemble_jump_arr[:, 1, :])
+    @inbounds for sim in axes(ensemble_jump_arr, 3)
+        ensemble_inc_arr[:, 2, sim] .=
+            @view(ensemble_inc_arr[:, 1, sim]) .>= outbreakthreshold
 
-        abovethresholdrle = rle(@view(incarr[:, 2, sim]))
+        abovethresholdrle = rle(@view(ensemble_inc_arr[:, 2, sim]))
         abovethresholdlowers, abovethresholduppers = calculate_outbreak_thresholds(
             abovethresholdrle
         )
 
-        for (lower, upper) in zip(abovethresholdlowers, abovethresholduppers)
+        @inbounds for (lower, upper) in
+                      zip(abovethresholdlowers, abovethresholduppers)
             calculate_period_sum!(
                 @view(ensemble_inc_arr[lower:upper, 3, sim]),
                 @view(ensemble_inc_arr[lower:upper, 1, sim])
@@ -60,8 +63,8 @@ function calculate_outbreak_thresholds(outbreakrle)
     # Calculate upper and lower indices of consecutive days of infection
     outbreakaccum = accumulate(+, outbreakrle[2])
     upperbound_indices = findall(isequal(1), outbreakrle[1])
-    outbreakuppers = outbreakaccum[upperbound_indices]
-    outbreaklowers = map(
+    @inbounds outbreakuppers = outbreakaccum[upperbound_indices]
+    @inbounds outbreaklowers = map(
         x -> x - 1 == 0 ? 1 : outbreakaccum[x - 1] + 1, upperbound_indices
     )
 
@@ -69,15 +72,17 @@ function calculate_outbreak_thresholds(outbreakrle)
 end
 
 function calculate_period_sum!(outvec, incvec)
-    outvec .= sum(incvec)
+    @inbounds outvec .= sum(incvec)
     return nothing
 end
 
 function classify_outbreak!(
-    outvec, periodsumvec, upper_time, lower_time, minoutbreakdur, minoutbreaksize
+    outvec, periodsumvec, upper_time, lower_time, minoutbreakdur,
+    minoutbreaksize,
 )
-    if upper_time - lower_time >= minoutbreakdur && periodsumvec >= minoutbreaksize
-        outvec .= 1
+    if upper_time - lower_time >= minoutbreakdur &&
+        periodsumvec >= minoutbreaksize
+        @inbounds outvec .= 1
     end
     return nothing
 end

@@ -77,7 +77,7 @@ outbreak_spec_vec = create_combinations_vec(
 
 outbreak_spec_dict = Vector{Dict}(undef, length(outbreak_spec_vec))
 for (i, spec) in pairs(outbreak_spec_vec)
-    outbreak_spec_dict[i] = Dict{Symbol, Any}(:outbreak_spec => spec)
+    outbreak_spec_dict[i] = Dict{Symbol,Any}(:outbreak_spec => spec)
 end
 
 #%%
