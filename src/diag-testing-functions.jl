@@ -61,12 +61,12 @@ function create_testing_arrs!(
     for sim in axes(incarr, 3)
         # Number of infectious individuals tested
         calculate_tested!(
-            testarr[:, 1, sim], @view(incarr[:, 1, sim]), perc_tested
+            @view(testarr[:, 1, sim]), @view(incarr[:, 1, sim]), perc_tested
         )
 
         # Number of noise individuals tested
         calculate_tested!(
-            testarr[:, 2, sim], @view(noisearr[:, 1, sim]), perc_tested
+            @view(testarr[:, 2, sim]), @view(noisearr[:, 1, sim]), perc_tested
         )
 
         # Number of test positive INFECTED individuals
