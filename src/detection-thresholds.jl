@@ -40,11 +40,12 @@ function create_inc_infec_arr!(
 
         for (lower, upper) in zip(abovethresholdlowers, abovethresholduppers)
             calculate_period_sum!(
-                incarr[lower:upper, 3, sim], @view(incarr[lower:upper, 1, sim])
+                @view(ensemble_inc_arr[lower:upper, 3, sim]),
+                @view(ensemble_inc_arr[lower:upper, 1, sim])
             )
             classify_outbreak!(
-                incarr[lower:upper, 4, sim],
-                @view(incarr[lower:upper, 3, sim]),
+                @view(ensemble_inc_arr[lower:upper, 4, sim]),
+                ensemble_inc_arr[lower, 3, sim],
                 upper,
                 lower,
                 minoutbreakdur,
