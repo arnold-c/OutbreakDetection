@@ -26,7 +26,7 @@ function seir_static_mod(
 
     state_vec = Vector{typeof(states)}(undef, time_params.tlength)
     change_vec = similar(state_vec)
-    jump_vec = Vector{SVector{10,Float64}}(undef, time_params.tlength)
+    jump_vec = Vector{SVector{10, eltype(states)}}(undef, time_params.tlength)
 
     beta_vec = map(
         t -> calculate_beta_amp(
@@ -36,12 +36,13 @@ function seir_static_mod(
     )
 
     state_vec[1] = states
-    change_vec[1] = 0.0
-    jump_vec[1] = 0.0
+    # change_vec[1] = @SVector [0 for _ in 1:5]
+    # jump_vec[1] = @SVector [0 for _ in 1:10]
     for i in 1:(length(time_params.trange) - 1)
         state_vec[i + 1], change_vec[i + 1], jump_vec[i + 1] = seir_static_mod_loop(
             beta_vec[i],
-            states[i],
+            Vector{eltype(states)}(undef, length(states)-1),
+            state_vec[i],
             dynamics_params,
             time_params;
             type = type
@@ -51,7 +52,7 @@ function seir_static_mod(
 end
 
 function seir_static_mod_loop(
-    beta_t, states, dynamics_params, time_params; type = "stoch"
+    beta_t, change_worker_vec, states, dynamics_params, time_params; type = "stoch"
 )
     S, E, I, R, N = states
 
@@ -83,38 +84,31 @@ function seir_static_mod_loop(
     ]
 
     # Calculate the number of jumps for each event
-    if type == "stoch"
-        jumps = map(r -> rand(Poisson(r * time_params.tstep)), rates)
-    elseif type == "det"
-        jumps = map(r -> r * time_params.tstep, rates)
-    else
-        return ("Type must be stoch or det")
-    end
+    jumps = map(r -> rand(Poisson(r * time_params.tstep)), rates)
 
     # Calculate the change in each state
-    S_change = jumps[4] - jumps[1] - jumps[5] - jumps[9]
-    E_change = jumps[1] - jumps[2] - jumps[6] + jumps[9]
-    I_change = jumps[2] - jumps[3] - jumps[7]
-    R_change = jumps[3] - jumps[8] + jumps[10]
+    change_worker_vec[1] = jumps[4] - jumps[1] - jumps[5] - jumps[9]
+    change_worker_vec[2] = jumps[1] - jumps[2] - jumps[6] + jumps[9]
+    change_worker_vec[3] = jumps[2] - jumps[3] - jumps[7]
+    change_worker_vec[4] = jumps[3] - jumps[8] + jumps[10]
 
     # Check that the change in each state does not result in a negative state,
     # and if it is, set the change to the negative of the current state (i.e.
     # set the new state value to 0)
-    for (state, change) in
-        zip(states, @SVector [S_change, E_change, I_change, R_change])
-        if state + change < 0
-            change = -state
+    for i in eachindex(change_worker_vec)
+        if states[i] + change_worker_vec[i] < 0
+            change_worker_vec[i] = -states[i]
         end
     end
 
-    N_change = sum(@SVector [S_change, E_change, I_change, R_change])
+    N_change = sum(change_worker_vec)
 
-    changes = @SVector [S_change, E_change, I_change, R_change]
+    changes = SVector{length(states)}([change_worker_vec..., N_change])
 
-    new_S = S + S_change
-    new_E = E + E_change
-    new_I = I + I_change
-    new_R = R + R_change
+    new_S = S + change_worker_vec[1]
+    new_E = E + change_worker_vec[2]
+    new_I = I + change_worker_vec[3]
+    new_R = R + change_worker_vec[4]
     new_N = N + N_change
 
     new_states = @SVector [new_S, new_E, new_I, new_R, new_N]
