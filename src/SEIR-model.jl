@@ -14,6 +14,7 @@ using Random
 using UnPack
 using LoopVectorization
 using StaticArrays
+using VectorizedRNG
 
 function seir_static_mod(
     states,
@@ -28,7 +29,7 @@ function seir_static_mod(
     change_vec = similar(state_vec)
     jump_vec = Vector{SVector{10, eltype(states)}}(undef, time_params.tlength)
 
-    beta_vec = map(
+    @inbounds beta_vec = map(
         t -> calculate_beta_amp(
             dynamics_params.beta_mean, dynamics_params.beta_force, t
         ),
@@ -49,10 +50,11 @@ function seir_static_mod(
         )
     end
 
-    state_arr = permutedims(reshape(reinterpret(Float64, state_vec), (5, length(time_params.trange))), (2, 1))
-    change_arr = permutedims(reshape(reinterpret(Float64, change_vec), (5, length(time_params.trange))), (2, 1))
-    jump_arr = permutedims(reshape(reinterpret(Float64, jump_vec), (10, length(time_params.trange))), (2, 1))
-    return state_arr, change_arr, jump_arr, beta_vec
+    # state_arr = permutedims(reshape(reinterpret(Float64, state_vec), (5, length(time_params.trange))), (2, 1))
+    # change_arr = permutedims(reshape(reinterpret(Float64, change_vec), (5, length(time_params.trange))), (2, 1))
+    # jump_arr = permutedims(reshape(reinterpret(Float64, jump_vec), (10, length(time_params.trange))), (2, 1))
+    # return state_arr, change_arr, jump_arr, beta_vec
+    return state_vec, change_vec, jump_vec, beta_vec
 end
 
 function seir_static_mod_loop(
@@ -89,7 +91,7 @@ function seir_static_mod_loop(
 
     # Calculate the number of jumps for each event
     # if type == "stoch"
-        jumps = map(r -> rand(Poisson(r * time_params.tstep)), rates)
+    jumps = map(r -> Random.rand(Poisson(r * time_params.tstep)), rates)
     # elseif type == "det"
     #     jumps = map(r -> rand(r * time_params.tstep), rates)
     # else
@@ -97,16 +99,16 @@ function seir_static_mod_loop(
     # end
 
     # Calculate the change in each state
-    change_worker_vec[1] = jumps[4] - jumps[1] - jumps[5] - jumps[9]
-    change_worker_vec[2] = jumps[1] - jumps[2] - jumps[6] + jumps[9]
-    change_worker_vec[3] = jumps[2] - jumps[3] - jumps[7]
-    change_worker_vec[4] = jumps[3] - jumps[8] + jumps[10]
+    @inbounds change_worker_vec[1] = jumps[4] - jumps[1] - jumps[5] - jumps[9]
+    @inbounds change_worker_vec[2] = jumps[1] - jumps[2] - jumps[6] + jumps[9]
+    @inbounds change_worker_vec[3] = jumps[2] - jumps[3] - jumps[7]
+    @inbounds change_worker_vec[4] = jumps[3] - jumps[8] + jumps[10]
 
     # Check that the change in each state does not result in a negative state,
     # and if it is, set the change to the negative of the current state (i.e.
     # set the new state value to 0)
     @simd for i in eachindex(change_worker_vec)
-        if states[i] + change_worker_vec[i] < 0
+        @inbounds if states[i] + change_worker_vec[i] < 0
             change_worker_vec[i] = -states[i]
         end
     end
@@ -192,7 +194,7 @@ function seir_mod!(
         time_params.trange,
     )
 
-    for i in eachindex(time_params.trange)
+    @inbounds for i in eachindex(time_params.trange)
         if i == 1
             state_arr[i, :] .= states
             continue
@@ -256,8 +258,7 @@ function seir_mod_loop!(
 
     # Calculate the number of jumps for each event
     if type == "stoch"
-        @simd for r in eachindex(rates)
-            jump_arr[i, r] = rand(Poisson(rates[r] * time_params.tstep))
+        @simd for r in eachindex(rates) jump_arr[i, r] = rand(Poisson(rates[r] * time_params.tstep))
         end
     elseif type == "det"
         @simd for r in eachindex(rates)
