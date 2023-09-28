@@ -20,21 +20,14 @@ ensemble_single_ensemble_spec = EnsembleSpecification(
         500_000,
         Dict(:s_prop => 0.1, :e_prop => 0.01, :i_prop => 0.01, :r_prop => 0.88),
     ),
-    DynamicsParameters(500_000, 10, 0.2),
+    DynamicsParameters(500_000, 10, 0.2; vaccination_coverage = 0.0),
     ensemble_single_time_spec,
     1_000,
 )
 
 ensemble_single_outbreak_spec = OutbreakSpecification(5, 30, 500)
 ensemble_single_individual_test_spec = IndividualTestSpecification(0.8, 0.8)
-ensemble_single_noise_spec = create_static_NoiseSpecification(
-    [10.0],
-    ensemble_single_time_spec,
-    0.0,
-    0.1,
-    1_000
-)
-
+ensemble_single_noise_spec = NoiseSpecification("poisson", 1.0)
 ensemble_single_scenario_spec = ScenarioSpecification(
     ensemble_single_ensemble_spec,
     ensemble_single_outbreak_spec,
@@ -121,8 +114,9 @@ save(
 
 #%%
 ensemble_single_scenario_noise_plot = visualize_ensemble_noise(
-    ensemble_single_scenario_spec.noise_specification.noise_array,
-    ensemble_single_scenario_spec.noise_specification.time_parameters,
+    ensemble_single_scenario_incarr["ensemble_inc_arr"],
+    ensemble_single_noise_spec,
+    ensemble_single_time_spec
 )
 
 save(

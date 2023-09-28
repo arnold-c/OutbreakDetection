@@ -245,7 +245,9 @@ function detect_outbreak_plot(
     return fig
 end
 
-function visualize_ensemble_noise(ensemble_noise_arr, timeparams)
+function visualize_ensemble_noise(ensemble_inc_arr, ensemble_noise_spec, timeparams)
+    ensemble_noise_arr = create_poisson_noise_arr(ensemble_inc_arr, ensemble_noise_spec)
+
     times = collect(timeparams.trange) ./ 365
     noise_fig = Figure()
     noise_ax = Axis(
