@@ -235,38 +235,10 @@ struct IndividualTestSpecification{T1<:AbstractFloat}
 end
 
 struct NoiseSpecification{
-    T1<:AbstractString,T2<:AbstractArray,T3<:SimTimeParameters
+    T1<:AbstractString,T2<:AbstractFloat
 }
     noise_type::T1
-    noise_array::T2
-    time_parameters::T3
-end
-
-function create_static_NoiseSpecification(
-    init_noise::Vector{Float64},
-    time_parameters::SimTimeParameters,
-    ode_value::Float64,
-    noise_value::Float64,
-    nsims;
-    callback = DiscreteCallback(
-        sde_condition, sde_affect!; save_positions = (false, false)
-    ),
-)
-    ode_function!(du, u, p, t) = (du .= ode_value)
-    noise_function!(du, u, p, t) = (du .= noise_value)
-
-    return NoiseSpecification(
-        "static",
-        create_static_noise_arr(
-            init_noise,
-            time_parameters,
-            nsims;
-            callback = callback,
-            ode_function = ode_function!,
-            noise_function = noise_function!,
-        ),
-        time_parameters,
-    )
+    noise_mean_scaling::T2
 end
 
 struct ScenarioSpecification{
