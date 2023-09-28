@@ -138,7 +138,7 @@ function run_jump_prob(ensemble_param_dict)
         Int64, tlength, size(state_parameters.init_states, 1), nsims
     )
 
-    n_transitions = (size(state_parameters.init_states, 1) - 1) * 2 + 1
+    n_transitions = (size(state_parameters.init_states, 1) - 1) * 2 + 2
 
     ensemble_jump_arr = zeros(Int64, tlength, n_transitions, nsims)
     ensemble_beta_arr = zeros(Float64, tlength)
