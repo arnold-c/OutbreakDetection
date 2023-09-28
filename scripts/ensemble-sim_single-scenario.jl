@@ -33,7 +33,7 @@ ensemble_single_scenario_spec = ScenarioSpecification(
     ensemble_single_outbreak_spec,
     ensemble_single_noise_spec,
     OutbreakDetectionSpecification(10, 7, 0.3, 0.3, 3),
-    ensemble_single_individual_test_spec
+    ensemble_single_individual_test_spec,
 )
 
 #%%
@@ -59,7 +59,7 @@ ensemble_single_scenario_spec2 = ScenarioSpecification(
     ensemble_single_outbreak_spec,
     ensemble_single_noise_spec,
     OutbreakDetectionSpecification(100, 7, 0.3, 0.3, 3),
-    ensemble_single_individual_test_spec
+    ensemble_single_individual_test_spec,
 )
 
 #%%
@@ -116,7 +116,7 @@ save(
 ensemble_single_scenario_noise_plot = visualize_ensemble_noise(
     ensemble_single_scenario_incarr["ensemble_inc_arr"],
     ensemble_single_noise_spec,
-    ensemble_single_time_spec
+    ensemble_single_time_spec,
 )
 
 save(
