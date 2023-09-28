@@ -300,7 +300,7 @@ function OutbreakThresholdChars_creation(OT_chars_param_dict)
     outbreak_detection_specification,
     individual_test_specification = scenario_spec
 
-    @unpack noise_array = noise_specification
+    noise_array = create_poisson_noise_arr(ensemble_inc_arr, noise_specification)
 
     testarr, posoddsarr = create_testing_arrs(
         ensemble_inc_arr,
