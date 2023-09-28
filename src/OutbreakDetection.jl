@@ -21,7 +21,7 @@ export SimTimeParameters, EnsembleSpecification, DynamicsParameters,
 
 include("SEIR-model.jl")
 export seir_mod, seir_mod!, seir_mod_loop!,
-    seirv_mod, seirv_mod!, seirv_mod_loop!
+    seir_static_mod, seir_static_mod_loop
 # @reexport using .SEIRModel
 
 include("cleaning-functions.jl")

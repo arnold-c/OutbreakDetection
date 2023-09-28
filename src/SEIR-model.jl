@@ -15,7 +15,7 @@ using UnPack
 using LoopVectorization
 
 """
-    seirv_mod(states, dynamics_params, trange; tstep, type = "stoch")
+    seir_mod(states, dynamics_params, trange; tstep, type = "stoch")
 
 The in-place function to run the SEIR model with a vaccinations going directly to the R compartment and produce the transmission rate array.
 """
@@ -50,7 +50,6 @@ function seir_mod(
     return state_arr, change_arr, jump_arr, beta_arr
 end
 
-
 """
     seir_mod!(state_arr, change_arr, jump_arr, beta_arr, states, dynamics_params, trange; tstep, type = "stoch")
 
@@ -76,7 +75,7 @@ function seir_mod!(
         time_params.trange,
     )
 
-    for i in eachindex(time_params.trange)
+    @inbounds for i in eachindex(time_params.trange)
         if i == 1
             state_arr[i, :] .= states
             continue
@@ -129,7 +128,8 @@ function seir_mod_loop!(
     rates[1] = beta_t * S * I                   # Contact: S -> E
     rates[2] = dynamics_params.sigma * E        # E -> I
     rates[3] = dynamics_params.gamma * I        # I -> R
-    rates[4] = dynamics_params.mu * (1 - dynamics_params.vaccination_coverage) * N           # Birth -> S
+    rates[4] =
+        dynamics_params.mu * (1 - dynamics_params.vaccination_coverage) * N           # Birth -> S
     rates[5] = dynamics_params.mu * S           # S -> death
     rates[6] = dynamics_params.mu * E           # E -> death
     rates[7] = dynamics_params.mu * I           # I -> death
@@ -139,8 +139,7 @@ function seir_mod_loop!(
 
     # Calculate the number of jumps for each event
     if type == "stoch"
-        @simd for r in eachindex(rates)
-            jump_arr[i, r] = rand(Poisson(rates[r] * time_params.tstep))
+        @simd for r in eachindex(rates) jump_arr[i, r] = rand(Poisson(rates[r] * time_params.tstep))
         end
     elseif type == "det"
         @simd for r in eachindex(rates)
