@@ -26,13 +26,17 @@ static_jump
 
 lines(static_beta[1:720])
 
-reinterpret(Float64, static_seir)
+draw_sir_plot(
+    create_sir_df(static_seir, singlesim_time_p.trange, [:S, :E, :I, :R, :N]),
+    labels = ["S", "E", "I", "R", "N"],
+)
 
-@chain reshape(reinterpret(Float64, static_seir), (5, length(singlesim_time_p.trange)))' begin
-    Array(_)
-    create_sir_df(_, singlesim_time_p.trange, [:S, :E, :I, :R, :N])
-    draw_sir_plot(_, labels = ["S", "E", "I", "R", "N"])
-end
+# @chain reshape(reinterpret(Float64, static_seir), (5, length(singlesim_time_p.trange))) begin
+#     permutedims(_, (2, 1))
+    # Array(_)
+    # create_sir_df(_, singlesim_time_p.trange, [:S, :E, :I, :R, :N])
+    # draw_sir_plot(_, labels = ["S", "E", "I", "R", "N"])
+# end
 
 #%%
 seir_arr = seir_mod(singlesim_states_p.init_states, singlesim_dynamics_p, singlesim_time_p; type = "stoch", seed = 1234)[1]
@@ -46,6 +50,12 @@ static_seir[end]
 @benchmark seir_mod(singlesim_states_p.init_states, singlesim_dynamics_p, singlesim_time_p; type = "stoch", seed = 1234)
 
 @benchmark seir_static_mod(
+    static_states, singlesim_dynamics_p, singlesim_time_p;
+    type = "stoch", seed = 1234,
+)
+
+#%%
+ProfileCanvas.@profview seir_static_mod(
     static_states, singlesim_dynamics_p, singlesim_time_p;
     type = "stoch", seed = 1234,
 )
