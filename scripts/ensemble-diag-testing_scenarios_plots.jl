@@ -20,15 +20,7 @@ ensemble_chars_vec = Vector(
 )
 
 #%%
-ensemble_static_noise_arr = create_static_NoiseSpecification(
-    [10.0],
-    SimTimeParameters(;
-        tmin = 0.0, tmax = 365.0 * 100, tstep = 1.0
-    ),
-    0.0,
-    0.1,
-    1_000,
-)
+noise_specification = NoiseSpecification("poisson", 1.0)
 
 #%%
 prog = Progress(length(sensitivity_vec) * length(detectthreshold_vec))
@@ -64,7 +56,7 @@ prog = Progress(length(sensitivity_vec) * length(detectthreshold_vec))
                     1_000,
                 ),
                 OutbreakSpecification(5, 30, 500),
-                ensemble_static_noise_arr,
+                noise_specification,
                 outbreak_detect_spec,
                 ind_test_spec,
             )
