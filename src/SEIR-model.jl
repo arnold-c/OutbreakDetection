@@ -35,10 +35,10 @@ function seir_static_mod(
         time_params.trange,
     )
 
-    state_vec[1] = states
+    @inbounds state_vec[1] = states
     # change_vec[1] = @SVector [0 for _ in 1:5]
     # jump_vec[1] = @SVector [0 for _ in 1:10]
-    for i in 1:(length(time_params.trange) - 1)
+    @inbounds for i in 1:(length(time_params.trange) - 1)
         state_vec[i + 1], change_vec[i + 1], jump_vec[i + 1] = seir_static_mod_loop(
             beta_vec[i],
             Vector{eltype(states)}(undef, length(states)-1),
@@ -48,7 +48,11 @@ function seir_static_mod(
             type = type
         )
     end
-    return state_vec, change_vec, jump_vec, beta_vec
+
+    state_arr = permutedims(reshape(reinterpret(Float64, state_vec), (5, length(time_params.trange))), (2, 1))
+    change_arr = permutedims(reshape(reinterpret(Float64, change_vec), (5, length(time_params.trange))), (2, 1))
+    jump_arr = permutedims(reshape(reinterpret(Float64, jump_vec), (10, length(time_params.trange))), (2, 1))
+    return state_arr, change_arr, jump_arr, beta_vec
 end
 
 function seir_static_mod_loop(
@@ -84,7 +88,13 @@ function seir_static_mod_loop(
     ]
 
     # Calculate the number of jumps for each event
-    jumps = map(r -> rand(Poisson(r * time_params.tstep)), rates)
+    # if type == "stoch"
+        jumps = map(r -> rand(Poisson(r * time_params.tstep)), rates)
+    # elseif type == "det"
+    #     jumps = map(r -> rand(r * time_params.tstep), rates)
+    # else
+    #     return ("Type must be stoch or det")
+    # end
 
     # Calculate the change in each state
     change_worker_vec[1] = jumps[4] - jumps[1] - jumps[5] - jumps[9]
@@ -95,7 +105,7 @@ function seir_static_mod_loop(
     # Check that the change in each state does not result in a negative state,
     # and if it is, set the change to the negative of the current state (i.e.
     # set the new state value to 0)
-    for i in eachindex(change_worker_vec)
+    @simd for i in eachindex(change_worker_vec)
         if states[i] + change_worker_vec[i] < 0
             change_worker_vec[i] = -states[i]
         end
@@ -103,13 +113,18 @@ function seir_static_mod_loop(
 
     N_change = sum(change_worker_vec)
 
-    changes = SVector{length(states)}([change_worker_vec..., N_change])
+    @inbounds S_change = change_worker_vec[1]
+    @inbounds E_change = change_worker_vec[2]
+    @inbounds I_change = change_worker_vec[3]
+    @inbounds R_change = change_worker_vec[4]
 
-    new_S = S + change_worker_vec[1]
-    new_E = E + change_worker_vec[2]
-    new_I = I + change_worker_vec[3]
-    new_R = R + change_worker_vec[4]
-    new_N = N + N_change
+    @inbounds changes = @SVector [S_change, E_change, I_change, R_change, N_change]
+
+    @inbounds new_S = S + S_change
+    @inbounds new_E = E + E_change
+    @inbounds new_I = I + I_change
+    @inbounds new_R = R + R_change
+    @inbounds new_N = N + N_change
 
     new_states = @SVector [new_S, new_E, new_I, new_R, new_N]
 
