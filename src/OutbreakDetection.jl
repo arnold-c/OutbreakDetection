@@ -66,7 +66,7 @@ export seircolors, seir_state_labels, create_sir_plot, draw_sir_plot,
     sir_quantiles_array_base_plot, create_sir_quantiles_plot, outbreakcols,
     detect_outbreak_plot, visualize_ensemble_noise, incidence_testing_plot,
     testing_plot, ensemble_outbreak_distribution_plot, ensemble_OTChars_plot,
-    compare_ensemble_OTchars_plots
+    ensemble_outbreak_detect_diff_plot, compare_ensemble_OTchars_plots
 # @reexport using .PlottingFunctions
 
 end

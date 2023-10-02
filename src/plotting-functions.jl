@@ -245,8 +245,12 @@ function detect_outbreak_plot(
     return fig
 end
 
-function visualize_ensemble_noise(ensemble_inc_arr, ensemble_noise_spec, timeparams)
-    ensemble_noise_arr = create_poisson_noise_arr(ensemble_inc_arr, ensemble_noise_spec)
+function visualize_ensemble_noise(
+    ensemble_inc_arr, ensemble_noise_spec, timeparams
+)
+    ensemble_noise_arr = create_poisson_noise_arr(
+        ensemble_inc_arr, ensemble_noise_spec
+    )
 
     times = collect(timeparams.trange) ./ 365
     noise_fig = Figure()
@@ -506,6 +510,34 @@ function ensemble_OTChars_plot(
     end
 
     Legend(fig[1, 2], ax, legendlabel)
+
+    return fig
+end
+
+function ensemble_outbreak_detect_diff_plot(OT_chars; binwidth = 1)
+    fig = Figure()
+    ax = Axis(
+        fig[1, 1]; xlabel = "Difference Between Actual - Detected Outbreaks"
+    )
+
+    difference = OT_chars.noutbreaks .- OT_chars.ndetectoutbreaks
+
+    bins = minimum(difference):binwidth:maximum(difference)
+
+    hist!(
+        ax,
+        difference;
+        color = (:purple, 0.5),
+        bins = bins,
+    )
+
+    vlines!(
+        ax,
+        mean(difference);
+        color = :black,
+        linestyle = :dash,
+        linewidth = 4
+    )
 
     return fig
 end
