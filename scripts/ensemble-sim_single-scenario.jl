@@ -181,6 +181,19 @@ save(
 )
 
 #%%
+ensemble_single_scenario_outbreak_detect_diff_plot = ensemble_outbreak_detect_diff_plot(
+    ensemble_single_scenario_detection["OT_chars"];
+    binwidth = 1
+)
+
+save(
+    plotsdir(
+        "ensemble/single-scenario/ensemble-sim_single-scenario_outbreak-detect-diff.png",
+    ),
+    ensemble_single_scenario_outbreak_detect_diff_plot,
+)
+
+#%%
 ensemble_single_scenario_sens_spec_dist_plot = ensemble_OTChars_plot(
     ensemble_single_scenario_detection["OT_chars"],
     :sensitivity,
