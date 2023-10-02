@@ -20,8 +20,7 @@ export SimTimeParameters, EnsembleSpecification, DynamicsParameters,
 # @reexport using .ODStructs
 
 include("SEIR-model.jl")
-export seir_mod, seir_mod!, seir_mod_loop!,
-    seir_static_mod, seir_static_mod_loop
+export seir_mod, seir_mod!, seir_mod_loop!
 # @reexport using .SEIRModel
 
 include("cleaning-functions.jl")
@@ -58,8 +57,7 @@ export create_combinations_vec, create_ensemble_spec_combinations,
 # @reexport using .EnsembleFunctions
 
 include("noise-functions.jl")
-export create_static_noise_arr, create_static_noise_arr!, sde_affect!,
-    sde_condition, create_static_NoiseSpecification
+export create_poisson_noise_arr, create_poisson_noise_arr!
 # @reexport using .NoiseFunctions
 
 include("plotting-functions.jl")

@@ -77,17 +77,20 @@ outbreak_spec_vec = create_combinations_vec(
 
 outbreak_spec_dict = Vector{Dict}(undef, length(outbreak_spec_vec))
 for (i, spec) in pairs(outbreak_spec_vec)
-    outbreak_spec_dict[i] = Dict{Symbol, Any}(:outbreak_spec => spec)
+    outbreak_spec_dict[i] = Dict{Symbol,Any}(:outbreak_spec => spec)
 end
 
 #%%
-init_noise_vec = [[10.0]]
-noise_ode_vec = [0.0]
-noise_vec = [0.1]
+# TODO: How to make the mean of the noise a proportion of the mean of incidence
+# when incidence depends on the dynamics parameters?
+# Could pass variables to ensemble function and calculate each simulations and 
+# scenario's noise mean, but that would break implementation using NoiseSpecification
+# struct currently
+poisson_noise_mean_scaling_vec = [1.0]
 
 noise_spec_vec = create_combinations_vec(
-    create_static_NoiseSpecification,
-    (init_noise_vec, time_p_vec, noise_ode_vec, noise_vec, nsims_vec),
+    NoiseSpecification,
+    (["poisson"], poisson_noise_mean_scaling_vec)
 )
 
 #%%

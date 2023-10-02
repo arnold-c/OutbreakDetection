@@ -138,7 +138,7 @@ function run_jump_prob(ensemble_param_dict)
         Int64, tlength, size(state_parameters.init_states, 1), nsims
     )
 
-    n_transitions = (size(state_parameters.init_states, 1) - 1) * 2 + 1
+    n_transitions = (size(state_parameters.init_states, 1) - 1) * 2 + 2
 
     ensemble_jump_arr = zeros(Int64, tlength, n_transitions, nsims)
     ensemble_beta_arr = zeros(Float64, tlength)
@@ -300,7 +300,7 @@ function OutbreakThresholdChars_creation(OT_chars_param_dict)
     outbreak_detection_specification,
     individual_test_specification = scenario_spec
 
-    @unpack noise_array = noise_specification
+    noise_array = create_poisson_noise_arr(ensemble_inc_arr, noise_specification)
 
     testarr, posoddsarr = create_testing_arrs(
         ensemble_inc_arr,
