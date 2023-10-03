@@ -13,7 +13,9 @@ include(srcdir("makie-plotting-setup.jl"))
 @unpack singlesim_time_p = load("data/singlesim/single-sim_setup.jld2")
 @unpack trange = singlesim_time_p;
 
-@unpack seir_array, change_array, jump_array, beta_arr, seir_df = load("data/singlesim/single-sim_arrays.jld2")
+@unpack seir_array, change_array, jump_array, beta_arr, seir_df = load(
+    "data/singlesim/single-sim_arrays.jld2"
+)
 
 #%%
 singlesim_timeseries_plot = draw_sir_plot(
@@ -31,15 +33,15 @@ singlesim_jump_plot = @chain DataFrame(Tables.table(jump_array)) begin
     rename!([
         "time",
         "Infect",
-        "Latent",
-        "Recov",
         "Susceptible Births",
-        "S_death",
-        "E_death",
-        "I_death",
-        "R_death",
+        "S death",
+        "R death",
         "Import",
-        "Protected Births"
+        "Protected Births",
+        "Latent",
+        "E death",
+        "Recovery",
+        "I death"
     ])
     stack(_, Not("time"); variable_name = :Jump, value_name = :Number)
     data(_) *
@@ -90,7 +92,10 @@ singlesim_si_state_space_plot = @chain DataFrame(Tables.table(seir_array)) begin
     draw
 end
 
-save(plotsdir("singlesim/single-sim_SI-state-space.png"), singlesim_si_state_space_plot)
+save(
+    plotsdir("singlesim/single-sim_SI-state-space.png"),
+    singlesim_si_state_space_plot,
+)
 
 #%%
 singlesim_beta_plot = @chain DataFrame(Tables.table(beta_arr)) begin
