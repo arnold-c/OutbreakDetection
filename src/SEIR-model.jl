@@ -41,7 +41,7 @@ function seir_mod(
         jump_arr,
         beta_arr,
         states,
-        # Vector{Float64}(undef, size(jump_arr, 2)),
+        Vector{Float64}(undef, 6),
         dynamics_params,
         time_params;
         type = type,
@@ -61,7 +61,7 @@ function seir_mod!(
     jump_arr,
     beta_arr,
     states,
-    # rates,
+    poisson_rates,
     dynamics_params,
     time_params;
     type = "stoch",
@@ -87,7 +87,7 @@ function seir_mod!(
             change_arr,
             jump_arr,
             beta_arr,
-            # rates,
+            poisson_rates,
             i,
             dynamics_params,
             time_params;
@@ -182,12 +182,13 @@ function seir_mod_loop_binom!(
     change_arr,
     jump_arr,
     beta_arr,
-    # rates,
+    poisson_rates,
     i,
     dynamics_params,
     time_params;
     type = type,
 )
+
     # TODO: Benchmak StaticArrays implementation as potentially much faster.
     # Would need to use permutedims(reshape(reinterperate(Float64, SVector), (...), (...))
     # to get it into an array that could be used later on.
@@ -199,47 +200,27 @@ function seir_mod_loop_binom!(
     @views N = state_arr[i - 1, 5]
     @views beta_t = beta_arr[i]
 
-    jump_arr[i, 1] = rand(Poisson(beta_t * S * I * time_params.tstep)) # S -> E
-    jump_arr[i, 2] = rand(
-        Binomial(E, dynamics_params.sigma * time_params.tstep)
-    ) # E -> I
-    jump_arr[i, 3] = rand(
-        Binomial(I, dynamics_params.gamma * time_params.tstep)
-    ) # I -> R
-    jump_arr[i, 4] = rand(
-        Poisson(
-            dynamics_params.mu * (1 - dynamics_params.vaccination_coverage) *
-            N * time_params.tstep,
-        ),
-    ) # Birth -> S
-    jump_arr[i, 5] = rand(Poisson(dynamics_params.mu * S * time_params.tstep)) # S -> death
-    jump_arr[i, 6] = rand(
-        Binomial(E - jump_arr[i, 2], dynamics_params.mu * time_params.tstep)
-    ) # E -> death
-    jump_arr[i, 7] = rand(
-        Binomial(I - jump_arr[i, 3], dynamics_params.mu * time_params.tstep)
-    ) # I -> death
-    jump_arr[i, 8] = rand(Poisson(dynamics_params.mu * R * time_params.tstep)) # R -> death
-    jump_arr[i, 9] = rand(
-        Poisson(
-            (dynamics_params.epsilon * N / dynamics_params.R_0) *
-            time_params.tstep,
-        ),
-    ) # Import: S -> E
-    jump_arr[i, 10] = rand(
-        Poisson(
-            dynamics_params.mu * dynamics_params.vaccination_coverage * N *
-            time_params.tstep,
-        ),
-    ) # Birth -> R
+    @inbounds poisson_rates[1] = beta_t * S * I # Contact: S -> E
+    @inbounds poisson_rates[2] = dynamics_params.mu * (1 - dynamics_params.vaccination_coverage) * N # Birth -> S
+    @inbounds poisson_rates[3] = dynamics_params.mu * S # S -> death
+    @inbounds poisson_rates[4] = dynamics_params.mu * R # R -> death
+    @inbounds poisson_rates[5] = dynamics_params.epsilon * N / dynamics_params.R_0 # Import: S -> E
+    @inbounds poisson_rates[6] = dynamics_params.mu * dynamics_params.vaccination_coverage * N # Birth -> R
+
+    @simd for r in eachindex(poisson_rates)
+        jump_arr[i, r] = rand(Poisson(poisson_rates[r] * time_params.tstep))
+    end
+
+    @inbounds jump_arr[i, 7] = rand(Binomial(E, dynamics_params.sigma * time_params.tstep)) # E -> I
+    @inbounds jump_arr[i, 8] = rand(Binomial(E - jump_arr[i, 7], dynamics_params.mu * time_params.tstep)) # E -> death
+    @inbounds jump_arr[i, 9] = rand(Binomial(I, dynamics_params.gamma * time_params.tstep)) # I -> R
+    @inbounds jump_arr[i, 10] = rand(Binomial(I - jump_arr[i, 9], dynamics_params.mu * time_params.tstep)) # I -> death
 
     # Calculate the change in each state
-    @views change_arr[i, 1] =
-        jump_arr[i, 4] - jump_arr[i, 1] - jump_arr[i, 5] - jump_arr[i, 9]
-    @views change_arr[i, 2] =
-        jump_arr[i, 1] - jump_arr[i, 2] - jump_arr[i, 6] + jump_arr[i, 9]
-    @views change_arr[i, 3] = jump_arr[i, 2] - jump_arr[i, 3] - jump_arr[i, 7]
-    @views change_arr[i, 4] = jump_arr[i, 3] - jump_arr[i, 8] + jump_arr[i, 10]
+    @views change_arr[i, 1] = jump_arr[i, 2] - (jump_arr[i, 1] + jump_arr[i, 5] + jump_arr[i, 3])
+    @views change_arr[i, 2] = (jump_arr[i, 1] + jump_arr[i, 5]) - (jump_arr[i, 7] + jump_arr[i, 8])
+    @views change_arr[i, 3] = jump_arr[i, 7] - (jump_arr[i, 9] - jump_arr[i, 10])
+    @views change_arr[i, 4] = (jump_arr[i, 6] + jump_arr[i, 9]) - jump_arr[i, 4]
     @views change_arr[i, 5] = sum(change_arr[i, 1:4])
 
     @views previous_states = state_arr[i - 1, :]
