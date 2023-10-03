@@ -41,7 +41,7 @@ function seir_mod(
         jump_arr,
         beta_arr,
         states,
-        # Vector{Float64}(undef, size(jump_arr, 2)),
+        Vector{Float64}(undef, size(jump_arr, 2)),
         dynamics_params,
         time_params;
         type = type,
@@ -61,7 +61,7 @@ function seir_mod!(
     jump_arr,
     beta_arr,
     states,
-    # rates,
+    rates,
     dynamics_params,
     time_params;
     type = "stoch",
@@ -75,8 +75,8 @@ function seir_mod!(
         time_params.trange,
     )
 
-    leave_rates = Vector{Float64}(undef, 2)
-    leave_vec = Vector{Int64}(undef, 3)
+    # leave_rates = Vector{Float64}(undef, 3)
+    # leave_vec = Vector{Int64}(undef, 3)
 
     @inbounds for i in eachindex(time_params.trange)
         if i == 1
@@ -84,14 +84,15 @@ function seir_mod!(
             continue
         end
 
-        seir_mod_loop_multinomial!(
+        seir_mod_loop!(
+        # seir_mod_loop_multinomial!(
             state_arr,
             change_arr,
             jump_arr,
             beta_arr,
-            leave_rates,
-            leave_vec,
-            # rates,
+            # leave_rates,
+            # leave_vec,
+            rates,
             i,
             dynamics_params,
             time_params;
@@ -258,13 +259,15 @@ function seir_mod_loop_multinomial!(
     # leave_rates = [dynamics_params.sigma * time_params.tstep, dynamics_params.mu * time_params.tstep]
     @inbounds leave_rates[1] = dynamics_params.sigma * time_params.tstep
     @inbounds leave_rates[2] = dynamics_params.mu * time_params.tstep
-    @views leave_vec .= rand(Multinomial(E, [leave_rates[1], leave_rates[2], 1 - sum(leave_rates)]))
+    @inbounds leave_rates[3] = 1 - sum(@view(leave_rates[1:2]))
+    leave_vec .= rand(Multinomial(E, leave_rates))
     @inbounds jump_arr[i, 2] = leave_vec[1]
     @inbounds jump_arr[i, 6] = leave_vec[2]
 
     @inbounds leave_rates[1] = dynamics_params.sigma * time_params.tstep
     @inbounds leave_rates[2] = dynamics_params.mu * time_params.tstep
-    @views leave_vec .= rand(Multinomial(I, [leave_rates[1], leave_rates[2], 1 - sum(leave_rates)]))
+    @inbounds leave_rates[3] = 1 - sum(@view(leave_rates[1:2]))
+    leave_vec .= rand(Multinomial(I, leave_rates))
     @inbounds jump_arr[i, 3] = leave_vec[1]
     @inbounds jump_arr[i, 7] = leave_vec[2]
 
