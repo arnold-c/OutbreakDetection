@@ -28,10 +28,10 @@ function seir_mod(
 )
     Random.seed!(seed)
 
-    state_arr = zeros(Float64, time_params.tlength, size(states, 1))
+    state_arr = zeros(Int64, time_params.tlength, size(states, 1))
     change_arr = similar(state_arr)
     jump_arr = zeros(
-        Float64, time_params.tlength, (size(states, 1) - 1) * 2 + 2
+        Int64, time_params.tlength, (size(states, 1) - 1) * 2 + 2
     )
     beta_arr = zeros(Float64, time_params.tlength)
 
@@ -41,7 +41,7 @@ function seir_mod(
         jump_arr,
         beta_arr,
         states,
-        Vector{Float64}(undef, size(jump_arr, 2)),
+        # Vector{Float64}(undef, size(jump_arr, 2)),
         dynamics_params,
         time_params;
         type = type,
@@ -61,7 +61,7 @@ function seir_mod!(
     jump_arr,
     beta_arr,
     states,
-    rates,
+    # rates,
     dynamics_params,
     time_params;
     type = "stoch",
@@ -75,18 +75,23 @@ function seir_mod!(
         time_params.trange,
     )
 
+    leave_rates = Vector{Float64}(undef, 2)
+    leave_vec = Vector{Int64}(undef, 3)
+
     @inbounds for i in eachindex(time_params.trange)
         if i == 1
             state_arr[i, :] .= states
             continue
         end
 
-        seir_mod_loop!(
+        seir_mod_loop_multinomial!(
             state_arr,
             change_arr,
             jump_arr,
             beta_arr,
-            rates,
+            leave_rates,
+            leave_vec,
+            # rates,
             i,
             dynamics_params,
             time_params;
@@ -175,4 +180,114 @@ function seir_mod_loop!(
     return nothing
 end
 
+function seir_mod_loop_binom!(
+    state_arr,
+    change_arr,
+    jump_arr,
+    beta_arr,
+    # rates,
+    i,
+    dynamics_params,
+    time_params;
+    type = type,
+)
+    # TODO: Benchmak StaticArrays implementation as potentially much faster.
+    # Would need to use permutedims(reshape(reinterperate(Float64, SVector), (...), (...))
+    # to get it into an array that could be used later on.
+    # Create views of the state variables for easier use
+    @views S = state_arr[i - 1, 1]
+    @views E = state_arr[i - 1, 2]
+    @views I = state_arr[i - 1, 3]
+    @views R = state_arr[i - 1, 4]
+    @views N = state_arr[i - 1, 5]
+    @views beta_t = beta_arr[i]
+
+    jump_arr[i, 1] = rand(Poisson(beta_t * S * I * time_params.tstep)) # S -> E
+    jump_arr[i, 2] = rand(Binomial(E, dynamics_params.sigma * time_params.tstep)) # E -> I
+    jump_arr[i, 3] = rand(Binomial(I, dynamics_params.gamma * time_params.tstep)) # I -> R
+    jump_arr[i, 4] = rand(Poisson(dynamics_params.mu * (1 - dynamics_params.vaccination_coverage) * N * time_params.tstep)) # Birth -> S
+    jump_arr[i, 5] = rand(Poisson(dynamics_params.mu * S * time_params.tstep)) # S -> death
+    jump_arr[i, 6] = rand(Binomial(E - jump_arr[i, 2], dynamics_params.mu * time_params.tstep)) # E -> death
+    jump_arr[i, 7] = rand(Binomial(I - jump_arr[i, 3], dynamics_params.mu * time_params.tstep)) # I -> death
+    jump_arr[i, 8] = rand(Poisson(dynamics_params.mu * R * time_params.tstep)) # R -> death
+    jump_arr[i, 9] = rand(Poisson((dynamics_params.epsilon * N / dynamics_params.R_0) * time_params.tstep)) # Import: S -> E
+    jump_arr[i, 10] = rand(Poisson(dynamics_params.mu * dynamics_params.vaccination_coverage * N * time_params.tstep)) # Birth -> R
+
+
+    # Calculate the change in each state
+    @views change_arr[i, 1] =
+        jump_arr[i, 4] - jump_arr[i, 1] - jump_arr[i, 5] - jump_arr[i, 9]
+    @views change_arr[i, 2] =
+        jump_arr[i, 1] - jump_arr[i, 2] - jump_arr[i, 6] + jump_arr[i, 9]
+    @views change_arr[i, 3] = jump_arr[i, 2] - jump_arr[i, 3] - jump_arr[i, 7]
+    @views change_arr[i, 4] = jump_arr[i, 3] - jump_arr[i, 8] + jump_arr[i, 10]
+    @views change_arr[i, 5] = sum(change_arr[i, 1:4])
+
+    @views previous_states = state_arr[i - 1, :]
+    @views current_changes = change_arr[i, :]
+    @. state_arr[i, :] = previous_states + current_changes
+
+    return nothing
+end
+
+function seir_mod_loop_multinomial!(
+    state_arr,
+    change_arr,
+    jump_arr,
+    beta_arr,
+    leave_rates,
+    leave_vec,
+    i,
+    dynamics_params,
+    time_params;
+    type = type,
+)
+    # TODO: Benchmak StaticArrays implementation as potentially much faster.
+    # Would need to use permutedims(reshape(reinterperate(Float64, SVector), (...), (...))
+    # to get it into an array that could be used later on.
+    # Create views of the state variables for easier use
+    @views S = state_arr[i - 1, 1]
+    @views E = state_arr[i - 1, 2]
+    @views I = state_arr[i - 1, 3]
+    @views R = state_arr[i - 1, 4]
+    @views N = state_arr[i - 1, 5]
+    @views beta_t = beta_arr[i]
+
+    jump_arr[i, 1] = rand(Poisson(beta_t * S * I * time_params.tstep)) # S -> E
+
+    # leave_rates = [dynamics_params.sigma * time_params.tstep, dynamics_params.mu * time_params.tstep]
+    @inbounds leave_rates[1] = dynamics_params.sigma * time_params.tstep
+    @inbounds leave_rates[2] = dynamics_params.mu * time_params.tstep
+    @views leave_vec .= rand(Multinomial(E, [leave_rates[1], leave_rates[2], 1 - sum(leave_rates)]))
+    @inbounds jump_arr[i, 2] = leave_vec[1]
+    @inbounds jump_arr[i, 6] = leave_vec[2]
+
+    @inbounds leave_rates[1] = dynamics_params.sigma * time_params.tstep
+    @inbounds leave_rates[2] = dynamics_params.mu * time_params.tstep
+    @views leave_vec .= rand(Multinomial(I, [leave_rates[1], leave_rates[2], 1 - sum(leave_rates)]))
+    @inbounds jump_arr[i, 3] = leave_vec[1]
+    @inbounds jump_arr[i, 7] = leave_vec[2]
+
+    jump_arr[i, 4] = rand(Poisson(dynamics_params.mu * (1 - dynamics_params.vaccination_coverage) * N * time_params.tstep)) # Birth -> S
+    jump_arr[i, 5] = rand(Poisson(dynamics_params.mu * S * time_params.tstep)) # S -> death
+    jump_arr[i, 8] = rand(Poisson(dynamics_params.mu * R * time_params.tstep)) # R -> death
+    jump_arr[i, 9] = rand(Poisson((dynamics_params.epsilon * N / dynamics_params.R_0) * time_params.tstep)) # Import: S -> E
+    jump_arr[i, 10] = rand(Poisson(dynamics_params.mu * dynamics_params.vaccination_coverage * N * time_params.tstep)) # Birth -> R
+
+
+    # Calculate the change in each state
+    @views change_arr[i, 1] =
+        jump_arr[i, 4] - jump_arr[i, 1] - jump_arr[i, 5] - jump_arr[i, 9]
+    @views change_arr[i, 2] =
+        jump_arr[i, 1] - jump_arr[i, 2] - jump_arr[i, 6] + jump_arr[i, 9]
+    @views change_arr[i, 3] = jump_arr[i, 2] - jump_arr[i, 3] - jump_arr[i, 7]
+    @views change_arr[i, 4] = jump_arr[i, 3] - jump_arr[i, 8] + jump_arr[i, 10]
+    @views change_arr[i, 5] = sum(change_arr[i, 1:4])
+
+    @views previous_states = state_arr[i - 1, :]
+    @views current_changes = change_arr[i, :]
+    @. state_arr[i, :] = previous_states + current_changes
+
+    return nothing
+end
 # end
