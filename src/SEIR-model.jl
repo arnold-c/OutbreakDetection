@@ -202,17 +202,29 @@ function seir_mod_static!(
         time_params.trange,
     )
 
-    @inbounds for i in eachindex(time_params.trange)
-        if i == 1
-            state_vec[i] = states
-            continue
-        end
+    @inbounds begin
+        mu = dynamics_params.mu
+        epsilon = dynamics_params.epsilon
+        sigma = dynamics_params.sigma
+        gamma = dynamics_params.gamma
+        R_0 = dynamics_params.R_0
+        vaccination_coverage = dynamics_params.vaccination_coverage
+        timestep = time_params.tstep
 
+        state_vec[1] = states
+    end
+
+    @inbounds for i in 2:time_params.tlength
         state_vec[i] = seir_mod_static_loop!(
             state_vec[i - 1],
             beta_vec[i],
-            dynamics_params,
-            time_params;
+            mu,
+            epsilon,
+            sigma,
+            gamma,
+            R_0,
+            vaccination_coverage,
+            timestep;
             type = type,
         )
     end
@@ -228,8 +240,13 @@ The inner loop that is called by `seir_mod!()` function.
 function seir_mod_static_loop!(
     state_vec,
     beta_t,
-    dynamics_params,
-    time_params;
+    mu,
+    epsilon,
+    sigma,
+    gamma,
+    R_0,
+    vaccination_coverage,
+    timestep;
     type = type,
 )
 
@@ -244,17 +261,16 @@ function seir_mod_static_loop!(
         R = state_vec[4]
         N = state_vec[5]
 
-        contact_inf = rand(Poisson(beta_t * S * I)) # Contact: S -> E
-        S_births =
-            rand(Poisson(dynamics_params.mu * (1 - dynamics_params.vaccination_coverage) * N)) # Birth -> S
-        S_death = rand(Poisson(dynamics_params.mu * S)) # S -> death
-        R_death = rand(Poisson(dynamics_params.mu * R)) # R -> death
-        import_inf = rand(Poisson(dynamics_params.epsilon * N / dynamics_params.R_0)) # Import: S -> E
-        R_births = rand(Poisson(dynamics_params.mu * dynamics_params.vaccination_coverage * N)) # Birth -> R
-        latent = rand(Binomial(E, dynamics_params.sigma)) # E -> I
-        E_death = rand(Binomial(E - latent, dynamics_params.mu)) # E -> death
-        recovery = rand(Binomial(I, dynamics_params.gamma)) # I -> R
-        I_death = rand(Binomial(I - recovery, dynamics_params.mu)) # I -> death
+        contact_inf = rand(Poisson(beta_t * S * I * timestep)) # Contact: S -> E
+        S_births = rand(Poisson(mu * (1 - vaccination_coverage) * N * timestep)) # Birth -> S
+        S_death = rand(Poisson(mu * S * timestep)) # S -> death
+        R_death = rand(Poisson(mu * R * timestep)) # R -> death
+        import_inf = rand(Poisson((epsilon * N / R_0) * timestep)) # Import: S -> E
+        R_births = rand(Poisson(mu * vaccination_coverage * N * timestep)) # Birth -> R
+        latent = rand(Binomial(E, sigma * timestep)) # E -> I
+        E_death = rand(Binomial(E - latent, mu * timestep)) # E -> death
+        recovery = rand(Binomial(I, gamma * timestep)) # I -> R
+        I_death = rand(Binomial(I - recovery, mu * timestep)) # I -> death
 
         dS = S_births - (contact_inf + import_inf + S_death)
         dE = (contact_inf + import_inf) - (latent + E_death)
@@ -265,66 +281,6 @@ function seir_mod_static_loop!(
 
     return @SVector [S + dS, E + dE, I + dI, R + dR, N + dN, contact_inf]
 
-    # @inbounds begin
-    #     poisson_rates[1] = beta_t * S * I # Contact: S -> E
-    #     poisson_rates[2] =
-    #         dynamics_params.mu * (1 - dynamics_params.vaccination_coverage) * N # Birth -> S
-    #     poisson_rates[3] = dynamics_params.mu * S # S -> death
-    #     poisson_rates[4] = dynamics_params.mu * R # R -> death
-    #     poisson_rates[5] = dynamics_params.epsilon * N / dynamics_params.R_0 # Import: S -> E
-    #     poisson_rates[6] =
-    #         dynamics_params.mu * dynamics_params.vaccination_coverage * N # Birth -> R
-    # end
-
-    # @simd for r in eachindex(poisson_rates)
-    #     jump_vec[r] = rand(Poisson(poisson_rates[r] * time_params.tstep))
-    # end
-
-    # @inbounds begin
-    #     jump_vec[7] = rand(
-    #         Binomial(E, dynamics_params.sigma * time_params.tstep)
-    #     ) # E -> I
-    #     jump_vec[8] = rand(
-    #         Binomial(E - jump_vec[7], dynamics_params.mu * time_params.tstep)
-    #     ) # E -> death
-    #     jump_vec[9] = rand(
-    #         Binomial(I, dynamics_params.gamma * time_params.tstep)
-    #     ) # I -> R
-    #     jump_vec[10] = rand(
-    #         Binomial(I - jump_vec[9], dynamics_params.mu * time_params.tstep)
-    #     ) # I -> death
-    # end
-    #
-    # @inbounds begin
-    #     contact_inf = jump_vec[1]
-    #     S_births = jump_vec[2]
-    #     S_death = jump_vec[3]
-    #     R_death = jump_vec[4]
-    #     import_inf = jump_vec[5]
-    #     R_births = jump_vec[6]
-    #     latent = jump_vec[7]
-    #     E_death = jump_vec[8]
-    #     recovery = jump_vec[9]
-    #     I_death = jump_vec[10]
-    # end
-
-    # Calculate the change in each state
-    # @inbounds begin
-    #     change_vec[1] = S_births - (contact_inf + import_inf + S_death)
-    #     change_vec[2] = (contact_inf + import_inf) - (latent + E_death)
-    #     change_vec[3] = latent - (recovery + I_death)
-    #     change_vec[4] = (recovery + R_births) - R_death
-    #     change_vec[5] = sum(@view(change_vec[1:4]))
-    # end
-
-    # return @SVector [
-    #     state_vec[1] + change_vec[1],
-    #     state_vec[2] + change_vec[2],
-    #     state_vec[3] + change_vec[3],
-    #     state_vec[4] + change_vec[4],
-    #     state_vec[5] + change_vec[5],
-    #     jump_vec[1],
-    # ]
 end
 
 # end
