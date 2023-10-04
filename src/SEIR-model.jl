@@ -138,12 +138,23 @@ function seir_mod_loop!(
     @inbounds jump_vec[9] = rand(Binomial(I, dynamics_params.gamma * time_params.tstep)) # I -> R
     @inbounds jump_vec[10] = rand(Binomial(I - jump_vec[9], dynamics_params.mu * time_params.tstep)) # I -> death
 
+    @inbounds contact_inf = jump_vec[1]
+    @inbounds S_births = jump_vec[2]
+    @inbounds S_death = jump_vec[3]
+    @inbounds R_death = jump_vec[4]
+    @inbounds import_inf = jump_vec[5]
+    @inbounds R_births = jump_vec[6]
+    @inbounds latent = jump_vec[7]
+    @inbounds E_death = jump_vec[8]
+    @inbounds recovery = jump_vec[9]
+    @inbounds I_death = jump_vec[10]
+
     # Calculate the change in each state
-    @views change_vec[1] = jump_vec[2] - (jump_vec[1] + jump_vec[5] + jump_vec[3])
-    @views change_vec[2] = (jump_vec[1] + jump_vec[5]) - (jump_vec[7] + jump_vec[8])
-    @views change_vec[3] = jump_vec[7] - (jump_vec[9] - jump_vec[10])
-    @views change_vec[4] = (jump_vec[6] + jump_vec[9]) - jump_vec[4]
-    @views change_vec[5] = sum(change_vec[1:4])
+    @inbounds change_vec[1] = S_births - (contact_inf + import_inf + S_death)
+    @inbounds change_vec[2] = (contact_inf + import_inf) - (latent + E_death)
+    @inbounds change_vec[3] = latent - (recovery + I_death)
+    @inbounds change_vec[4] = (recovery + R_births) - R_death
+    @inbounds change_vec[5] = sum(@view(change_vec[1:4]))
 
     @simd for j in 1:5
         @views state_arr[i, j] = state_arr[i - 1, j] + change_vec[j]
