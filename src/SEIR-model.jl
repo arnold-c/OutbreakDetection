@@ -186,6 +186,7 @@ function seir_mod_loop!(
 end
 
 function seir_mod_static!(
+    state_arr,
     state_vec,
     beta_vec,
     states,
@@ -230,7 +231,11 @@ function seir_mod_static!(
         )
     end
 
-    return nothing
+    return permutedims!(
+        state_arr, reshape(reinterpret(Int64, state_vec), (6, length(trange))),
+        (2, 1),
+    )
+
 end
 
 """

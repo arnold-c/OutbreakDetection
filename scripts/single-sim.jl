@@ -66,6 +66,7 @@ seir_mod_static!(
 )
 
 @benchmark seir_mod_static!(
+    $seir_array,
     $seir_vec,
     $beta_arr,
     $init_states_static,
@@ -73,6 +74,7 @@ seir_mod_static!(
     $singlesim_time_p;
     type = "stoch", seed = $1234,
 )
+
 
 seir_array = permutedims(
     reshape(reinterpret(Int64, seir_vec), (6, length(singlesim_time_p.trange))),
