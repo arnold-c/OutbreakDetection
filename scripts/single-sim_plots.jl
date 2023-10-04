@@ -22,7 +22,7 @@ singlesim_timeseries_plot = draw_sir_plot(
     seir_df;
     annual = true,
     colors = seircolors,
-    labels = seir_state_labels
+    labels = ["S", "E", "I", "R", "N", "incidence"]
 )
 
 save(plotsdir("singlesim/single-sim_timeseries.png"), singlesim_timeseries_plot)

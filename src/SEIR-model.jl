@@ -13,6 +13,7 @@ using Distributions
 using Random
 using UnPack
 using LoopVectorization
+using StaticArrays
 
 """
     seir_mod(states, dynamics_params, trange; tstep, type = "stoch")
@@ -28,17 +29,13 @@ function seir_mod(
 )
     Random.seed!(seed)
 
-    state_arr = zeros(Int64, time_params.tlength, size(states, 1))
-    change_arr = similar(state_arr)
-    jump_arr = zeros(
-        Int64, time_params.tlength, (size(states, 1) - 1) * 2 + 2
-    )
+    state_arr = zeros(Int64, time_params.tlength, size(states, 1) + 1)
     beta_arr = zeros(Float64, time_params.tlength)
 
     seir_mod!(
         state_arr,
-        change_arr,
-        jump_arr,
+        Vector{Int64}(undef, 5),
+        Vector{Int64}(undef, 10),
         beta_arr,
         states,
         Vector{Float64}(undef, 6),
@@ -47,7 +44,7 @@ function seir_mod(
         type = type,
         seed = seed,
     )
-    return state_arr, change_arr, jump_arr, beta_arr
+    return state_arr, beta_arr
 end
 
 """
@@ -57,8 +54,8 @@ The in-place function to run the SEIR model and produce the transmission rate ar
 """
 function seir_mod!(
     state_arr,
-    change_arr,
-    jump_arr,
+    change_vec,
+    jump_vec,
     beta_arr,
     states,
     poisson_rates,
@@ -77,15 +74,14 @@ function seir_mod!(
 
     @inbounds for i in eachindex(time_params.trange)
         if i == 1
-            state_arr[i, :] .= states
+            state_arr[i, :] .= [states..., 0]
             continue
         end
 
-        # seir_mod_loop!(
-        seir_mod_loop_binom!(
+        seir_mod_loop!(
             state_arr,
-            change_arr,
-            jump_arr,
+            change_vec,
+            jump_vec,
             beta_arr,
             poisson_rates,
             i,
@@ -105,82 +101,8 @@ The inner loop that is called by `seir_mod!()` function.
 """
 function seir_mod_loop!(
     state_arr,
-    change_arr,
-    jump_arr,
-    beta_arr,
-    rates,
-    i,
-    dynamics_params,
-    time_params;
-    type = type,
-)
-    # TODO: Benchmak StaticArrays implementation as potentially much faster.
-    # Would need to use permutedims(reshape(reinterperate(Float64, SVector), (...), (...))
-    # to get it into an array that could be used later on.
-    # Create views of the state variables for easier use
-    @views S = state_arr[i - 1, 1]
-    @views E = state_arr[i - 1, 2]
-    @views I = state_arr[i - 1, 3]
-    @views R = state_arr[i - 1, 4]
-    @views N = state_arr[i - 1, 5]
-    @views beta_t = beta_arr[i]
-
-    # Calculate the rates of each event
-    rates[1] = beta_t * S * I                   # Contact: S -> E
-    rates[2] = dynamics_params.sigma * E        # E -> I
-    rates[3] = dynamics_params.gamma * I        # I -> R
-    rates[4] =
-        dynamics_params.mu * (1 - dynamics_params.vaccination_coverage) * N           # Birth -> S
-    rates[5] = dynamics_params.mu * S           # S -> death
-    rates[6] = dynamics_params.mu * E           # E -> death
-    rates[7] = dynamics_params.mu * I           # I -> death
-    rates[8] = dynamics_params.mu * R           # R -> death
-    rates[9] = dynamics_params.epsilon * N / dynamics_params.R_0        # Import: S -> E
-    rates[10] = dynamics_params.mu * dynamics_params.vaccination_coverage * N    # Birth -> R
-
-    # Calculate the number of jumps for each event
-    if type == "stoch"
-        @simd for r in eachindex(rates)
-            jump_arr[i, r] = rand(Poisson(rates[r] * time_params.tstep))
-        end
-    elseif type == "det"
-        @simd for r in eachindex(rates)
-            jump_arr[i, r] = rates[r] * time_params.tstep
-        end
-    else
-        return ("Type must be stoch or det")
-    end
-
-    # Calculate the change in each state
-    @views change_arr[i, 1] =
-        jump_arr[i, 4] - jump_arr[i, 1] - jump_arr[i, 5] - jump_arr[i, 9]
-    @views change_arr[i, 2] =
-        jump_arr[i, 1] - jump_arr[i, 2] - jump_arr[i, 6] + jump_arr[i, 9]
-    @views change_arr[i, 3] = jump_arr[i, 2] - jump_arr[i, 3] - jump_arr[i, 7]
-    @views change_arr[i, 4] = jump_arr[i, 3] - jump_arr[i, 8] + jump_arr[i, 10]
-
-    # Check that the change in each state does not result in a negative state,
-    # and if it is, set the change to the negative of the current state (i.e.
-    # set the new state value to 0)
-    for state in axes(state_arr, 2)
-        @views if state_arr[i - 1, state] + change_arr[i, state] < 0
-            @views change_arr[i, state] = -state_arr[i - 1, state]
-        end
-    end
-
-    @views change_arr[i, 5] = sum(change_arr[i, 1:4])
-
-    @views previous_states = state_arr[i - 1, :]
-    @views current_changes = change_arr[i, :]
-    @. state_arr[i, :] = previous_states + current_changes
-
-    return nothing
-end
-
-function seir_mod_loop_binom!(
-    state_arr,
-    change_arr,
-    jump_arr,
+    change_vec,
+    jump_vec,
     beta_arr,
     poisson_rates,
     i,
@@ -208,24 +130,25 @@ function seir_mod_loop_binom!(
     @inbounds poisson_rates[6] = dynamics_params.mu * dynamics_params.vaccination_coverage * N # Birth -> R
 
     @simd for r in eachindex(poisson_rates)
-        jump_arr[i, r] = rand(Poisson(poisson_rates[r] * time_params.tstep))
+        jump_vec[r] = rand(Poisson(poisson_rates[r] * time_params.tstep))
     end
 
-    @inbounds jump_arr[i, 7] = rand(Binomial(E, dynamics_params.sigma * time_params.tstep)) # E -> I
-    @inbounds jump_arr[i, 8] = rand(Binomial(E - jump_arr[i, 7], dynamics_params.mu * time_params.tstep)) # E -> death
-    @inbounds jump_arr[i, 9] = rand(Binomial(I, dynamics_params.gamma * time_params.tstep)) # I -> R
-    @inbounds jump_arr[i, 10] = rand(Binomial(I - jump_arr[i, 9], dynamics_params.mu * time_params.tstep)) # I -> death
+    @inbounds jump_vec[7] = rand(Binomial(E, dynamics_params.sigma * time_params.tstep)) # E -> I
+    @inbounds jump_vec[8] = rand(Binomial(E - jump_vec[7], dynamics_params.mu * time_params.tstep)) # E -> death
+    @inbounds jump_vec[9] = rand(Binomial(I, dynamics_params.gamma * time_params.tstep)) # I -> R
+    @inbounds jump_vec[10] = rand(Binomial(I - jump_vec[9], dynamics_params.mu * time_params.tstep)) # I -> death
 
     # Calculate the change in each state
-    @views change_arr[i, 1] = jump_arr[i, 2] - (jump_arr[i, 1] + jump_arr[i, 5] + jump_arr[i, 3])
-    @views change_arr[i, 2] = (jump_arr[i, 1] + jump_arr[i, 5]) - (jump_arr[i, 7] + jump_arr[i, 8])
-    @views change_arr[i, 3] = jump_arr[i, 7] - (jump_arr[i, 9] - jump_arr[i, 10])
-    @views change_arr[i, 4] = (jump_arr[i, 6] + jump_arr[i, 9]) - jump_arr[i, 4]
-    @views change_arr[i, 5] = sum(change_arr[i, 1:4])
+    @views change_vec[1] = jump_vec[2] - (jump_vec[1] + jump_vec[5] + jump_vec[3])
+    @views change_vec[2] = (jump_vec[1] + jump_vec[5]) - (jump_vec[7] + jump_vec[8])
+    @views change_vec[3] = jump_vec[7] - (jump_vec[9] - jump_vec[10])
+    @views change_vec[4] = (jump_vec[6] + jump_vec[9]) - jump_vec[4]
+    @views change_vec[5] = sum(change_vec[1:4])
 
-    @views previous_states = state_arr[i - 1, :]
-    @views current_changes = change_arr[i, :]
-    @. state_arr[i, :] = previous_states + current_changes
+    @simd for j in 1:5
+        @views state_arr[i, j] = state_arr[i - 1, j] + change_vec[j]
+    end
+    @inbounds state_arr[i, end] = jump_vec[1]
 
     return nothing
 end

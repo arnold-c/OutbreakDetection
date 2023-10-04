@@ -11,13 +11,13 @@ using OutbreakDetection
 @unpack singlesim_states_p, singlesim_time_p, singlesim_dynamics_p = load("data/singlesim/single-sim_setup.jld2")
 
 #%%
-seir_array, change_array, jump_array, beta_arr = seir_mod(
+seir_array, beta_arr = seir_mod(
     singlesim_states_p.init_states, singlesim_dynamics_p, singlesim_time_p;
     type = "stoch", seed = 1234,
 );
 
 seir_df = create_sir_df(
-    seir_array, singlesim_time_p.trange, [:S, :E, :I, :R, :N]
+    seir_array, singlesim_time_p.trange, [:S, :E, :I, :R, :N, :incidence]
 )
 
 #%%
@@ -28,8 +28,8 @@ seir_df = create_sir_df(
 
 @benchmark seir_mod!(
     $seir_array,
-    $change_array,
-    $jump_array,
+    $Vector{Int64}(undef, 5),
+    $Vector{Int64}(undef, 10),
     $beta_arr,
     $singlesim_states_p.init_states,
     $Vector{Float64}(undef, 6),
