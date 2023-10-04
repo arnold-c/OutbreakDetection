@@ -57,11 +57,8 @@ seir_vec = Vector{typeof(init_states_static)}(
 
 seir_mod_static!(
     seir_vec,
-    MVector{5,Int64}(undef),
-    MVector{10,Int64}(undef),
     beta_arr,
     init_states_static,
-    MVector{6,Float64}(undef),
     singlesim_dynamics_p,
     singlesim_time_p;
     type = "stoch", seed = 1234,
@@ -69,14 +66,16 @@ seir_mod_static!(
 
 @benchmark seir_mod_static!(
     $seir_vec,
-    $MVector{5,Int64}(undef),
-    $MVector{10,Int64}(undef),
     $beta_arr,
     $init_states_static,
-    $MVector{6,Float64}(undef),
     $singlesim_dynamics_p,
     $singlesim_time_p;
     type = "stoch", seed = $1234,
+)
+
+seir_array = permutedims(reshape(reinterpret(Int64, seir_vec), (6, length(singlesim_time_p.trange))), (2, 1))
+seir_df = create_sir_df(
+    seir_array, singlesim_time_p.trange, [:S, :E, :I, :R, :N, :incidence]
 )
 
 #%%

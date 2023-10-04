@@ -187,11 +187,8 @@ end
 
 function seir_mod_static!(
     state_vec,
-    change_vec,
-    jump_vec,
     beta_vec,
     states,
-    poisson_rates,
     dynamics_params,
     time_params;
     type = "stoch",
@@ -213,10 +210,7 @@ function seir_mod_static!(
 
         state_vec[i] = seir_mod_static_loop!(
             state_vec[i - 1],
-            change_vec,
-            jump_vec,
             beta_vec[i],
-            poisson_rates,
             dynamics_params,
             time_params;
             type = type,
@@ -233,10 +227,7 @@ The inner loop that is called by `seir_mod!()` function.
 """
 function seir_mod_static_loop!(
     state_vec,
-    change_vec,
-    jump_vec,
     beta_t,
-    poisson_rates,
     dynamics_params,
     time_params;
     type = type,
@@ -252,68 +243,88 @@ function seir_mod_static_loop!(
         I = state_vec[3]
         R = state_vec[4]
         N = state_vec[5]
+
+        contact_inf = rand(Poisson(beta_t * S * I)) # Contact: S -> E
+        S_births =
+            rand(Poisson(dynamics_params.mu * (1 - dynamics_params.vaccination_coverage) * N)) # Birth -> S
+        S_death = rand(Poisson(dynamics_params.mu * S)) # S -> death
+        R_death = rand(Poisson(dynamics_params.mu * R)) # R -> death
+        import_inf = rand(Poisson(dynamics_params.epsilon * N / dynamics_params.R_0)) # Import: S -> E
+        R_births = rand(Poisson(dynamics_params.mu * dynamics_params.vaccination_coverage * N)) # Birth -> R
+        latent = rand(Binomial(E, dynamics_params.sigma)) # E -> I
+        E_death = rand(Binomial(E - latent, dynamics_params.mu)) # E -> death
+        recovery = rand(Binomial(I, dynamics_params.gamma)) # I -> R
+        I_death = rand(Binomial(I - recovery, dynamics_params.mu)) # I -> death
+
+        dS = S_births - (contact_inf + import_inf + S_death)
+        dE = (contact_inf + import_inf) - (latent + E_death)
+        dI = latent - (recovery + I_death)
+        dR = (recovery + R_births) - R_death
+        dN = dS + dE + dI + dR
     end
 
-    @inbounds begin
-        poisson_rates[1] = beta_t * S * I # Contact: S -> E
-        poisson_rates[2] =
-            dynamics_params.mu * (1 - dynamics_params.vaccination_coverage) * N # Birth -> S
-        poisson_rates[3] = dynamics_params.mu * S # S -> death
-        poisson_rates[4] = dynamics_params.mu * R # R -> death
-        poisson_rates[5] = dynamics_params.epsilon * N / dynamics_params.R_0 # Import: S -> E
-        poisson_rates[6] =
-            dynamics_params.mu * dynamics_params.vaccination_coverage * N # Birth -> R
-    end
+    return @SVector [S + dS, E + dE, I + dI, R + dR, N + dN, contact_inf]
 
-    @simd for r in eachindex(poisson_rates)
-        jump_vec[r] = rand(Poisson(poisson_rates[r] * time_params.tstep))
-    end
+    # @inbounds begin
+    #     poisson_rates[1] = beta_t * S * I # Contact: S -> E
+    #     poisson_rates[2] =
+    #         dynamics_params.mu * (1 - dynamics_params.vaccination_coverage) * N # Birth -> S
+    #     poisson_rates[3] = dynamics_params.mu * S # S -> death
+    #     poisson_rates[4] = dynamics_params.mu * R # R -> death
+    #     poisson_rates[5] = dynamics_params.epsilon * N / dynamics_params.R_0 # Import: S -> E
+    #     poisson_rates[6] =
+    #         dynamics_params.mu * dynamics_params.vaccination_coverage * N # Birth -> R
+    # end
 
-    @inbounds begin
-        jump_vec[7] = rand(
-            Binomial(E, dynamics_params.sigma * time_params.tstep)
-        ) # E -> I
-        jump_vec[8] = rand(
-            Binomial(E - jump_vec[7], dynamics_params.mu * time_params.tstep)
-        ) # E -> death
-        jump_vec[9] = rand(
-            Binomial(I, dynamics_params.gamma * time_params.tstep)
-        ) # I -> R
-        jump_vec[10] = rand(
-            Binomial(I - jump_vec[9], dynamics_params.mu * time_params.tstep)
-        ) # I -> death
-    end
+    # @simd for r in eachindex(poisson_rates)
+    #     jump_vec[r] = rand(Poisson(poisson_rates[r] * time_params.tstep))
+    # end
 
-    @inbounds begin
-        contact_inf = jump_vec[1]
-        S_births = jump_vec[2]
-        S_death = jump_vec[3]
-        R_death = jump_vec[4]
-        import_inf = jump_vec[5]
-        R_births = jump_vec[6]
-        latent = jump_vec[7]
-        E_death = jump_vec[8]
-        recovery = jump_vec[9]
-        I_death = jump_vec[10]
-    end
+    # @inbounds begin
+    #     jump_vec[7] = rand(
+    #         Binomial(E, dynamics_params.sigma * time_params.tstep)
+    #     ) # E -> I
+    #     jump_vec[8] = rand(
+    #         Binomial(E - jump_vec[7], dynamics_params.mu * time_params.tstep)
+    #     ) # E -> death
+    #     jump_vec[9] = rand(
+    #         Binomial(I, dynamics_params.gamma * time_params.tstep)
+    #     ) # I -> R
+    #     jump_vec[10] = rand(
+    #         Binomial(I - jump_vec[9], dynamics_params.mu * time_params.tstep)
+    #     ) # I -> death
+    # end
+    #
+    # @inbounds begin
+    #     contact_inf = jump_vec[1]
+    #     S_births = jump_vec[2]
+    #     S_death = jump_vec[3]
+    #     R_death = jump_vec[4]
+    #     import_inf = jump_vec[5]
+    #     R_births = jump_vec[6]
+    #     latent = jump_vec[7]
+    #     E_death = jump_vec[8]
+    #     recovery = jump_vec[9]
+    #     I_death = jump_vec[10]
+    # end
 
     # Calculate the change in each state
-    @inbounds begin
-        change_vec[1] = S_births - (contact_inf + import_inf + S_death)
-        change_vec[2] = (contact_inf + import_inf) - (latent + E_death)
-        change_vec[3] = latent - (recovery + I_death)
-        change_vec[4] = (recovery + R_births) - R_death
-        change_vec[5] = sum(@view(change_vec[1:4]))
-    end
+    # @inbounds begin
+    #     change_vec[1] = S_births - (contact_inf + import_inf + S_death)
+    #     change_vec[2] = (contact_inf + import_inf) - (latent + E_death)
+    #     change_vec[3] = latent - (recovery + I_death)
+    #     change_vec[4] = (recovery + R_births) - R_death
+    #     change_vec[5] = sum(@view(change_vec[1:4]))
+    # end
 
-    return @SVector [
-        state_vec[1] + change_vec[1],
-        state_vec[2] + change_vec[2],
-        state_vec[3] + change_vec[3],
-        state_vec[4] + change_vec[4],
-        state_vec[5] + change_vec[5],
-        jump_vec[1],
-    ]
+    # return @SVector [
+    #     state_vec[1] + change_vec[1],
+    #     state_vec[2] + change_vec[2],
+    #     state_vec[3] + change_vec[3],
+    #     state_vec[4] + change_vec[4],
+    #     state_vec[5] + change_vec[5],
+    #     jump_vec[1],
+    # ]
 end
 
 # end
