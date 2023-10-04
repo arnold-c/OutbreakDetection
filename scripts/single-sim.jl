@@ -49,7 +49,7 @@ init_states_static = @SVector [
     singlesim_states_p.init_states[3],
     singlesim_states_p.init_states[4],
     singlesim_states_p.init_states[5],
-    0
+    0,
 ]
 seir_vec = Vector{typeof(init_states_static)}(
     undef, length(singlesim_time_p.trange)
@@ -73,7 +73,10 @@ seir_mod_static!(
     type = "stoch", seed = $1234,
 )
 
-seir_array = permutedims(reshape(reinterpret(Int64, seir_vec), (6, length(singlesim_time_p.trange))), (2, 1))
+seir_array = permutedims(
+    reshape(reinterpret(Int64, seir_vec), (6, length(singlesim_time_p.trange))),
+    (2, 1),
+)
 seir_df = create_sir_df(
     seir_array, singlesim_time_p.trange, [:S, :E, :I, :R, :N, :incidence]
 )
