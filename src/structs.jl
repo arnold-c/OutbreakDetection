@@ -4,6 +4,7 @@
 #     StateParameters, OutbreakThresholdChars, OutbreakDetectionSpecification,
 #     OutbreakSpecification, IndividualTestSpecification, NoiseSpecification
 
+using StaticArrays
 using LabelledArrays
 
 # include("transmission-functions.jl")
@@ -90,7 +91,7 @@ function DynamicsParameters(
     )
 end
 
-struct StateParameters{T1<:LArray{<:Integer},T2<:LArray{<:AbstractFloat}}
+struct StateParameters{T1<:SLArray, T2<:SLArray}
     init_states::T1
     init_state_props::T2
 end
@@ -108,11 +109,19 @@ function StateParameters(;
     N = 500_00, s_prop = 0.1, e_prop = 0.01, i_prop = 0.01
 )
     r_prop = 1 - (s_prop + e_prop + i_prop)
-    states = @LArray [
-        map(x -> Int64(round(x * N)), [s_prop, e_prop, i_prop, r_prop])..., N
-    ] (:S, :E, :I, :R, :N)
-    state_props = @LArray [s_prop, e_prop, i_prop, r_prop] (
-        :s_prop, :i_prop, :e_prop, :r_prop
+
+    states = SLVector(
+        S = Int64(round(s_prop * N)),
+        E = Int64(round(e_prop * N)),
+        I = Int64(round(i_prop * N)),
+        R = Int64(round(r_prop * N)),
+        N = N
+    )
+    state_props = SLVector(
+        s_prop = s_prop,
+        e_prop = e_prop,
+        i_prop = i_prop,
+        r_prop = r_prop
     )
 
     return StateParameters(
