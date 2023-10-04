@@ -14,72 +14,13 @@ using OutbreakDetection
 )
 
 #%%
-seir_array, beta_arr = seir_mod(
-    singlesim_states_p.init_states, singlesim_dynamics_p, singlesim_time_p;
-    type = "stoch", seed = 1234,
-);
-
-seir_df = create_sir_df(
-    seir_array, singlesim_time_p.trange, [:S, :E, :I, :R, :N, :incidence]
+seir_vec, beta_vec = seir_mod(
+    init_states_static, singlesim_dynamics_p, singlesim_time_p;
+    seed = 1234,
 )
 
-#%%
-@benchmark seir_mod(
-    $singlesim_states_p.init_states, $singlesim_dynamics_p, $singlesim_time_p;
-    type = "stoch", seed = $1234,
-)
+seir_array = convert_svec_to_arr(seir_vec; reinterpret_dims = (6, length(singlesim_time_p.trange)), reorder_inds = (2, 1))
 
-@benchmark seir_mod!(
-    $seir_array,
-    # $Vector{Int64}(undef, 5),
-    # $Vector{Int64}(undef, 10),
-    $MVector{5,Int64}(undef),
-    $MVector{10,Int64}(undef),
-    $beta_arr,
-    $singlesim_states_p.init_states,
-    # $Vector{Float64}(undef, 6),
-    $MVector{6,Float64}(undef),
-    $singlesim_dynamics_p,
-    $singlesim_time_p;
-    type = "stoch", seed = $1234,
-)
-
-init_states_static = @SVector [
-    singlesim_states_p.init_states[1],
-    singlesim_states_p.init_states[2],
-    singlesim_states_p.init_states[3],
-    singlesim_states_p.init_states[4],
-    singlesim_states_p.init_states[5],
-    0,
-]
-seir_vec = Vector{typeof(init_states_static)}(
-    undef, length(singlesim_time_p.trange)
-)
-
-seir_mod_static!(
-    seir_vec,
-    beta_arr,
-    init_states_static,
-    singlesim_dynamics_p,
-    singlesim_time_p;
-    type = "stoch", seed = 1234,
-)
-
-@benchmark seir_mod_static!(
-    $seir_array,
-    $seir_vec,
-    $beta_arr,
-    $init_states_static,
-    $singlesim_dynamics_p,
-    $singlesim_time_p;
-    type = "stoch", seed = $1234,
-)
-
-
-seir_array = permutedims(
-    reshape(reinterpret(Int64, seir_vec), (6, length(singlesim_time_p.trange))),
-    (2, 1),
-)
 seir_df = create_sir_df(
     seir_array, singlesim_time_p.trange, [:S, :E, :I, :R, :N, :incidence]
 )
