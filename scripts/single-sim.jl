@@ -4,6 +4,7 @@ using DrWatson
 
 using UnPack
 using JLD2
+using StaticArrays
 
 using OutbreakDetection
 
