@@ -74,7 +74,10 @@ function seir_mod!(
 
     @inbounds for i in eachindex(time_params.trange)
         if i == 1
-            state_arr[i, :] .= [states..., 0]
+            @simd for j in eachindex(states)
+                state_arr[i, j] = states[j]
+            end
+            @inbounds state_arr[i, end] = 0
             continue
         end
 
@@ -122,39 +125,57 @@ function seir_mod_loop!(
     @views N = state_arr[i - 1, 5]
     @views beta_t = beta_arr[i]
 
-    @inbounds poisson_rates[1] = beta_t * S * I # Contact: S -> E
-    @inbounds poisson_rates[2] = dynamics_params.mu * (1 - dynamics_params.vaccination_coverage) * N # Birth -> S
-    @inbounds poisson_rates[3] = dynamics_params.mu * S # S -> death
-    @inbounds poisson_rates[4] = dynamics_params.mu * R # R -> death
-    @inbounds poisson_rates[5] = dynamics_params.epsilon * N / dynamics_params.R_0 # Import: S -> E
-    @inbounds poisson_rates[6] = dynamics_params.mu * dynamics_params.vaccination_coverage * N # Birth -> R
+    @inbounds begin
+        poisson_rates[1] = beta_t * S * I # Contact: S -> E
+        poisson_rates[2] =
+            dynamics_params.mu * (1 - dynamics_params.vaccination_coverage) * N # Birth -> S
+        poisson_rates[3] = dynamics_params.mu * S # S -> death
+        poisson_rates[4] = dynamics_params.mu * R # R -> death
+        poisson_rates[5] = dynamics_params.epsilon * N / dynamics_params.R_0 # Import: S -> E
+        poisson_rates[6] =
+            dynamics_params.mu * dynamics_params.vaccination_coverage * N # Birth -> R
+    end
 
     @simd for r in eachindex(poisson_rates)
         jump_vec[r] = rand(Poisson(poisson_rates[r] * time_params.tstep))
     end
 
-    @inbounds jump_vec[7] = rand(Binomial(E, dynamics_params.sigma * time_params.tstep)) # E -> I
-    @inbounds jump_vec[8] = rand(Binomial(E - jump_vec[7], dynamics_params.mu * time_params.tstep)) # E -> death
-    @inbounds jump_vec[9] = rand(Binomial(I, dynamics_params.gamma * time_params.tstep)) # I -> R
-    @inbounds jump_vec[10] = rand(Binomial(I - jump_vec[9], dynamics_params.mu * time_params.tstep)) # I -> death
+    @inbounds begin
+        jump_vec[7] = rand(
+            Binomial(E, dynamics_params.sigma * time_params.tstep)
+        ) # E -> I
+        jump_vec[8] = rand(
+            Binomial(E - jump_vec[7], dynamics_params.mu * time_params.tstep)
+        ) # E -> death
+        jump_vec[9] = rand(
+            Binomial(I, dynamics_params.gamma * time_params.tstep)
+        ) # I -> R
+        jump_vec[10] = rand(
+            Binomial(I - jump_vec[9], dynamics_params.mu * time_params.tstep)
+        ) # I -> death
+    end
 
-    @inbounds contact_inf = jump_vec[1]
-    @inbounds S_births = jump_vec[2]
-    @inbounds S_death = jump_vec[3]
-    @inbounds R_death = jump_vec[4]
-    @inbounds import_inf = jump_vec[5]
-    @inbounds R_births = jump_vec[6]
-    @inbounds latent = jump_vec[7]
-    @inbounds E_death = jump_vec[8]
-    @inbounds recovery = jump_vec[9]
-    @inbounds I_death = jump_vec[10]
+    @inbounds begin
+        contact_inf = jump_vec[1]
+        S_births = jump_vec[2]
+        S_death = jump_vec[3]
+        R_death = jump_vec[4]
+        import_inf = jump_vec[5]
+        R_births = jump_vec[6]
+        latent = jump_vec[7]
+        E_death = jump_vec[8]
+        recovery = jump_vec[9]
+        I_death = jump_vec[10]
+    end
 
     # Calculate the change in each state
-    @inbounds change_vec[1] = S_births - (contact_inf + import_inf + S_death)
-    @inbounds change_vec[2] = (contact_inf + import_inf) - (latent + E_death)
-    @inbounds change_vec[3] = latent - (recovery + I_death)
-    @inbounds change_vec[4] = (recovery + R_births) - R_death
-    @inbounds change_vec[5] = sum(@view(change_vec[1:4]))
+    @inbounds begin
+        change_vec[1] = S_births - (contact_inf + import_inf + S_death)
+        change_vec[2] = (contact_inf + import_inf) - (latent + E_death)
+        change_vec[3] = latent - (recovery + I_death)
+        change_vec[4] = (recovery + R_births) - R_death
+        change_vec[5] = sum(@view(change_vec[1:4]))
+    end
 
     @simd for j in 1:5
         @views state_arr[i, j] = state_arr[i - 1, j] + change_vec[j]
