@@ -21,30 +21,15 @@ using StaticArrays
 The in-place function to run the SEIR model with a vaccinations going directly to the R compartment and produce the transmission rate array.
 """
 function seir_mod(
-    states,
-    dynamics_params,
-    time_params;
-    type = "stoch",
-    seed = 1234
+    states, dynamics_params, time_params; seed = 1234
 )
-    Random.seed!(seed)
-
-    state_arr = zeros(Int64, time_params.tlength, size(states, 1) + 1)
-    beta_arr = zeros(Float64, time_params.tlength)
+    state_vec = Vector{typeof(states)}(undef, time_params.tlength)
+    beta_vec = MVector{time_params.tlength,Float64}(undef)
 
     seir_mod!(
-        state_arr,
-        Vector{Int64}(undef, 5),
-        Vector{Int64}(undef, 10),
-        beta_arr,
-        states,
-        Vector{Float64}(undef, 6),
-        dynamics_params,
-        time_params;
-        type = type,
-        seed = seed,
+        state_vec, beta_vec, states, dynamics_params, time_params; seed = seed
     )
-    return state_arr, beta_arr
+    return state_vec, beta_vec
 end
 
 """
@@ -53,147 +38,12 @@ end
 The in-place function to run the SEIR model and produce the transmission rate array.
 """
 function seir_mod!(
-    state_arr,
-    change_vec,
-    jump_vec,
-    beta_arr,
-    states,
-    poisson_rates,
-    dynamics_params,
-    time_params;
-    type = "stoch",
-    seed = 1234,
-)
-    Random.seed!(seed)
-
-    @. beta_arr = calculate_beta_amp(
-        dynamics_params.beta_mean,
-        dynamics_params.beta_force,
-        time_params.trange,
-    )
-
-    @inbounds for i in eachindex(time_params.trange)
-        if i == 1
-            @simd for j in eachindex(states)
-                state_arr[i, j] = states[j]
-            end
-            @inbounds state_arr[i, end] = 0
-            continue
-        end
-
-        seir_mod_loop!(
-            state_arr,
-            change_vec,
-            jump_vec,
-            beta_arr,
-            poisson_rates,
-            i,
-            dynamics_params,
-            time_params;
-            type = type,
-        )
-    end
-
-    return nothing
-end
-
-"""
-    seir_mod_loop!(state_arr, change_arr, jump_arr, j, params, t, tstep; type = type)
-
-The inner loop that is called by `seir_mod!()` function.
-"""
-function seir_mod_loop!(
-    state_arr,
-    change_vec,
-    jump_vec,
-    beta_arr,
-    poisson_rates,
-    i,
-    dynamics_params,
-    time_params;
-    type = type,
-)
-
-    # TODO: Benchmak StaticArrays implementation as potentially much faster.
-    # Would need to use permutedims(reshape(reinterperate(Float64, SVector), (...), (...))
-    # to get it into an array that could be used later on.
-    # Create views of the state variables for easier use
-    @views S = state_arr[i - 1, 1]
-    @views E = state_arr[i - 1, 2]
-    @views I = state_arr[i - 1, 3]
-    @views R = state_arr[i - 1, 4]
-    @views N = state_arr[i - 1, 5]
-    @views beta_t = beta_arr[i]
-
-    @inbounds begin
-        poisson_rates[1] = beta_t * S * I # Contact: S -> E
-        poisson_rates[2] =
-            dynamics_params.mu * (1 - dynamics_params.vaccination_coverage) * N # Birth -> S
-        poisson_rates[3] = dynamics_params.mu * S # S -> death
-        poisson_rates[4] = dynamics_params.mu * R # R -> death
-        poisson_rates[5] = dynamics_params.epsilon * N / dynamics_params.R_0 # Import: S -> E
-        poisson_rates[6] =
-            dynamics_params.mu * dynamics_params.vaccination_coverage * N # Birth -> R
-    end
-
-    @simd for r in eachindex(poisson_rates)
-        jump_vec[r] = rand(Poisson(poisson_rates[r] * time_params.tstep))
-    end
-
-    @inbounds begin
-        jump_vec[7] = rand(
-            Binomial(E, dynamics_params.sigma * time_params.tstep)
-        ) # E -> I
-        jump_vec[8] = rand(
-            Binomial(E - jump_vec[7], dynamics_params.mu * time_params.tstep)
-        ) # E -> death
-        jump_vec[9] = rand(
-            Binomial(I, dynamics_params.gamma * time_params.tstep)
-        ) # I -> R
-        jump_vec[10] = rand(
-            Binomial(I - jump_vec[9], dynamics_params.mu * time_params.tstep)
-        ) # I -> death
-    end
-
-    @inbounds begin
-        contact_inf = jump_vec[1]
-        S_births = jump_vec[2]
-        S_death = jump_vec[3]
-        R_death = jump_vec[4]
-        import_inf = jump_vec[5]
-        R_births = jump_vec[6]
-        latent = jump_vec[7]
-        E_death = jump_vec[8]
-        recovery = jump_vec[9]
-        I_death = jump_vec[10]
-    end
-
-    # Calculate the change in each state
-    @inbounds begin
-        change_vec[1] = S_births - (contact_inf + import_inf + S_death)
-        change_vec[2] = (contact_inf + import_inf) - (latent + E_death)
-        change_vec[3] = latent - (recovery + I_death)
-        change_vec[4] = (recovery + R_births) - R_death
-        change_vec[5] = sum(@view(change_vec[1:4]))
-    end
-
-    @simd for j in 1:5
-        @views state_arr[i, j] = state_arr[i - 1, j] + change_vec[j]
-    end
-    @inbounds state_arr[i, end] = jump_vec[1]
-
-    return nothing
-end
-
-function seir_mod_static!(
-    state_arr,
     state_vec,
     beta_vec,
     states,
     dynamics_params,
     time_params;
-    type = "stoch",
-    seed = 1234,
+    seed = 1234
 )
     Random.seed!(seed)
 
@@ -216,8 +66,8 @@ function seir_mod_static!(
         beta_mean, beta_force, trange
     )
 
-    @inbounds for i in 2:time_params.tlength
-        state_vec[i] = seir_mod_static_loop!(
+    @inbounds for i in 2:(time_params.tlength)
+        state_vec[i] = seir_mod_loop!(
             state_vec[i - 1],
             beta_vec[i],
             mu,
@@ -226,16 +76,11 @@ function seir_mod_static!(
             gamma,
             R_0,
             vaccination_coverage,
-            timestep;
-            type = type,
+            timestep,
         )
     end
 
-    return permutedims!(
-        state_arr, reshape(reinterpret(Int64, state_vec), (6, length(trange))),
-        (2, 1),
-    )
-
+    return nothing
 end
 
 """
@@ -243,7 +88,7 @@ end
 
 The inner loop that is called by `seir_mod!()` function.
 """
-function seir_mod_static_loop!(
+function seir_mod_loop!(
     state_vec,
     beta_t,
     mu,
@@ -252,8 +97,7 @@ function seir_mod_static_loop!(
     gamma,
     R_0,
     vaccination_coverage,
-    timestep;
-    type = type,
+    timestep,
 )
 
     # TODO: Benchmak StaticArrays implementation as potentially much faster.
@@ -286,7 +130,33 @@ function seir_mod_static_loop!(
     end
 
     return @SVector [S + dS, E + dE, I + dI, R + dR, N + dN, contact_inf]
+end
 
+function convert_svec_to_arr(
+    svec; reinterpret_dims = (6, 36501), reorder_inds = (2, 1)
+)
+    array_dims = [reinterpret_dims[i] for i in reorder_inds]
+    array = Array{eltype(svec[1])}(undef, array_dims...)
+
+    convert_svec_to_arr!(
+        array,
+        svec;
+        reinterpret_dims = reinterpret_dims,
+        reorder_inds = reorder_inds,
+    )
+
+    return array
+end
+
+function convert_svec_to_arr!(
+    array,
+    svec;
+    reinterpret_dims = (6, 36501),
+    reorder_inds = (2, 1),
+)
+    return permutedims!(
+        array, reshape(reinterpret(Int64, svec), reinterpret_dims), reorder_inds
+    )
 end
 
 # end

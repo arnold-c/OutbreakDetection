@@ -20,7 +20,7 @@ export SimTimeParameters, EnsembleSpecification, DynamicsParameters,
 # @reexport using .ODStructs
 
 include("SEIR-model.jl")
-export seir_mod, seir_mod!, seir_mod_loop!, seir_mod_static!, seir_mod_static_loop!
+export seir_mod, seir_mod!, seir_mod_loop!, convert_svec_to_arr, convert_svec_to_arr!
 # @reexport using .SEIRModel
 
 include("cleaning-functions.jl")
