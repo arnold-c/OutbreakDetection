@@ -185,4 +185,135 @@ function seir_mod_loop!(
     return nothing
 end
 
+function seir_mod_static!(
+    state_vec,
+    change_vec,
+    jump_vec,
+    beta_vec,
+    states,
+    poisson_rates,
+    dynamics_params,
+    time_params;
+    type = "stoch",
+    seed = 1234,
+)
+    Random.seed!(seed)
+
+    @. beta_vec = calculate_beta_amp(
+        dynamics_params.beta_mean,
+        dynamics_params.beta_force,
+        time_params.trange,
+    )
+
+    @inbounds for i in eachindex(time_params.trange)
+        if i == 1
+            state_vec[i] = states
+            continue
+        end
+
+        state_vec[i] = seir_mod_static_loop!(
+            state_vec[i - 1],
+            change_vec,
+            jump_vec,
+            beta_vec[i],
+            poisson_rates,
+            dynamics_params,
+            time_params;
+            type = type,
+        )
+    end
+
+    return nothing
+end
+
+"""
+    seir_mod_loop!(state_arr, change_arr, jump_arr, j, params, t, tstep; type = type)
+
+The inner loop that is called by `seir_mod!()` function.
+"""
+function seir_mod_static_loop!(
+    state_vec,
+    change_vec,
+    jump_vec,
+    beta_t,
+    poisson_rates,
+    dynamics_params,
+    time_params;
+    type = type,
+)
+
+    # TODO: Benchmak StaticArrays implementation as potentially much faster.
+    # Would need to use permutedims(reshape(reinterperate(Float64, SVector), (...), (...))
+    # to get it into an array that could be used later on.
+    # Create views of the state variables for easier use
+    @inbounds begin
+        S = state_vec[1]
+        E = state_vec[2]
+        I = state_vec[3]
+        R = state_vec[4]
+        N = state_vec[5]
+    end
+
+    @inbounds begin
+        poisson_rates[1] = beta_t * S * I # Contact: S -> E
+        poisson_rates[2] =
+            dynamics_params.mu * (1 - dynamics_params.vaccination_coverage) * N # Birth -> S
+        poisson_rates[3] = dynamics_params.mu * S # S -> death
+        poisson_rates[4] = dynamics_params.mu * R # R -> death
+        poisson_rates[5] = dynamics_params.epsilon * N / dynamics_params.R_0 # Import: S -> E
+        poisson_rates[6] =
+            dynamics_params.mu * dynamics_params.vaccination_coverage * N # Birth -> R
+    end
+
+    @simd for r in eachindex(poisson_rates)
+        jump_vec[r] = rand(Poisson(poisson_rates[r] * time_params.tstep))
+    end
+
+    @inbounds begin
+        jump_vec[7] = rand(
+            Binomial(E, dynamics_params.sigma * time_params.tstep)
+        ) # E -> I
+        jump_vec[8] = rand(
+            Binomial(E - jump_vec[7], dynamics_params.mu * time_params.tstep)
+        ) # E -> death
+        jump_vec[9] = rand(
+            Binomial(I, dynamics_params.gamma * time_params.tstep)
+        ) # I -> R
+        jump_vec[10] = rand(
+            Binomial(I - jump_vec[9], dynamics_params.mu * time_params.tstep)
+        ) # I -> death
+    end
+
+    @inbounds begin
+        contact_inf = jump_vec[1]
+        S_births = jump_vec[2]
+        S_death = jump_vec[3]
+        R_death = jump_vec[4]
+        import_inf = jump_vec[5]
+        R_births = jump_vec[6]
+        latent = jump_vec[7]
+        E_death = jump_vec[8]
+        recovery = jump_vec[9]
+        I_death = jump_vec[10]
+    end
+
+    # Calculate the change in each state
+    @inbounds begin
+        change_vec[1] = S_births - (contact_inf + import_inf + S_death)
+        change_vec[2] = (contact_inf + import_inf) - (latent + E_death)
+        change_vec[3] = latent - (recovery + I_death)
+        change_vec[4] = (recovery + R_births) - R_death
+        change_vec[5] = sum(@view(change_vec[1:4]))
+    end
+
+    return @SVector [
+        state_vec[1] + change_vec[1],
+        state_vec[2] + change_vec[2],
+        state_vec[3] + change_vec[3],
+        state_vec[4] + change_vec[4],
+        state_vec[5] + change_vec[5],
+        jump_vec[1],
+    ]
+end
+
 # end
