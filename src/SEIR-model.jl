@@ -196,12 +196,6 @@ function seir_mod_static!(
 )
     Random.seed!(seed)
 
-    @. beta_vec = calculate_beta_amp(
-        dynamics_params.beta_mean,
-        dynamics_params.beta_force,
-        time_params.trange,
-    )
-
     @inbounds begin
         mu = dynamics_params.mu
         epsilon = dynamics_params.epsilon
@@ -210,9 +204,16 @@ function seir_mod_static!(
         R_0 = dynamics_params.R_0
         vaccination_coverage = dynamics_params.vaccination_coverage
         timestep = time_params.tstep
+        beta_mean = dynamics_params.beta_mean
+        beta_force = dynamics_params.beta_force
+        trange = time_params.trange
 
         state_vec[1] = states
     end
+
+    @turbo @. beta_vec = calculate_beta_amp(
+        beta_mean, beta_force, trange
+    )
 
     @inbounds for i in 2:time_params.tlength
         state_vec[i] = seir_mod_static_loop!(
