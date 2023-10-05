@@ -69,7 +69,8 @@ ensemble_single_scenario_detection2 = get_ensemble_file(
 
 #%%
 ensemble_single_scenario_noise_array = create_poisson_noise_arr(
-    ensemble_single_scenario_incarr["ensemble_inc_arr"], ensemble_single_noise_spec
+    ensemble_single_scenario_incarr["ensemble_inc_arr"],
+    ensemble_single_noise_spec,
 )
 
 #%%
@@ -239,4 +240,30 @@ save(
         "ensemble/single-scenario/ensemble-sim_single-scenario_ppv-npv-distribution.png",
     ),
     ensemble_single_scenario_ppv_npv_dist_plot,
+)
+
+#%%
+ensemble_single_scenario_posodds_timeseries_plot = singlesim_test_positivity_plot(
+    ensemble_single_scenario_detection["posoddsarr"][:, 1, 1],
+    ensemble_single_scenario_spec.ensemble_specification.time_parameters,
+)
+
+save(
+    plotsdir(
+        "ensemble/single-scenario/ensemble-sim_single-scenario_posodds-timeseries.png",
+    ),
+    ensemble_single_scenario_posodds_timeseries_plot,
+)
+
+#%%
+ensemble_single_scenario_posodds_dist_plot = @chain ensemble_single_scenario_detection["posoddsarr"][:, 1, :] begin
+    replace(_, NaN => 0.0)
+    test_positivity_distribution_plot(_)
+end
+
+save(
+    plotsdir(
+        "ensemble/single-scenario/ensemble-sim_single-scenario_posodds-distribution.png",
+    ),
+    ensemble_single_scenario_posodds_dist_plot,
 )
