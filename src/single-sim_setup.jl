@@ -7,8 +7,8 @@ using OutbreakDetection
 singlesim_states_p = StateParameters(;
     N = 500_000,
     s_prop = 0.1,
-    e_prop = 0.01,
-    i_prop = 0.01
+    e_prop = 0.00,
+    i_prop = 0.00
 )
 
 singlesim_time_p = SimTimeParameters(;
