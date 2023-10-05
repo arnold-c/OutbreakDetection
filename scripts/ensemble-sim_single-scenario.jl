@@ -240,3 +240,16 @@ save(
     ),
     ensemble_single_scenario_ppv_npv_dist_plot,
 )
+
+#%%
+ensemble_single_scenario_posodds_timeseries_plot = singlesim_test_positivity_plot(
+    ensemble_single_scenario_detection["posoddsarr"][:, 1, 1],
+    ensemble_single_scenario_spec.ensemble_specification.time_parameters,
+)
+
+save(
+    plotsdir(
+        "ensemble/single-scenario/ensemble-sim_single-scenario_posodds-timeseries.png",
+    ),
+    ensemble_single_scenario_posodds_timeseries_plot,
+)
