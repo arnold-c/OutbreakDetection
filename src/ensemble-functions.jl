@@ -131,30 +131,26 @@ function run_jump_prob(ensemble_param_dict)
 
     @unpack tstep, tlength, trange = time_parameters
 
-    ensemble_seir_vecs = Array{typeof(state_parameters.init_states),3}(
+    ensemble_seir_vecs = Array{typeof(state_parameters.init_states), 2}(
         undef,
-        time_parameters.tlength,
-        size(state_parameters.init_states, 1),
+        tlength,
         nsims,
     )
 
-    ensemble_inc_vecs = Array{typeof(SVector(0)),2}(
+    ensemble_inc_vecs = Array{typeof(SVector(0)), 2}(
         undef,
-        time_parameters.tlength,
+        tlength,
         nsims
     )
 
     ensemble_beta_arr = zeros(Float64, tlength)
 
     for sim in axes(ensemble_inc_vecs, 2)
-        @views seir_vec = ensemble_seir_vecs[:, :, sim]
-        @views inc_vec = ensemble_inc_vecs[:, sim]
-
         run_seed = seed + (sim - 1)
 
         seir_mod!(
-            seir_vec,
-            inc_vec,
+            ensemble_seir_vecs[:, sim],
+            ensemble_inc_vecs[:, sim],
             ensemble_beta_arr,
             state_parameters.init_states,
             dynamics_parameters,

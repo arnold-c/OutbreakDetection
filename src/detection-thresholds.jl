@@ -30,7 +30,7 @@ function create_inc_infec_arr!(
     ensemble_inc_arr, ensemble_inc_vecs, outbreakthreshold, minoutbreakdur,
     minoutbreaksize,
 )
-    @inbounds for sim in axes(ensemble_inc_vecs, 3)
+    @inbounds for sim in axes(ensemble_inc_vecs, 2)
         convert_svec_to_matrix!(
             @view(ensemble_inc_arr[:, 1, sim]),
             @view(ensemble_inc_vecs[:, sim])
