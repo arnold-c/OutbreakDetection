@@ -314,29 +314,33 @@ function incidence_testing_plot(
         colormap = colormap,
     )
 
-    linkxaxes!(inc_test_ax1, inc_test_ax3, inc_test_ax4)
+    linkxaxes!(inc_test_ax1, inc_test_ax2, inc_test_ax3, inc_test_ax4)
 
     map(hidexdecorations!, [inc_test_ax1, inc_test_ax3])
 
     if haskey(kwargs_dict, :xlims)
         map(
             ax -> xlims!(ax, kwargs_dict[:xlims]),
-            [inc_test_ax1, inc_test_ax3, inc_test_ax4],
+            [inc_test_ax1, inc_test_ax2, inc_test_ax3, inc_test_ax4],
         )
     end
 
     if haskey(kwargs_dict, :ylims)
         map(
             ax -> ylims!(ax, kwargs_dict[:ylims]),
-            [inc_test_ax1, inc_test_ax3, inc_test_ax4],
+            [inc_test_ax1, inc_test_ax2, inc_test_ax3, inc_test_ax4],
         )
     end
 
-    hlines!(
-        inc_test_ax1, 5;
-        color = :black,
-        linestyle = :dash,
-        linewidth = 2,
+    map(
+        ax -> hlines!(
+            ax,
+            5;
+            color = :black,
+            linestyle = :dash,
+            linewidth = 2,
+        ),
+        [inc_test_ax1, inc_test_ax2],
     )
 
     map(
@@ -351,14 +355,14 @@ function incidence_testing_plot(
     )
 
     Legend(
-        inc_test_fig[1, 2],
+        inc_test_fig[1:2, 2],
         [PolyElement(; color = col) for col in outbreakcols],
         ["Not Outbreak", "Outbreak"],
         "True\nOutbreak Status",
     )
 
     Legend(
-        inc_test_fig[2:3, 2],
+        inc_test_fig[3:4, 2],
         [PolyElement(; color = col) for col in outbreakcols],
         ["Not Outbreak", "Outbreak"],
         "Detected\nOutbreak Status",
