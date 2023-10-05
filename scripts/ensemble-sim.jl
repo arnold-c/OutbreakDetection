@@ -48,7 +48,7 @@ dur_inf_days_vec = [5]
 R_0_vec = [10.0]
 sigma_vec = 1 ./ latent_per_days_vec
 gamma_vec = 1 ./ dur_inf_days_vec
-vaccination_coverage_vec = [0.0, 0.8]
+vaccination_coverage_vec = [0.0, 0.5, 0.8]
 
 #%%
 ensemble_spec_vec = create_ensemble_spec_combinations(
@@ -94,7 +94,7 @@ noise_spec_vec = create_combinations_vec(
 )
 
 #%%
-detectthreshold_vec = [collect(5:5:20)..., 35, 50, 100]
+detectthreshold_vec = [2, 4, collect(5:5:20)...]
 moveavglag_vec = [7]
 perc_clinic_vec = [0.3]
 perc_clinic_test_vec = [0.3]
@@ -131,7 +131,7 @@ sol_param_dict = dict_list(
 )
 
 for dict in sol_param_dict
-    dict[:quantile_vec] = [95, 80]
+    dict[:quantile_vec] = [95]
     dict[:outbreak_spec_dict] = outbreak_spec_dict
     dict[:noise_spec_vec] = noise_spec_vec
     dict[:outbreak_detection_spec_vec] = outbreak_detection_spec_vec
