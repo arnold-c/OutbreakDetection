@@ -48,7 +48,7 @@ dur_inf_days_vec = [5]
 R_0_vec = [10.0]
 sigma_vec = 1 ./ latent_per_days_vec
 gamma_vec = 1 ./ dur_inf_days_vec
-vaccination_coverage_vec = [0.0, 0.8]
+vaccination_coverage_vec = [0.0, 0.5, 0.8]
 
 #%%
 ensemble_spec_vec = create_ensemble_spec_combinations(
