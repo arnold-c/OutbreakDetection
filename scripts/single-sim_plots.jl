@@ -13,7 +13,7 @@ include(srcdir("makie-plotting-setup.jl"))
 @unpack singlesim_time_p = load("data/singlesim/single-sim_setup.jld2")
 @unpack trange = singlesim_time_p;
 
-@unpack seir_array, change_array, jump_array, beta_arr, seir_df = load(
+@unpack seir_array, inc_vec, beta_vec, seir_df = load(
     "data/singlesim/single-sim_arrays.jld2"
 )
 
@@ -22,7 +22,7 @@ singlesim_timeseries_plot = draw_sir_plot(
     seir_df;
     annual = true,
     colors = seircolors,
-    labels = ["S", "E", "I", "R", "N", "incidence"]
+    labels = ["S", "E", "I", "R", "N"]
 )
 
 save(plotsdir("singlesim/single-sim_timeseries.png"), singlesim_timeseries_plot)
@@ -30,7 +30,7 @@ save(plotsdir("singlesim/single-sim_timeseries.png"), singlesim_timeseries_plot)
 #%%
 singlesim_si_state_space_plot = @chain DataFrame(Tables.table(seir_array)) begin
     hcat(trange, _)
-    rename!(["time", ["S", "E", "I", "R", "N", "incidence"]...])
+    rename!(["time", ["S", "E", "I", "R", "N"]...])
     data(_) *
     mapping(:I, :S; color = :time) *
     visual(Lines)
