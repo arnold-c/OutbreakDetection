@@ -20,7 +20,8 @@ export SimTimeParameters, EnsembleSpecification, DynamicsParameters,
 # @reexport using .ODStructs
 
 include("SEIR-model.jl")
-export seir_mod, seir_mod!, seir_mod_loop!
+export seir_mod, seir_mod!, seir_mod_loop!,
+    convert_svec_to_matrix, convert_svec_to_matrix!, convert_svec_to_array
 # @reexport using .SEIRModel
 
 include("cleaning-functions.jl")
@@ -36,13 +37,16 @@ export birth_rate_bifurcation_simulation!, bifurcation_summary,
     birth_rate_beta_force_bifurcation_cycle_summary
 
 include("detection-thresholds.jl")
-export create_inc_infec_arr, create_inc_infec_arr!,
+export create_inc_infec_arr,
+    create_inc_infec_arr!,
     calculate_outbreak_thresholds
 # @reexport using .DetectionThresholds
 
 include("diag-testing-functions.jl")
 export create_testing_arrs, create_testing_arrs!, calculate_tested!,
-    calculate_pos, calculate_pos!, calculate_movingavg, calculate_movingavg!,
+    calculate_positives, calculate_positives!,
+    calculate_true_positives!, calculate_noise_positives!,
+    calculate_movingavg, calculate_movingavg!,
     detectoutbreak, detectoutbreak!, calculate_ot_characterstics,
     calculate_noutbreaks, calculate_OutbreakThresholdChars
 # @reexport using .DiagTestingFunctions

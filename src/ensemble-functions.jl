@@ -89,7 +89,7 @@ function create_ensemble_spec_combinations(
                 annual_births_per_k,
                 epsilon,
                 R_0,
-                vaccination_coverage
+                vaccination_coverage,
             ),
             time_p,
             nsims,
@@ -131,38 +131,39 @@ function run_jump_prob(ensemble_param_dict)
 
     @unpack tstep, tlength, trange = time_parameters
 
-    ensemble_seir_arr = zeros(
-        Int64, tlength, size(state_parameters.init_states, 1), nsims
-    )
-    ensemble_change_arr = zeros(
-        Int64, tlength, size(state_parameters.init_states, 1), nsims
+    ensemble_seir_vecs = Array{typeof(state_parameters.init_states),3}(
+        undef,
+        time_parameters.tlength,
+        size(state_parameters.init_states, 1),
+        nsims,
     )
 
-    n_transitions = (size(state_parameters.init_states, 1) - 1) * 2 + 2
+    ensemble_inc_vecs = Array{typeof(SVector(0)),2}(
+        undef,
+        time_parameters.tlength,
+        nsims
+    )
 
-    ensemble_jump_arr = zeros(Int64, tlength, n_transitions, nsims)
     ensemble_beta_arr = zeros(Float64, tlength)
 
-    for k in 1:nsims
-        @views seir = ensemble_seir_arr[:, :, k]
-        @views change = ensemble_change_arr[:, :, k]
-        @views jump = ensemble_jump_arr[:, :, k]
+    for sim in axes(ensemble_inc_vecs, 2)
+        @views seir_vec = ensemble_seir_vecs[:, :, sim]
+        @views inc_vec = ensemble_inc_vecs[:, sim]
 
-        run_seed = seed + (k - 1)
+        run_seed = seed + (sim - 1)
 
         seir_mod!(
-            @view(ensemble_seir_arr[:, :, k]),
-            @view(ensemble_change_arr[:, :, k]),
-            @view(ensemble_jump_arr[:, :, k]),
+            seir_vec,
+            inc_vec,
             ensemble_beta_arr,
             state_parameters.init_states,
-            Vector{Float64}(undef, n_transitions),
             dynamics_parameters,
             time_parameters;
-            type = "stoch",
             seed = run_seed,
         )
     end
+
+    ensemble_seir_arr = convert_svec_to_array(ensemble_seir_vecs)
 
     quantile_param_dict = dict_list(
         @dict(ensemble_spec, ensemble_seir_arr, quantiles = quantile_vec)
@@ -175,7 +176,7 @@ function run_jump_prob(ensemble_param_dict)
             ensemble_spec.dirpath, dict[:outbreak_spec].dirpath
         )
         dict[:ensemble_spec] = ensemble_spec
-        dict[:ensemble_jump_arr] = ensemble_jump_arr
+        dict[:ensemble_inc_vecs] = ensemble_inc_vecs
         dict[:noise_spec_vec] = noise_spec_vec
         dict[:outbreak_detection_spec_vec] = outbreak_detection_spec_vec
         dict[:test_spec_vec] = test_spec_vec
@@ -243,7 +244,7 @@ end
 
 function define_outbreaks(incidence_param_dict)
     @unpack ensemble_spec,
-    ensemble_jump_arr,
+    ensemble_inc_vecs,
     outbreak_spec,
     noise_spec_vec,
     outbreak_detection_spec_vec,
@@ -251,7 +252,7 @@ function define_outbreaks(incidence_param_dict)
         incidence_param_dict
 
     ensemble_inc_arr = create_inc_infec_arr(
-        ensemble_jump_arr, outbreak_spec
+        ensemble_inc_vecs, outbreak_spec
     )
 
     ensemble_scenarios = create_combinations_vec(
@@ -268,7 +269,6 @@ function define_outbreaks(incidence_param_dict)
     scenario_param_dict = dict_list(
         @dict(
             scenario_spec = ensemble_scenarios,
-            ensemble_jump_arr,
             ensemble_inc_arr
         )
     )
@@ -293,14 +293,15 @@ function run_OutbreakThresholdChars_creation(
 end
 
 function OutbreakThresholdChars_creation(OT_chars_param_dict)
-    @unpack scenario_spec, ensemble_inc_arr, ensemble_jump_arr =
-        OT_chars_param_dict
+    @unpack scenario_spec, ensemble_inc_arr = OT_chars_param_dict
     @unpack noise_specification,
     outbreak_specification,
     outbreak_detection_specification,
     individual_test_specification = scenario_spec
 
-    noise_array = create_poisson_noise_arr(ensemble_inc_arr, noise_specification)
+    noise_array = create_poisson_noise_arr(
+        ensemble_inc_arr, noise_specification
+    )
 
     testarr, posoddsarr = create_testing_arrs(
         ensemble_inc_arr,
