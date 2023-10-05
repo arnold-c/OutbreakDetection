@@ -564,6 +564,20 @@ function singlesim_test_positivity_plot(posoddsvec, timeparams)
     return fig
 end
 
+function test_positivity_distribution_plot(posoddsmatrix)
+    fig = Figure()
+    ax = Axis(
+        fig[1, 1]; xlabel = "Test Positivity", ylabel = "Proportion of Time Series"
+    )
+
+    hist!(
+        ax,
+        vec(mean(posoddsmatrix, dims = 1));
+    )
+
+    return fig
+end
+
 function compare_ensemble_OTchars_plots(
     char_struct_vec,
     char1::Symbol,
