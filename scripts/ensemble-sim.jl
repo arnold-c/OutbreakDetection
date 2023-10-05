@@ -131,7 +131,7 @@ sol_param_dict = dict_list(
 )
 
 for dict in sol_param_dict
-    dict[:quantile_vec] = [95, 80]
+    dict[:quantile_vec] = [95]
     dict[:outbreak_spec_dict] = outbreak_spec_dict
     dict[:noise_spec_vec] = noise_spec_vec
     dict[:outbreak_detection_spec_vec] = outbreak_detection_spec_vec
