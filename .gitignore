@@ -434,3 +434,4 @@ src/makie-plotting-setup.jl
 alloc-profile.pb.gz
 profile.pb.gz
 tmp
+scripts/debugging.jl
