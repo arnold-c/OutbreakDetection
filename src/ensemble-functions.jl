@@ -101,7 +101,7 @@ end
 
 function run_ensemble_jump_prob(dict_of_ensemble_params; force = false)
     prog = Progress(length(dict_of_ensemble_params))
-    @floop for ensemble_params in dict_of_ensemble_params
+    for ensemble_params in dict_of_ensemble_params
         @produce_or_load(
             run_jump_prob,
             ensemble_params,
@@ -188,7 +188,7 @@ function run_jump_prob(ensemble_param_dict)
 end
 
 function summarize_ensemble_jump_prob(dict_of_ensemble_params)
-    for ensemble_params in dict_of_ensemble_params
+    @floop for ensemble_params in dict_of_ensemble_params
         @produce_or_load(
             jump_prob_summary,
             ensemble_params,
@@ -231,7 +231,7 @@ function jump_prob_summary(ensemble_param_dict)
 end
 
 function run_define_outbreaks(dict_of_outbreak_spec_params)
-    for outbreak_spec_params in dict_of_outbreak_spec_params
+    @floop for outbreak_spec_params in dict_of_outbreak_spec_params
         @produce_or_load(
             define_outbreaks,
             outbreak_spec_params,
@@ -281,7 +281,7 @@ end
 function run_OutbreakThresholdChars_creation(
     dict_of_OTchars_params
 )
-    for OTChars_params in dict_of_OTchars_params
+    @floop for OTChars_params in dict_of_OTchars_params
         @produce_or_load(
             OutbreakThresholdChars_creation,
             OTChars_params,
