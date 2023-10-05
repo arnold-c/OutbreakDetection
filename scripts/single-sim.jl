@@ -19,7 +19,7 @@ seir_vec, inc_vec, beta_vec = seir_mod(
     singlesim_time_p; seed = 1234,
 )
 
-seir_array = convert_svec_to_arr(seir_vec; reinterpret_dims = (5, length(singlesim_time_p.trange)), reorder_inds = (2, 1))
+seir_array = convert_svec_to_matrix(seir_vec)
 
 seir_df = create_sir_df(
     seir_array, singlesim_time_p.trange, [:S, :E, :I, :R, :N]

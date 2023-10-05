@@ -142,31 +142,24 @@ function seir_mod_loop!(
     return (SVector(S + dS, E + dE, I + dI, R + dR, N + dN), SVector(contact_inf))
 end
 
-function convert_svec_to_arr(
-    svec; reinterpret_dims = (5, 36501), reorder_inds = (2, 1)
-)
-    array_dims = [reinterpret_dims[i] for i in reorder_inds]
-    array = Array{eltype(svec[1])}(undef, array_dims...)
-
-    convert_svec_to_arr!(
-        array,
-        svec;
-        reinterpret_dims = reinterpret_dims,
-        reorder_inds = reorder_inds,
-    )
-
-    return array
+function convert_svec_to_matrix(svec)
+    arr = Matrix{Int64}(undef, size(svec, 1), length(svec[1]))
+    convert_svec_to_matrix!(arr, svec)
+    return arr
+end
+function convert_svec_to_matrix!(arr, svec)
+    @inbounds for state in eachindex(svec[1]), time in axes(svec, 1)
+        arr[time, state] = svec[time][state]
+    end
+    return nothing
 end
 
-function convert_svec_to_arr!(
-    array,
-    svec;
-    reinterpret_dims = (5, 36501),
-    reorder_inds = (2, 1),
-)
-    return permutedims!(
-        array, reshape(reinterpret(Int64, svec), reinterpret_dims), reorder_inds
-    )
+function convert_svec_to_array(svec)
+    arr = Array{Int64}(undef, size(svec, 1), length(svec[1]), size(svec, 2))
+    @inbounds for sim in axes(svec, 2)
+        convert_svec_to_matrix!(@view(arr[:, :, sim]), @view(svec[:, sim]))
+    end
+    return arr
 end
 
 # end
