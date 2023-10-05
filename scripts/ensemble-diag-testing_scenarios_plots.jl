@@ -12,7 +12,7 @@ include(srcdir("makie-plotting-setup.jl"))
 #%%
 sensitivity_vec = collect(0.8:0.2:1.0)
 specificity_vec = collect(0.8:0.2:1.0)
-detectthreshold_vec = [collect(5:15:20)..., 35, 50, 100]
+detectthreshold_vec = [2, 4, collect(5:5:20)...]
 
 #%%
 ensemble_chars_vec = Vector(
@@ -46,9 +46,9 @@ prog = Progress(length(sensitivity_vec) * length(detectthreshold_vec))
                         500_000,
                         Dict(
                             :s_prop => 0.1,
-                            :e_prop => 0.01,
-                            :i_prop => 0.01,
-                            :r_prop => 0.88,
+                            :e_prop => 0.0,
+                            :i_prop => 0.0,
+                            :r_prop => 0.9,
                         ),
                     ),
                     DynamicsParameters(500_000, 10, 0.2),

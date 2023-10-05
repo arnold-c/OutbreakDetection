@@ -272,6 +272,7 @@ end
 
 function incidence_testing_plot(
     incarr,
+    noisearr,
     testingarr,
     timeparams,
     detectthreshold;
@@ -284,9 +285,10 @@ function incidence_testing_plot(
 
     inc_test_fig = Figure()
     inc_test_ax1 = Axis(inc_test_fig[1, 1]; ylabel = "Incidence")
-    inc_test_ax2 = Axis(inc_test_fig[2, 1]; ylabel = "Test Positive")
-    inc_test_ax3 = Axis(
-        inc_test_fig[3, 1];
+    inc_test_ax2 = Axis(inc_test_fig[2, 1]; ylabel = "Incidence + Noise")
+    inc_test_ax3 = Axis(inc_test_fig[3, 1]; ylabel = "Test Positive")
+    inc_test_ax4 = Axis(
+        inc_test_fig[4, 1];
         xlabel = "Time (years)",
         ylabel = "7d Avg Test Positive",
     )
@@ -297,31 +299,36 @@ function incidence_testing_plot(
         colormap = colormap,
     )
     lines!(
-        inc_test_ax2, times, testingarr[:, 3, sim];
+        inc_test_ax2, times, incarr[:, 1, sim] .+ noisearr[:, 1, sim];
+        color = incarr[:, 4, sim],
+        colormap = colormap,
+    )
+    lines!(
+        inc_test_ax3, times, testingarr[:, 3, sim];
         color = testingarr[:, 7, sim],
         colormap = colormap,
     )
     lines!(
-        inc_test_ax3, times, testingarr[:, 6, sim];
+        inc_test_ax4, times, testingarr[:, 6, sim];
         color = testingarr[:, 7, sim],
         colormap = colormap,
     )
 
-    linkxaxes!(inc_test_ax1, inc_test_ax2, inc_test_ax3)
+    linkxaxes!(inc_test_ax1, inc_test_ax3, inc_test_ax4)
 
-    map(hidexdecorations!, [inc_test_ax1, inc_test_ax2])
+    map(hidexdecorations!, [inc_test_ax1, inc_test_ax3])
 
     if haskey(kwargs_dict, :xlims)
         map(
             ax -> xlims!(ax, kwargs_dict[:xlims]),
-            [inc_test_ax1, inc_test_ax2, inc_test_ax3],
+            [inc_test_ax1, inc_test_ax3, inc_test_ax4],
         )
     end
 
     if haskey(kwargs_dict, :ylims)
         map(
             ax -> ylims!(ax, kwargs_dict[:ylims]),
-            [inc_test_ax1, inc_test_ax2, inc_test_ax3],
+            [inc_test_ax1, inc_test_ax3, inc_test_ax4],
         )
     end
 
@@ -340,7 +347,7 @@ function incidence_testing_plot(
             linestyle = :dash,
             linewidth = 2,
         ),
-        [inc_test_ax2, inc_test_ax3],
+        [inc_test_ax3, inc_test_ax4],
     )
 
     Legend(

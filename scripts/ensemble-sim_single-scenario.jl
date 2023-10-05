@@ -68,6 +68,11 @@ ensemble_single_scenario_detection2 = get_ensemble_file(
 )
 
 #%%
+ensemble_single_scenario_noise_array = create_poisson_noise_arr(
+    ensemble_single_scenario_incarr["ensemble_inc_arr"], ensemble_single_noise_spec
+)
+
+#%%
 ensemble_single_scenario_detection["testarr"] ==
 ensemble_single_scenario_detection2["testarr"]
 
@@ -127,6 +132,7 @@ save(
 #%%
 ensemble_single_scenario_incidence_testing_plot = incidence_testing_plot(
     ensemble_single_scenario_incarr["ensemble_inc_arr"],
+    ensemble_single_scenario_noise_array,
     ensemble_single_scenario_detection["testarr"],
     ensemble_single_scenario_spec.ensemble_specification.time_parameters,
     ensemble_single_scenario_spec.outbreak_detection_specification.detection_threshold;
