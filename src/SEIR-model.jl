@@ -24,12 +24,20 @@ function seir_mod(
     states, dynamics_params, time_params; seed = 1234
 )
     state_vec = Vector{typeof(states)}(undef, time_params.tlength)
-    beta_vec = MVector{time_params.tlength,Float64}(undef)
+    beta_vec = MVector{time_params.tlength, Float64}(undef)
+    inc_vec = Vector{typeof(SVector(0))}(undef, time_params.tlength)
 
     seir_mod!(
-        state_vec, beta_vec, states, dynamics_params, time_params; seed = seed
+        state_vec,
+        inc_vec,
+        beta_vec,
+        states,
+        dynamics_params,
+        time_params;
+        seed = seed
     )
-    return state_vec, beta_vec
+
+    return state_vec, inc_vec, beta_vec
 end
 
 """
@@ -39,6 +47,7 @@ The in-place function to run the SEIR model and produce the transmission rate ar
 """
 function seir_mod!(
     state_vec,
+    inc_vec,
     beta_vec,
     states,
     dynamics_params,
@@ -60,6 +69,7 @@ function seir_mod!(
         trange = time_params.trange
 
         state_vec[1] = states
+        inc_vec[1] = SVector(0)
     end
 
     @turbo @. beta_vec = calculate_beta_amp(
@@ -67,7 +77,7 @@ function seir_mod!(
     )
 
     @inbounds for i in 2:(time_params.tlength)
-        state_vec[i] = seir_mod_loop!(
+        state_vec[i], inc_vec[i] = seir_mod_loop!(
             state_vec[i - 1],
             beta_vec[i],
             mu,
@@ -129,11 +139,11 @@ function seir_mod_loop!(
         dN = dS + dE + dI + dR
     end
 
-    return @SVector [S + dS, E + dE, I + dI, R + dR, N + dN, contact_inf]
+    return (SVector(S + dS, E + dE, I + dI, R + dR, N + dN), SVector(contact_inf))
 end
 
 function convert_svec_to_arr(
-    svec; reinterpret_dims = (6, 36501), reorder_inds = (2, 1)
+    svec; reinterpret_dims = (5, 36501), reorder_inds = (2, 1)
 )
     array_dims = [reinterpret_dims[i] for i in reorder_inds]
     array = Array{eltype(svec[1])}(undef, array_dims...)
@@ -151,7 +161,7 @@ end
 function convert_svec_to_arr!(
     array,
     svec;
-    reinterpret_dims = (6, 36501),
+    reinterpret_dims = (5, 36501),
     reorder_inds = (2, 1),
 )
     return permutedims!(
