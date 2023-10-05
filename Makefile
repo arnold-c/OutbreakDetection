@@ -7,7 +7,7 @@ all: single-sim-targets ensemble-targets
 .PHONY: single-sim_scripts
 single-sim_scripts: $(SINGLESIM_SCRIPTS)
 
-SINGLESIM_TARGETS = single-sim_setup single-sim single-sim_plots single-sim_bifurcation
+SINGLESIM_TARGETS = single-sim_setup single-sim single-sim_plots #single-sim_bifurcation
 .PHONY: $(SINGLESIM_TARGETS) single-sim-targets
 $(SINGLESIM_TARGETS): %: tmp/%
 single-sim-targets: $(SINGLESIM_TARGETS)
