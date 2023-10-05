@@ -43,16 +43,13 @@ save(
 )
 
 #%%
-singlesim_beta_plot = @chain DataFrame(Tables.table(beta_vec)) begin
-    hcat(trange, _)
-    rename!([:time, :beta_t])
-    stack(_, Not("time"); variable_name = :beta, value_name = :Number)
-    data(_) *
-    mapping(
-        :time => (t -> t / 365) => "Time (years)", :Number;
-    ) *
-    visual(Lines; linewidth = 1)
-    draw(; facet = (; linkyaxes = :none), axis = (; limits = ((0, 3), nothing)))
-end
+singlesim_beta_plot = Figure()
+beta_ax = Axis(singlesim_beta_plot[1, 1]; xlabel = "Time (years)", ylabel = "Beta")
+
+lines!(beta_ax, trange / 365, beta_vec, linewidth = 1)
+
+xlims!(beta_ax, (0, 3))
+
+singlesim_beta_plot
 
 save(plotsdir("singlesim/single-sim_beta.png"), singlesim_beta_plot)
