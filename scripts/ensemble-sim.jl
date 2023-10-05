@@ -94,7 +94,7 @@ noise_spec_vec = create_combinations_vec(
 )
 
 #%%
-detectthreshold_vec = [collect(5:5:20)..., 35, 50, 100]
+detectthreshold_vec = [2, 4, collect(5:5:20)...]
 moveavglag_vec = [7]
 perc_clinic_vec = [0.3]
 perc_clinic_test_vec = [0.3]
