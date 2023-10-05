@@ -138,7 +138,5 @@ for dict in sol_param_dict
     dict[:test_spec_vec] = test_spec_vec
 end
 
-sol_param_dict[1]
-
 #%%
 run_ensemble_jump_prob(sol_param_dict; force = true)

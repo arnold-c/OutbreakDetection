@@ -149,8 +149,8 @@ function run_jump_prob(ensemble_param_dict)
         run_seed = seed + (sim - 1)
 
         seir_mod!(
-            ensemble_seir_vecs[:, sim],
-            ensemble_inc_vecs[:, sim],
+            @view(ensemble_seir_vecs[:, sim]),
+            @view(ensemble_inc_vecs[:, sim]),
             ensemble_beta_arr,
             state_parameters.init_states,
             dynamics_parameters,
