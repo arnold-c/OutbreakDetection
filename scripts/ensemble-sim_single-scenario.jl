@@ -18,9 +18,9 @@ ensemble_single_ensemble_spec = EnsembleSpecification(
     ("seasonal-infectivity-import", "tau-leaping"),
     StateParameters(
         500_000,
-        Dict(:s_prop => 0.1, :e_prop => 0.01, :i_prop => 0.01, :r_prop => 0.88),
+        Dict(:s_prop => 0.1, :e_prop => 0.0, :i_prop => 0.0, :r_prop => 0.9),
     ),
-    DynamicsParameters(500_000, 10, 0.2; vaccination_coverage = 0.0),
+    DynamicsParameters(500_000, 10, 0.2; vaccination_coverage = 0.8),
     ensemble_single_time_spec,
     1_000,
 )
@@ -32,7 +32,7 @@ ensemble_single_scenario_spec = ScenarioSpecification(
     ensemble_single_ensemble_spec,
     ensemble_single_outbreak_spec,
     ensemble_single_noise_spec,
-    OutbreakDetectionSpecification(10, 7, 0.3, 0.3, 3),
+    OutbreakDetectionSpecification(4, 7, 0.3, 0.3, 3),
     ensemble_single_individual_test_spec,
 )
 
@@ -58,7 +58,7 @@ ensemble_single_scenario_spec2 = ScenarioSpecification(
     ensemble_single_ensemble_spec,
     ensemble_single_outbreak_spec,
     ensemble_single_noise_spec,
-    OutbreakDetectionSpecification(100, 7, 0.3, 0.3, 3),
+    OutbreakDetectionSpecification(10, 7, 0.3, 0.3, 3),
     ensemble_single_individual_test_spec,
 )
 
