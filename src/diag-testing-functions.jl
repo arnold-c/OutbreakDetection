@@ -26,13 +26,11 @@ function create_testing_arrs(
     individual_test_spec::IndividualTestSpecification,
 )
     testarr = zeros(Int64, size(incarr, 1), 8, size(incarr, 3))
-    posoddsarr = zeros(Float64, size(incarr, 1), 2, size(incarr, 3))
 
     create_testing_arrs!(
         testarr,
         incarr,
         noisearr,
-        posoddsarr,
         outbreak_detect_spec.detection_threshold,
         outbreak_detect_spec.moving_average_lag,
         outbreak_detect_spec.percent_tested,
@@ -48,7 +46,6 @@ function create_testing_arrs!(
     testarr,
     incarr,
     noisearr,
-    posoddsarr,
     detectthreshold,
     moveavglag,
     perc_tested,
@@ -204,6 +201,19 @@ function detectoutbreak!(outbreakvec, incvec, avgvec, threshold)
     @. outbreakvec = ifelse(incvec >= threshold || avgvec >= threshold, 1, 0)
 
     return nothing
+end
+
+
+function calculate_test_positivity(true_positive_vec, noise_positive_vec, agg_days)
+    @views outvec = zeros(Float64, length(true_positive_vec) ÷ agg_days)
+    for i in axes(outvec, 1)
+        start_ind = 1 + (i - 1) * agg_days
+        end_ind = start_ind + (agg_days - 1)
+        @views outvec[i] = sum(true_positive_vec[start_ind:end_ind]) ./ sum(
+            noise_positive_vec[start_ind:end_ind]
+        )
+    end
+    return outvec
 end
 
 function calculate_ot_characterstics(testvec, infecvec)
