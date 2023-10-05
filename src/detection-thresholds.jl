@@ -9,15 +9,15 @@ using UnPack
 using LoopVectorization
 
 function create_inc_infec_arr(
-    ensemble_jump_arr, outbreak_specification::OutbreakSpecification
+    ensemble_inc_vecs, outbreak_specification::OutbreakSpecification
 )
     ensemble_inc_arr = zeros(
-        Int64, size(ensemble_jump_arr, 1), 4, size(ensemble_jump_arr, 3)
+        Int64, size(ensemble_inc_vecs, 1), 4, size(ensemble_inc_vecs, 2)
     )
 
     create_inc_infec_arr!(
         ensemble_inc_arr,
-        ensemble_jump_arr,
+        ensemble_inc_vecs,
         outbreak_specification.outbreak_threshold,
         outbreak_specification.minimum_outbreak_duration,
         outbreak_specification.minimum_outbreak_size,
@@ -27,11 +27,15 @@ function create_inc_infec_arr(
 end
 
 function create_inc_infec_arr!(
-    ensemble_inc_arr, ensemble_jump_arr, outbreakthreshold, minoutbreakdur,
+    ensemble_inc_arr, ensemble_inc_vecs, outbreakthreshold, minoutbreakdur,
     minoutbreaksize,
 )
-    @inbounds ensemble_inc_arr[:, 1, :] .= @view(ensemble_jump_arr[:, 1, :])
-    @inbounds for sim in axes(ensemble_jump_arr, 3)
+    @inbounds for sim in axes(ensemble_inc_vecs, 3)
+        convert_svec_to_matrix!(
+            @view(ensemble_inc_arr[:, 1, sim]),
+            @view(ensemble_inc_vecs[:, sim])
+        )
+
         ensemble_inc_arr[:, 2, sim] .=
             @view(ensemble_inc_arr[:, 1, sim]) .>= outbreakthreshold
 
