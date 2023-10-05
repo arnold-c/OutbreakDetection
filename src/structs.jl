@@ -277,7 +277,7 @@ function ScenarioSpecification(
         ensemble_specification.dirpath,
         outbreak_specification.dirpath,
         "noise_$(noise_specification.noise_type)",
-        "noise_mean_scaling$(noise_specification.noise_mean_scaling)",
+        "noise_mean_scaling_$(noise_specification.noise_mean_scaling)",
         "detectthreshold_$(outbreak_detection_specification.detection_threshold)",
         "testlag_$(outbreak_detection_specification.test_result_lag)",
         "moveavglag_$(outbreak_detection_specification.moving_average_lag)",
