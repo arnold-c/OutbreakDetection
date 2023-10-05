@@ -24,7 +24,7 @@ function seir_mod(
     states, dynamics_params, time_params; seed = 1234
 )
     state_vec = Vector{typeof(states)}(undef, time_params.tlength)
-    beta_vec = MVector{time_params.tlength, Float64}(undef)
+    beta_vec = Vector{Float64}(undef, time_params.tlength)
     inc_vec = Vector{typeof(SVector(0))}(undef, time_params.tlength)
 
     seir_mod!(
