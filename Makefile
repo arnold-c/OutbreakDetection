@@ -50,13 +50,7 @@ tmp/ensemble-sim_single-scenario: scripts/ensemble-sim_single-scenario.jl tmp/en
 
 
 .PHONY: clean-all clean-tmp clean-all-ensemble clean-ensemble-scenarios clean-plots clean-ensemble-sims clean-ensemble-quantiles clean-single-sim
-clean-all:
-	clean-tmp
-	clean-single-sim
-	clean-plots
-	clean-all-ensemble
-	clean-ensemble-sims
-	clean-ensemble-quantiles
+clean-all: clean-tmp clean-single-sim clean-plots clean-all-ensemble clean-ensemble-sims clean-ensemble-quantiles
 
 clean-tmp:
 	@echo "cleaning all tmp files"
