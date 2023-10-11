@@ -32,7 +32,7 @@ prog = Progress(length(sensitivity_vec) * length(detectthreshold_vec))
 )
     ind_test_spec = IndividualTestSpecification(sens, spec)
     outbreak_detect_spec = OutbreakDetectionSpecification(
-        detectthrehold, 7, 0.3, 0.3, 3
+        detectthrehold, 7, 0.6, 0.8, 3
     )
 
     ensemble_scenario_spec =
@@ -53,7 +53,7 @@ prog = Progress(length(sensitivity_vec) * length(detectthreshold_vec))
                     ),
                     DynamicsParameters(500_000, 10, 0.2),
                     time_params,
-                    1_000,
+                    100,
                 ),
                 OutbreakSpecification(5, 30, 500),
                 noise_specification,
