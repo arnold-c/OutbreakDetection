@@ -299,7 +299,7 @@ function OutbreakThresholdChars_creation(OT_chars_param_dict)
         ensemble_inc_arr, noise_specification
     )
 
-    testarr, posoddsarr = create_testing_arrs(
+    testarr, test_positivity_structs = create_testing_arrs(
         ensemble_inc_arr,
         noise_array,
         outbreak_detection_specification,
@@ -308,7 +308,7 @@ function OutbreakThresholdChars_creation(OT_chars_param_dict)
 
     OT_chars = calculate_OutbreakThresholdChars(testarr, ensemble_inc_arr)
 
-    return @strdict OT_chars testarr posoddsarr
+    return @strdict OT_chars testarr test_positivity_structs
 end
 
 function get_ensemble_file() end

@@ -41,7 +41,7 @@ function create_testing_arrs(
         individual_test_spec.specificity,
     )
 
-    return testarr, testpos_vec
+    return testarr, StructArray(testpos_vec)
 end
 
 function create_testing_arrs!(

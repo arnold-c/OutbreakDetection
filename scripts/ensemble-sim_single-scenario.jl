@@ -22,7 +22,7 @@ ensemble_single_ensemble_spec = EnsembleSpecification(
     ),
     DynamicsParameters(500_000, 10, 0.2; vaccination_coverage = 0.8),
     ensemble_single_time_spec,
-    1_000,
+    100,
 )
 
 ensemble_single_outbreak_spec = OutbreakSpecification(5, 30, 500)
@@ -32,7 +32,7 @@ ensemble_single_scenario_spec = ScenarioSpecification(
     ensemble_single_ensemble_spec,
     ensemble_single_outbreak_spec,
     ensemble_single_noise_spec,
-    OutbreakDetectionSpecification(4, 7, 0.3, 0.3, 3),
+    OutbreakDetectionSpecification(4, 7, 0.6, 0.8, 3),
     ensemble_single_individual_test_spec,
 )
 
@@ -58,7 +58,7 @@ ensemble_single_scenario_spec2 = ScenarioSpecification(
     ensemble_single_ensemble_spec,
     ensemble_single_outbreak_spec,
     ensemble_single_noise_spec,
-    OutbreakDetectionSpecification(10, 7, 0.3, 0.3, 3),
+    OutbreakDetectionSpecification(10, 7, 0.6, 0.8, 3),
     ensemble_single_individual_test_spec,
 )
 
@@ -243,9 +243,9 @@ save(
 )
 
 #%%
-ensemble_single_scenario_posodds_timeseries_plot = singlesim_test_positivity_plot(
-    ensemble_single_scenario_detection["posoddsarr"][:, 1, 1],
-    ensemble_single_scenario_spec.ensemble_specification.time_parameters,
+ensemble_single_scenario_posodds_timeseries_plot = singlescenario_test_positivity_plot(
+    ensemble_single_scenario_detection["test_positivity_structs"];
+    agg = :thirty_day
 )
 
 save(
@@ -256,10 +256,10 @@ save(
 )
 
 #%%
-ensemble_single_scenario_posodds_dist_plot = @chain ensemble_single_scenario_detection["posoddsarr"][:, 1, :] begin
-    replace(_, NaN => 0.0)
-    test_positivity_distribution_plot(_)
-end
+ensemble_single_scenario_posodds_dist_plot = test_positivity_distribution_plot(
+    ensemble_single_scenario_detection["test_positivity_structs"];
+    agg = :thirty_day
+)
 
 save(
     plotsdir(
