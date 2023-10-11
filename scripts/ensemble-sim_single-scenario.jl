@@ -22,7 +22,7 @@ ensemble_single_ensemble_spec = EnsembleSpecification(
     ),
     DynamicsParameters(500_000, 10, 0.2; vaccination_coverage = 0.8),
     ensemble_single_time_spec,
-    10,
+    100,
 )
 
 ensemble_single_outbreak_spec = OutbreakSpecification(5, 30, 500)
