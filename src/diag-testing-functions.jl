@@ -26,9 +26,11 @@ function create_testing_arrs(
     individual_test_spec::IndividualTestSpecification,
 )
     testarr = zeros(Int64, size(incarr, 1), 8, size(incarr, 3))
+    testpos_vec = Vector{TestPositivity}(undef, size(incarr, 3))
 
     create_testing_arrs!(
         testarr,
+        testpos_vec,
         incarr,
         noisearr,
         outbreak_detect_spec.detection_threshold,
@@ -39,11 +41,12 @@ function create_testing_arrs(
         individual_test_spec.specificity,
     )
 
-    return testarr, posoddsarr
+    return testarr, testpos_vec
 end
 
 function create_testing_arrs!(
     testarr,
+    testpos_vec,
     incarr,
     noisearr,
     detectthreshold,
@@ -104,18 +107,14 @@ function create_testing_arrs!(
             detectthreshold,
         )
 
-        # # Posterior prob of infectious / total test positive
-        @. @view(posoddsarr[:, 1, sim]) =
-            @view(testarr[:, 3, sim]) / @view(testarr[:, 5, sim])
-        calculate_movingavg!(
-            @view(posoddsarr[:, 2, sim]),
-            @view(posoddsarr[:, 1, sim]),
-            testlag, moveavglag,
-        )
-
         # Triggered outbreak equal to actual outbreak status
         @. testarr[:, 8, sim] =
             @view(testarr[:, 7, sim]) == @view(incarr[:, 4, sim])
+
+        # Posterior prob of infectious / total test positive
+        testpos_vec[sim] = TestPositivity(
+            @view(testarr[:, 3, sim]), @view(testarr[:, 5, sim])
+        )
     end
 
     return nothing
