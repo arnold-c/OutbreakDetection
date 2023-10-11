@@ -96,8 +96,8 @@ noise_spec_vec = create_combinations_vec(
 #%%
 detectthreshold_vec = [2, 4, collect(5:5:20)...]
 moveavglag_vec = [7]
-perc_clinic_vec = [0.6]
-perc_clinic_test_vec = [0.8]
+perc_clinic_vec = [0.4, 0.6]
+perc_clinic_test_vec = [0.5, 0.8, 1.0]
 testlag_vec = [3]
 
 outbreak_detection_spec_vec = create_combinations_vec(
@@ -119,6 +119,9 @@ test_spec_vec = create_combinations_vec(
     IndividualTestSpecification,
     (testsens_vec, testspec_vec)
 )
+
+# Add test that represents all tested clinical cases = positive
+push!(test_spec_vec, IndividualTestSpecification(1.0, 0.0))
 
 #%%
 base_param_dict = @dict(
