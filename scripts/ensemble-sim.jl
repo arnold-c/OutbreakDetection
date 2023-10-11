@@ -15,7 +15,7 @@ model_types_vec = [("seasonal-infectivity-import", "tau-leaping")]
 
 #%%
 N_vec = [500_000]
-nsims_vec = [1_000]
+nsims_vec = [10]
 init_states_prop_dict = [
     Dict(:s_prop => 0.1, :e_prop => 0.00, :i_prop => 0.00, :r_prop => 0.9)
 ]
@@ -83,7 +83,7 @@ end
 #%%
 # TODO: How to make the mean of the noise a proportion of the mean of incidence
 # when incidence depends on the dynamics parameters?
-# Could pass variables to ensemble function and calculate each simulations and 
+# Could pass variables to ensemble function and calculate each simulations and
 # scenario's noise mean, but that would break implementation using NoiseSpecification
 # struct currently
 poisson_noise_mean_scaling_vec = [1.0]
