@@ -243,9 +243,9 @@ save(
 )
 
 #%%
-ensemble_single_scenario_posodds_timeseries_plot = singlesim_test_positivity_plot(
-    ensemble_single_scenario_detection["posoddsarr"][:, 1, 1],
-    ensemble_single_scenario_spec.ensemble_specification.time_parameters,
+ensemble_single_scenario_posodds_timeseries_plot = singlescenario_test_positivity_plot(
+    [ensemble_single_scenario_detection["test_positivity_structs"][1]];
+    agg = :thirty_day
 )
 
 save(

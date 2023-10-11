@@ -553,13 +553,18 @@ function ensemble_outbreak_detect_diff_plot(OT_chars; binwidth = 1)
     return fig
 end
 
-function singlesim_test_positivity_plot(posoddsvec, timeparams)
+function singlescenario_test_positivity_plot(
+    posoddsvec; agg = :seven_day
+)
     fig = Figure()
     ax = Axis(
         fig[1, 1]; xlabel = "Time (years)", ylabel = "Test Positivity"
     )
 
-    lines!(ax, timeparams.trange ./ 365, posoddsvec)
+    for sim in eachindex(posoddsvec)
+        aggposodds = getfield(posoddsvec[sim], agg)
+        scatter!(ax, 1:length(aggposodds), aggposodds)
+    end
 
     return fig
 end
