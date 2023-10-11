@@ -12,6 +12,7 @@ using UnPack
 using DataFrames
 using FLoops
 using LaTeXStrings
+using NaNMath: NaNMath
 
 seircolors = ["dodgerblue4", "green", "firebrick3", "chocolate2", "purple"]
 seir_state_labels = ["S", "E", "I", "R", "N"]
@@ -554,30 +555,32 @@ function ensemble_outbreak_detect_diff_plot(OT_chars; binwidth = 1)
 end
 
 function singlescenario_test_positivity_plot(
-    posoddsvec; agg = :seven_day
+    test_positivity_struct_vec; agg = :seven_day
 )
     fig = Figure()
     ax = Axis(
-        fig[1, 1]; xlabel = "Time (years)", ylabel = "Test Positivity"
+        fig[1, 1]; xlabel = "Time steps by $(agg)", ylabel = "Test Positivity"
     )
+    posoddsmatrix = reduce(hcat, getfield.(test_positivity_struct_vec, agg))
+    avgpositivity = vec(mapslices(NaNMath.mean, posoddsmatrix; dims = 2))
 
-    for sim in eachindex(posoddsvec)
-        aggposodds = getfield(posoddsvec[sim], agg)
-        scatter!(ax, 1:length(aggposodds), aggposodds)
-    end
+    lines!(ax, 1:length(avgpositivity), avgpositivity)
 
     return fig
 end
 
-function test_positivity_distribution_plot(posoddsmatrix)
+function test_positivity_distribution_plot(test_positivity_struct_vec; agg = :seven_day)
+    posoddsmatrix = reduce(hcat, getfield.(test_positivity_struct_vec, agg))
+
     fig = Figure()
     ax = Axis(
-        fig[1, 1]; xlabel = "Test Positivity", ylabel = "Proportion of Time Series"
+        fig[1, 1]; xlabel = "Test Positivity",
+        ylabel = "Proportion of Time Series",
     )
 
     hist!(
         ax,
-        vec(mean(posoddsmatrix, dims = 1));
+        vec(mapslices(NaNMath.mean, posoddsmatrix; dims = 1))
     )
 
     return fig
