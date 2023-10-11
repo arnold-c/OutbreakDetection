@@ -203,15 +203,19 @@ function detectoutbreak!(outbreakvec, incvec, avgvec, threshold)
     return nothing
 end
 
-
-function calculate_test_positivity(true_positive_vec, noise_positive_vec, agg_days)
+function calculate_test_positivity(
+    true_positive_vec, total_positive_vec, agg_days
+)
     @views outvec = zeros(Float64, length(true_positive_vec) ÷ agg_days)
-    for i in axes(outvec, 1)
+    @inbounds for i in axes(outvec, 1)
         start_ind = 1 + (i - 1) * agg_days
         end_ind = start_ind + (agg_days - 1)
-        @views outvec[i] = sum(true_positive_vec[start_ind:end_ind]) ./ sum(
-            noise_positive_vec[start_ind:end_ind]
-        )
+
+        @views total_positive_sum = sum(total_positive_vec[start_ind:end_ind])
+        @views true_positive_sum = sum(true_positive_vec[start_ind:end_ind])
+
+        outvec[i] = true_positive_sum / total_positive_sum
+
     end
     return outvec
 end
