@@ -26,13 +26,13 @@ function create_testing_arrs(
     individual_test_spec::IndividualTestSpecification,
 )
     testarr = zeros(Int64, size(incarr, 1), 8, size(incarr, 3))
-    posoddsarr = zeros(Float64, size(incarr, 1), 2, size(incarr, 3))
+    testpos_vec = Vector{TestPositivity}(undef, size(incarr, 3))
 
     create_testing_arrs!(
         testarr,
+        testpos_vec,
         incarr,
         noisearr,
-        posoddsarr,
         outbreak_detect_spec.detection_threshold,
         outbreak_detect_spec.moving_average_lag,
         outbreak_detect_spec.percent_tested,
@@ -41,14 +41,14 @@ function create_testing_arrs(
         individual_test_spec.specificity,
     )
 
-    return testarr, posoddsarr
+    return testarr, testpos_vec
 end
 
 function create_testing_arrs!(
     testarr,
+    testpos_vec,
     incarr,
     noisearr,
-    posoddsarr,
     detectthreshold,
     moveavglag,
     perc_tested,
@@ -107,18 +107,14 @@ function create_testing_arrs!(
             detectthreshold,
         )
 
-        # # Posterior prob of infectious / total test positive
-        @. @view(posoddsarr[:, 1, sim]) =
-            @view(testarr[:, 3, sim]) / @view(testarr[:, 5, sim])
-        calculate_movingavg!(
-            @view(posoddsarr[:, 2, sim]),
-            @view(posoddsarr[:, 1, sim]),
-            testlag, moveavglag,
-        )
-
         # Triggered outbreak equal to actual outbreak status
         @. testarr[:, 8, sim] =
             @view(testarr[:, 7, sim]) == @view(incarr[:, 4, sim])
+
+        # Posterior prob of infectious / total test positive
+        testpos_vec[sim] = TestPositivity(
+            @view(testarr[:, 3, sim]), @view(testarr[:, 5, sim])
+        )
     end
 
     return nothing
@@ -204,6 +200,23 @@ function detectoutbreak!(outbreakvec, incvec, avgvec, threshold)
     @. outbreakvec = ifelse(incvec >= threshold || avgvec >= threshold, 1, 0)
 
     return nothing
+end
+
+function calculate_test_positivity(
+    true_positive_vec, total_positive_vec, agg_days
+)
+    @views outvec = zeros(Float64, length(true_positive_vec) ÷ agg_days)
+    @inbounds for i in axes(outvec, 1)
+        start_ind = 1 + (i - 1) * agg_days
+        end_ind = start_ind + (agg_days - 1)
+
+        @views total_positive_sum = sum(total_positive_vec[start_ind:end_ind])
+        @views true_positive_sum = sum(true_positive_vec[start_ind:end_ind])
+
+        outvec[i] = true_positive_sum / total_positive_sum
+
+    end
+    return outvec
 end
 
 function calculate_ot_characterstics(testvec, infecvec)
