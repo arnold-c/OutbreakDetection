@@ -106,6 +106,9 @@ prog = Progress(length(ensemble_scenario_spec_vec))
 end
 
 #%%
+sort!(ensemble_chars_vec, by = x -> (x.outbreak_detect_spec.detection_threshold, x.ind_test_spec.specificity))
+
+#%%
 compare_outbreak_sens_spec_plot = compare_ensemble_OTchars_plots(
     ensemble_chars_vec,
     :sensitivity,
