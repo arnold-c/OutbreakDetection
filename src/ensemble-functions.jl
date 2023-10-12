@@ -131,16 +131,16 @@ function run_jump_prob(ensemble_param_dict)
 
     @unpack tstep, tlength, trange = time_parameters
 
-    ensemble_seir_vecs = Array{typeof(state_parameters.init_states), 2}(
-        undef,
-        tlength,
-        nsims,
-    )
-
-    ensemble_inc_vecs = Array{typeof(SVector(0)), 2}(
+    ensemble_seir_vecs = Array{typeof(state_parameters.init_states),2}(
         undef,
         tlength,
         nsims
+    )
+
+    ensemble_inc_vecs = Array{typeof(SVector(0)),2}(
+        undef,
+        tlength,
+        nsims,
     )
 
     ensemble_beta_arr = zeros(Float64, tlength)
@@ -257,9 +257,30 @@ function define_outbreaks(incidence_param_dict)
             [ensemble_spec],
             [outbreak_spec],
             noise_spec_vec,
-            outbreak_detection_spec_vec,
+            filter(
+                spec -> spec.percent_clinic_tested != 1.0, outbreak_detection_spec_vec
+            ),
             test_spec_vec,
         ),
+    )
+
+    # Add clinical case = positive test
+    # Only applies to specs where all clinic visits are tested (why filtered above)
+    push!(
+        ensemble_scenarios,
+        create_combinations_vec(
+            ScenarioSpecification,
+            (
+                [ensemble_spec],
+                [outbreak_spec],
+                noise_spec_vec,
+                filter(
+                    spec -> spec.percent_clinic_tested == 1.0,
+                    outbreak_detection_spec_vec,
+                ),
+                [IndividualTestSpecification(1.0, 0.0)],
+            ),
+        )...
     )
 
     scenario_param_dict = dict_list(
