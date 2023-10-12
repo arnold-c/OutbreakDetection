@@ -602,14 +602,14 @@ function compare_ensemble_OTchars_plots(
     legendlabel = "Outbreak Chacteristic",
 )
     xlength = length(
-        Set(getfield.(getfield.(char_struct_vec, :ind_test_spec), :specificity))
-    )
-    ylength = length(
         Set(getfield.(getfield.(char_struct_vec, :outbreak_detect_spec), char3))
     )
+    ylength = length(
+        Set(getfield.(getfield.(char_struct_vec, :ind_test_spec), :specificity))
+    )
 
-    xs = repeat(1:xlength, ylength)
-    ys = repeat(1:ylength; inner = xlength)
+    xs = repeat(1:ylength, xlength)
+    ys = repeat(1:xlength; inner = ylength)
 
     fig = Figure()
     for (OT_char_tuple, x, y) in zip(char_struct_vec, xs, ys)
