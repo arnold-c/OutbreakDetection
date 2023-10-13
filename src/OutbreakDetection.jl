@@ -16,7 +16,7 @@ include("structs.jl")
 export SimTimeParameters, EnsembleSpecification, DynamicsParameters,
     StateParameters, OutbreakThresholdChars, OutbreakDetectionSpecification,
     OutbreakSpecification, IndividualTestSpecification, NoiseSpecification,
-    ScenarioSpecification
+    ScenarioSpecification, TestPositivity
 # @reexport using .ODStructs
 
 include("SEIR-model.jl")
