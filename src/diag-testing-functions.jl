@@ -117,9 +117,9 @@ function create_testing_arrs!(
         @. testarr[:, 8, sim] =
             @view(testarr[:, 7, sim]) == @view(incarr[:, 4, sim])
 
-        # Posterior prob of infectious / total test positive
+        # Posterior prob of infectious / total test tests performed
         testpos_vec[sim] = TestPositivity(
-            @view(testarr[:, 3, sim]), @view(testarr[:, 5, sim])
+            @view(testarr[:, 3, sim]), ntested_worker_vec
         )
     end
 
