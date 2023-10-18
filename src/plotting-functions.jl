@@ -557,7 +557,10 @@ end
 function singlescenario_test_positivity_plot(
     test_positivity_struct_vec; agg = :seven_day
 )
-    posoddsmatrix = reduce(hcat, getfield.(test_positivity_struct_vec, agg))
+    posoddsmatrix = reduce(
+        hcat,
+        map(array -> array[:, 1], getfield.(test_positivity_struct_vec, agg)),
+    )
     avgpositivity = vec(mapslices(NaNMath.mean, posoddsmatrix; dims = 2))
 
     fig = Figure()
@@ -572,7 +575,10 @@ end
 function test_positivity_distribution_plot(
     test_positivity_struct_vec; agg = :seven_day
 )
-    posoddsmatrix = reduce(hcat, getfield.(test_positivity_struct_vec, agg))
+    posoddsmatrix = reduce(
+        hcat,
+        map(array -> array[:, 1], getfield.(test_positivity_struct_vec, agg)),
+    )
 
     fig = Figure()
     ax = Axis(

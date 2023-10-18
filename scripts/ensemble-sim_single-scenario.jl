@@ -244,7 +244,7 @@ save(
 
 #%%
 ensemble_single_scenario_posodds_timeseries_plot = singlescenario_test_positivity_plot(
-    ensemble_single_scenario_detection["test_positivity_structs"][:, 1];
+    ensemble_single_scenario_detection["test_positivity_structs"];
     agg = :thirty_day,
 )
 
@@ -257,7 +257,7 @@ save(
 
 #%%
 ensemble_single_scenario_posodds_dist_plot = test_positivity_distribution_plot(
-    ensemble_single_scenario_detection["test_positivity_structs"][:, 1];
+    ensemble_single_scenario_detection["test_positivity_structs"];
     agg = :thirty_day,
 )
 
