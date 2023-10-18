@@ -59,7 +59,7 @@ function create_testing_arrs!(
     testsens,
     testspec,
 )
-    ntested = size(testarr, 1)
+    tlength = size(testarr, 1)
 
     for sim in axes(incarr, 3)
         # Number of infectious individuals tested
@@ -80,7 +80,7 @@ function create_testing_arrs!(
         calculate_true_positives!(
             @view(testarr[:, 3, sim]),
             @view(testarr[:, 1, sim]),
-            ntested,
+            tlength,
             testlag,
             testsens,
         )
@@ -89,7 +89,7 @@ function create_testing_arrs!(
         calculate_noise_positives!(
             @view(testarr[:, 4, sim]),
             @view(testarr[:, 2, sim]),
-            ntested,
+            tlength,
             testlag,
             testspec,
         )
@@ -145,10 +145,10 @@ function calculate_true_positives!(outvec, tested_vec, tlength, lag, sens)
 end
 
 function calculate_positives!(
-    npos_vec, tested_vec, ntested, lag, tested_multiplier
+    npos_vec, tested_vec, tlength, lag, tested_multiplier
 )
     for day in eachindex(tested_vec)
-        if day + lag <= ntested
+        if day + lag <= tlength
             npos_vec[day + lag] = Int64(
                 round(tested_vec[day] * tested_multiplier)
             )
