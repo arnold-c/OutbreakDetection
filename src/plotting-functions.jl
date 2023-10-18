@@ -573,25 +573,23 @@ function singlescenario_test_positivity_plot(
 end
 
 function test_positivity_distribution_plot(
-    test_positivity_struct_vec; agg = :seven_day
+    test_positivity_struct_vec; agg = :seven_day, kwargs...
 )
-    posoddsmatrix = reduce(
-        hcat,
-        map(array -> array[:, 1], getfield.(test_positivity_struct_vec, agg)),
+    df = @chain test_positivity_struct_vec begin
+        getfield.(agg)
+        reduce(vcat, _)
+        DataFrame(Tables.table(_), [:positivity, :outbreak])
+    end
+
+    df[!, :outbreak] = string.(df[:, :outbreak])
+
+    return draw(
+        data(df) *
+        mapping(:positivity => "Test Positivity"; kwargs...) *
+        histogram();
+        axis = (ylabel = "Count",),
     )
-
-    fig = Figure()
-    ax = Axis(
-        fig[1, 1]; xlabel = "Test Positivity",
-        ylabel = "Proportion of Time Series",
-    )
-
-    hist!(ax, vec(posoddsmatrix))
-
-    return fig
 end
-
-# function test_positivity_outbreak
 
 function compare_ensemble_OTchars_plots(
     char_struct_vec,
