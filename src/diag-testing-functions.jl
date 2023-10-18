@@ -73,7 +73,8 @@ function create_testing_arrs!(
         )
 
         # Number of TOTAL individuals tested
-        @turbo @. @views ntested_worker_vec .= testarr[:, 1, sim] + testarr[:, 2, sim]
+        @turbo @. @views ntested_worker_vec .=
+            testarr[:, 1, sim] + testarr[:, 2, sim]
 
         # Number of test positive INFECTED individuals
         calculate_true_positives!(
@@ -121,7 +122,7 @@ function create_testing_arrs!(
         testpos_vec[sim] = TestPositivity(
             @view(testarr[:, 5, sim]),
             ntested_worker_vec,
-            @view(testarr[:, 8, sim])
+            @view(testarr[:, 7, sim])
         )
     end
 
