@@ -557,20 +557,23 @@ end
 function singlescenario_test_positivity_plot(
     test_positivity_struct_vec; agg = :seven_day
 )
+    posoddsmatrix = reduce(hcat, getfield.(test_positivity_struct_vec, agg))
+    avgpositivity = vec(mapslices(NaNMath.mean, posoddsmatrix; dims = 2))
+
     fig = Figure()
     ax = Axis(
         fig[1, 1]; xlabel = "Time steps by $(agg)", ylabel = "Test Positivity"
     )
-    posoddsmatrix = reduce(hcat, getfield.(test_positivity_struct_vec, agg))
-    avgpositivity = vec(mapslices(NaNMath.mean, posoddsmatrix; dims = 2))
-
     lines!(ax, 1:length(avgpositivity), avgpositivity)
 
     return fig
 end
 
-function test_positivity_distribution_plot(test_positivity_struct_vec; agg = :seven_day)
+function test_positivity_distribution_plot(
+    test_positivity_struct_vec; agg = :seven_day
+)
     posoddsmatrix = reduce(hcat, getfield.(test_positivity_struct_vec, agg))
+    avgpositivity = vec(mapslices(NaNMath.mean, posoddsmatrix; dims = 2))
 
     fig = Figure()
     ax = Axis(
@@ -578,10 +581,7 @@ function test_positivity_distribution_plot(test_positivity_struct_vec; agg = :se
         ylabel = "Proportion of Time Series",
     )
 
-    hist!(
-        ax,
-        vec(mapslices(NaNMath.mean, posoddsmatrix; dims = 1))
-    )
+    hist!(ax, avgpositivity)
 
     return fig
 end
