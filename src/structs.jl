@@ -55,7 +55,12 @@ struct DynamicsParameters{T1<:AbstractFloat,T2<:Union{<:Integer,T1}}
     vaccination_coverage::T1
 end
 
-function DynamicsParameters(sigma::Float64, gamma::Float64, R_0::Float64; vaccination_coverage::Float64 = 0.8)
+function DynamicsParameters(
+    sigma::Float64,
+    gamma::Float64,
+    R_0::Float64;
+    vaccination_coverage::Float64 = 0.8,
+)
     annual_births_per_k = 1000 / LIFE_EXPECTANCY_YEARS
 
     return DynamicsParameters(
@@ -67,12 +72,13 @@ function DynamicsParameters(sigma::Float64, gamma::Float64, R_0::Float64; vaccin
         annual_births_per_k,
         EPSILON,
         R_0,
-        vaccination_coverage
+        vaccination_coverage,
     )
 end
 
 function DynamicsParameters(
-    N::Int64, annual_births_per_k::Int64, beta_force::Float64; vaccination_coverage::Float64 = 0.8
+    N::Int64, annual_births_per_k::Int64, beta_force::Float64;
+    vaccination_coverage::Float64 = 0.8,
 )
     mu = calculate_mu(annual_births_per_k)
     beta_mean = calculate_beta(R0, GAMMA, mu, 1, N)
@@ -87,11 +93,11 @@ function DynamicsParameters(
         annual_births_per_k,
         epsilon,
         R0,
-        vaccination_coverage
+        vaccination_coverage,
     )
 end
 
-struct StateParameters{T1<:SLArray, T2<:SLArray}
+struct StateParameters{T1<:SLArray,T2<:SLArray}
     init_states::T1
     init_state_props::T2
 end
@@ -110,14 +116,14 @@ function StateParameters(;
 )
     r_prop = 1 - (s_prop + e_prop + i_prop)
 
-    states = SLVector(
+    states = SLVector(;
         S = Int64(round(s_prop * N)),
         E = Int64(round(e_prop * N)),
         I = Int64(round(i_prop * N)),
         R = Int64(round(r_prop * N)),
-        N = N
+        N = N,
     )
-    state_props = SLVector(
+    state_props = SLVector(;
         s_prop = s_prop,
         e_prop = e_prop,
         i_prop = i_prop,
@@ -192,7 +198,7 @@ struct OutbreakThresholdChars{
     detectoutbreakbounds::T4
 end
 
-struct OutbreakSpecification{T1<:Integer, T2<:AbstractString}
+struct OutbreakSpecification{T1<:Integer,T2<:AbstractString}
     outbreak_threshold::T1
     minimum_outbreak_duration::T1
     minimum_outbreak_size::T1
@@ -307,8 +313,7 @@ struct TestPositivity{T1<:AbstractArray{<:AbstractFloat}}
     thirty_day::T1
 end
 
-function TestPositivity(true_positive_vec, noise_positive_vec)
-
+function TestPositivity(true_positive_vec, total_positive_vec, detection_vec)
     return TestPositivity(
         calculate_test_positivity(
             true_positive_vec, total_positive_vec, detection_vec, 1
