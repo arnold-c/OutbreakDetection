@@ -300,20 +300,28 @@ function ScenarioSpecification(
     )
 end
 
-struct TestPositivity{T1<:AbstractArray{<:AbstractFloat}, T2<:AbstractVector{<:AbstractFloat}}
+struct TestPositivity{T1<:AbstractArray{<:AbstractFloat}}
     one_day::T1
-    seven_day::T2
-    fourteen_day::T2
-    thirty_day::T2
+    seven_day::T1
+    fourteen_day::T1
+    thirty_day::T1
 end
 
 function TestPositivity(true_positive_vec, noise_positive_vec)
 
     return TestPositivity(
-        calculate_test_positivity(true_positive_vec, noise_positive_vec, 1),
-        calculate_test_positivity(true_positive_vec, noise_positive_vec, 7),
-        calculate_test_positivity(true_positive_vec, noise_positive_vec, 14),
-        calculate_test_positivity(true_positive_vec, noise_positive_vec, 30),
+        calculate_test_positivity(
+            true_positive_vec, total_positive_vec, detection_vec, 1
+        ),
+        calculate_test_positivity(
+            true_positive_vec, total_positive_vec, detection_vec, 7
+        ),
+        calculate_test_positivity(
+            true_positive_vec, total_positive_vec, detection_vec, 14
+        ),
+        calculate_test_positivity(
+            true_positive_vec, total_positive_vec, detection_vec, 30
+        ),
     )
 end
 

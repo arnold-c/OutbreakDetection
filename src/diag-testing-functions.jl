@@ -119,7 +119,9 @@ function create_testing_arrs!(
 
         # Posterior prob of infectious / total test tests performed
         testpos_vec[sim] = TestPositivity(
-            @view(testarr[:, 5, sim]), ntested_worker_vec
+            @view(testarr[:, 5, sim]),
+            ntested_worker_vec,
+            @view(testarr[:, 8, sim])
         )
     end
 
@@ -209,18 +211,20 @@ function detectoutbreak!(outbreakvec, incvec, avgvec, threshold)
 end
 
 function calculate_test_positivity(
-    true_positive_vec, total_positive_vec, agg_days
+    true_positive_vec, total_positive_vec, detection_vec, agg_days
 )
-    @views outvec = zeros(Float64, length(true_positive_vec) ÷ agg_days)
+    @views outvec = zeros(Float64, length(true_positive_vec) ÷ agg_days, 2)
     @inbounds for i in axes(outvec, 1)
         start_ind = 1 + (i - 1) * agg_days
         end_ind = start_ind + (agg_days - 1)
 
         @views total_positive_sum = sum(total_positive_vec[start_ind:end_ind])
         @views true_positive_sum = sum(true_positive_vec[start_ind:end_ind])
+        @views num_outbreak_days = sum(detection_vec[start_ind:end_ind])
+        agg_outbreak_status = num_outbreak_days >= agg_days / 2 ? 1 : 0
 
-        outvec[i] = true_positive_sum / total_positive_sum
-
+        outvec[i, 1] = true_positive_sum / total_positive_sum
+        outvec[i, 2] = agg_outbreak_status
     end
     return outvec
 end
