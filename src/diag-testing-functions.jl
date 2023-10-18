@@ -133,21 +133,6 @@ function calculate_tested!(outvec, invec, perc_tested)
     @. outvec = round(invec * perc_tested)
 end
 
-function calculate_positives(tested_vec, lag, tested_multiplier)
-    ntested = length(tested_vec)
-    npos = zeros(Int64, ntested)
-
-    calculate_positives!(
-        npos,
-        tested_vec,
-        ntested,
-        lag,
-        tested_multiplier,
-    )
-
-    return npos
-end
-
 function calculate_noise_positives!(outvec, tested_vec, tlength, lag, spec)
     tested_multiplier = 1.0 - spec
     calculate_positives!(outvec, tested_vec, tlength, lag, tested_multiplier)

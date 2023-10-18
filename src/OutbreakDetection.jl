@@ -44,7 +44,7 @@ export create_inc_infec_arr,
 
 include("diag-testing-functions.jl")
 export create_testing_arrs, create_testing_arrs!, calculate_tested!,
-    calculate_positives, calculate_positives!,
+    calculate_positives!,
     calculate_true_positives!, calculate_noise_positives!,
     calculate_movingavg, calculate_movingavg!,
     detectoutbreak, detectoutbreak!, calculate_ot_characterstics,
