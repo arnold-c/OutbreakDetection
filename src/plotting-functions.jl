@@ -573,7 +573,6 @@ function test_positivity_distribution_plot(
     test_positivity_struct_vec; agg = :seven_day
 )
     posoddsmatrix = reduce(hcat, getfield.(test_positivity_struct_vec, agg))
-    avgpositivity = vec(mapslices(NaNMath.mean, posoddsmatrix; dims = 2))
 
     fig = Figure()
     ax = Axis(
@@ -581,10 +580,12 @@ function test_positivity_distribution_plot(
         ylabel = "Proportion of Time Series",
     )
 
-    hist!(ax, avgpositivity)
+    hist!(ax, vec(posoddsmatrix))
 
     return fig
 end
+
+# function test_positivity_outbreak
 
 function compare_ensemble_OTchars_plots(
     char_struct_vec,
