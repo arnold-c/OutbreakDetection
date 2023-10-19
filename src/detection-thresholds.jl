@@ -15,7 +15,9 @@ function create_inc_infec_arr(
         Int64, size(ensemble_inc_vecs, 1), 4, size(ensemble_inc_vecs, 2)
     )
 
-    ensemble_thresholds_vec = Vector{NamedTuple}(undef, 0)
+    ensemble_thresholds_vec = repeat(
+        [Vector{NamedTuple}(undef, 0)], size(ensemble_inc_vecs, 2)
+    )
 
     create_inc_infec_arr!(
         ensemble_inc_arr,
@@ -59,7 +61,7 @@ function create_inc_infec_arr!(
             )
             classify_outbreak!(
                 @view(ensemble_inc_arr[lower:upper, 4, sim]),
-                @view(ensemble_thresholds_vec),
+                @view(ensemble_thresholds_vec[sim]),
                 ensemble_inc_arr[lower, 3, sim],
                 upper,
                 lower,
