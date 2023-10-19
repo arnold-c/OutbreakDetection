@@ -271,7 +271,7 @@ save(
 #%%
 ensemble_single_scenario_posodds_outbreak_dist_plot = test_positivity_distribution_plot(
     ensemble_single_scenario_detection["test_positivity_structs"];
-    agg = :thirty_day,
+    agg = :seven_day,
     color = :outbreak => "Outbreak Status",
     layout = :outbreak,
 )
