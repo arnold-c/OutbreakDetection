@@ -15,19 +15,25 @@ function create_inc_infec_arr(
         Int64, size(ensemble_inc_vecs, 1), 4, size(ensemble_inc_vecs, 2)
     )
 
+    ensemble_thresholds_vec = Vector{NamedTuple}(
+        undef, size(ensemble_inc_vecs, 2)
+    )
+
     create_inc_infec_arr!(
         ensemble_inc_arr,
+        ensemble_thresholds_vec,
         ensemble_inc_vecs,
         outbreak_specification.outbreak_threshold,
         outbreak_specification.minimum_outbreak_duration,
         outbreak_specification.minimum_outbreak_size,
     )
 
-    return ensemble_inc_arr
+    return ensemble_inc_arr, ensemble_thresholds_vec
 end
 
 function create_inc_infec_arr!(
-    ensemble_inc_arr, ensemble_inc_vecs, outbreakthreshold, minoutbreakdur,
+    ensemble_inc_arr, ensemble_thresholds_vec, ensemble_inc_vecs,
+    outbreakthreshold, minoutbreakdur,
     minoutbreaksize,
 )
     @inbounds for sim in axes(ensemble_inc_vecs, 2)
@@ -40,12 +46,14 @@ function create_inc_infec_arr!(
             @view(ensemble_inc_arr[:, 1, sim]) .>= outbreakthreshold
 
         abovethresholdrle = rle(@view(ensemble_inc_arr[:, 2, sim]))
-        abovethresholdlowers, abovethresholduppers = calculate_outbreak_thresholds(
+        ensemble_thresholds_vec[sim] = calculate_outbreak_thresholds(
             abovethresholdrle
         )
 
-        @inbounds for (lower, upper) in
-                      zip(abovethresholdlowers, abovethresholduppers)
+        @inbounds for (lower, upper) in zip(
+            @view(ensemble_thresholds_vec[sim]).lowers,
+            @view(ensemble_thresholds_vec[sim]).uppers,
+        )
             calculate_period_sum!(
                 @view(ensemble_inc_arr[lower:upper, 3, sim]),
                 @view(ensemble_inc_arr[lower:upper, 1, sim])
@@ -72,7 +80,7 @@ function calculate_outbreak_thresholds(outbreakrle)
         x -> x - 1 == 0 ? 1 : outbreakaccum[x - 1] + 1, upperbound_indices
     )
 
-    return (outbreaklowers, outbreakuppers)
+    return (lowers = outbreaklowers, uppers = outbreakuppers)
 end
 
 function calculate_period_sum!(outvec, incvec)
