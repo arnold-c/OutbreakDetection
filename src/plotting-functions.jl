@@ -586,7 +586,7 @@ function test_positivity_distribution_plot(
     return draw(
         data(df) *
         mapping(:positivity => "Test Positivity"; kwargs...) *
-        histogram();
+        histogram(; bins = 0.0:0.05:1.05), ;
         axis = (ylabel = "Count",),
     )
 end
