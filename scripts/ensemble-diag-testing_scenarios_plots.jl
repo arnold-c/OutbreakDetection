@@ -48,13 +48,13 @@ outbreak_specification = OutbreakSpecification(5, 30, 500)
 percent_visit_clinic = 0.6
 outbreak_detect_spec_vec = map(
     threshold -> OutbreakDetectionSpecification(
-        threshold, 7, percent_visit_clinic, 0.8, 3
+        threshold, 7, percent_visit_clinic, 0.8, 0
     ),
     detectthreshold_vec,
 )
 clinical_case_outbreak_detect_spec_vec = map(
     threshold -> OutbreakDetectionSpecification(
-        threshold, 7, percent_visit_clinic, 1.0, 3
+        threshold, 7, percent_visit_clinic, 1.0, 0
     ),
     detectthreshold_vec,
 )
@@ -106,7 +106,13 @@ prog = Progress(length(ensemble_scenario_spec_vec))
 end
 
 #%%
-sort!(ensemble_chars_vec, by = x -> (x.outbreak_detect_spec.detection_threshold, x.ind_test_spec.specificity))
+sort!(
+    ensemble_chars_vec;
+    by = x -> (
+        x.outbreak_detect_spec.detection_threshold,
+        x.ind_test_spec.specificity,
+    ),
+)
 
 #%%
 compare_outbreak_sens_spec_plot = compare_ensemble_OTchars_plots(
