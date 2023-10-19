@@ -59,7 +59,7 @@ function create_testing_arrs!(
     testsens,
     testspec,
 )
-    ntested = size(testarr, 1)
+    tlength = size(testarr, 1)
 
     for sim in axes(incarr, 3)
         # Number of infectious individuals tested
@@ -73,13 +73,14 @@ function create_testing_arrs!(
         )
 
         # Number of TOTAL individuals tested
-        @turbo @. @views ntested_worker_vec .= testarr[:, 1, sim] + testarr[:, 2, sim]
+        @turbo @. @views ntested_worker_vec .=
+            testarr[:, 1, sim] + testarr[:, 2, sim]
 
         # Number of test positive INFECTED individuals
         calculate_true_positives!(
             @view(testarr[:, 3, sim]),
             @view(testarr[:, 1, sim]),
-            ntested,
+            tlength,
             testlag,
             testsens,
         )
@@ -88,7 +89,7 @@ function create_testing_arrs!(
         calculate_noise_positives!(
             @view(testarr[:, 4, sim]),
             @view(testarr[:, 2, sim]),
-            ntested,
+            tlength,
             testlag,
             testspec,
         )
@@ -119,7 +120,9 @@ function create_testing_arrs!(
 
         # Posterior prob of infectious / total test tests performed
         testpos_vec[sim] = TestPositivity(
-            @view(testarr[:, 5, sim]), ntested_worker_vec
+            @view(testarr[:, 5, sim]),
+            ntested_worker_vec,
+            @view(testarr[:, 7, sim])
         )
     end
 
@@ -128,21 +131,6 @@ end
 
 function calculate_tested!(outvec, invec, perc_tested)
     @. outvec = round(invec * perc_tested)
-end
-
-function calculate_positives(tested_vec, lag, tested_multiplier)
-    ntested = length(tested_vec)
-    npos = zeros(Int64, ntested)
-
-    calculate_positives!(
-        npos,
-        tested_vec,
-        ntested,
-        lag,
-        tested_multiplier,
-    )
-
-    return npos
 end
 
 function calculate_noise_positives!(outvec, tested_vec, tlength, lag, spec)
@@ -157,10 +145,10 @@ function calculate_true_positives!(outvec, tested_vec, tlength, lag, sens)
 end
 
 function calculate_positives!(
-    npos_vec, tested_vec, ntested, lag, tested_multiplier
+    npos_vec, tested_vec, tlength, lag, tested_multiplier
 )
     for day in eachindex(tested_vec)
-        if day + lag <= ntested
+        if day + lag <= tlength
             npos_vec[day + lag] = Int64(
                 round(tested_vec[day] * tested_multiplier)
             )
@@ -209,18 +197,20 @@ function detectoutbreak!(outbreakvec, incvec, avgvec, threshold)
 end
 
 function calculate_test_positivity(
-    true_positive_vec, total_positive_vec, agg_days
+    true_positive_vec, total_positive_vec, detection_vec, agg_days
 )
-    @views outvec = zeros(Float64, length(true_positive_vec) ÷ agg_days)
+    @views outvec = zeros(Float64, length(true_positive_vec) ÷ agg_days, 2)
     @inbounds for i in axes(outvec, 1)
         start_ind = 1 + (i - 1) * agg_days
         end_ind = start_ind + (agg_days - 1)
 
         @views total_positive_sum = sum(total_positive_vec[start_ind:end_ind])
         @views true_positive_sum = sum(true_positive_vec[start_ind:end_ind])
+        @views num_outbreak_days = sum(detection_vec[start_ind:end_ind])
+        agg_outbreak_status = num_outbreak_days >= agg_days / 2 ? 1 : 0
 
-        outvec[i] = true_positive_sum / total_positive_sum
-
+        outvec[i, 1] = true_positive_sum / total_positive_sum
+        outvec[i, 2] = agg_outbreak_status
     end
     return outvec
 end

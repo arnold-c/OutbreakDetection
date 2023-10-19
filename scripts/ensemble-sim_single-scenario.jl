@@ -245,7 +245,7 @@ save(
 #%%
 ensemble_single_scenario_posodds_timeseries_plot = singlescenario_test_positivity_plot(
     ensemble_single_scenario_detection["test_positivity_structs"];
-    agg = :thirty_day
+    agg = :thirty_day,
 )
 
 save(
@@ -258,7 +258,7 @@ save(
 #%%
 ensemble_single_scenario_posodds_dist_plot = test_positivity_distribution_plot(
     ensemble_single_scenario_detection["test_positivity_structs"];
-    agg = :thirty_day
+    agg = :thirty_day,
 )
 
 save(
@@ -266,4 +266,19 @@ save(
         "ensemble/single-scenario/ensemble-sim_single-scenario_posodds-distribution.png",
     ),
     ensemble_single_scenario_posodds_dist_plot,
+)
+
+#%%
+ensemble_single_scenario_posodds_outbreak_dist_plot = test_positivity_distribution_plot(
+    ensemble_single_scenario_detection["test_positivity_structs"];
+    agg = :thirty_day,
+    color = :outbreak => "Outbreak Status",
+    layout = :outbreak,
+)
+
+save(
+    plotsdir(
+        "ensemble/single-scenario/ensemble-sim_single-scenario_posodds-outbreak-distribution.png",
+    ),
+    ensemble_single_scenario_posodds_outbreak_dist_plot,
 )
