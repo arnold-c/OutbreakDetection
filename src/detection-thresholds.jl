@@ -15,9 +15,7 @@ function create_inc_infec_arr(
         Int64, size(ensemble_inc_vecs, 1), 4, size(ensemble_inc_vecs, 2)
     )
 
-    ensemble_thresholds_vec = Vector{NamedTuple}(
-        undef, size(ensemble_inc_vecs, 2)
-    )
+    ensemble_thresholds_vec = Vector{NamedTuple}(undef, 0)
 
     create_inc_infec_arr!(
         ensemble_inc_arr,
@@ -51,8 +49,6 @@ function create_inc_infec_arr!(
             abovethresholdrle
         )
 
-        ensemble_thresholds_vec[sim] = outbreak_thresholds
-
         @inbounds for (lower, upper) in zip(
             outbreak_thresholds.lowers,
             outbreak_thresholds.uppers
@@ -63,6 +59,7 @@ function create_inc_infec_arr!(
             )
             classify_outbreak!(
                 @view(ensemble_inc_arr[lower:upper, 4, sim]),
+                @view(ensemble_thresholds_vec),
                 ensemble_inc_arr[lower, 3, sim],
                 upper,
                 lower,
@@ -92,12 +89,14 @@ function calculate_period_sum!(outvec, incvec)
 end
 
 function classify_outbreak!(
-    outvec, periodsumvec, upper_time, lower_time, minoutbreakdur,
+    outvec, outbreak_thresholds_vec, periodsumvec, upper_time, lower_time,
+    minoutbreakdur,
     minoutbreaksize,
 )
     if upper_time - lower_time >= minoutbreakdur &&
         periodsumvec >= minoutbreaksize
         @inbounds outvec .= 1
+        push!(outbreak_thresholds_vec, (lower = lower_time, upper = upper_time))
     end
     return nothing
 end
