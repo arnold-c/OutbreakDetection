@@ -46,13 +46,16 @@ function create_inc_infec_arr!(
             @view(ensemble_inc_arr[:, 1, sim]) .>= outbreakthreshold
 
         abovethresholdrle = rle(@view(ensemble_inc_arr[:, 2, sim]))
-        ensemble_thresholds_vec[sim] = calculate_outbreak_thresholds(
+
+        outbreak_thresholds = calculate_outbreak_thresholds(
             abovethresholdrle
         )
 
+        ensemble_thresholds_vec[sim] = outbreak_thresholds
+
         @inbounds for (lower, upper) in zip(
-            @view(ensemble_thresholds_vec[sim]).lowers,
-            @view(ensemble_thresholds_vec[sim]).uppers,
+            outbreak_thresholds.lowers,
+            outbreak_thresholds.uppers
         )
             calculate_period_sum!(
                 @view(ensemble_inc_arr[lower:upper, 3, sim]),
