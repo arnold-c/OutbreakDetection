@@ -61,7 +61,7 @@ function create_inc_infec_arr!(
             )
             classify_outbreak!(
                 @view(ensemble_inc_arr[lower:upper, 4, sim]),
-                @view(ensemble_thresholds_vec[sim]),
+                ensemble_thresholds_vec[sim],
                 ensemble_inc_arr[lower, 3, sim],
                 upper,
                 lower,
