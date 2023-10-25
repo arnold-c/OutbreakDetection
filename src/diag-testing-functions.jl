@@ -116,7 +116,7 @@ function create_testing_arrs!(
 
         # Triggered outbreak equal to actual outbreak status
         @. testarr[:, 8, sim] =
-            @view(testarr[:, 7, sim]) == @view(incarr[:, 4, sim])
+            @view(testarr[:, 7, sim]) == @view(incarr[:, 3, sim])
 
         # Posterior prob of infectious / total test tests performed
         testpos_vec[sim] = TestPositivity(
@@ -252,12 +252,12 @@ end
 
 function calculate_OutbreakThresholdChars(testarr, infecarr)
     OT_chars = ThreadsX.map(axes(infecarr, 3)) do sim
-        outbreakrle = rle(@view(infecarr[:, 4, sim]))
+        outbreakrle = rle(@view(infecarr[:, 3, sim]))
         detectrle = rle(@view(testarr[:, 7, sim]))
 
         OutbreakThresholdChars(
             calculate_ot_characterstics(
-                @view(testarr[:, 7, sim]), @view(infecarr[:, 4, sim])
+                @view(testarr[:, 7, sim]), @view(infecarr[:, 3, sim])
             )...,
             calculate_noutbreaks(outbreakrle),
             calculate_noutbreaks(detectrle),
