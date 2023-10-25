@@ -51,7 +51,7 @@ function create_inc_infec_arr!(
             abovethresholdrle
         )
 
-        ensemble_thresholds_vec[sim] = classify_all_outbreaks!(
+        ensemble_thresholds_vec[sim] = classify_all_outbreaks(
             @view(ensemble_inc_arr[:, :, sim]),
             outbreak_thresholds,
             minoutbreakdur,
@@ -73,7 +73,7 @@ function calculate_outbreak_thresholds(outbreakrle)
     return (lowers = outbreaklowers, uppers = outbreakuppers)
 end
 
-function classify_all_outbreaks!(
+function classify_all_outbreaks(
     incidence_arr,
     thresholds,
     minoutbreakdur,
