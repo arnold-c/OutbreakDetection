@@ -65,26 +65,28 @@ function calculate_outbreak_thresholds(outbreakrle)
     # Calculate upper and lower indices of consecutive days of infection
     outbreakaccum = accumulate(+, outbreakrle[2])
     upperbound_indices = findall(isequal(1), outbreakrle[1])
-    @inbounds outbreakuppers = outbreakaccum[upperbound_indices]
-    @inbounds outbreaklowers = map(
-        x -> x - 1 == 0 ? 1 : outbreakaccum[x - 1] + 1, upperbound_indices
+
+    outbreak_thresholds = zeros(Int64, length(upperbound_indices), 4)
+
+    @inbounds outbreak_thresholds[:, 1] .= @view(
+        outbreakaccum[upperbound_indices]
+    )
+    map!(
+        x -> x - 1 == 0 ? 1 : outbreakaccum[x - 1] + 1,
+        outbreak_thresholds[:, 2],
+        upperbound_indices,
     )
 
-    return (lowers = outbreaklowers, uppers = outbreakuppers)
+    return outbreak_thresholds
 end
 
 function classify_all_outbreaks(
     incidence_arr,
-    thresholds,
+    all_thresholds_arr,
     minoutbreakdur,
     minoutbreaksize
 )
-    all_thresholds_arr = zeros(Int64, size(incidence_arr, 1), 4)
-
-    @inbounds for (lower, upper) in zip(thresholds.lowers, thresholds.uppers)
-        all_thresholds_arr[lower, 1] = lower
-        all_thresholds_arr[lower, 2] = upper
-
+    @inbounds for (lower, upper) in eachrow(@view(all_thresholds_arr[:, 1:2]))
         calculate_period_sum!(
             @view(all_thresholds_arr[lower, 3]),
             @view(incidence_arr[lower:upper, 1]),
@@ -92,7 +94,7 @@ function classify_all_outbreaks(
 
         classify_outbreak!(
             @view(all_thresholds_arr[lower, 4]),
-            incidence_arr[lower, 3],
+            all_thresholds_arr[lower, 3],
             upper,
             lower,
             minoutbreakdur,
@@ -111,7 +113,10 @@ function calculate_period_sum!(outvec, incvec)
 end
 
 function classify_outbreak!(
-    thresholds_vec, periodsumvec, upper_time, lower_time,
+    thresholds_vec,
+    periodsumvec,
+    upper_time,
+    lower_time,
     minoutbreakdur,
     minoutbreaksize,
 )
