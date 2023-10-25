@@ -191,7 +191,8 @@ end
 outbreakcols = [ColorSchemes.magma[i] for i in (200, 20)]
 
 function detect_outbreak_plot(
-    incidencearr, ensemblearr, timeparams; colormap = outbreakcols, kwargs...
+    incidencearr, ensemblearr, thresholdsarr, timeparams;
+    colormap = outbreakcols, kwargs...,
 )
     @unpack trange = timeparams
     times = collect(trange) ./ 365
@@ -211,8 +212,8 @@ function detect_outbreak_plot(
     barplot!(
         ax_periodsum,
         times,
-        incidencearr[:, 3, 1];
-        color = incidencearr[:, 4, 1],
+        thresholdsarr[:, 3, 1];
+        color = thresholdsarr[:, 4, 1],
         colormap = colormap,
     )
 
