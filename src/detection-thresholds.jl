@@ -12,7 +12,7 @@ function create_inc_infec_arr(
     ensemble_inc_vecs, outbreak_specification::OutbreakSpecification
 )
     ensemble_inc_arr = zeros(
-        Int64, size(ensemble_inc_vecs, 1), 4, size(ensemble_inc_vecs, 2)
+        Int64, size(ensemble_inc_vecs, 1), 2, size(ensemble_inc_vecs, 2)
     )
 
     ensemble_thresholds_vec = Vector{Array{Int64,2}}(
