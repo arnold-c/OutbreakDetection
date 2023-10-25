@@ -111,18 +111,17 @@ function calculate_period_sum!(outvec, incvec)
     return nothing
 end
 
-function classify_outbreak!(
-    thresholds_vec,
+function classify_outbreak(
     periodsumvec,
     upper_time,
     lower_time,
     minoutbreakdur,
-    minoutbreaksize,
+    minoutbreaksize
 )
     if upper_time - lower_time >= minoutbreakdur &&
         periodsumvec >= minoutbreaksize
-        thresholds_vec = 1
+        return 1
     end
-    return nothing
+    return 0
 end
 # end
