@@ -87,7 +87,7 @@ function classify_all_outbreaks!(
     minoutbreaksize
 )
     for (row, (lower, upper)) in pairs(eachrow(all_thresholds_arr[:, 1:2]))
-        all_thresholds_arr[row, 3] = calculate_period_sum(
+        @inline all_thresholds_arr[row, 3] = calculate_period_sum(
             @view(incidence_arr[lower:upper, 1])
         )
 
