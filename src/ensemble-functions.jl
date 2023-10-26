@@ -287,7 +287,8 @@ function define_outbreaks(incidence_param_dict)
     scenario_param_dict = dict_list(
         @dict(
             scenario_spec = ensemble_scenarios,
-            ensemble_inc_arr
+            ensemble_inc_arr,
+            thresholds_vec = [ensemble_thresholds_vec]
         )
     )
 
@@ -311,7 +312,8 @@ function run_OutbreakThresholdChars_creation(
 end
 
 function OutbreakThresholdChars_creation(OT_chars_param_dict)
-    @unpack scenario_spec, ensemble_inc_arr = OT_chars_param_dict
+    @unpack scenario_spec, ensemble_inc_arr, thresholds_vec =
+        OT_chars_param_dict
     @unpack noise_specification,
     outbreak_specification,
     outbreak_detection_specification,
@@ -328,7 +330,9 @@ function OutbreakThresholdChars_creation(OT_chars_param_dict)
         individual_test_specification,
     )
 
-    OT_chars = calculate_OutbreakThresholdChars(testarr, ensemble_inc_arr)
+    OT_chars = calculate_OutbreakThresholdChars(
+        testarr, ensemble_inc_arr, thresholds_vec
+    )
 
     return @strdict OT_chars testarr test_positivity_structs
 end
