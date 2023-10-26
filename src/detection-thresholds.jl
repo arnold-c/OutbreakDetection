@@ -48,7 +48,7 @@ function create_inc_infec_arr!(
         abovethresholdrle = rle(@view(ensemble_inc_arr[:, 2, sim]))
 
         outbreak_thresholds = calculate_outbreak_thresholds(
-            abovethresholdrle
+            abovethresholdrle; ncols = 4
         )
 
         ensemble_thresholds_vec[sim] = classify_all_outbreaks!(
@@ -62,12 +62,12 @@ function create_inc_infec_arr!(
     return nothing
 end
 
-function calculate_outbreak_thresholds(outbreakrle)
+function calculate_outbreak_thresholds(outbreakrle; ncols = 4)
     # Calculate upper and lower indices of consecutive days of infection
     outbreakaccum = accumulate(+, outbreakrle[2])
     upperbound_indices = findall(isequal(1), outbreakrle[1])
 
-    outbreak_thresholds = zeros(Int64, length(upperbound_indices), 4)
+    outbreak_thresholds = zeros(Int64, length(upperbound_indices), ncols)
 
     @inbounds outbreak_thresholds[:, 2] .= @view(
         outbreakaccum[upperbound_indices]
