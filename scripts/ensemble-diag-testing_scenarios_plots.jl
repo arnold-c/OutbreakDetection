@@ -112,7 +112,7 @@ sort!(
         x.outbreak_detect_spec.detection_threshold,
         x.ind_test_spec.specificity,
     ),
-)
+);
 
 #%%
 compare_outbreak_sens_spec_plot = compare_ensemble_OTchars_plots(
