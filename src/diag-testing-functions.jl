@@ -272,4 +272,29 @@ function calculate_noutbreaks(outbreakrle)
     return length(findall(==(1), outbreakrle[1]))
 end
 
+function calculate_outbreak_detection_delay(outbreakbounds, detectionbounds)
+    delay_vec = hcat(outbreakbounds, fill(-10, size(outbreakbounds, 1), 3))
+    detection_number = 1
+    for (outbreak_number, (outbreaklower, outbreakupper)) in
+        pairs(eachrow(outbreakbounds))
+        for (detectionlower, detectionupper) in
+            eachrow(detectionbounds[detection_number:end, :])
+            if detectionlower > outbreakupper
+                break
+            end
+            if detectionlower >= outbreaklower
+                @views delay_vec[outbreak_number, 1:2] .= outbreaklower,
+                outbreakupper
+                @views delay_vec[outbreak_number, 3:4] .= detectionlower,
+                detectionupper
+                delay_vec[outbreak_number, 5] = detectionlower - outbreaklower
+                detection_number += 1
+                break
+            end
+            detection_number += 1
+        end
+    end
+    return delay_vec
+end
+
 # end

@@ -49,7 +49,7 @@ export create_testing_arrs, create_testing_arrs!, calculate_tested!,
     calculate_movingavg, calculate_movingavg!,
     detectoutbreak, detectoutbreak!, calculate_ot_characterstics,
     calculate_noutbreaks, calculate_OutbreakThresholdChars,
-    calculate_test_positivity
+    calculate_test_positivity, calculate_outbreak_detection_delay
 # @reexport using .DiagTestingFunctions
 
 include("ensemble-functions.jl")
