@@ -456,7 +456,7 @@ function ensemble_outbreak_distribution_plot(testarr, infecarr)
 
     hist!(
         outbreak_dist_ax,
-        vec(sum(@view(infecarr[:, 4, :]); dims = 1)) ./ size(infecarr, 1);
+        vec(sum(@view(infecarr[:, 3, :]); dims = 1)) ./ size(infecarr, 1);
         bins = 0.0:0.01:0.7,
         color = (:blue, 0.5),
         strokecolor = :black,
