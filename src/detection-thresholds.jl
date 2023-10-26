@@ -87,9 +87,8 @@ function classify_all_outbreaks!(
     minoutbreaksize
 )
     for (row, (lower, upper)) in pairs(eachrow(all_thresholds_arr[:, 1:2]))
-        calculate_period_sum!(
-            @view(all_thresholds_arr[row, 3]),
-            @view(incidence_arr[lower:upper, 1]),
+        all_thresholds_arr[row, 3] = calculate_period_sum(
+            @view(incidence_arr[lower:upper, 1])
         )
 
         all_thresholds_arr[row, 4] = classify_outbreak(
@@ -108,9 +107,8 @@ function classify_all_outbreaks!(
     )
 end
 
-function calculate_period_sum!(outvec, incvec)
-    @inbounds outvec .= sum(incvec)
-    return nothing
+function calculate_period_sum(incvec)
+    return sum(incvec)
 end
 
 function classify_outbreak(
