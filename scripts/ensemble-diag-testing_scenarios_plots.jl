@@ -147,3 +147,20 @@ save(
     plotsdir("ensemble/testing-comparison/compare_outbreak_ppv_npv_plot.png"),
     compare_outbreak_ppv_npv_plot,
 )
+
+#%%
+compare_outbreak_detection_delays_plot = compare_ensemble_OTchars_plots(
+    ensemble_chars_vec,
+    :detectiondelays,
+    :detection_threshold;
+    char1_label = "Detection Delay",
+    char2_label = "Detection Threshold",
+    char1_color = :blue,
+)
+
+save(
+    plotsdir(
+        "ensemble/testing-comparison/compare_outbreak_detection_delays_plot.png"
+    ),
+    compare_outbreak_detection_delays_plot,
+)
