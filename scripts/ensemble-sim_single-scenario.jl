@@ -104,6 +104,7 @@ save(
 ensemble_single_scenario_detect_outbreak_plot = detect_outbreak_plot(
     ensemble_single_scenario_incarr["ensemble_inc_arr"],
     ensemble_single_scenario_sol["ensemble_seir_arr"],
+    ensemble_single_scenario_incarr["ensemble_thresholds_vec"],
     ensemble_single_scenario_spec.ensemble_specification.time_parameters;
     colormap = outbreakcols,
     # xlims = (90, 100),

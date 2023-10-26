@@ -198,6 +198,12 @@ function detect_outbreak_plot(
     times = collect(trange) ./ 365
     kwargs_dict = Dict(kwargs)
 
+    period_sum_arr = zeros(Int64, length(times), 2)
+    for (lower, upper, periodsum, outbreakstatus) in eachrow(thresholdsarr[1])
+        period_sum_arr[lower:upper, 1] .= periodsum
+        period_sum_arr[lower:upper, 2] .= outbreakstatus
+    end
+
     fig = Figure()
     ax_prev = Axis(fig[1, 1]; ylabel = "Prevalence")
     ax_inc = Axis(fig[2, 1]; ylabel = "Incidence")
@@ -212,8 +218,8 @@ function detect_outbreak_plot(
     barplot!(
         ax_periodsum,
         times,
-        thresholdsarr[:, 3, 1];
-        color = thresholdsarr[:, 4, 1],
+        period_sum_arr[:, 1];
+        color = period_sum_arr[:, 2],
         colormap = colormap,
     )
 
