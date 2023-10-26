@@ -73,7 +73,7 @@ function calculate_outbreak_thresholds(outbreakrle)
     )
     map!(
         x -> x - 1 == 0 ? 1 : outbreakaccum[x - 1] + 1,
-        outbreak_thresholds[:, 2],
+        @view(outbreak_thresholds[:, 2]),
         upperbound_indices,
     )
 
