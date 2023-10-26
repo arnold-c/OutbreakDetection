@@ -222,6 +222,7 @@ function calculate_OutbreakThresholdChars(testarr, infecarr, thresholds_vec)
         outbreakbounds = thresholds_vec[sim][
             (@view(thresholds_vec[sim][:, 4]) .== 1), :,
         ]
+        detectionbounds = calculate_outbreak_thresholds(detectrle; ncols = 2)
 
         OutbreakThresholdChars(
             calculate_ot_characterstics(
@@ -230,7 +231,8 @@ function calculate_OutbreakThresholdChars(testarr, infecarr, thresholds_vec)
             size(outbreakbounds, 1),
             calculate_noutbreaks(detectrle),
             outbreakbounds,
-            calculate_outbreak_thresholds(detectrle; ncols = 2),
+            detectionbounds,
+            calculate_outbreak_detection_delay(outbreakbounds, detectrle),
         )
     end
 

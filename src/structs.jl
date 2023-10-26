@@ -196,6 +196,7 @@ struct OutbreakThresholdChars{
     ndetectoutbreaks::T2
     outbreakbounds::T4
     detectoutbreakbounds::T4
+    detectiondelay::T4
 end
 
 struct OutbreakSpecification{T1<:Integer,T2<:AbstractString}
