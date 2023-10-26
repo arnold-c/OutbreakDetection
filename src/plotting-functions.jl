@@ -303,12 +303,12 @@ function incidence_testing_plot(
 
     lines!(
         inc_test_ax1, times, incarr[:, 1, sim];
-        color = incarr[:, 4, sim],
+        color = incarr[:, 3, sim],
         colormap = colormap,
     )
     lines!(
         inc_test_ax2, times, incarr[:, 1, sim] .+ noisearr[:, 1, sim];
-        color = incarr[:, 4, sim],
+        color = incarr[:, 3, sim],
         colormap = colormap,
     )
     lines!(
