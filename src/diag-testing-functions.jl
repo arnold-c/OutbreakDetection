@@ -232,7 +232,9 @@ function calculate_OutbreakThresholdChars(testarr, infecarr, thresholds_vec)
             calculate_noutbreaks(detectrle),
             outbreakbounds,
             detectionbounds,
-            calculate_outbreak_detection_delay(outbreakbounds, detectionbounds),
+            calculate_outbreak_detection_delay(
+                outbreakbounds, detectionbounds
+            )...,
         )
     end
 
@@ -275,8 +277,9 @@ function calculate_noutbreaks(outbreakrle)
 end
 
 function calculate_outbreak_detection_delay(outbreakbounds, detectionbounds)
-    delay_vec = hcat(
-        @view(outbreakbounds[:, 1:2]), fill(-10, size(outbreakbounds, 1), 3)
+    delay_vec = fill(-10, size(outbreakbounds, 1))
+    matched_bounds = hcat(
+        @view(outbreakbounds[:, 1:2]), fill(-10, size(outbreakbounds, 1), 2)
     )
     detection_number = 1
     for (outbreak_number, (outbreaklower, outbreakupper)) in
@@ -287,18 +290,18 @@ function calculate_outbreak_detection_delay(outbreakbounds, detectionbounds)
                 break
             end
             if detectionlower >= outbreaklower
-                @views delay_vec[outbreak_number, 1:2] .= outbreaklower,
+                @views matched_bounds[outbreak_number, 1:2] .= outbreaklower,
                 outbreakupper
-                @views delay_vec[outbreak_number, 3:4] .= detectionlower,
+                @views matched_bounds[outbreak_number, 3:4] .= detectionlower,
                 detectionupper
-                delay_vec[outbreak_number, 5] = detectionlower - outbreaklower
+                delay_vec[outbreak_number] = detectionlower - outbreaklower
                 detection_number += 1
                 break
             end
             detection_number += 1
         end
     end
-    return delay_vec
+    return delay_vec, matched_bounds
 end
 
 # end

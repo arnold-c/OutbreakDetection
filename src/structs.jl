@@ -181,7 +181,11 @@ function EnsembleSpecification(
 end
 
 struct OutbreakThresholdChars{
-    T1<:AbstractArray,T2<:Integer,T3<:AbstractFloat,T4<:AbstractMatrix{T2}
+    T1<:AbstractArray,
+    T2<:Integer,
+    T3<:AbstractFloat,
+    T4<:AbstractMatrix{T2},
+    T5<:Vector{T2},
 }
     crosstab::T1
     tp::T2
@@ -196,7 +200,8 @@ struct OutbreakThresholdChars{
     ndetectoutbreaks::T2
     outbreakbounds::T4
     detectoutbreakbounds::T4
-    detectiondelay::T4
+    detectiondelays::T5
+    matchedoutbreakbounds::T4
 end
 
 struct OutbreakSpecification{T1<:Integer,T2<:AbstractString}
