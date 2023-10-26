@@ -238,13 +238,17 @@ function calculate_OutbreakThresholdChars(testarr, infecarr, thresholds_vec)
     OT_chars = map(axes(infecarr, 3)) do sim
         detectrle = rle(@view(testarr[:, 7, sim]))
 
+        outbreakbounds = thresholds_vec[1][
+            (@view(thresholds_vec[1][:, 4]) .== 1), :,
+        ]
+
         OutbreakThresholdChars(
             calculate_ot_characterstics(
                 @view(testarr[:, 7, sim]), @view(infecarr[:, 3, sim])
             )...,
-            sum(@view(thresholds_vec[sim][:, 4])),
+            size(outbreakbounds, 1),
             calculate_noutbreaks(detectrle),
-            thresholds_vec[sim],
+            outbreakbounds,
             calculate_outbreak_thresholds(detectrle; ncols = 2),
         )
     end
