@@ -607,7 +607,7 @@ function compare_ensemble_OTchars_plots(
     columnfacetchar::Symbol;
     char1_label = "Sensitivity",
     char2_label = "Specificity",
-    columnfacetchar_label = "Outbreak Detection",
+    columnfacetchar_label = "Detection Threshold",
     bins = 0.0:0.01:1.01,
     char1_color = :blue,
     char2_color = :red,
@@ -670,7 +670,7 @@ function compare_ensemble_OTchars_plots(
     char1::Symbol,
     columnfacetchar::Symbol;
     char1_label = "Detection Delay",
-    columnfacetchar_label = "Specificity",
+    columnfacetchar_label = "Detection Threshold",
     binwidth = 1.0,
     char1_color = :blue,
     color_alpha = 0.5,
