@@ -324,7 +324,12 @@ function calculate_outbreak_detection_delay(outbreakbounds, detectionbounds)
     missed_outbreaks =
         size(outbreakbounds, 1) -
         length(Set(@view(filtered_matched_bounds[:, 1])))
-    return (delay_vec, filtered_matched_bounds, missed_outbreaks)
+
+    false_alerts = sum(
+        length(Set(@view(detectionbounds[:, 1]))) -
+        length(Set(@view(filtered_matched_bounds[:, 3]))),
+    )
+    return (delay_vec, filtered_matched_bounds, missed_outbreaks, false_alerts)
 end
 
 # end
