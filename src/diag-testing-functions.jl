@@ -235,11 +235,7 @@ function calculate_OutbreakThresholdChars(testarr, infecarr, thresholds_vec)
             calculate_noutbreaks(detectrle),
             outbreakbounds,
             detectionbounds,
-            detectionchars[1],
-            detectionchars[2],
-            detectionchars[3],
-            detectionchars[4],
-            detectionchars[5],
+            detectionchars...
         )
     end
 
