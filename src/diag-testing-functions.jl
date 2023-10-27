@@ -277,41 +277,54 @@ function calculate_noutbreaks(outbreakrle)
 end
 
 function calculate_outbreak_detection_delay(outbreakbounds, detectionbounds)
-    delay_vec = fill(NaN, size(outbreakbounds, 1))
-    matched_bounds = hcat(
-        @view(outbreakbounds[:, 1:2]), fill(NaN, size(outbreakbounds, 1), 2)
+    all_matched_bounds = zeros(
+        Int64, size(outbreakbounds, 1) + size(detectionbounds, 1), 4
     )
-    detection_number = 1
+    outbreak_number = 1
+    detection_rownumber = 1
     for (outbreak_number, (outbreaklower, outbreakupper)) in
         pairs(eachrow(outbreakbounds))
         for (detectionlower, detectionupper) in
-            eachrow(detectionbounds[detection_number:end, :])
+            eachrow(detectionbounds[detection_rownumber:end, :])
+            @show outbreaklower, outbreakupper, detectionlower, detectionupper
             if detectionlower > outbreakupper
                 break
             end
             if detectionlower >= outbreaklower
-                @views matched_bounds[outbreak_number, 1:2] .= outbreaklower,
-                outbreakupper
-                @views matched_bounds[outbreak_number, 3:4] .= detectionlower,
+                all_matched_bounds[detection_rownumber, :] .= outbreaklower,
+                outbreakupper, detectionlower,
                 detectionupper
-                delay_vec[outbreak_number] = detectionlower - outbreaklower
-                detection_number += 1
-                break
+                detection_rownumber += 1
+                continue
             end
             if detectionlower <= outbreaklower &&
-                detectionupper >= outbreaklower
-                @views matched_bounds[outbreak_number, 1:2] .= outbreaklower,
-                outbreakupper
-                @views matched_bounds[outbreak_number, 3:4] .= detectionlower,
+                detectionupper > outbreaklower
+                all_matched_bounds[detection_rownumber, :] .= outbreaklower,
+                outbreakupper, detectionlower,
                 detectionupper
-                delay_vec[outbreak_number] = detectionlower - outbreaklower
-                detection_number += 1
-                break
+                detection_rownumber += 1
+                continue
             end
         end
+        outbreak_number += 1
     end
-    missed_outbreaks = Float64(length(filter(x -> isnan(x), delay_vec)))
-    return (delay_vec, matched_bounds, missed_outbreaks)
+
+    filtered_matched_bounds = all_matched_bounds[
+        (all_matched_bounds[:, 2] .> 0), :,
+    ]
+
+    delay_vec = map(unique(filtered_matched_bounds[:, 1])) do outbreaklower
+        outbreak_rownumber = findfirst(
+            isequal(outbreaklower), filtered_matched_bounds[:, 1]
+        )
+        @views filtered_matched_bounds[outbreak_rownumber, 3] -
+            filtered_matched_bounds[outbreak_rownumber, 1]
+    end
+
+    missed_outbreaks =
+        size(outbreakbounds, 1) -
+        length(Set(@view(filtered_matched_bounds[:, 1])))
+    return (delay_vec, filtered_matched_bounds, missed_outbreaks)
 end
 
 # end
