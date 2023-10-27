@@ -682,21 +682,14 @@ function compare_ensemble_OTchars_plots(
     xs, ys = calculate_comparison_plot_facet_dims(
         char_struct_vec, columnfacetchar
     )
-    kwargs_dict = Dict(kwargs)
+    kwargs_dict = Dict{Symbol,Any}(kwargs)
 
     fig = Figure()
     for (OT_char_tuple, x, y) in zip(char_struct_vec, xs, ys)
         charvec = reduce(vcat, getproperty(OT_char_tuple.OT_chars, char1))
 
         if !haskey(kwargs_dict, :bins)
-            minbin, maxbin = extrema(charvec)
-            minbin -= 3 * binwidth / 2
-            maxbin += 3 * binwidth / 3
-            if minbin == maxbin
-                minbin -= binwidth
-                maxbin += binwidth
-            end
-            kwargs_dict[:bins => minbin:binwidth:maxbin]
+            kwargs_dict[:bins] = calculate_bins(charvec, binwidth)
         end
 
         gl = fig[x, y] = GridLayout()
@@ -754,4 +747,17 @@ function calculate_comparison_plot_facet_dims(
 
     return xs, ys
 end
+
+function calculate_bins(charvec, binwidth)
+    minbin, maxbin = extrema(charvec)
+    minbin -= 3 * binwidth / 2
+    maxbin += 3 * binwidth / 3
+    if minbin == maxbin
+        minbin -= binwidth
+        maxbin += binwidth
+    end
+    return minbin:binwidth:maxbin
+end
+
 # end
+#
