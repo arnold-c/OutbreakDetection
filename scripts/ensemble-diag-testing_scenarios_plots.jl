@@ -188,3 +188,23 @@ save(
     compare_outbreak_alert_numbers_plot;
     resolution = (2200, 1200),
 );
+
+#%%
+compare_outbreak_false_alerts_plot = compare_ensemble_OTchars_plots(
+    ensemble_chars_vec,
+    :falsealerts,
+    :detection_threshold;
+    char1_label = "False Alerts",
+    char2_label = "Detection Threshold",
+    char1_color = :red,
+    color_alpha = 1.0,
+    binwidth = 5.0,
+)
+
+save(
+    plotsdir(
+        "ensemble/testing-comparison/compare_outbreak_false_alerts_plot.png"
+    ),
+    compare_outbreak_false_alerts_plot;
+    resolution = (2200, 1200),
+)
