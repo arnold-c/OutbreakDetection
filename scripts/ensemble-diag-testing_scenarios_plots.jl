@@ -139,7 +139,7 @@ compare_outbreak_ppv_npv_plot = compare_ensemble_OTchars_plots(
     :detection_threshold;
     char1_label = "PPV",
     char2_label = "NPV",
-    char3_label = "Detection Threshold",
+    columnfacetchar_label = "Detection Threshold",
     char1_color = :green,
     char2_color = :purple,
 )
@@ -196,7 +196,7 @@ compare_outbreak_false_alerts_plot = compare_ensemble_OTchars_plots(
     :falsealerts,
     :detection_threshold;
     char1_label = "False Alerts",
-    char2_label = "Detection Threshold",
+    columnfacetchar_label = "Detection Threshold",
     char1_color = :red,
     color_alpha = 1.0,
     binwidth = 1.0,
@@ -209,3 +209,5 @@ save(
     compare_outbreak_false_alerts_plot;
     resolution = (2200, 1200),
 )
+
+#%%

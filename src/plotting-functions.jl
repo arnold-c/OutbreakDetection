@@ -604,10 +604,10 @@ function compare_ensemble_OTchars_plots(
     char_struct_vec,
     char1::Symbol,
     char2::Symbol,
-    char3::Symbol;
+    columnfacetchar::Symbol;
     char1_label = "Sensitivity",
     char2_label = "Specificity",
-    char3_label = "Outbreak Detection",
+    columnfacetchar_label = "Outbreak Detection",
     bins = 0.0:0.01:1.01,
     char1_color = :blue,
     char2_color = :red,
@@ -615,15 +615,9 @@ function compare_ensemble_OTchars_plots(
     ylabel = "Density",
     legendlabel = "Outbreak Chacteristic",
 )
-    xlength = length(
-        Set(getfield.(getfield.(char_struct_vec, :outbreak_detect_spec), char3))
+    xs, ys = calculate_comparison_plot_facet_dims(
+        char_struct_vec, columnfacetchar
     )
-    ylength = length(
-        Set(getfield.(getfield.(char_struct_vec, :ind_test_spec), :specificity))
-    )
-
-    xs = repeat(1:ylength, xlength)
-    ys = repeat(1:xlength; inner = ylength)
 
     fig = Figure()
     for (OT_char_tuple, x, y) in zip(char_struct_vec, xs, ys)
@@ -652,7 +646,7 @@ function compare_ensemble_OTchars_plots(
 
         Label(
             gl[1, :],
-            L"\text{\textbf{Individual Test} - Sensitivity: %$(OT_char_tuple.ind_test_spec.sensitivity), Specificity: %$(OT_char_tuple.ind_test_spec.specificity), %$(char3_label): %$(getfield(OT_char_tuple.outbreak_detect_spec, char3))}";
+            L"\text{\textbf{Individual Test} - Sensitivity: %$(OT_char_tuple.ind_test_spec.sensitivity), Specificity: %$(OT_char_tuple.ind_test_spec.specificity), %$(columnfacetchar_label): %$(getfield(OT_char_tuple.outbreak_detect_spec, columnfacetchar))}";
             word_wrap = true,
         )
         colsize!(gl, 1, Relative(1))
@@ -674,9 +668,9 @@ end
 function compare_ensemble_OTchars_plots(
     char_struct_vec,
     char1::Symbol,
-    char2::Symbol;
+    columnfacetchar::Symbol;
     char1_label = "Detection Delay",
-    char2_label = "Specificity",
+    columnfacetchar_label = "Specificity",
     binwidth = 1.0,
     char1_color = :blue,
     color_alpha = 0.5,
@@ -685,16 +679,9 @@ function compare_ensemble_OTchars_plots(
     legendlabel = "Outbreak Chacteristic",
     kwargs...,
 )
-    xlength = length(
-        Set(getfield.(getfield.(char_struct_vec, :outbreak_detect_spec), char2))
+    xs, ys = calculate_comparison_plot_facet_dims(
+        char_struct_vec, columnfacetchar
     )
-    ylength = length(
-        Set(getfield.(getfield.(char_struct_vec, :ind_test_spec), :specificity))
-    )
-
-    xs = repeat(1:ylength, xlength)
-    ys = repeat(1:xlength; inner = ylength)
-
     kwargs_dict = Dict(kwargs)
 
     fig = Figure()
@@ -704,7 +691,7 @@ function compare_ensemble_OTchars_plots(
         if !haskey(kwargs_dict, :bins)
             minbin, maxbin = extrema(charvec)
             minbin -= 3 * binwidth / 2
-            maxbin += 3 * binwidth / 2
+            maxbin += 3 * binwidth / 3
             if minbin == maxbin
                 minbin -= binwidth
                 maxbin += binwidth
@@ -728,7 +715,7 @@ function compare_ensemble_OTchars_plots(
 
         Label(
             gl[1, :],
-            L"\text{\textbf{Individual Test} - Sensitivity: %$(OT_char_tuple.ind_test_spec.sensitivity), Specificity: %$(OT_char_tuple.ind_test_spec.specificity), %$(char2_label): %$(getfield(OT_char_tuple.outbreak_detect_spec, char2)), # of %$(char1_label): %$(length(charvec))}";
+            L"\text{\textbf{Individual Test} - Sensitivity: %$(OT_char_tuple.ind_test_spec.sensitivity), Specificity: %$(OT_char_tuple.ind_test_spec.specificity), %$(columnfacetchar_label): %$(getfield(OT_char_tuple.outbreak_detect_spec, columnfacetchar)), # of %$(char1_label): %$(length(charvec))}";
             word_wrap = true,
         )
         colsize!(gl, 1, Relative(1))
@@ -745,5 +732,26 @@ function compare_ensemble_OTchars_plots(
         label = legendlabel,
     )
     return fig
+end
+
+function calculate_comparison_plot_facet_dims(
+    char_struct_vec, facetchar
+)
+    xlength = length(
+        Set(
+            getfield.(
+                getfield.(char_struct_vec, :outbreak_detect_spec),
+                facetchar
+            ),
+        ),
+    )
+    ylength = length(
+        Set(getfield.(getfield.(char_struct_vec, :ind_test_spec), :specificity))
+    )
+
+    xs = repeat(1:ylength, xlength)
+    ys = repeat(1:xlength; inner = ylength)
+
+    return xs, ys
 end
 # end
