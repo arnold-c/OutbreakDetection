@@ -667,13 +667,16 @@ end
 
 function compare_ensemble_OTchars_plots(
     char_struct_vec,
-    char1::Symbol,
     columnfacetchar::Symbol;
-    char1_label = "Detection Delay",
+    plottingchars = [
+    (
+        char = :detectiondelays,
+        label = "Detection Delay",
+        color = (:blue, 0.5),
+    )
+    ],
     columnfacetchar_label = "Detection Threshold",
     binwidth = 1.0,
-    char1_color = :blue,
-    color_alpha = 0.5,
     xlabel = "Characteristic Value",
     ylabel = "Density",
     legendlabel = "Outbreak Chacteristic",
@@ -684,12 +687,8 @@ function compare_ensemble_OTchars_plots(
     )
     kwargs_dict = Dict{Symbol,Any}(kwargs)
 
-    @pack! kwargs_dict = char1_label,
-    columnfacetchar_label,
+    @pack! kwargs_dict = columnfacetchar_label,
     binwidth,
-    char1_color,
-    char1_label,
-    color_alpha,
     xlabel,
     ylabel,
     legendlabel
@@ -697,18 +696,22 @@ function compare_ensemble_OTchars_plots(
     fig = Figure()
 
     construct_OTchars_facets!(
-        fig, char_struct_vec, kwargs_dict, xs, ys, columnfacetchar;
-        char1 = char1,
+        fig,
+        char_struct_vec,
+        plottingchars,
+        xs,
+        ys,
+        columnfacetchar,
+        kwargs_dict,
     )
 
     Legend(
         fig[:, end + 1],
         [
             PolyElement(; color = col) for
-            col in [(char1_color, color_alpha)]
+            col in map(chartuple -> chartuple.color, plottingchars)
         ],
-        [char1_label],
-        ;
+        map(chartuple -> chartuple.label, plottingchars);
         label = legendlabel,
     )
     return fig
@@ -736,19 +739,20 @@ function calculate_comparison_plot_facet_dims(
 end
 
 function construct_OTchars_facets!(
-    fig, char_struct_vec, kwargs_dict, xs, ys, columnfacetchar; char1
+    fig, char_struct_vec, plottingchars, xs, ys, columnfacetchar, kwargs_dict
 )
     for (OT_char_tuple, x, y) in zip(char_struct_vec, xs, ys)
-        charvec = reduce(
-            vcat, getproperty(OT_char_tuple.OT_chars, char1)
+        charvecs = map(
+            chartuple -> reduce(
+                vcat, getproperty(OT_char_tuple.OT_chars, chartuple.char)
+            ),
+            plottingchars,
         )
 
-        @unpack binwidth,
-        xlabel, ylabel, char1_color, char1_label, color_alpha,
-        columnfacetchar_label = kwargs_dict
+        @unpack binwidth, xlabel, ylabel, columnfacetchar_label = kwargs_dict
 
         bins = if !haskey(kwargs_dict, :bins)
-            calculate_bins(charvec, binwidth)
+            calculate_bins(charvecs[1], binwidth)
         else
             kwargs_dict[:bins]
         end
@@ -760,16 +764,18 @@ function construct_OTchars_facets!(
             ylabel = ylabel,
         )
 
-        hist!(
-            ax,
-            charvec;
-            bins = bins,
-            color = (char1_color, color_alpha),
-        )
+        for charnumber in eachindex(plottingchars)
+            hist!(
+                ax,
+                charvecs[charnumber];
+                bins = bins,
+                color = plottingchars[charnumber].color,
+            )
+        end
 
         Label(
             gl[1, :],
-            L"\text{\textbf{Individual Test} - Sensitivity: %$(OT_char_tuple.ind_test_spec.sensitivity), Specificity: %$(OT_char_tuple.ind_test_spec.specificity), %$(columnfacetchar_label): %$(getfield(OT_char_tuple.outbreak_detect_spec, columnfacetchar)), # of %$(char1_label): %$(length(charvec))}";
+            L"\text{\textbf{Individual Test} - Sensitivity: %$(OT_char_tuple.ind_test_spec.sensitivity), Specificity: %$(OT_char_tuple.ind_test_spec.specificity), %$(columnfacetchar_label): %$(getfield(OT_char_tuple.outbreak_detect_spec, columnfacetchar))}";
             word_wrap = true,
         )
         colsize!(gl, 1, Relative(1))
