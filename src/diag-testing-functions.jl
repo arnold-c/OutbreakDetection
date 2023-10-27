@@ -284,13 +284,7 @@ function calculate_outbreak_detection_characteristics(
         outbreakbounds, detectionbounds
     )
 
-    delay_vec = map(unique(filtered_matched_bounds[:, 1])) do outbreaklower
-        outbreak_rownumber = findfirst(
-            isequal(outbreaklower), filtered_matched_bounds[:, 1]
-        )
-        @views filtered_matched_bounds[outbreak_rownumber, 3] -
-            filtered_matched_bounds[outbreak_rownumber, 1]
-    end
+    delay_vec = calculate_delay_vec(filtered_matched_bounds)
 
     noutbreaks = size(outbreakbounds, 1)
     ndetectoutbreaks = size(detectionbounds, 1)
@@ -380,6 +374,16 @@ function match_outbreak_detection_bounds(outbreakbounds, detectionbounds)
         (all_matched_bounds[:, 2] .> 0), :,
     ]
     return filtered_matched_bounds, alerts_per_outbreak_vec
+end
+
+function calculate_delay_vec(filtered_matched_bounds)
+    return map(unique(filtered_matched_bounds[:, 1])) do outbreaklower
+        outbreak_rownumber = findfirst(
+            isequal(outbreaklower), filtered_matched_bounds[:, 1]
+        )
+        @views filtered_matched_bounds[outbreak_rownumber, 3] -
+            filtered_matched_bounds[outbreak_rownumber, 1]
+    end
 end
 
 # end
