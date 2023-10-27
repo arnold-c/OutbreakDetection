@@ -32,7 +32,7 @@ ensemble_single_scenario_spec = ScenarioSpecification(
     ensemble_single_ensemble_spec,
     ensemble_single_outbreak_spec,
     ensemble_single_noise_spec,
-    OutbreakDetectionSpecification(4, 7, 0.6, 0.8, 0),
+    OutbreakDetectionSpecification(2, 7, 0.6, 0.8, 0),
     ensemble_single_individual_test_spec,
 )
 
@@ -283,3 +283,46 @@ save(
     ),
     ensemble_single_scenario_posodds_outbreak_dist_plot,
 )
+
+#%%
+fig = Figure()
+sens_spec_ax = Axis(fig[1, 1])
+delay_ax = Axis(fig[1, 2])
+hist!(
+    sens_spec_ax,
+    ensemble_single_scenario_detection["OT_chars"].sensitivity;
+    bins = 0.0:0.01:1.1,
+    color = :navy,
+)
+hist!(
+    sens_spec_ax,
+    ensemble_single_scenario_detection["OT_chars"].specificity;
+    bins = 0.0:0.01:1.1,
+    color = :orange,
+)
+hist!(
+    delay_ax,
+    reduce(
+        vcat, ensemble_single_scenario_detection["OT_chars"].detectiondelays
+    );
+    bins = -11.0:1.0:150.0,
+    color = :red,
+)
+fig
+
+#%%
+incidence_testing_plot(
+    ensemble_single_scenario_incarr["ensemble_inc_arr"],
+    ensemble_single_scenario_noise_array,
+    ensemble_single_scenario_detection["testarr"],
+    ensemble_single_scenario_spec.ensemble_specification.time_parameters,
+    ensemble_single_scenario_spec.outbreak_detection_specification.detection_threshold;
+    sim = 1,
+)
+
+#%%
+test_matchedbounds = ensemble_single_scenario_detection["OT_chars"].matchedoutbreakbounds[1]
+
+test_detectbounds = ensemble_single_scenario_detection["OT_chars"].detectoutbreakbounds[1]
+
+test_detectbounds[(test_detectbounds[:, 1] .>= 2550), :]
