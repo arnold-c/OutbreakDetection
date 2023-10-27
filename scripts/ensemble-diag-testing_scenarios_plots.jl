@@ -127,8 +127,9 @@ compare_outbreak_sens_spec_plot = compare_ensemble_OTchars_plots(
 
 save(
     plotsdir("ensemble/testing-comparison/compare_outbreak_sens_spec_plot.png"),
-    compare_outbreak_sens_spec_plot,
-)
+    compare_outbreak_sens_spec_plot;
+    resolution = (2200, 1200),
+);
 
 #%%
 compare_outbreak_ppv_npv_plot = compare_ensemble_OTchars_plots(
@@ -145,8 +146,9 @@ compare_outbreak_ppv_npv_plot = compare_ensemble_OTchars_plots(
 
 save(
     plotsdir("ensemble/testing-comparison/compare_outbreak_ppv_npv_plot.png"),
-    compare_outbreak_ppv_npv_plot,
-)
+    compare_outbreak_ppv_npv_plot;
+    resolution = (2200, 1200),
+);
 
 #%%
 compare_outbreak_detection_delays_plot = compare_ensemble_OTchars_plots(
@@ -156,11 +158,13 @@ compare_outbreak_detection_delays_plot = compare_ensemble_OTchars_plots(
     char1_label = "Detection Delay",
     char2_label = "Detection Threshold",
     char1_color = :blue,
+    bins = -11.0:1.0:150.0,
 )
 
 save(
     plotsdir(
         "ensemble/testing-comparison/compare_outbreak_detection_delays_plot.png"
     ),
-    compare_outbreak_detection_delays_plot,
-)
+    compare_outbreak_detection_delays_plot;
+    resolution = (2200, 1200),
+);
