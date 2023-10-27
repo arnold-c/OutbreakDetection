@@ -289,7 +289,6 @@ function calculate_outbreak_detection_characteristics(outbreakbounds, detectionb
         pairs(eachrow(outbreakbounds))
         for (detectionlower, detectionupper) in
             eachrow(detectionbounds[detection_rownumber:end, :])
-            @show outbreaklower, outbreakupper, detectionlower, detectionupper
             if detectionlower > outbreakupper
                 break
             end
