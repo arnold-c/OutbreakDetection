@@ -482,53 +482,54 @@ function ensemble_outbreak_distribution_plot(testarr, infecarr)
 end
 
 function ensemble_OTChars_plot(
-    OTChars,
-    char1,
-    char2;
-    bins = 0.0:10.0:450.0,
-    char1_color = :blue,
-    char2_color = :red,
-    char1_label = "True Outbreaks",
-    char2_label = "Tested Outbreaks",
+    OTChars;
+    plottingchars = (
+        (
+            char = :noutbreaks,
+            label = "Number of Outbreaks",
+            color = (:blue, 0.5),
+        ),
+        (
+            char = :ndetectoutbreaks,
+            label = "Number of Detected Outbreaks",
+            color = (:red, 0.5),
+        ),
+    ),
+    columnfacetchar = :detection_threshold,
+    columnfacetchar_label = "Detection Threshold",
+    binwidth = 10.0,
     xlabel = "Number of Outbreaks",
     legendlabel = "# Outbreaks",
+    kwargs...,
 )
+    kwargs_dict = Dict{Symbol,Any}(kwargs)
+
+    @pack! kwargs_dict = columnfacetchar_label,
+    binwidth, xlabel, ylabel,
+    legendlabel
+
     fig = Figure()
     ax = Axis(fig[1, 1]; xlabel = xlabel)
 
-    hist!(
-        ax,
-        map(outbreakchar -> getfield(outbreakchar, char1), OTChars);
-        bins = bins,
-        color = (char1_color, 0.5),
-        strokecolor = :black,
-        strokewidth = 1,
-        normalization = :pdf,
-        label = char1_label,
+    construct_OTchars_facets!(
+        fig,
+        [OTChars],
+        plottingchars,
+        [1],
+        [1],
+        columnfacetchar,
+        kwargs_dict
     )
 
-    hist!(
-        ax,
-        map(outbreakchar -> getfield(outbreakchar, char2), OTChars);
-        bins = bins,
-        color = (char2_color, 0.5),
-        strokecolor = :black,
-        strokewidth = 1,
-        normalization = :pdf,
-        label = char2_label,
-    )
-
-    @floop for field in (char1, char2)
-        vlines!(
-            ax,
-            [mean(map(outbreakchar -> getfield(outbreakchar, field), OTChars))];
-            color = :black,
-            linestyle = :dash,
-            linewidth = 4,
-        )
-    end
-
-    Legend(fig[1, 2], ax, legendlabel)
+    # @floop for field in (char1, char2)
+    #     vlines!(
+    #         ax,
+    #         [mean(map(outbreakchar -> getfield(outbreakchar, field), OTChars))];
+    #         color = :black,
+    #         linestyle = :dash,
+    #         linewidth = 4,
+    #     )
+    # end
 
     return fig
 end
