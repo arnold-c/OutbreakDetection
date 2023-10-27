@@ -323,7 +323,7 @@ function calculate_outbreak_detection_characteristics(
         outbreaksmissed_alerts_prop = outbreaksmissed_alerts_prop,
         perc_alerts_false = perc_alerts_false,
         perc_alerts_correct = perc_alerts_correct,
-        delay_vec = delay_vec,
+        detectiondelays = delay_vec,
     )
 end
 
