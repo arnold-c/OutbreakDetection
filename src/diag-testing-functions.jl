@@ -277,9 +277,9 @@ function calculate_noutbreaks(outbreakrle)
 end
 
 function calculate_outbreak_detection_delay(outbreakbounds, detectionbounds)
-    delay_vec = fill(-10, size(outbreakbounds, 1))
+    delay_vec = fill(Inf, size(outbreakbounds, 1))
     matched_bounds = hcat(
-        @view(outbreakbounds[:, 1:2]), fill(-10, size(outbreakbounds, 1), 2)
+        @view(outbreakbounds[:, 1:2]), fill(Inf, size(outbreakbounds, 1), 2)
     )
     detection_number = 1
     for (outbreak_number, (outbreaklower, outbreakupper)) in
@@ -298,10 +298,20 @@ function calculate_outbreak_detection_delay(outbreakbounds, detectionbounds)
                 detection_number += 1
                 break
             end
-            detection_number += 1
+            if detectionlower <= outbreaklower &&
+                detectionupper >= outbreaklower
+                @views matched_bounds[outbreak_number, 1:2] .= outbreaklower,
+                outbreakupper
+                @views matched_bounds[outbreak_number, 3:4] .= detectionlower,
+                detectionupper
+                delay_vec[outbreak_number] = detectionlower - outbreaklower
+                detection_number += 1
+                break
+            end
         end
     end
-    return delay_vec, matched_bounds
+    missed_outbreaks = Float64(length(findall(==(Inf), delay_vec)))
+    return (delay_vec, matched_bounds, missed_outbreaks)
 end
 
 # end
