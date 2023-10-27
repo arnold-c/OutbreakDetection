@@ -695,36 +695,11 @@ function compare_ensemble_OTchars_plots(
     legendlabel
 
     fig = Figure()
-    for (OT_char_tuple, x, y) in zip(char_struct_vec, xs, ys)
-        charvec = reduce(vcat, getproperty(OT_char_tuple.OT_chars, char1))
 
-        bins = if !haskey(kwargs_dict, :bins)
-            calculate_bins(charvec, binwidth)
-        else
-            kwargs_dict[:bins]
-        end
-
-        gl = fig[x, y] = GridLayout()
-        ax = Axis(
-            gl[2, 1];
-            xlabel = xlabel,
-            ylabel = ylabel,
-        )
-
-        hist!(
-            ax,
-            charvec;
-            bins = bins,
-            color = (char1_color, color_alpha),
-        )
-
-        Label(
-            gl[1, :],
-            L"\text{\textbf{Individual Test} - Sensitivity: %$(OT_char_tuple.ind_test_spec.sensitivity), Specificity: %$(OT_char_tuple.ind_test_spec.specificity), %$(columnfacetchar_label): %$(getfield(OT_char_tuple.outbreak_detect_spec, columnfacetchar)), # of %$(char1_label): %$(length(charvec))}";
-            word_wrap = true,
-        )
-        colsize!(gl, 1, Relative(1))
-    end
+    construct_OTchars_facets!(
+        fig, char_struct_vec, kwargs_dict, xs, ys, columnfacetchar;
+        char1 = char1,
+    )
 
     Legend(
         fig[:, end + 1],
@@ -758,6 +733,47 @@ function calculate_comparison_plot_facet_dims(
     ys = repeat(1:xlength; inner = ylength)
 
     return xs, ys
+end
+
+function construct_OTchars_facets!(
+    fig, char_struct_vec, kwargs_dict, xs, ys, columnfacetchar; char1
+)
+    for (OT_char_tuple, x, y) in zip(char_struct_vec, xs, ys)
+        charvec = reduce(
+            vcat, getproperty(OT_char_tuple.OT_chars, char1)
+        )
+
+        @unpack binwidth,
+        xlabel, ylabel, char1_color, char1_label, color_alpha,
+        columnfacetchar_label = kwargs_dict
+
+        bins = if !haskey(kwargs_dict, :bins)
+            calculate_bins(charvec, binwidth)
+        else
+            kwargs_dict[:bins]
+        end
+
+        gl = fig[x, y] = GridLayout()
+        ax = Axis(
+            gl[2, 1];
+            xlabel = xlabel,
+            ylabel = ylabel,
+        )
+
+        hist!(
+            ax,
+            charvec;
+            bins = bins,
+            color = (char1_color, color_alpha),
+        )
+
+        Label(
+            gl[1, :],
+            L"\text{\textbf{Individual Test} - Sensitivity: %$(OT_char_tuple.ind_test_spec.sensitivity), Specificity: %$(OT_char_tuple.ind_test_spec.specificity), %$(columnfacetchar_label): %$(getfield(OT_char_tuple.outbreak_detect_spec, columnfacetchar)), # of %$(char1_label): %$(length(charvec))}";
+            word_wrap = true,
+        )
+        colsize!(gl, 1, Relative(1))
+    end
 end
 
 function calculate_bins(charvec, binwidth)
