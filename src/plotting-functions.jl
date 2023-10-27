@@ -679,6 +679,7 @@ function compare_ensemble_OTchars_plots(
     char2_label = "Specificity",
     binwidth = 1.0,
     char1_color = :blue,
+    color_alpha = 0.5,
     xlabel = "Characteristic Value",
     ylabel = "Density",
     legendlabel = "Outbreak Chacteristic",
@@ -702,6 +703,10 @@ function compare_ensemble_OTchars_plots(
 
         if !haskey(kwargs_dict, :bins)
             minbin, maxbin = extrema(charvec)
+            if minbin == maxbin
+                minbin -= binwidth
+                maxbin += binwidth
+            end
             bins = minbin:binwidth:maxbin
         end
 
@@ -716,12 +721,12 @@ function compare_ensemble_OTchars_plots(
             ax,
             charvec;
             bins = bins,
-            color = (char1_color, 0.5),
+            color = (char1_color, color_alpha),
         )
 
         Label(
             gl[1, :],
-            L"\text{\textbf{Individual Test} - Sensitivity: %$(OT_char_tuple.ind_test_spec.sensitivity), Specificity: %$(OT_char_tuple.ind_test_spec.specificity), %$(char2_label): %$(getfield(OT_char_tuple.outbreak_detect_spec, char2)), Number of %$(char1_label): %$(length(charvec))}";
+            L"\text{\textbf{Individual Test} - Sensitivity: %$(OT_char_tuple.ind_test_spec.sensitivity), Specificity: %$(OT_char_tuple.ind_test_spec.specificity), %$(char2_label): %$(getfield(OT_char_tuple.outbreak_detect_spec, char2)), # of %$(char1_label): %$(length(charvec))}";
             word_wrap = true,
         )
         colsize!(gl, 1, Relative(1))
@@ -731,7 +736,7 @@ function compare_ensemble_OTchars_plots(
         fig[:, end + 1],
         [
             PolyElement(; color = col) for
-            col in [(char1_color, 0.5)]
+            col in [(char1_color, color_alpha)]
         ],
         [char1_label],
         ;
