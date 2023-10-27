@@ -228,7 +228,7 @@ function calculate_OutbreakThresholdChars(testarr, infecarr, thresholds_vec)
             )
 
         OutbreakThresholdChars(
-            calculate_ot_characterstics(
+            calculate_ot_characteristics(
                 @view(testarr[:, 7, sim]), @view(infecarr[:, 3, sim])
             )...,
             size(outbreakbounds, 1),
@@ -246,7 +246,7 @@ function calculate_OutbreakThresholdChars(testarr, infecarr, thresholds_vec)
     return StructArray(OT_chars)
 end
 
-function calculate_ot_characterstics(testvec, infecvec)
+function calculate_ot_characteristics(testvec, infecvec)
     crosstab = freqtable(testvec, infecvec)
 
     tp = freqtable_error_default_zero(crosstab, 1, 1)
