@@ -212,7 +212,7 @@ struct OutbreakThresholdChars{
     outbreaksmissed_alerts_prop::T3
     perc_alerts_false::T3
     perc_alerts_correct::T3
-    delay_vec::T5
+    detectiondelays::T5
 end
 
 struct OutbreakSpecification{T1<:Integer,T2<:AbstractString}

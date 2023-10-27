@@ -217,25 +217,22 @@ end
 
 function calculate_OutbreakThresholdChars(testarr, infecarr, thresholds_vec)
     OT_chars = map(axes(infecarr, 3)) do sim
-   dailychars = calculate_daily_detection_characteristics(
-                @view(testarr[:, 7, sim]), @view(infecarr[:, 3, sim])
-            )
+        dailychars = calculate_daily_detection_characteristics(
+            @view(testarr[:, 7, sim]), @view(infecarr[:, 3, sim])
+        )
         detectrle = rle(@view(testarr[:, 7, sim]))
         outbreakbounds = thresholds_vec[sim][
             (@view(thresholds_vec[sim][:, 4]) .== 1), 1:3
         ]
         detectionbounds = calculate_outbreak_thresholds(detectrle; ncols = 2)
+
         detectionchars = calculate_outbreak_detection_characteristics(
-                outbreakbounds, detectionbounds
-            )
+            outbreakbounds, detectionbounds
+        )
 
         OutbreakThresholdChars(
             dailychars...,
-            size(outbreakbounds, 1),
-            calculate_noutbreaks(detectrle),
-            outbreakbounds,
-            detectionbounds,
-            detectionchars...
+            detectionchars...,
         )
     end
 
