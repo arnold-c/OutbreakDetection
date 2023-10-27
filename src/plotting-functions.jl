@@ -707,7 +707,6 @@ function compare_ensemble_OTchars_plots(
             reduce(vcat, getproperty(OT_char_tuple.OT_chars, char1));
             bins = bins,
             color = (char1_color, 0.5),
-            normalization = :pdf,
         )
 
         Label(
