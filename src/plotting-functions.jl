@@ -677,11 +677,12 @@ function compare_ensemble_OTchars_plots(
     char2::Symbol;
     char1_label = "Detection Delay",
     char2_label = "Specificity",
-    bins = -11.0:1.0:15.0,
+    binwidth = 1.0,
     char1_color = :blue,
     xlabel = "Characteristic Value",
     ylabel = "Density",
     legendlabel = "Outbreak Chacteristic",
+    kwargs...
 )
     xlength = length(
         Set(getfield.(getfield.(char_struct_vec, :outbreak_detect_spec), char2))
@@ -693,8 +694,18 @@ function compare_ensemble_OTchars_plots(
     xs = repeat(1:ylength, xlength)
     ys = repeat(1:xlength; inner = ylength)
 
+    kwargs_dict = Dict(kwargs)
+
     fig = Figure()
     for (OT_char_tuple, x, y) in zip(char_struct_vec, xs, ys)
+
+        charvec = reduce(vcat, getproperty(OT_char_tuple.OT_chars, char1))
+
+        if !haskey(kwargs_dict, :bins)
+            minbin, maxbin = extrema(charvec)
+            bins = minbin:binwidth:maxbin
+        end
+
         gl = fig[x, y] = GridLayout()
         ax = Axis(
             gl[2, 1];
@@ -704,14 +715,14 @@ function compare_ensemble_OTchars_plots(
 
         hist!(
             ax,
-            reduce(vcat, getproperty(OT_char_tuple.OT_chars, char1));
+            charvec;
             bins = bins,
             color = (char1_color, 0.5),
         )
 
         Label(
             gl[1, :],
-            L"\text{\textbf{Individual Test} - Sensitivity: %$(OT_char_tuple.ind_test_spec.sensitivity), Specificity: %$(OT_char_tuple.ind_test_spec.specificity), %$(char2_label): %$(getfield(OT_char_tuple.outbreak_detect_spec, char2))}";
+            L"\text{\textbf{Individual Test} - Sensitivity: %$(OT_char_tuple.ind_test_spec.sensitivity), Specificity: %$(OT_char_tuple.ind_test_spec.specificity), %$(char2_label): %$(getfield(OT_char_tuple.outbreak_detect_spec, char2)), Number of %$(char1_label): %$(length(charvec))}";
             word_wrap = true,
         )
         colsize!(gl, 1, Relative(1))
