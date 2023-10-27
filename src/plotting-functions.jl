@@ -682,14 +682,16 @@ function compare_ensemble_OTchars_plots(
     xs, ys = calculate_comparison_plot_facet_dims(
         char_struct_vec, columnfacetchar
     )
-    kwargs_dict = Dict{Symbol,Any}(kwargs)
+    kwargs_dict = Dict(kwargs)
 
     fig = Figure()
     for (OT_char_tuple, x, y) in zip(char_struct_vec, xs, ys)
         charvec = reduce(vcat, getproperty(OT_char_tuple.OT_chars, char1))
 
-        if !haskey(kwargs_dict, :bins)
-            kwargs_dict[:bins] = calculate_bins(charvec, binwidth)
+        bins = if !haskey(kwargs_dict, :bins)
+            calculate_bins(charvec, binwidth)
+        else
+            kwargs_dict[:bins]
         end
 
         gl = fig[x, y] = GridLayout()
@@ -702,7 +704,7 @@ function compare_ensemble_OTchars_plots(
         hist!(
             ax,
             charvec;
-            bins = kwargs_dict[:bins],
+            bins = bins,
             color = (char1_color, color_alpha),
         )
 
