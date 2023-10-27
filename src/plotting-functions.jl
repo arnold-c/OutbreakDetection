@@ -703,6 +703,8 @@ function compare_ensemble_OTchars_plots(
 
         if !haskey(kwargs_dict, :bins)
             minbin, maxbin = extrema(charvec)
+            minbin -= 3 * binwidth / 2
+            maxbin += 3 * binwidth / 2
             if minbin == maxbin
                 minbin -= binwidth
                 maxbin += binwidth
