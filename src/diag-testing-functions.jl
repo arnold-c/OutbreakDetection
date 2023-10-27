@@ -332,25 +332,45 @@ function calculate_outbreak_detection_characteristics(
     end
 
     noutbreaks = size(outbreakbounds, 1)
+    ndetectoutbreaks = size(detectionbounds, 1)
+
     n_true_outbreaks_detected = length(
         Set(@view(filtered_matched_bounds[:, 1]))
     )
 
-    missed_outbreaks = noutbreaks - n_true_outbreaks_detected
+    n_missed_outbreaks = noutbreaks - n_true_outbreaks_detected
 
-    ndetectoutbreaks = size(detectionbounds, 1)
     n_correct_alerts = size(filtered_matched_bounds, 1)
 
     n_false_alerts = sum(ndetectoutbreaks - n_correct_alerts)
+
+    perc_true_outbreaks_detected = n_true_outbreaks_detected / noutbreaks
+    perc_true_outbreaks_missed = n_missed_outbreaks / noutbreaks
+    falsealert_trueoutbreak_prop = n_false_alerts / noutbreaks
+    correctalert_trueoutbreak_prop = n_correct_alerts / noutbreaks # c.f. sensitivity
+
+    trueoutbreak_alerts_prop = n_correct_alerts / ndetectoutbreaks
+    outbreaksmissed_alerts_prop = n_missed_outbreaks / ndetectoutbreaks
+    perc_alerts_false = n_false_alerts / ndetectoutbreaks
+    perc_alerts_correct = n_correct_alerts / ndetectoutbreaks # c.f. PPV
 
     return (
         matched_bounds = filtered_matched_bounds,
         noutbreaks = noutbreaks,
         ndetectoutbreaks = ndetectoutbreaks,
+        n_true_outbreaks_detected = n_true_outbreaks_detected,
+        n_missed_outbreaks = n_missed_outbreaks,
         n_correct_alerts = n_correct_alerts,
         n_false_alerts = n_false_alerts,
-        nmissedoutbreaks = missed_outbreaks,
         alertsperoutbreak = alerts_per_outbreak_vec,
+        perc_true_outbreaks_detected = perc_true_outbreaks_detected,
+        perc_true_outbreaks_missed = perc_true_outbreaks_missed,
+        falsealert_trueoutbreak_prop = falsealert_trueoutbreak_prop,
+        correctalert_trueoutbreak_prop = correctalert_trueoutbreak_prop,
+        trueoutbreak_alerts_prop = trueoutbreak_alerts_prop,
+        outbreaksmissed_alerts_prop = outbreaksmissed_alerts_prop,
+        perc_alerts_false = perc_alerts_false,
+        perc_alerts_correct = perc_alerts_correct,
         delay_vec = delay_vec,
     )
 end
