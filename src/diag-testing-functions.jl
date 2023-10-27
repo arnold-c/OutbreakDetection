@@ -280,6 +280,8 @@ function calculate_outbreak_detection_delay(outbreakbounds, detectionbounds)
     all_matched_bounds = zeros(
         Int64, size(outbreakbounds, 1) + size(detectionbounds, 1), 4
     )
+    alerts_per_outbreak_vec = zeros(Int64, size(outbreakbounds, 1))
+
     outbreak_number = 1
     detection_rownumber = 1
     for (outbreak_number, (outbreaklower, outbreakupper)) in
@@ -294,6 +296,9 @@ function calculate_outbreak_detection_delay(outbreakbounds, detectionbounds)
                 all_matched_bounds[detection_rownumber, :] .= outbreaklower,
                 outbreakupper, detectionlower,
                 detectionupper
+
+                alerts_per_outbreak_vec[outbreak_number] += 1
+
                 detection_rownumber += 1
                 continue
             end
@@ -302,6 +307,9 @@ function calculate_outbreak_detection_delay(outbreakbounds, detectionbounds)
                 all_matched_bounds[detection_rownumber, :] .= outbreaklower,
                 outbreakupper, detectionlower,
                 detectionupper
+
+                alerts_per_outbreak_vec[outbreak_number] += 1
+
                 detection_rownumber += 1
                 continue
             end
@@ -329,7 +337,14 @@ function calculate_outbreak_detection_delay(outbreakbounds, detectionbounds)
         length(Set(@view(detectionbounds[:, 1]))) -
         length(Set(@view(filtered_matched_bounds[:, 3]))),
     )
-    return (delay_vec, filtered_matched_bounds, missed_outbreaks, false_alerts)
+
+    return (
+        delay_vec,
+        filtered_matched_bounds,
+        missed_outbreaks,
+        false_alerts,
+        alerts_per_outbreak_vec,
+    )
 end
 
 # end
