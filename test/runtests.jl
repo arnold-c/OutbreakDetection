@@ -35,18 +35,21 @@ end
                 495 550
                 590 595
             ]
-            calculate_outbreak_detection_delay(
-                outbreakbounds, detectionbounds
-            ) == (
-                [Inf, -5.0, -10.0, Inf, 10.0, -5.0],
-                [2.0 4.0 Inf Inf
-                    10.0 60.0 5.0 15.0
-                    100.0 180.0 90.0 105.0
-                    300.0 340.0 Inf Inf
-                    380.0 410.0 390.0 420.0
-                    500.0 540.0 495.0 550.0],
-                2.0,
-            )
+
+            isequal(
+                calculate_outbreak_detection_delay(
+                    outbreakbounds, detectionbounds
+                ),
+                (
+                    [NaN, -5.0, -10.0, NaN, 10.0, -5.0],
+                    [2.0 4.0 NaN NaN
+                        10.0 60.0 5.0 15.0
+                        100.0 180.0 90.0 105.0
+                        300.0 340.0 NaN NaN
+                        380.0 410.0 390.0 420.0
+                        500.0 540.0 495.0 550.0],
+                    2.0,
+                ))
         end
     end
 end
