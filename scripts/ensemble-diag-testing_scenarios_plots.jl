@@ -158,7 +158,7 @@ compare_outbreak_detection_delays_plot = compare_ensemble_OTchars_plots(
     char1_label = "Detection Delay",
     char2_label = "Detection Threshold",
     char1_color = :blue,
-    binwidth = 5.0
+    binwidth = 5.0,
 )
 
 save(
@@ -166,5 +166,25 @@ save(
         "ensemble/testing-comparison/compare_outbreak_detection_delays_plot.png"
     ),
     compare_outbreak_detection_delays_plot;
+    resolution = (2200, 1200),
+);
+
+#%%
+compare_outbreak_alert_numbers_plot = compare_ensemble_OTchars_plots(
+    ensemble_chars_vec,
+    :alertsperoutbreak,
+    :detection_threshold;
+    char1_label = "Alerts Per Outbreak",
+    char2_label = "Detection Threshold",
+    char1_color = :orange,
+    color_alpha = 1.0,
+    binwidth = 1.0,
+)
+
+save(
+    plotsdir(
+        "ensemble/testing-comparison/compare_outbreak_alert_numbers_plot.png"
+    ),
+    compare_outbreak_alert_numbers_plot;
     resolution = (2200, 1200),
 );
