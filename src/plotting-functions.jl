@@ -682,7 +682,17 @@ function compare_ensemble_OTchars_plots(
     xs, ys = calculate_comparison_plot_facet_dims(
         char_struct_vec, columnfacetchar
     )
-    kwargs_dict = Dict(kwargs)
+    kwargs_dict = Dict{Symbol,Any}(kwargs)
+
+    @pack! kwargs_dict = char1_label,
+    columnfacetchar_label,
+    binwidth,
+    char1_color,
+    char1_label,
+    color_alpha,
+    xlabel,
+    ylabel,
+    legendlabel
 
     fig = Figure()
     for (OT_char_tuple, x, y) in zip(char_struct_vec, xs, ys)
