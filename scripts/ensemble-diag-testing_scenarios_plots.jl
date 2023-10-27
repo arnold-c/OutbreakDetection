@@ -122,12 +122,12 @@ compare_outbreak_sens_spec_plot = compare_ensemble_OTchars_plots(
     bins = 0.0:0.01:1.01,
     plottingchars = [
         (
-            char = :sensitivity,
+            char = :daily_sensitivity,
             label = "Sensitivity",
             color = (:blue, 0.5),
         ),
         (
-            char = :specificity,
+            char = :daily_specificity,
             label = "Specificity",
             color = (:red, 0.5),
         ),
@@ -148,12 +148,12 @@ compare_outbreak_ppv_npv_plot = compare_ensemble_OTchars_plots(
     bins = 0.0:0.01:1.01,
     plottingchars = [
         (
-            char = :ppv,
+            char = :daily_ppv,
             label = "PPV",
             color = (:green, 0.5),
         ),
         (
-            char = :npv,
+            char = :daily_npv,
             label = "NPV",
             color = (:purple, 0.5),
         ),
@@ -197,7 +197,7 @@ compare_outbreak_alert_numbers_plot = compare_ensemble_OTchars_plots(
     binwidth = 1.0,
     plottingchars = [
     (
-        char = :alertsperoutbreak,
+        char = :n_alerts_per_outbreak,
         label = "Alerts per Outbreak",
         color = (:orange, 1.0),
     )
@@ -220,7 +220,7 @@ compare_outbreak_false_alerts_plot = compare_ensemble_OTchars_plots(
     binwidth = 1.0,
     plottingchars = [
     (
-        char = :falsealerts,
+        char = :n_false_alerts,
         label = "False Alerts",
         color = (:navy, 1.0),
     )
@@ -243,7 +243,7 @@ compare_outbreak_missed_plot = compare_ensemble_OTchars_plots(
     binwidth = 1.0,
     plottingchars = [
     (
-        char = :missedoutbreaks,
+        char = :n_missed_outbreaks,
         label = "Missed Outbreaks",
         color = (:grey20, 1.0),
     )
