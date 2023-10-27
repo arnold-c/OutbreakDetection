@@ -202,6 +202,9 @@ struct OutbreakThresholdChars{
     detectoutbreakbounds::T4
     detectiondelays::T5
     matchedoutbreakbounds::T4
+    missedoutbreaks::T2
+    falsealerts::T2
+    alertsperoutbreak::T5
 end
 
 struct OutbreakSpecification{T1<:Integer,T2<:AbstractString}
