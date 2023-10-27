@@ -47,7 +47,7 @@ export create_testing_arrs, create_testing_arrs!, calculate_tested!,
     calculate_positives!,
     calculate_true_positives!, calculate_noise_positives!,
     calculate_movingavg, calculate_movingavg!,
-    detectoutbreak, detectoutbreak!, calculate_ot_characterstics,
+    detectoutbreak, detectoutbreak!, calculate_daily_detection_characteristics,
     calculate_noutbreaks, calculate_OutbreakThresholdChars,
     calculate_test_positivity, calculate_outbreak_detection_characteristics
 # @reexport using .DiagTestingFunctions
