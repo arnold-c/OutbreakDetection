@@ -329,14 +329,17 @@ function calculate_outbreak_detection_characteristics(outbreakbounds, detectionb
             filtered_matched_bounds[outbreak_rownumber, 1]
     end
 
-    missed_outbreaks =
-        size(outbreakbounds, 1) -
-        length(Set(@view(filtered_matched_bounds[:, 1])))
-
-    false_alerts = sum(
-        length(Set(@view(detectionbounds[:, 1]))) -
-        length(Set(@view(filtered_matched_bounds[:, 3]))),
+    noutbreaks = size(outbreakbounds, 1)
+    n_true_outbreaks_detected = length(
+        Set(@view(filtered_matched_bounds[:, 1]))
     )
+
+    missed_outbreaks = noutbreaks - n_true_outbreaks_detected
+
+    ndetectoutbreaks = size(detectionbounds, 1)
+    n_correct_alerts = size(filtered_matched_bounds, 1)
+
+    n_false_alerts = sum(ndetectoutbreaks - n_correct_alerts)
 
     return (
         delay_vec,
