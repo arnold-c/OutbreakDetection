@@ -682,7 +682,7 @@ function compare_ensemble_OTchars_plots(
     xlabel = "Characteristic Value",
     ylabel = "Density",
     legendlabel = "Outbreak Chacteristic",
-    kwargs...
+    kwargs...,
 )
     xlength = length(
         Set(getfield.(getfield.(char_struct_vec, :outbreak_detect_spec), char2))
@@ -698,7 +698,6 @@ function compare_ensemble_OTchars_plots(
 
     fig = Figure()
     for (OT_char_tuple, x, y) in zip(char_struct_vec, xs, ys)
-
         charvec = reduce(vcat, getproperty(OT_char_tuple.OT_chars, char1))
 
         if !haskey(kwargs_dict, :bins)
