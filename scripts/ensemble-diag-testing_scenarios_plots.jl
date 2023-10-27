@@ -234,3 +234,26 @@ save(
     compare_outbreak_false_alerts_plot;
     resolution = (2200, 1200),
 )
+
+#%%
+compare_outbreak_missed_plot = compare_ensemble_OTchars_plots(
+    ensemble_chars_vec,
+    :detection_threshold;
+    columnfacetchar_label = "Detection Threshold",
+    binwidth = 1.0,
+    plottingchars = [
+    (
+        char = :missedoutbreaks,
+        label = "Missed Outbreaks",
+        color = (:grey20, 1.0),
+    )
+    ],
+)
+
+save(
+    plotsdir(
+        "ensemble/testing-comparison/compare_outbreak_missed_plot.png"
+    ),
+    compare_outbreak_missed_plot;
+    resolution = (2200, 1200),
+)
