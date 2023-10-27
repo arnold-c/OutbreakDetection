@@ -157,7 +157,8 @@ compare_outbreak_detection_delays_plot = compare_ensemble_OTchars_plots(
     :detection_threshold;
     char1_label = "Detection Delay",
     char2_label = "Detection Threshold",
-    char1_color = :blue,
+    char1_color = :navy,
+    color_alpha = 1.0,
     binwidth = 5.0,
 )
 
@@ -198,7 +199,7 @@ compare_outbreak_false_alerts_plot = compare_ensemble_OTchars_plots(
     char2_label = "Detection Threshold",
     char1_color = :red,
     color_alpha = 1.0,
-    binwidth = 5.0,
+    binwidth = 1.0,
 )
 
 save(
