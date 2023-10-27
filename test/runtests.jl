@@ -37,7 +37,7 @@ end
             ]
 
             isequal(
-                calculate_outbreak_detection_delay(
+                calculate_outbreak_detection_characteristics(
                     outbreakbounds, detectionbounds
                 ),
                 (

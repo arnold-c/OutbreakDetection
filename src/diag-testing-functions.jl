@@ -232,7 +232,7 @@ function calculate_OutbreakThresholdChars(testarr, infecarr, thresholds_vec)
             calculate_noutbreaks(detectrle),
             outbreakbounds,
             detectionbounds,
-            calculate_outbreak_detection_delay(
+            calculate_outbreak_detection_characteristics(
                 outbreakbounds, detectionbounds
             )...,
         )
@@ -276,7 +276,7 @@ function calculate_noutbreaks(outbreakrle)
     return length(findall(==(1), outbreakrle[1]))
 end
 
-function calculate_outbreak_detection_delay(outbreakbounds, detectionbounds)
+function calculate_outbreak_detection_characteristics(outbreakbounds, detectionbounds)
     all_matched_bounds = zeros(
         Int64, size(outbreakbounds, 1) + size(detectionbounds, 1), 4
     )
