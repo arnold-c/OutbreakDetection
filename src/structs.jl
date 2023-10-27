@@ -187,24 +187,32 @@ struct OutbreakThresholdChars{
     T4<:AbstractMatrix{T2},
     T5<:Vector{T2},
 }
-    crosstab::T1
-    tp::T2
-    tn::T2
-    fp::T2
-    fn::T2
-    sensitivity::T3
-    specificity::T3
-    ppv::T3
-    npv::T3
+    daily_crosstab::T1
+    daily_tp::T2
+    daily_tn::T2
+    daily_fp::T2
+    daily_fn::T2
+    daily_sensitivity::T3
+    daily_specificity::T3
+    daily_ppv::T3
+    daily_npv::T3
+    matchedoutbreakbounds::T4
     noutbreaks::T2
     ndetectoutbreaks::T2
-    outbreakbounds::T4
-    detectoutbreakbounds::T4
-    detectiondelays::T5
-    matchedoutbreakbounds::T4
-    missedoutbreaks::T2
-    falsealerts::T2
-    alertsperoutbreak::T5
+    n_true_outbreaks_detected::T2
+    n_missed_outbreaks::T2
+    n_correct_alerts::T2
+    n_false_alerts::T2
+    n_alerts_per_outbreak::T5
+    perc_true_outbreaks_detected::T3
+    perc_true_outbreaks_missed::T3
+    falsealert_trueoutbreak_prop::T3
+    correctalert_trueoutbreak_prop::T3
+    trueoutbreak_alerts_prop::T3
+    outbreaksmissed_alerts_prop::T3
+    perc_alerts_false::T3
+    perc_alerts_correct::T3
+    delay_vec::T5
 end
 
 struct OutbreakSpecification{T1<:Integer,T2<:AbstractString}
