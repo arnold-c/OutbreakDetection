@@ -280,48 +280,9 @@ end
 function calculate_outbreak_detection_characteristics(
     outbreakbounds, detectionbounds
 )
-    all_matched_bounds = zeros(
-        Int64, size(outbreakbounds, 1) + size(detectionbounds, 1), 4
+    filtered_matched_bounds, alerts_per_outbreak_vec = match_outbreak_detection_bounds(
+        outbreakbounds, detectionbounds
     )
-    alerts_per_outbreak_vec = zeros(Int64, size(outbreakbounds, 1))
-
-    outbreak_number = 1
-    detection_rownumber = 1
-    for (outbreak_number, (outbreaklower, outbreakupper)) in
-        pairs(eachrow(outbreakbounds))
-        for (detectionlower, detectionupper) in
-            eachrow(detectionbounds[detection_rownumber:end, :])
-            if detectionlower > outbreakupper
-                break
-            end
-            if detectionlower >= outbreaklower
-                all_matched_bounds[detection_rownumber, :] .= outbreaklower,
-                outbreakupper, detectionlower,
-                detectionupper
-
-                alerts_per_outbreak_vec[outbreak_number] += 1
-
-                detection_rownumber += 1
-                continue
-            end
-            if detectionlower <= outbreaklower &&
-                detectionupper > outbreaklower
-                all_matched_bounds[detection_rownumber, :] .= outbreaklower,
-                outbreakupper, detectionlower,
-                detectionupper
-
-                alerts_per_outbreak_vec[outbreak_number] += 1
-
-                detection_rownumber += 1
-                continue
-            end
-        end
-        outbreak_number += 1
-    end
-
-    filtered_matched_bounds = all_matched_bounds[
-        (all_matched_bounds[:, 2] .> 0), :,
-    ]
 
     delay_vec = map(unique(filtered_matched_bounds[:, 1])) do outbreaklower
         outbreak_rownumber = findfirst(
@@ -373,6 +334,52 @@ function calculate_outbreak_detection_characteristics(
         perc_alerts_correct = perc_alerts_correct,
         delay_vec = delay_vec,
     )
+end
+
+function match_outbreak_detection_bounds(outbreakbounds, detectionbounds)
+    all_matched_bounds = zeros(
+        Int64, size(outbreakbounds, 1) + size(detectionbounds, 1), 4
+    )
+    alerts_per_outbreak_vec = zeros(Int64, size(outbreakbounds, 1))
+
+    outbreak_number = 1
+    detection_rownumber = 1
+    for (outbreak_number, (outbreaklower, outbreakupper)) in
+        pairs(eachrow(outbreakbounds))
+        for (detectionlower, detectionupper) in
+            eachrow(detectionbounds[detection_rownumber:end, :])
+            if detectionlower > outbreakupper
+                break
+            end
+            if detectionlower >= outbreaklower
+                all_matched_bounds[detection_rownumber, :] .= outbreaklower,
+                outbreakupper, detectionlower,
+                detectionupper
+
+                alerts_per_outbreak_vec[outbreak_number] += 1
+
+                detection_rownumber += 1
+                continue
+            end
+            if detectionlower <= outbreaklower &&
+                detectionupper > outbreaklower
+                all_matched_bounds[detection_rownumber, :] .= outbreaklower,
+                outbreakupper, detectionlower,
+                detectionupper
+
+                alerts_per_outbreak_vec[outbreak_number] += 1
+
+                detection_rownumber += 1
+                continue
+            end
+        end
+        outbreak_number += 1
+    end
+
+    filtered_matched_bounds = all_matched_bounds[
+        (all_matched_bounds[:, 2] .> 0), :,
+    ]
+    return filtered_matched_bounds, alerts_per_outbreak_vec
 end
 
 # end
