@@ -117,12 +117,21 @@ sort!(
 #%%
 compare_outbreak_sens_spec_plot = compare_ensemble_OTchars_plots(
     ensemble_chars_vec,
-    :sensitivity,
-    :specificity,
     :detection_threshold;
-    char1_label = "Sensitivity",
-    char2_label = "Specificity",
-    char3_label = "Detection Threshold",
+    columnfacetchar_label = "Detection Threshold",
+    bins = 0.0:0.01:1.01,
+    plottingchars = [
+        (
+            char = :sensitivity,
+            label = "Sensitivity",
+            color = (:blue, 0.5),
+        ),
+        (
+            char = :specificity,
+            label = "Specificity",
+            color = (:red, 0.5),
+        ),
+    ],
 )
 
 save(
@@ -134,14 +143,21 @@ save(
 #%%
 compare_outbreak_ppv_npv_plot = compare_ensemble_OTchars_plots(
     ensemble_chars_vec,
-    :ppv,
-    :npv,
     :detection_threshold;
-    char1_label = "PPV",
-    char2_label = "NPV",
     columnfacetchar_label = "Detection Threshold",
-    char1_color = :green,
-    char2_color = :purple,
+    bins = 0.0:0.01:1.01,
+    plottingchars = [
+        (
+            char = :ppv,
+            label = "PPV",
+            color = (:green, 0.5),
+        ),
+        (
+            char = :npv,
+            label = "NPV",
+            color = (:purple, 0.5),
+        ),
+    ],
 )
 
 save(
@@ -153,13 +169,16 @@ save(
 #%%
 compare_outbreak_detection_delays_plot = compare_ensemble_OTchars_plots(
     ensemble_chars_vec,
-    :detectiondelays,
     :detection_threshold;
-    char1_label = "Detection Delay",
-    char2_label = "Detection Threshold",
-    char1_color = :navy,
-    color_alpha = 1.0,
+    columnfacetchar_label = "Detection Threshold",
     binwidth = 5.0,
+    plottingchars = [
+    (
+        char = :detectiondelays,
+        label = "Detection Delay",
+        color = (:red, 0.8),
+    )
+    ],
 )
 
 save(
@@ -173,13 +192,16 @@ save(
 #%%
 compare_outbreak_alert_numbers_plot = compare_ensemble_OTchars_plots(
     ensemble_chars_vec,
-    :alertsperoutbreak,
     :detection_threshold;
-    char1_label = "Alerts Per Outbreak",
-    char2_label = "Detection Threshold",
-    char1_color = :orange,
-    color_alpha = 1.0,
+    columnfacetchar_label = "Detection Threshold",
     binwidth = 1.0,
+    plottingchars = [
+    (
+        char = :alertsperoutbreak,
+        label = "Alerts per Outbreak",
+        color = (:orange, 1.0),
+    )
+    ],
 )
 
 save(
@@ -193,13 +215,16 @@ save(
 #%%
 compare_outbreak_false_alerts_plot = compare_ensemble_OTchars_plots(
     ensemble_chars_vec,
-    :falsealerts,
     :detection_threshold;
-    char1_label = "False Alerts",
     columnfacetchar_label = "Detection Threshold",
-    char1_color = :red,
-    color_alpha = 1.0,
     binwidth = 1.0,
+    plottingchars = [
+    (
+        char = :falsealerts,
+        label = "False Alerts",
+        color = (:navy, 1.0),
+    )
+    ],
 )
 
 save(
@@ -209,5 +234,3 @@ save(
     compare_outbreak_false_alerts_plot;
     resolution = (2200, 1200),
 )
-
-#%%
