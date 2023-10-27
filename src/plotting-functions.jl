@@ -709,7 +709,7 @@ function compare_ensemble_OTchars_plots(
                 minbin -= binwidth
                 maxbin += binwidth
             end
-            bins = minbin:binwidth:maxbin
+            kwargs_dict[:bins => minbin:binwidth:maxbin]
         end
 
         gl = fig[x, y] = GridLayout()
@@ -722,7 +722,7 @@ function compare_ensemble_OTchars_plots(
         hist!(
             ax,
             charvec;
-            bins = bins,
+            bins = kwargs_dict[:bins],
             color = (char1_color, color_alpha),
         )
 
