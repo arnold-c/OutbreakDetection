@@ -277,7 +277,9 @@ function calculate_noutbreaks(outbreakrle)
     return length(findall(==(1), outbreakrle[1]))
 end
 
-function calculate_outbreak_detection_characteristics(outbreakbounds, detectionbounds)
+function calculate_outbreak_detection_characteristics(
+    outbreakbounds, detectionbounds
+)
     all_matched_bounds = zeros(
         Int64, size(outbreakbounds, 1) + size(detectionbounds, 1), 4
     )
@@ -342,11 +344,14 @@ function calculate_outbreak_detection_characteristics(outbreakbounds, detectionb
     n_false_alerts = sum(ndetectoutbreaks - n_correct_alerts)
 
     return (
-        delay_vec,
-        filtered_matched_bounds,
-        missed_outbreaks,
-        false_alerts,
-        alerts_per_outbreak_vec,
+        matched_bounds = filtered_matched_bounds,
+        noutbreaks = noutbreaks,
+        ndetectoutbreaks = ndetectoutbreaks,
+        n_correct_alerts = n_correct_alerts,
+        n_false_alerts = n_false_alerts,
+        nmissedoutbreaks = missed_outbreaks,
+        alertsperoutbreak = alerts_per_outbreak_vec,
+        delay_vec = delay_vec,
     )
 end
 
