@@ -520,6 +520,7 @@ function ensemble_OTChars_plot(
     ylabel = "Density",
     legendlabel = "# Outbreaks",
     meanlines = true,
+    normalization = :none,
     kwargs...,
 )
     otchars_vec = Vector{NamedTuple}(undef, 1)
@@ -545,6 +546,7 @@ function ensemble_OTChars_plot(
         columnfacetchar,
         kwargs_dict;
         meanlines = meanlines,
+        normalization = normalization,
     )
 
     return fig
@@ -633,6 +635,7 @@ function compare_ensemble_OTchars_plots(
     ylabel = "Density",
     legendlabel = "Outbreak Chacteristic",
     meanlines = false,
+    normalization = :none,
     kwargs...,
 )
     xs, ys = calculate_comparison_plot_facet_dims(
@@ -657,6 +660,7 @@ function compare_ensemble_OTchars_plots(
         columnfacetchar,
         kwargs_dict;
         meanlines = meanlines,
+        normalization = normalization,
     )
 
     Legend(
@@ -693,8 +697,15 @@ function calculate_comparison_plot_facet_dims(
 end
 
 function construct_OTchars_facets!(
-    fig, char_struct_vec, plottingchars, xs, ys, columnfacetchar, kwargs_dict;
+    fig,
+    char_struct_vec,
+    plottingchars,
+    xs,
+    ys,
+    columnfacetchar,
+    kwargs_dict;
     meanlines = false,
+    normalization = :none,
 )
     for (OT_char_tuple, x, y) in zip(char_struct_vec, xs, ys)
         charvecs = map(
@@ -725,6 +736,7 @@ function construct_OTchars_facets!(
                 charvecs[charnumber];
                 bins = bins,
                 color = plottingchars[charnumber].color,
+                normalization = :pdf,
             )
 
             if meanlines
