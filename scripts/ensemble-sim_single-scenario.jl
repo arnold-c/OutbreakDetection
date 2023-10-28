@@ -101,22 +101,20 @@ save(
 )
 
 #%%
-ensemble_single_scenario_detect_outbreak_plot = detect_outbreak_plot(
+ensemble_single_scenario_incidence_prevalence_plot = incidence_prevalence_plot(
     ensemble_single_scenario_incarr["ensemble_inc_arr"],
     ensemble_single_scenario_sol["ensemble_seir_arr"],
     ensemble_single_scenario_incarr["ensemble_thresholds_vec"],
     ensemble_single_scenario_spec.ensemble_specification.time_parameters;
     colormap = outbreakcols,
-    # xlims = (90, 100),
-    # ylims_inc = (0, 150),
-    # ylims_periodsum = (0, 1000),
+    threshold = 5,
 )
 
 save(
     plotsdir(
-        "ensemble/single-scenario/ensemble-sim_single-scenario_detect-outbreak.png",
+        "ensemble/single-scenario/ensemble_single_scenario_incidence_prevalence.png",
     ),
-    ensemble_single_scenario_detect_outbreak_plot,
+    ensemble_single_scenario_incidence_prevalence_plot,
 )
 
 #%%

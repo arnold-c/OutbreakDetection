@@ -190,9 +190,9 @@ end
 
 outbreakcols = [ColorSchemes.magma[i] for i in (200, 20)]
 
-function detect_outbreak_plot(
+function incidence_prevalence_plot(
     incidencearr, ensemblearr, thresholdsarr, timeparams;
-    colormap = outbreakcols, kwargs...,
+    colormap = outbreakcols, threshold = 5, kwargs...,
 )
     @unpack trange = timeparams
     times = collect(trange) ./ 365
@@ -213,8 +213,27 @@ function detect_outbreak_plot(
 
     linkxaxes!(ax_prev, ax_inc, ax_periodsum)
 
-    lines!(ax_prev, times, ensemblearr[:, 2, 1])
-    lines!(ax_inc, times, incidencearr[:, 1, 1])
+    lines!(
+        ax_prev,
+        times,
+        ensemblearr[:, 2, 1];
+        color = period_sum_arr[:, 2],
+        colormap = colormap,
+    )
+    lines!(
+        ax_inc,
+        times,
+        incidencearr[:, 1, 1];
+        color = period_sum_arr[:, 2],
+        colormap = colormap,
+    )
+    hlines!(
+        ax_inc,
+        threshold;
+        color = :black,
+        linestyle = :dash,
+        linewidth = 2,
+    )
     barplot!(
         ax_periodsum,
         times,
@@ -240,14 +259,11 @@ function detect_outbreak_plot(
         ylims!(ax_inc, kwargs_dict[:ylims_inc])
     end
 
-    axislegend(
-        ax_periodsum,
-        [PolyElement(; color = col) for col in colormap],
-        ["Not Outbreak", "Outbreak"];
-        bgcolor = :white,
-        framecolor = :white,
-        framevisible = true,
-        padding = (10.0f0, 10.0f0, 8.0f0, 8.0f0),
+    Legend(
+        fig[:, 2],
+        [PolyElement(; color = col) for col in outbreakcols],
+        ["Not Outbreak", "Outbreak"],
+        "True\nOutbreak Status",
     )
 
     return fig
