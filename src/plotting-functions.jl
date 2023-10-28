@@ -549,6 +549,16 @@ function ensemble_OTChars_plot(
         normalization = normalization,
     )
 
+    Legend(
+        fig[1, 2],
+        [
+            PolyElement(; color = col) for
+            col in map(chartuple -> chartuple.color, plottingchars)
+        ],
+        [chartuple.label for chartuple in plottingchars];
+        label = legendlabel,
+    )
+
     return fig
 end
 
