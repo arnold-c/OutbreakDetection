@@ -498,7 +498,9 @@ function ensemble_outbreak_distribution_plot(testarr, infecarr)
 end
 
 function ensemble_OTChars_plot(
-    OTChars;
+    OTChars,
+    testspec,
+    detectspec;
     plottingchars = (
         (
             char = :noutbreaks,
@@ -515,9 +517,17 @@ function ensemble_OTChars_plot(
     columnfacetchar_label = "Detection Threshold",
     binwidth = 10.0,
     xlabel = "Number of Outbreaks",
+    ylabel = "Density",
     legendlabel = "# Outbreaks",
+    meanlines = true,
     kwargs...,
 )
+    otchars_vec = Vector{NamedTuple}(undef, 1)
+    otchars_vec[1] = (;
+        OT_chars = OTChars,
+        ind_test_spec = testspec,
+        outbreak_detect_spec = detectspec,
+    )
     kwargs_dict = Dict{Symbol,Any}(kwargs)
 
     @pack! kwargs_dict = columnfacetchar_label,
@@ -525,27 +535,17 @@ function ensemble_OTChars_plot(
     legendlabel
 
     fig = Figure()
-    ax = Axis(fig[1, 1]; xlabel = xlabel)
 
     construct_OTchars_facets!(
         fig,
-        [OTChars],
+        otchars_vec,
         plottingchars,
         [1],
         [1],
         columnfacetchar,
-        kwargs_dict
+        kwargs_dict;
+        meanlines = meanlines,
     )
-
-    # @floop for field in (char1, char2)
-    #     vlines!(
-    #         ax,
-    #         [mean(map(outbreakchar -> getfield(outbreakchar, field), OTChars))];
-    #         color = :black,
-    #         linestyle = :dash,
-    #         linewidth = 4,
-    #     )
-    # end
 
     return fig
 end
@@ -632,6 +632,7 @@ function compare_ensemble_OTchars_plots(
     xlabel = "Characteristic Value",
     ylabel = "Density",
     legendlabel = "Outbreak Chacteristic",
+    meanlines = false,
     kwargs...,
 )
     xs, ys = calculate_comparison_plot_facet_dims(
@@ -654,7 +655,8 @@ function compare_ensemble_OTchars_plots(
         xs,
         ys,
         columnfacetchar,
-        kwargs_dict,
+        kwargs_dict;
+        meanlines = meanlines,
     )
 
     Legend(
@@ -691,7 +693,8 @@ function calculate_comparison_plot_facet_dims(
 end
 
 function construct_OTchars_facets!(
-    fig, char_struct_vec, plottingchars, xs, ys, columnfacetchar, kwargs_dict
+    fig, char_struct_vec, plottingchars, xs, ys, columnfacetchar, kwargs_dict;
+    meanlines = false,
 )
     for (OT_char_tuple, x, y) in zip(char_struct_vec, xs, ys)
         charvecs = map(
@@ -703,10 +706,10 @@ function construct_OTchars_facets!(
 
         @unpack binwidth, xlabel, ylabel, columnfacetchar_label = kwargs_dict
 
-        bins = if !haskey(kwargs_dict, :bins)
-            calculate_bins(charvecs[1], binwidth)
+        if !haskey(kwargs_dict, :bins)
+            bins = calculate_bins(charvecs, binwidth)
         else
-            kwargs_dict[:bins]
+            bins = kwargs_dict[:bins]
         end
 
         gl = fig[x, y] = GridLayout()
@@ -723,6 +726,16 @@ function construct_OTchars_facets!(
                 bins = bins,
                 color = plottingchars[charnumber].color,
             )
+
+            if meanlines
+                vlines!(
+                    ax,
+                    mean(charvecs[charnumber]);
+                    color = :black,
+                    linestyle = :dash,
+                    linewidth = 4,
+                )
+            end
         end
 
         Label(
@@ -735,7 +748,9 @@ function construct_OTchars_facets!(
 end
 
 function calculate_bins(charvec, binwidth)
-    minbin, maxbin = extrema(charvec)
+    minbinvec, maxbinvec = extrema.(charvec)
+    minbin = minimum(minbinvec)
+    maxbin = maximum(maxbinvec)
     minbin -= 3 * binwidth / 2
     maxbin += 3 * binwidth / 3
     if minbin == maxbin
