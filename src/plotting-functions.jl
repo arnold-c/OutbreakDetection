@@ -758,7 +758,7 @@ function construct_OTchars_facets!(
                 )
                 text!(
                     Point(charmean + hjust, 0 + vjust);
-                    text = "Mean ($(plottingchars[charnumber].label)): $(round(charmean, digits = 2))",
+                    text = "Mean ($(plottingchars[charnumber].label)):\n$(round(charmean, digits = 2))",
                 )
             end
         end

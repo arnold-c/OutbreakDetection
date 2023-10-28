@@ -225,19 +225,20 @@ ensemble_single_scenario_sens_spec_dist_plot = ensemble_OTChars_plot(
             char = :daily_sensitivity,
             label = "Sensitivity",
             color = (:red, 0.5),
-            hjust = -0.09,
+            hjust = -0.085,
             vjust = 80,
         ),
         (
             char = :daily_specificity,
             label = "Specificity",
             color = (:blue, 0.5),
-            hjust = -0.09,
+            hjust = -0.085,
             vjust = 80,
         ),
     ),
     bins = -0.005:0.01:1.005,
     xlabel = "Characteristic Value",
+    legendlabel = "Outbreak Characteristic",
     normalization = :pdf,
 )
 
@@ -265,7 +266,7 @@ ensemble_single_scenario_ppv_npv_dist_plot = ensemble_OTChars_plot(
             char = :daily_npv,
             label = "NPV",
             color = (:purple, 0.5),
-            hjust = -0.08,
+            hjust = -0.07,
             vjust = 80,
         ),
     ),
@@ -323,7 +324,7 @@ save(
 )
 
 #%%
-ensemble_single_scenario_detection_delay_plot = ensemble_OTChars_plot(
+ensemble_single_scenario_detection_delay_dist_plot = ensemble_OTChars_plot(
     ensemble_single_scenario_detection["OT_chars"],
     ensemble_single_individual_test_spec,
     ensemble_single_scenario_spec.outbreak_detection_specification;
@@ -332,8 +333,8 @@ ensemble_single_scenario_detection_delay_plot = ensemble_OTChars_plot(
         char = :detectiondelays,
         label = "Detection Delay",
         color = (:red, 0.8),
-        hjust = 2,
-        vjust = -0.0007,
+        hjust = -50,
+        vjust = 0.015,
     ),
     ),
     xlabel = "Detection Delay",
@@ -341,7 +342,7 @@ ensemble_single_scenario_detection_delay_plot = ensemble_OTChars_plot(
 
 save(
     plotsdir(
-        "ensemble/single-scenario/ensemble-sim_single-scenario_detection-delay.png",
+        "ensemble/single-scenario/ensemble-sim_single-scenario_detection-delay-distribution.png",
     ),
-    ensemble_single_scenario_detection_delay_plot,
+    ensemble_single_scenario_detection_delay_dist_plot,
 )
