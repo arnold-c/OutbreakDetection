@@ -4,6 +4,7 @@ using DrWatson
 
 using ProgressMeter
 using FLoops
+using NaNMath: NaNMath
 
 using OutbreakDetection
 
@@ -292,5 +293,51 @@ for i in eachindex(ensemble_chars_vec)
     )
     if perc_alerts_sum != 0.0
         @error "Warning. Sum of perc_alerts_false + perc_alerts_correct != 1.0, for i = $i. perc_alerts_sum = $perc_alerts_sum"
+    end
+end
+
+#%%
+compare_outbreak_alerts_perc_plot = compare_ensemble_OTchars_plots(
+    ensemble_chars_vec,
+    :detection_threshold;
+    columnfacetchar_label = "Detection Threshold",
+    bins = -0.01:0.02:1.01,
+    plottingchars = [
+        (
+            char = :perc_alerts_correct,
+            label = "Percent Alerts\nThat Are Correct",
+            color = (:green, 0.5),
+        ),
+        (
+            char = :perc_alerts_false,
+            label = "Percent Alerts\nThat Are False",
+            color = (:grey20, 0.5)),
+    ],
+)
+
+save(
+    plotsdir(
+        "ensemble/testing-comparison/compare_outbreak_alerts_perc_plot.png"
+    ),
+    compare_outbreak_alerts_perc_plot;
+    resolution = (2200, 1200),
+)
+
+for i in eachindex(ensemble_chars_vec)
+    perc_alerts_sum = sum(
+        ensemble_chars_vec[i].OT_chars.perc_alerts_false .+
+        ensemble_chars_vec[i].OT_chars.perc_alerts_correct .- 1.0,
+    )
+    if perc_alerts_sum != 0.0
+        @error "Warning. Sum of perc_alerts_false + perc_alerts_correct != 1.0, for i = $i. perc_alerts_sum = $perc_alerts_sum,\nTimes no outbreaks detected = $(length(findall(==(0), ensemble_chars_vec[i].OT_chars.ndetectoutbreaks)))"
+        nan_perc_alerts_sum = NaNMath.sum(
+            ensemble_chars_vec[i].OT_chars.perc_alerts_false .+
+            ensemble_chars_vec[i].OT_chars.perc_alerts_correct .- 1.0,
+        )
+        if nan_perc_alerts_sum != 0.0
+            @error "Ignoring NaN values in the percentage of alerts doesn't correct the issue"
+            continue
+        end
+        @info "Ignoring NaN values in the percentage of alerts does correct the issue"
     end
 end
