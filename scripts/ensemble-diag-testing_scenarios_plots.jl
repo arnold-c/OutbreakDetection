@@ -341,3 +341,30 @@ for i in eachindex(ensemble_chars_vec)
         @info "Ignoring NaN values in the percentage of alerts does correct the issue"
     end
 end
+
+#%%
+compare_outbreak_true_outbreak_alerts_perc_plot = compare_ensemble_OTchars_plots(
+    ensemble_chars_vec,
+    :detection_threshold;
+    columnfacetchar_label = "Detection Threshold",
+    bins = -0.01:0.02:1.01,
+    plottingchars = [
+        (
+            char = :perc_alerts_correct,
+            label = "Percent Alerts\nThat Are Correct",
+            color = (:green, 0.5),
+        ),
+        (
+            char = :perc_true_outbreaks_detected,
+            label = "Percent True Outbreaks\nThat Are Detected",
+            color = (:navy, 0.5)),
+    ],
+)
+
+save(
+    plotsdir(
+        "ensemble/testing-comparison/compare_outbreak_true_outbreak_alerts_perc_plot.png",
+    ),
+    compare_outbreak_true_outbreak_alerts_perc_plot;
+    resolution = (2200, 1200),
+)
