@@ -80,8 +80,8 @@ ensemble_single_scenario_detection2["testarr"]
 sum(ensemble_single_scenario_detection["testarr"][:, 7, 1])
 sum(ensemble_single_scenario_detection2["testarr"][:, 7, 1])
 
-ensemble_single_scenario_detection["OT_chars"].sensitivity ==
-ensemble_single_scenario_detection2["OT_chars"].sensitivity
+ensemble_single_scenario_detection["OT_chars"].daily_sensitivity ==
+ensemble_single_scenario_detection2["OT_chars"].daily_sensitivity
 
 #%%
 ensemble_single_scenario_quantiles_plot = create_sir_quantiles_plot(
@@ -175,8 +175,20 @@ save(
 #%%
 ensemble_single_scenario_outbreak_detect_plot = ensemble_OTChars_plot(
     ensemble_single_scenario_detection["OT_chars"],
-    :noutbreaks,
-    :ndetectoutbreaks,
+    ensemble_single_individual_test_spec,
+    ensemble_single_scenario_spec.outbreak_detection_specification;
+    plottingchars = (
+        (
+            char = :noutbreaks,
+            label = "Number of Outbreaks",
+            color = (:blue, 0.5),
+        ),
+        (
+            char = :ndetectoutbreaks,
+            label = "Number of Detected Outbreaks",
+            color = (:red, 0.5),
+        ),
+    ),
 )
 
 save(
@@ -202,15 +214,23 @@ save(
 #%%
 ensemble_single_scenario_sens_spec_dist_plot = ensemble_OTChars_plot(
     ensemble_single_scenario_detection["OT_chars"],
-    :sensitivity,
-    :specificity;
-    bins = 0.0:0.01:1.01,
-    char1_label = "Sensitivity",
-    char2_label = "Specificity",
-    char1_color = :red,
-    char2_color = :blue,
+    ensemble_single_individual_test_spec,
+    ensemble_single_scenario_spec.outbreak_detection_specification;
+    plottingchars = (
+        (
+            char = :daily_sensitivity,
+            label = "Sensitivity",
+            color = (:red, 0.5),
+        ),
+        (
+            char = :daily_specificity,
+            label = "Specificity",
+            color = (:blue, 0.5),
+        ),
+    ),
+    bins = -0.005:0.01:1.005,
     xlabel = "Characteristic Value",
-    legendlabel = "Outbreak Characteristic",
+    normalization = :pdf,
 )
 
 save(
@@ -223,15 +243,23 @@ save(
 #%%
 ensemble_single_scenario_ppv_npv_dist_plot = ensemble_OTChars_plot(
     ensemble_single_scenario_detection["OT_chars"],
-    :ppv,
-    :npv;
-    bins = 0.0:0.01:1.01,
-    char1_label = "PPV",
-    char2_label = "NPV",
-    char1_color = :green,
-    char2_color = :purple,
+    ensemble_single_individual_test_spec,
+    ensemble_single_scenario_spec.outbreak_detection_specification;
+    plottingchars = (
+        (
+            char = :daily_ppv,
+            label = "PPV",
+            color = (:green, 0.5),
+        ),
+        (
+            char = :daily_npv,
+            label = "NPV",
+            color = (:purple, 0.5),
+        ),
+    ),
+    bins = -0.005:0.01:1.005,
     xlabel = "Characteristic Value",
-    legendlabel = "Outbreak Characteristic",
+    normalization = :pdf,
 )
 
 save(
@@ -283,44 +311,16 @@ save(
 )
 
 #%%
-fig = Figure()
-sens_spec_ax = Axis(fig[1, 1])
-delay_ax = Axis(fig[1, 2])
-hist!(
-    sens_spec_ax,
-    ensemble_single_scenario_detection["OT_chars"].sensitivity;
-    bins = 0.0:0.01:1.1,
-    color = :navy,
+ensemble_OTChars_plot(
+    ensemble_single_scenario_detection["OT_chars"],
+    ensemble_single_individual_test_spec,
+    ensemble_single_scenario_spec.outbreak_detection_specification;
+    plottingchars = (
+    (
+        char = :detectiondelays,
+        label = "Detection Delay",
+        color = (:red, 0.8),
+    ),
+    ),
+    xlabel = "Detection Delay",
 )
-hist!(
-    sens_spec_ax,
-    ensemble_single_scenario_detection["OT_chars"].specificity;
-    bins = 0.0:0.01:1.1,
-    color = :orange,
-)
-hist!(
-    delay_ax,
-    reduce(
-        vcat, ensemble_single_scenario_detection["OT_chars"].detectiondelays
-    );
-    bins = -11.0:1.0:150.0,
-    color = :red,
-)
-fig
-
-#%%
-incidence_testing_plot(
-    ensemble_single_scenario_incarr["ensemble_inc_arr"],
-    ensemble_single_scenario_noise_array,
-    ensemble_single_scenario_detection["testarr"],
-    ensemble_single_scenario_spec.ensemble_specification.time_parameters,
-    ensemble_single_scenario_spec.outbreak_detection_specification.detection_threshold;
-    sim = 1,
-)
-
-#%%
-test_matchedbounds = ensemble_single_scenario_detection["OT_chars"].matchedoutbreakbounds[1]
-
-test_detectbounds = ensemble_single_scenario_detection["OT_chars"].detectoutbreakbounds[1]
-
-test_detectbounds[(test_detectbounds[:, 1] .>= 2550), :]
