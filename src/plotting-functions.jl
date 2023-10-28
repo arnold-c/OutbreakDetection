@@ -748,7 +748,8 @@ function construct_OTchars_facets!(
 end
 
 function calculate_bins(charvec, binwidth)
-    minbinvec, maxbinvec = extrema.(charvec)
+    minbinvec = minimum.(charvec)
+    maxbinvec = maximum.(charvec)
     minbin = minimum(minbinvec)
     maxbin = maximum(maxbinvec)
     minbin -= 3 * binwidth / 2
