@@ -268,12 +268,12 @@ compare_outbreak_true_outbreak_perc_plot = compare_ensemble_OTchars_plots(
     plottingchars = [
         (
             char = :perc_true_outbreaks_detected,
-            label = "Percent True Outbreaks Detected",
+            label = "Percent Outbreaks Detected",
             color = (:navy, 0.5),
         ),
         (
             char = :perc_true_outbreaks_missed,
-            label = "Percent True Outbreaks Missed",
+            label = "Percent Outbreaks Missed",
             color = (:orange, 0.5)),
     ],
 )
@@ -356,7 +356,7 @@ compare_outbreak_true_outbreak_alerts_perc_plot = compare_ensemble_OTchars_plots
         ),
         (
             char = :perc_true_outbreaks_detected,
-            label = "Percent True Outbreaks\nThat Are Detected",
+            label = "Percent Outbreaks\nThat Are Detected",
             color = (:navy, 0.5)),
     ],
 )
