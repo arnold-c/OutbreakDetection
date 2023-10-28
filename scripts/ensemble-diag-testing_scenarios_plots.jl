@@ -257,3 +257,40 @@ save(
     compare_outbreak_missed_plot;
     resolution = (2200, 1200),
 )
+
+#%%
+compare_outbreak_true_outbreak_perc_plot = compare_ensemble_OTchars_plots(
+    ensemble_chars_vec,
+    :detection_threshold;
+    columnfacetchar_label = "Detection Threshold",
+    binwidth = 0.02,
+    plottingchars = [
+        (
+            char = :perc_true_outbreaks_detected,
+            label = "Percent True Outbreaks Detected",
+            color = (:navy, 0.5),
+        ),
+        (
+            char = :perc_true_outbreaks_missed,
+            label = "Percent True Outbreaks Missed",
+            color = (:orange, 0.5)),
+    ],
+)
+
+save(
+    plotsdir(
+        "ensemble/testing-comparison/compare_outbreak_true_outbreak_perc_plot.png",
+    ),
+    compare_outbreak_true_outbreak_perc_plot;
+    resolution = (2200, 1200),
+)
+
+for i in eachindex(ensemble_chars_vec)
+    perc_alerts_sum = sum(
+        ensemble_chars_vec[i].OT_chars.perc_true_outbreaks_detected .+
+        ensemble_chars_vec[i].OT_chars.perc_true_outbreaks_missed .- 1.0,
+    )
+    if perc_alerts_sum != 0.0
+        @error "Warning. Sum of perc_alerts_false + perc_alerts_correct != 1.0, for i = $i. perc_alerts_sum = $perc_alerts_sum"
+    end
+end
