@@ -182,11 +182,15 @@ ensemble_single_scenario_outbreak_detect_plot = ensemble_OTChars_plot(
             char = :noutbreaks,
             label = "Number of Outbreaks",
             color = (:blue, 0.5),
+            hjust = 15,
+            vjust = 0.055,
         ),
         (
             char = :ndetectoutbreaks,
             label = "Number of Detected Outbreaks",
             color = (:red, 0.5),
+            hjust = 15,
+            vjust = 0.055,
         ),
     ),
 )
@@ -221,11 +225,15 @@ ensemble_single_scenario_sens_spec_dist_plot = ensemble_OTChars_plot(
             char = :daily_sensitivity,
             label = "Sensitivity",
             color = (:red, 0.5),
+            hjust = -0.09,
+            vjust = 80,
         ),
         (
             char = :daily_specificity,
             label = "Specificity",
             color = (:blue, 0.5),
+            hjust = -0.09,
+            vjust = 80,
         ),
     ),
     bins = -0.005:0.01:1.005,
@@ -250,11 +258,15 @@ ensemble_single_scenario_ppv_npv_dist_plot = ensemble_OTChars_plot(
             char = :daily_ppv,
             label = "PPV",
             color = (:green, 0.5),
+            hjust = 0.01,
+            vjust = 80,
         ),
         (
             char = :daily_npv,
             label = "NPV",
             color = (:purple, 0.5),
+            hjust = -0.08,
+            vjust = 80,
         ),
     ),
     bins = -0.005:0.01:1.005,
@@ -311,7 +323,7 @@ save(
 )
 
 #%%
-ensemble_OTChars_plot(
+ensemble_single_scenario_detection_delay_plot = ensemble_OTChars_plot(
     ensemble_single_scenario_detection["OT_chars"],
     ensemble_single_individual_test_spec,
     ensemble_single_scenario_spec.outbreak_detection_specification;
@@ -320,7 +332,16 @@ ensemble_OTChars_plot(
         char = :detectiondelays,
         label = "Detection Delay",
         color = (:red, 0.8),
+        hjust = 2,
+        vjust = -0.0007,
     ),
     ),
     xlabel = "Detection Delay",
+)
+
+save(
+    plotsdir(
+        "ensemble/single-scenario/ensemble-sim_single-scenario_detection-delay.png",
+    ),
+    ensemble_single_scenario_detection_delay_plot,
 )

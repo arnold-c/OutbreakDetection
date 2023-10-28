@@ -740,12 +740,25 @@ function construct_OTchars_facets!(
             )
 
             if meanlines
+                charmean = mean(charvecs[charnumber])
+                hjust = 0
+                vjust = 0
+                if haskey(plottingchars[charnumber], :hjust)
+                    hjust = plottingchars[charnumber].hjust
+                end
+                if haskey(plottingchars[charnumber], :vjust)
+                    vjust = plottingchars[charnumber].vjust
+                end
                 vlines!(
                     ax,
-                    mean(charvecs[charnumber]);
+                    charmean;
                     color = :black,
                     linestyle = :dash,
                     linewidth = 4,
+                )
+                text!(
+                    Point(charmean + hjust, 0 + vjust);
+                    text = "Mean ($(plottingchars[charnumber].label)): $(round(charmean, digits = 2))",
                 )
             end
         end
