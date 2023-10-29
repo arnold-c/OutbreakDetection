@@ -176,7 +176,6 @@ compare_outbreak_detection_delays_plot = compare_ensemble_OTchars_plots(
     plottingchars = [
     (
         char = :detectiondelays,
-        label = "Detection Delay",
         color = ("#AE560A", 1.0),
     )
     ],
@@ -203,7 +202,6 @@ compare_outbreak_alert_per_outbreak_plot = compare_ensemble_OTchars_plots(
     plottingchars = [
     (
         char = :n_alerts_per_outbreak,
-        label = "Alerts per Outbreak",
         color = ("#86B1A3", 1.0),
     )
     ],
@@ -229,7 +227,6 @@ compare_outbreak_false_alerts_plot = compare_ensemble_OTchars_plots(
     plottingchars = [
     (
         char = :n_false_alerts,
-        label = "False Alerts",
         color = ("#D06778", 1.0),
     )
     ],
@@ -255,7 +252,6 @@ compare_outbreak_number_alerts_plot = compare_ensemble_OTchars_plots(
     plottingchars = [
     (
         char = :noutbreaks,
-        label = "# Alerts",
         color = ("#00857E", 1.0),
     )
     ],
@@ -281,7 +277,6 @@ compare_outbreak_numbers_plot = compare_ensemble_OTchars_plots(
     plottingchars = [
     (
         char = :noutbreaks,
-        label = "# Outbreaks",
         color = ("#F4A157", 1.0),
     )
     ],
@@ -307,7 +302,6 @@ compare_outbreak_missed_plot = compare_ensemble_OTchars_plots(
     plottingchars = [
     (
         char = :n_missed_outbreaks,
-        label = "Missed Outbreaks",
         color = ("#5E5C6C", 1.0),
     )
     ],
