@@ -631,14 +631,8 @@ end
 
 function compare_ensemble_OTchars_plots(
     char_struct_vec,
-    columnfacetchar::Symbol;
-    plottingchars = [
-    (
-        char = :detectiondelays,
-        label = "Detection Delay",
-        color = (:blue, 0.5),
-    )
-    ],
+    columnfacetchar::Symbol,
+    plottingchars;
     columnfacetchar_label = "Detection Threshold",
     binwidth = 1.0,
     xlabel = "Characteristic Value",
