@@ -246,6 +246,58 @@ save(
 )
 
 #%%
+compare_outbreak_number_alerts_plot = compare_ensemble_OTchars_plots(
+    ensemble_chars_vec,
+    :detection_threshold;
+    xlabel = "# Alerts",
+    columnfacetchar_label = "Detection Threshold",
+    binwidth = 1.0,
+    plottingchars = [
+    (
+        char = :noutbreaks,
+        label = "# Alerts",
+        color = ("#00857E", 1.0),
+    )
+    ],
+    meanlines = true,
+    legend = false,
+)
+
+save(
+    plotsdir(
+        "ensemble/testing-comparison/compare_outbreak_number_alerts_plot.png"
+    ),
+    compare_outbreak_number_alerts_plot;
+    resolution = (2200, 1200),
+)
+
+#%%
+compare_outbreak_numbers_plot = compare_ensemble_OTchars_plots(
+    ensemble_chars_vec,
+    :detection_threshold;
+    xlabel = "# Outbreaks",
+    columnfacetchar_label = "Detection Threshold",
+    binwidth = 1.0,
+    plottingchars = [
+    (
+        char = :noutbreaks,
+        label = "# Outbreaks",
+        color = ("#F4A157", 1.0),
+    )
+    ],
+    meanlines = true,
+    legend = false,
+)
+
+save(
+    plotsdir(
+        "ensemble/testing-comparison/compare_outbreak_numbers_plot.png"
+    ),
+    compare_outbreak_numbers_plot;
+    resolution = (2200, 1200),
+)
+
+#%%
 compare_outbreak_missed_plot = compare_ensemble_OTchars_plots(
     ensemble_chars_vec,
     :detection_threshold;
