@@ -643,8 +643,10 @@ function compare_ensemble_OTchars_plots(
     binwidth = 1.0,
     xlabel = "Characteristic Value",
     ylabel = "Density",
+    legend = true,
     legendlabel = "Outbreak Chacteristic",
     meanlines = false,
+    meanlabel = false,
     normalization = :none,
     kwargs...,
 )
@@ -670,18 +672,21 @@ function compare_ensemble_OTchars_plots(
         columnfacetchar,
         kwargs_dict;
         meanlines = meanlines,
+        meanlabel = meanlabel,
         normalization = normalization,
     )
 
-    Legend(
-        fig[:, end + 1],
-        [
-            PolyElement(; color = col) for
-            col in map(chartuple -> chartuple.color, plottingchars)
-        ],
-        map(chartuple -> chartuple.label, plottingchars);
-        label = legendlabel,
-    )
+    if legend
+        Legend(
+            fig[:, end + 1],
+            [
+                PolyElement(; color = col) for
+                col in map(chartuple -> chartuple.color, plottingchars)
+            ],
+            map(chartuple -> chartuple.label, plottingchars);
+            label = legendlabel,
+        )
+    end
     return fig
 end
 
@@ -715,6 +720,7 @@ function construct_OTchars_facets!(
     columnfacetchar,
     kwargs_dict;
     meanlines = false,
+    meanlabel = false,
     normalization = :none,
 )
     for (OT_char_tuple, x, y) in zip(char_struct_vec, xs, ys)
@@ -749,8 +755,19 @@ function construct_OTchars_facets!(
                 normalization = :pdf,
             )
 
-            if meanlines
+            if meanlines || meanlabel
                 charmean = mean(charvecs[charnumber])
+            end
+            if meanlines
+                vlines!(
+                    ax,
+                    charmean;
+                    color = :black,
+                    linestyle = :dash,
+                    linewidth = 4,
+                )
+            end
+            if meanlabel
                 hjust = 0
                 vjust = 0
                 if haskey(plottingchars[charnumber], :hjust)
@@ -759,13 +776,6 @@ function construct_OTchars_facets!(
                 if haskey(plottingchars[charnumber], :vjust)
                     vjust = plottingchars[charnumber].vjust
                 end
-                vlines!(
-                    ax,
-                    charmean;
-                    color = :black,
-                    linestyle = :dash,
-                    linewidth = 4,
-                )
                 text!(
                     Point(charmean + hjust, 0 + vjust);
                     text = "Mean ($(plottingchars[charnumber].label)):\n$(round(charmean, digits = 2))",
