@@ -41,8 +41,7 @@ end
                     outbreakbounds, detectionbounds
                 ),
                 (
-                    [-5, -10, 10, -5],
-                    [
+                    matched_bounds = [
                         10 60 5 15
                         10 60 17 40
                         10 60 50 80
@@ -51,9 +50,22 @@ end
                         380 410 390 420
                         500 540 495 550
                     ],
-                    2,
-                    1,
-                    [0, 3, 2, 0, 1, 1],
+                    noutbreaks = 6,
+                    ndetectoutbreaks = 8,
+                    n_true_outbreaks_detected = 4,
+                    n_missed_outbreaks = 2,
+                    n_correct_alerts = 7,
+                    n_false_alerts = 1,
+                    alertsperoutbreak = [0, 3, 2, 0, 1, 1],
+                    perc_true_outbreaks_detected = 4 / 6,
+                    perc_true_outbreaks_missed = 2 / 6,
+                    falsealert_trueoutbreak_prop = 1 / 6,
+                    correctalert_trueoutbreak_prop = 7 / 6,
+                    trueoutbreak_alerts_prop = 6 / 8,
+                    outbreaksmissed_alerts_prop = 2 / 8,
+                    perc_alerts_false = 1 / 8,
+                    perc_alerts_correct = 7 / 8,
+                    detectiondelays = [-5, -10, 10, -5],
                 ),
             )
         end
