@@ -515,26 +515,17 @@ end
 function ensemble_OTChars_plot(
     OTChars,
     testspec,
-    detectspec;
-    plottingchars = (
-        (
-            char = :noutbreaks,
-            label = "Number of Outbreaks",
-            color = (:blue, 0.5),
-        ),
-        (
-            char = :ndetectoutbreaks,
-            label = "Number of Detected Outbreaks",
-            color = (:red, 0.5),
-        ),
-    ),
+    detectspec,
+    plottingchars;
     columnfacetchar = :detection_threshold,
     columnfacetchar_label = "Detection Threshold",
-    binwidth = 10.0,
-    xlabel = "Number of Outbreaks",
+    xlabel = "Alert Characteristic Value",
     ylabel = "Density",
+    binwidth = 10.0,
+    legend = true,
     legendlabel = "# Outbreaks",
     meanlines = true,
+    meanlabels = true,
     normalization = :none,
     kwargs...,
 )
@@ -561,18 +552,21 @@ function ensemble_OTChars_plot(
         columnfacetchar,
         kwargs_dict;
         meanlines = meanlines,
+        meanlabels = meanlabels,
         normalization = normalization,
     )
 
-    Legend(
-        fig[1, 2],
-        [
-            PolyElement(; color = col) for
-            col in map(chartuple -> chartuple.color, plottingchars)
-        ],
-        [chartuple.label for chartuple in plottingchars];
-        label = legendlabel,
-    )
+    if legend
+        Legend(
+            fig[1, 2],
+            [
+                PolyElement(; color = col) for
+                col in map(chartuple -> chartuple.color, plottingchars)
+            ],
+            [chartuple.label for chartuple in plottingchars];
+            label = legendlabel,
+        )
+    end
 
     return fig
 end
