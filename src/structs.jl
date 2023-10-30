@@ -199,11 +199,14 @@ struct OutbreakThresholdChars{
     matchedoutbreakbounds::T4
     noutbreaks::T2
     ndetectoutbreaks::T2
+    detected_outbreak_size::T5
+    missed_outbreak_size::T5
     n_true_outbreaks_detected::T2
     n_missed_outbreaks::T2
     n_correct_alerts::T2
     n_false_alerts::T2
     n_alerts_per_outbreak::T5
+    period_sum_per_outbreak::T5
     perc_true_outbreaks_detected::T3
     perc_true_outbreaks_missed::T3
     falsealert_trueoutbreak_prop::T3
