@@ -50,17 +50,16 @@ end
                         380 410 390 420 900
                         500 540 495 550 1000
                     ],
-                    unmatched_bounds = [
-                        2 4 500
-                        300 340 800
-                    ],
                     noutbreaks = 6,
                     ndetectoutbreaks = 8,
+                    detected_outbreak_size = [600, 700, 900, 1000],
+                    missed_outbreak_size = [500, 800],
                     n_true_outbreaks_detected = 4,
                     n_missed_outbreaks = 2,
                     n_correct_alerts = 7,
                     n_false_alerts = 1,
                     alertsperoutbreak = [0, 3, 2, 0, 1, 1],
+                    periodsumvec = [500, 600, 700, 800, 900, 1000],
                     perc_true_outbreaks_detected = 4 / 6,
                     perc_true_outbreaks_missed = 2 / 6,
                     falsealert_trueoutbreak_prop = 1 / 6,

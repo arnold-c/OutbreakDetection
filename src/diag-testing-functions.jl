@@ -277,7 +277,7 @@ end
 function calculate_outbreak_detection_characteristics(
     outbreakbounds, detectionbounds
 )
-    filtered_matched_bounds, unmatched_bounds, alerts_per_outbreak_vec = match_outbreak_detection_bounds(
+    filtered_matched_bounds, periodssum_vec, alerts_per_outbreak_vec = match_outbreak_detection_bounds(
         outbreakbounds, detectionbounds
     )
 
@@ -285,6 +285,9 @@ function calculate_outbreak_detection_characteristics(
 
     noutbreaks = size(outbreakbounds, 1)
     ndetectoutbreaks = size(detectionbounds, 1)
+
+    detected_outbreak_size = periodssum_vec[(alerts_per_outbreak_vec .> 0)]
+    missed_outbreak_size = periodssum_vec[(alerts_per_outbreak_vec .== 0)]
 
     n_true_outbreaks_detected = length(
         Set(@view(filtered_matched_bounds[:, 1]))
@@ -308,14 +311,16 @@ function calculate_outbreak_detection_characteristics(
 
     return (
         matched_bounds = filtered_matched_bounds,
-        unmatched_bounds = unmatched_bounds,
         noutbreaks = noutbreaks,
         ndetectoutbreaks = ndetectoutbreaks,
+        detected_outbreak_size = detected_outbreak_size,
+        missed_outbreak_size = missed_outbreak_size,
         n_true_outbreaks_detected = n_true_outbreaks_detected,
         n_missed_outbreaks = n_missed_outbreaks,
         n_correct_alerts = n_correct_alerts,
         n_false_alerts = n_false_alerts,
         alertsperoutbreak = alerts_per_outbreak_vec,
+        periodsumvec = periodssum_vec,
         perc_true_outbreaks_detected = perc_true_outbreaks_detected,
         perc_true_outbreaks_missed = perc_true_outbreaks_missed,
         falsealert_trueoutbreak_prop = falsealert_trueoutbreak_prop,
@@ -333,6 +338,7 @@ function match_outbreak_detection_bounds(outbreakbounds, detectionbounds)
         Int64, size(outbreakbounds, 1) + size(detectionbounds, 1), 5
     )
     alerts_per_outbreak_vec = zeros(Int64, size(outbreakbounds, 1))
+    periodssum_vec = similar(alerts_per_outbreak_vec)
 
     outbreak_number = 1
     detection_rownumber = 1
@@ -340,6 +346,7 @@ function match_outbreak_detection_bounds(outbreakbounds, detectionbounds)
         pairs(eachrow(outbreakbounds))
         for (detectionlower, detectionupper) in
             eachrow(detectionbounds[detection_rownumber:end, :])
+            periodssum_vec[outbreak_number] = periodsum
             if detectionlower > outbreakupper
                 break
             end
@@ -366,26 +373,10 @@ function match_outbreak_detection_bounds(outbreakbounds, detectionbounds)
         outbreak_number += 1
     end
 
-    unmatched_bounds = zeros(
-        Int64, length(alerts_per_outbreak_vec[(alerts_per_outbreak_vec .== 0)]),
-        3,
-    )
-
-    unmatched_index = 1
-    for (outbreak_number, (outbreaklower, outbreakupper, periodsum)) in
-        pairs(eachrow(outbreakbounds))
-        if alerts_per_outbreak_vec[outbreak_number] != 0
-            continue
-        end
-        unmatched_bounds[unmatched_index, :] .= outbreaklower,
-        outbreakupper, periodsum
-        unmatched_index += 1
-    end
-
     filtered_matched_bounds = all_matched_bounds[
         (all_matched_bounds[:, 2] .> 0), :,
     ]
-    return filtered_matched_bounds, unmatched_bounds, alerts_per_outbreak_vec
+    return filtered_matched_bounds, periodssum_vec, alerts_per_outbreak_vec
 end
 
 function calculate_delay_vec(filtered_matched_bounds)
