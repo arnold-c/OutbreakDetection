@@ -338,7 +338,7 @@ function match_outbreak_detection_bounds(outbreakbounds, detectionbounds)
         Int64, size(outbreakbounds, 1) + size(detectionbounds, 1), 5
     )
     alerts_per_outbreak_vec = zeros(Int64, size(outbreakbounds, 1))
-    periodssum_vec = similar(alerts_per_outbreak_vec)
+    periodssum_vec = zeros(Int64, size(outbreakbounds, 1))
 
     outbreak_number = 1
     detection_rownumber = 1
