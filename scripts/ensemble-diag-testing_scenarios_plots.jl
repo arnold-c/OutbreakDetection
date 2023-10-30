@@ -8,7 +8,7 @@ using NaNMath: NaNMath
 
 using OutbreakDetection
 
-include(srcdir("makie-plotting-setup.jl"))
+includet(srcdir("makie-plotting-setup.jl"))
 
 #%%
 sensitivity_vec = collect(0.8:0.2:1.0)
@@ -123,12 +123,12 @@ compare_outbreak_sens_spec_plot = compare_ensemble_OTchars_plots(
         (
             char = :daily_sensitivity,
             label = "Sensitivity",
-            color = ("#2A3965", 0.7),
+            color = (DAILY_SENSITIVITY_COLOR, 0.7),
         ),
         (
             char = :daily_specificity,
             label = "Specificity",
-            color = ("#C31D60", 0.7),
+            color = (DAILY_SPECIFICITY_COLOR, 0.7),
         ),
     ];
     columnfacetchar_label = "Detection Threshold",
@@ -149,12 +149,12 @@ compare_outbreak_ppv_npv_plot = compare_ensemble_OTchars_plots(
         (
             char = :daily_ppv,
             label = "PPV",
-            color = ("#22D37D", 0.7),
+            color = (DAILY_PPV_COLOR, 0.7),
         ),
         (
             char = :daily_npv,
             label = "NPV",
-            color = ("#6f366bff", 0.7),
+            color = (DAILY_NPV_COLOR, 0.7),
         ),
     ];
     columnfacetchar_label = "Detection Threshold",
@@ -174,7 +174,7 @@ compare_outbreak_detection_delays_plot = compare_ensemble_OTchars_plots(
     [
     (
         char = :detectiondelays,
-        color = ("#AE560A", 1.0),
+        color = (DETECTION_DELAY_COLOR, 1.0),
     )
     ];
     xlabel = "Detection Delay (days)",
@@ -199,7 +199,7 @@ compare_outbreak_alert_per_outbreak_plot = compare_ensemble_OTchars_plots(
     [
     (
         char = :n_alerts_per_outbreak,
-        color = ("#86B1A3", 1.0),
+        color = (N_ALERTS_PER_OUTBREAK_COLOR, 1.0),
     )
     ];
     xlabel = "Alerts per Outbreak",
@@ -224,7 +224,7 @@ compare_outbreak_false_alerts_plot = compare_ensemble_OTchars_plots(
     [
     (
         char = :n_false_alerts,
-        color = ("#D06778", 1.0),
+        color = (N_FALSE_ALERTS_COLOR, 1.0),
     )
     ];
     xlabel = "# False Alerts",
@@ -248,13 +248,13 @@ compare_outbreak_number_alerts_plot = compare_ensemble_OTchars_plots(
     :detection_threshold,
     [
     (
-        char = :noutbreaks,
-        color = ("#00857E", 1.0),
+        char = :ndetectoutbreaks,
+        color = (N_ALERTS_COLOR, 1.0),
     )
     ];
     xlabel = "# Alerts",
     columnfacetchar_label = "Detection Threshold",
-    binwidth = 1.0,
+    binwidth = 10.0,
     meanlines = true,
     legend = false,
 )
@@ -274,7 +274,7 @@ compare_outbreak_numbers_plot = compare_ensemble_OTchars_plots(
     [
     (
         char = :noutbreaks,
-        color = ("#F4A157", 1.0),
+        color = (N_OUTBREAKS_COLOR, 1.0),
     )
     ];
     xlabel = "# Outbreaks",
@@ -299,7 +299,7 @@ compare_outbreak_missed_plot = compare_ensemble_OTchars_plots(
     [
     (
         char = :n_missed_outbreaks,
-        color = ("#5E5C6C", 1.0),
+        color = (N_MISSED_OUTBREAKS_COLOR, 1.0),
     )
     ];
     xlabel = "# Missed Outbreaks",
@@ -325,12 +325,12 @@ compare_outbreak_true_outbreak_perc_plot = compare_ensemble_OTchars_plots(
         (
             char = :perc_true_outbreaks_detected,
             label = "Percent Outbreaks Detected",
-            color = ("#F0780F", 0.7),
+            color = (PERC_OUTBREAKS_DETECTED_COLOR, 0.7),
         ),
         (
             char = :perc_true_outbreaks_missed,
             label = "Percent Outbreaks Missed",
-            color = ("#3A3842", 0.7)),
+            color = (PERC_OUTBREAKS_MISSED_COLOR, 0.7)),
     ];
     columnfacetchar_label = "Detection Threshold",
     binwidth = 0.02,
@@ -362,12 +362,12 @@ compare_outbreak_alerts_perc_plot = compare_ensemble_OTchars_plots(
         (
             char = :perc_alerts_correct,
             label = "Percent Alerts\nThat Are Correct",
-            color = ("#004643", 0.7),
+            color = (PERC_ALERTS_CORRECT_COLOR, 0.7),
         ),
         (
             char = :perc_alerts_false,
             label = "Percent Alerts\nThat Are False",
-            color = ("#852938", 0.7)),
+            color = (PERC_ALERTS_FALSE_COLOR, 0.7)),
     ];
     columnfacetchar_label = "Detection Threshold",
     bins = -0.01:0.02:1.01,
@@ -408,12 +408,12 @@ compare_outbreak_true_outbreak_alerts_perc_plot = compare_ensemble_OTchars_plots
         (
             char = :perc_alerts_correct,
             label = "Percent Alerts\nThat Are Correct",
-            color = ("#004643", 0.7),
+            color = (PERC_ALERTS_CORRECT_COLOR, 0.7),
         ),
         (
             char = :perc_true_outbreaks_detected,
             label = "Percent Outbreaks\nThat Are Detected",
-            color = ("#F0780F", 0.7)),
+            color = (PERC_OUTBREAKS_DETECTED_COLOR, 0.7)),
     ];
     columnfacetchar_label = "Detection Threshold",
     bins = -0.01:0.02:1.01,

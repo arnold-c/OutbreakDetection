@@ -106,7 +106,6 @@ ensemble_single_scenario_incidence_prevalence_plot = incidence_prevalence_plot(
     ensemble_single_scenario_sol["ensemble_seir_arr"],
     ensemble_single_scenario_incarr["ensemble_thresholds_vec"],
     ensemble_single_scenario_spec.ensemble_specification.time_parameters;
-    colormap = outbreakcols,
     threshold = 5,
 )
 
@@ -176,20 +175,20 @@ save(
 ensemble_single_scenario_outbreak_detect_plot = ensemble_OTChars_plot(
     ensemble_single_scenario_detection["OT_chars"],
     ensemble_single_individual_test_spec,
-    ensemble_single_scenario_spec.outbreak_detection_specification;
-    plottingchars = (
+    ensemble_single_scenario_spec.outbreak_detection_specification,
+    (
         (
             char = :noutbreaks,
             label = "Number of Outbreaks",
-            color = (:blue, 0.5),
-            hjust = 15,
+            color = (N_OUTBREAKS_COLOR, 0.5),
+            hjust = 11,
             vjust = 0.055,
         ),
         (
             char = :ndetectoutbreaks,
-            label = "Number of Detected Outbreaks",
-            color = (:red, 0.5),
-            hjust = 15,
+            label = "Number of Alerts",
+            color = (N_ALERTS_COLOR, 0.5),
+            hjust = 2.5,
             vjust = 0.055,
         ),
     ),
@@ -219,27 +218,29 @@ save(
 ensemble_single_scenario_sens_spec_dist_plot = ensemble_OTChars_plot(
     ensemble_single_scenario_detection["OT_chars"],
     ensemble_single_individual_test_spec,
-    ensemble_single_scenario_spec.outbreak_detection_specification;
-    plottingchars = (
+    ensemble_single_scenario_spec.outbreak_detection_specification,
+    (
         (
             char = :daily_sensitivity,
             label = "Sensitivity",
-            color = (:red, 0.5),
+            color = (DAILY_SENSITIVITY_COLOR, 0.5),
             hjust = -0.085,
             vjust = 80,
         ),
         (
             char = :daily_specificity,
             label = "Specificity",
-            color = (:blue, 0.5),
+            color = (DAILY_SPECIFICITY_COLOR, 0.5),
             hjust = -0.085,
             vjust = 80,
         ),
-    ),
+    );
     bins = -0.005:0.01:1.005,
-    xlabel = "Characteristic Value",
     legendlabel = "Outbreak Characteristic",
     normalization = :pdf,
+    meanlines = true,
+    meanlabels = true,
+    meanannotations = true,
 )
 
 save(
@@ -253,25 +254,24 @@ save(
 ensemble_single_scenario_ppv_npv_dist_plot = ensemble_OTChars_plot(
     ensemble_single_scenario_detection["OT_chars"],
     ensemble_single_individual_test_spec,
-    ensemble_single_scenario_spec.outbreak_detection_specification;
-    plottingchars = (
+    ensemble_single_scenario_spec.outbreak_detection_specification,
+    (
         (
             char = :daily_ppv,
             label = "PPV",
-            color = (:green, 0.5),
+            color = (DAILY_PPV_COLOR, 0.5),
             hjust = 0.01,
             vjust = 80,
         ),
         (
             char = :daily_npv,
             label = "NPV",
-            color = (:purple, 0.5),
+            color = (DAILY_NPV_COLOR, 0.5),
             hjust = -0.07,
             vjust = 80,
         ),
-    ),
+    );
     bins = -0.005:0.01:1.005,
-    xlabel = "Characteristic Value",
     normalization = :pdf,
 )
 
@@ -327,17 +327,19 @@ save(
 ensemble_single_scenario_detection_delay_dist_plot = ensemble_OTChars_plot(
     ensemble_single_scenario_detection["OT_chars"],
     ensemble_single_individual_test_spec,
-    ensemble_single_scenario_spec.outbreak_detection_specification;
-    plottingchars = (
+    ensemble_single_scenario_spec.outbreak_detection_specification,
+    (
     (
         char = :detectiondelays,
         label = "Detection Delay",
-        color = (:red, 0.8),
-        hjust = -50,
-        vjust = 0.015,
+        color = (DETECTION_DELAY_COLOR, 0.8),
+        hjust = -18,
+        vjust = 0.18,
     ),
-    ),
-    xlabel = "Detection Delay",
+    );
+    binwidth = 1,
+    xlabel = "Detection Delay (days)",
+    legend = false,
 )
 
 save(
