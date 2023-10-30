@@ -203,18 +203,22 @@ function create_sir_quantiles_plot(
     )
 end
 
-outbreakcols = [ColorSchemes.magma[i] for i in (200, 20)]
-
 function incidence_prevalence_plot(
-    incidencearr, ensemblearr, thresholdsarr, timeparams;
-    colormap = outbreakcols, threshold = 5, kwargs...,
+    incidencearr,
+    ensemblearr,
+    thresholdsarr,
+    timeparams;
+    colormap = [N_MISSED_OUTBREAKS_COLOR, PERC_OUTBREAKS_DETECTED_COLOR],
+    threshold = 5,
+    kwargs...,
 )
     @unpack trange = timeparams
     times = collect(trange) ./ 365
     kwargs_dict = Dict(kwargs)
 
     period_sum_arr = zeros(Int64, length(times), 2)
-    for (lower, upper, periodsum, outbreakstatus) in eachrow(thresholdsarr[1])
+    for (lower, upper, periodsum, outbreakstatus) in
+        eachrow(thresholdsarr[1])
         period_sum_arr[lower:upper, 1] .= periodsum
         period_sum_arr[lower:upper, 2] .= outbreakstatus
     end
@@ -276,7 +280,7 @@ function incidence_prevalence_plot(
 
     Legend(
         fig[:, 2],
-        [PolyElement(; color = col) for col in outbreakcols],
+        [PolyElement(; color = col) for col in colormap],
         ["Not Outbreak", "Outbreak"],
         "True\nOutbreak Status",
     )
@@ -316,7 +320,12 @@ function incidence_testing_plot(
     timeparams,
     detectthreshold;
     sim = 1,
-    colormap = outbreakcols,
+    outbreakcolormap = [
+        N_MISSED_OUTBREAKS_COLOR, PERC_OUTBREAKS_DETECTED_COLOR
+    ],
+    alertcolormap = [
+        N_MISSED_OUTBREAKS_COLOR, N_ALERTS_COLOR
+    ],
     kwargs...,
 )
     times = collect(timeparams.trange) ./ 365
@@ -335,22 +344,22 @@ function incidence_testing_plot(
     lines!(
         inc_test_ax1, times, incarr[:, 1, sim];
         color = incarr[:, 3, sim],
-        colormap = colormap,
+        colormap = outbreakcolormap,
     )
     lines!(
         inc_test_ax2, times, incarr[:, 1, sim] .+ noisearr[:, 1, sim];
         color = incarr[:, 3, sim],
-        colormap = colormap,
+        colormap = outbreakcolormap,
     )
     lines!(
         inc_test_ax3, times, testingarr[:, 3, sim];
         color = testingarr[:, 7, sim],
-        colormap = colormap,
+        colormap = alertcolormap,
     )
     lines!(
         inc_test_ax4, times, testingarr[:, 6, sim];
         color = testingarr[:, 7, sim],
-        colormap = colormap,
+        colormap = alertcolormap,
     )
 
     linkxaxes!(inc_test_ax1, inc_test_ax2, inc_test_ax3, inc_test_ax4)
@@ -395,16 +404,16 @@ function incidence_testing_plot(
 
     Legend(
         inc_test_fig[1:2, 2],
-        [PolyElement(; color = col) for col in outbreakcols],
+        [PolyElement(; color = col) for col in outbreakcolormap],
         ["Not Outbreak", "Outbreak"],
         "True\nOutbreak Status",
     )
 
     Legend(
         inc_test_fig[3:4, 2],
-        [PolyElement(; color = col) for col in outbreakcols],
+        [PolyElement(; color = col) for col in alertcolormap],
         ["Not Outbreak", "Outbreak"],
-        "Detected\nOutbreak Status",
+        "Alert Status",
     )
 
     return inc_test_fig
