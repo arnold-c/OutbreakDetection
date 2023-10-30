@@ -318,6 +318,34 @@ save(
 )
 
 #%%
+compare_outbreak_detect_missed_size_plot = compare_ensemble_OTchars_plots(
+    ensemble_chars_vec,
+    :detection_threshold,
+    [
+        (
+            char = :detected_outbreak_size,
+            label = "Size of Outbreaks Detected",
+            color = (PERC_OUTBREAKS_DETECTED_COLOR, 0.7),
+        ),
+        (
+            char = :missed_outbreak_size,
+            label = "Size of Outbreaks Missed",
+            color = (PERC_OUTBREAKS_MISSED_COLOR, 0.7),
+        ),
+    ];
+    columnfacetchar_label = "Detection Threshold",
+    binwidth = 100,
+)
+
+save(
+    plotsdir(
+        "ensemble/testing-comparison/compare_outbreak_detect_missed_size_plot.png",
+    ),
+    compare_outbreak_detect_missed_size_plot;
+    resolution = (2200, 1200),
+)
+
+#%%
 compare_outbreak_true_outbreak_perc_plot = compare_ensemble_OTchars_plots(
     ensemble_chars_vec,
     :detection_threshold,
