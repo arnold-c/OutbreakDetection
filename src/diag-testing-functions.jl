@@ -301,7 +301,7 @@ function calculate_outbreak_detection_characteristics(
     falsealert_trueoutbreak_prop = n_false_alerts / noutbreaks
     correctalert_trueoutbreak_prop = n_correct_alerts / noutbreaks # c.f. sensitivity
 
-    trueoutbreak_alerts_prop = n_correct_alerts / ndetectoutbreaks
+    trueoutbreak_alerts_prop = noutbreaks / ndetectoutbreaks
     outbreaksmissed_alerts_prop = n_missed_outbreaks / ndetectoutbreaks
     perc_alerts_false = n_false_alerts / ndetectoutbreaks
     perc_alerts_correct = n_correct_alerts / ndetectoutbreaks # c.f. PPV
