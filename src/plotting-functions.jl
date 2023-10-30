@@ -759,6 +759,9 @@ function construct_OTchars_facets!(
         )
 
         for charnumber in eachindex(plottingchars)
+            if isempty(charvecs[charnumber])
+                break
+            end
             hist!(
                 ax,
                 charvecs[charnumber];
@@ -805,8 +808,11 @@ function construct_OTchars_facets!(
 end
 
 function calculate_bins(charvec, binwidth)
-    minbinvec = minimum.(charvec)
-    maxbinvec = maximum.(charvec)
+    filteredcharvec = filter(
+        !isempty, charvec
+    )
+    minbinvec = minimum.(filteredcharvec)
+    maxbinvec = maximum.(filteredcharvec)
     minbin = minimum(minbinvec)
     maxbin = maximum(maxbinvec)
     minbin -= 3 * binwidth / 2
