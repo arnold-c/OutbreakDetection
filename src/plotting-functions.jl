@@ -733,7 +733,7 @@ function construct_OTchars_facets!(
     kwargs_dict;
     meanlines = false,
     meanlabels = false,
-    normalization = :none,
+    normalization = :pdf,
 )
     for (OT_char_tuple, x, y) in zip(char_struct_vec, xs, ys)
         charvecs = map(
@@ -764,7 +764,7 @@ function construct_OTchars_facets!(
                 charvecs[charnumber];
                 bins = bins,
                 color = plottingchars[charnumber].color,
-                normalization = :pdf,
+                normalization = normalization,
             )
 
             if meanlines || meanlabels
