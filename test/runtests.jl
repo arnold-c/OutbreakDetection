@@ -10,20 +10,16 @@ using OutbreakDetection
 println("Starting tests")
 ti = time()
 
-@testset "OutbreakDetection tests" begin
-    @test 1 == 1
-end
-
 @testset "Detection tests" begin
     @testset "Delay detection" begin
         @test begin
             outbreakbounds = [
-                2 4 500
-                10 60 600
-                100 180 700
-                300 340 800
-                380 410 900
-                500 540 1000
+                2 4 500 100
+                10 60 600 10
+                100 180 700 2000
+                300 340 800 20
+                380 410 900 400
+                500 540 1000 5000
             ]
             detectionbounds = [
                 5 15
