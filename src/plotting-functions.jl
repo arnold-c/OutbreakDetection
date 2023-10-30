@@ -644,12 +644,12 @@ function compare_ensemble_OTchars_plots(
     plottingchars;
     columnfacetchar_label = "Detection Threshold",
     binwidth = 1.0,
-    xlabel = "Characteristic Value",
+    xlabel = "Alert Characteristic Value",
     ylabel = "Density",
     legend = true,
     legendlabel = "Outbreak Chacteristic",
     meanlines = false,
-    meanlabel = false,
+    meanlabels = false,
     normalization = :none,
     kwargs...,
 )
@@ -675,7 +675,7 @@ function compare_ensemble_OTchars_plots(
         columnfacetchar,
         kwargs_dict;
         meanlines = meanlines,
-        meanlabel = meanlabel,
+        meanlabels = meanlabels,
         normalization = normalization,
     )
 
@@ -723,7 +723,7 @@ function construct_OTchars_facets!(
     columnfacetchar,
     kwargs_dict;
     meanlines = false,
-    meanlabel = false,
+    meanlabels = false,
     normalization = :none,
 )
     for (OT_char_tuple, x, y) in zip(char_struct_vec, xs, ys)
@@ -758,7 +758,7 @@ function construct_OTchars_facets!(
                 normalization = :pdf,
             )
 
-            if meanlines || meanlabel
+            if meanlines || meanlabels
                 charmean = mean(charvecs[charnumber])
             end
             if meanlines
@@ -770,7 +770,7 @@ function construct_OTchars_facets!(
                     linewidth = 4,
                 )
             end
-            if meanlabel
+            if meanlabels
                 hjust = 0
                 vjust = 0
                 if haskey(plottingchars[charnumber], :hjust)
