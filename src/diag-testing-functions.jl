@@ -389,4 +389,30 @@ function calculate_delay_vec(filtered_matched_bounds)
     end
 end
 
+function calculate_cases_after_alert(incarr, matchedbounds, delay_vec)
+    casesarr = zeros(Int64, length(delay_vec), 2)
+    calculate_cases_after_alert!(casesarr, incarr, matchedbounds, delay_vec)
+    return casesarr
+end
+
+function calculate_cases_after_alert!(
+    cases_arr, incarr, matchedbounds, delay_vec
+)
+    for (
+        alertnumber,
+        (outbreaklower, outbreakupper, alertlower, alertupper, periodsum),
+    ) in
+        pairs(eachrow(matchedbounds))
+        if @view(delay_vec[alertnumber]) < 0
+            cases_arr[alertnumber, 1] .= periodsum
+        else
+            @views cases_arr[alertnumber, 1] .= sum(
+                incarr[alertlower:outbreakupper, 1]
+            )
+        end
+        cases_arr[alertnumber, 2] .= cases_arr[alertnumber, 1] / periodsum
+    end
+    return nothing
+end
+
 # end

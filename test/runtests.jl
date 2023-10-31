@@ -68,6 +68,42 @@ ti = time()
                 ),
             )
         end
+        @test begin
+            incarr = hcat(
+                [
+                    repeat([1], 9)...,
+                    repeat([12], 51)...,
+                    repeat([1], 39)...,
+                    repeat([8], 81)...,
+                    repeat([1], 199)...,
+                    repeat([30], 31)...,
+                    repeat([1], 89)...,
+                    repeat([25], 41)...,
+                ],
+                rand(540, 2),
+            )
+
+            matched_bounds = [
+                10 60 5 15 612
+                10 60 17 40 612
+                10 60 50 80 612
+                100 180 90 105 648
+                100 180 110 160 648
+                380 410 390 420 930
+                500 540 495 550 1025
+            ]
+
+            delay_vec = [-5, -10, 10, -5]
+            isequal(
+                calculate_cases_after_alert(incarr, matched_bounds, delay_vec),
+                [
+                    612 1.0
+                    648 1.0
+                    630 630/930
+                    1025 1.0
+                ],
+            )
+        end
     end
 end
 
