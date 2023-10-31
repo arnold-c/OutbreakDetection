@@ -47,9 +47,9 @@ export create_testing_arrs, create_testing_arrs!, calculate_tested!,
     calculate_positives!,
     calculate_true_positives!, calculate_noise_positives!,
     calculate_movingavg, calculate_movingavg!,
-    detectoutbreak, detectoutbreak!, calculate_ot_characterstics,
+    detectoutbreak, detectoutbreak!, calculate_daily_detection_characteristics,
     calculate_noutbreaks, calculate_OutbreakThresholdChars,
-    calculate_test_positivity
+    calculate_test_positivity, calculate_outbreak_detection_characteristics
 # @reexport using .DiagTestingFunctions
 
 include("ensemble-functions.jl")
@@ -66,10 +66,17 @@ export create_poisson_noise_arr, create_poisson_noise_arr!
 # @reexport using .NoiseFunctions
 
 include("plotting-functions.jl")
-export seircolors, seir_state_labels, create_sir_plot, draw_sir_plot,
+export seircolors,
+    seir_state_labels, create_sir_plot, draw_sir_plot,
+    DAILY_SENSITIVITY_COLOR, DAILY_SPECIFICITY_COLOR, DAILY_PPV_COLOR,
+    DAILY_NPV_COLOR, DETECTION_DELAY_COLOR, N_ALERTS_PER_OUTBREAK_COLOR,
+    N_FALSE_ALERTS_COLOR, N_ALERTS_COLOR, N_OUTBREAKS_COLOR,
+    N_MISSED_OUTBREAKS_COLOR, PERC_OUTBREAKS_DETECTED_COLOR,
+    PERC_OUTBREAKS_MISSED_COLOR, PERC_ALERTS_CORRECT_COLOR,
+    PERC_ALERTS_FALSE_COLOR,
     bifurcation_plot, bifurcation_heatmap,
-    sir_quantiles_array_base_plot, create_sir_quantiles_plot, outbreakcols,
-    detect_outbreak_plot, visualize_ensemble_noise, incidence_testing_plot,
+    sir_quantiles_array_base_plot, create_sir_quantiles_plot,
+    incidence_prevalence_plot, visualize_ensemble_noise, incidence_testing_plot,
     testing_plot, ensemble_outbreak_distribution_plot, ensemble_OTChars_plot,
     singlescenario_test_positivity_plot, test_positivity_distribution_plot,
     ensemble_outbreak_detect_diff_plot, compare_ensemble_OTchars_plots

@@ -12,22 +12,28 @@ function create_inc_infec_arr(
     ensemble_inc_vecs, outbreak_specification::OutbreakSpecification
 )
     ensemble_inc_arr = zeros(
-        Int64, size(ensemble_inc_vecs, 1), 4, size(ensemble_inc_vecs, 2)
+        Int64, size(ensemble_inc_vecs, 1), 3, size(ensemble_inc_vecs, 2)
+    )
+
+    ensemble_thresholds_vec = Vector{Array{Int64,2}}(
+        undef, size(ensemble_inc_vecs, 2)
     )
 
     create_inc_infec_arr!(
         ensemble_inc_arr,
+        ensemble_thresholds_vec,
         ensemble_inc_vecs,
         outbreak_specification.outbreak_threshold,
         outbreak_specification.minimum_outbreak_duration,
         outbreak_specification.minimum_outbreak_size,
     )
 
-    return ensemble_inc_arr
+    return ensemble_inc_arr, ensemble_thresholds_vec
 end
 
 function create_inc_infec_arr!(
-    ensemble_inc_arr, ensemble_inc_vecs, outbreakthreshold, minoutbreakdur,
+    ensemble_inc_arr, ensemble_thresholds_vec, ensemble_inc_vecs,
+    outbreakthreshold, minoutbreakdur,
     minoutbreaksize,
 )
     @inbounds for sim in axes(ensemble_inc_vecs, 2)
@@ -40,54 +46,86 @@ function create_inc_infec_arr!(
             @view(ensemble_inc_arr[:, 1, sim]) .>= outbreakthreshold
 
         abovethresholdrle = rle(@view(ensemble_inc_arr[:, 2, sim]))
-        abovethresholdlowers, abovethresholduppers = calculate_outbreak_thresholds(
-            abovethresholdrle
+
+        outbreak_thresholds = calculate_outbreak_thresholds(
+            abovethresholdrle; ncols = 4
         )
 
-        @inbounds for (lower, upper) in
-                      zip(abovethresholdlowers, abovethresholduppers)
-            calculate_period_sum!(
-                @view(ensemble_inc_arr[lower:upper, 3, sim]),
-                @view(ensemble_inc_arr[lower:upper, 1, sim])
-            )
-            classify_outbreak!(
-                @view(ensemble_inc_arr[lower:upper, 4, sim]),
-                ensemble_inc_arr[lower, 3, sim],
-                upper,
-                lower,
-                minoutbreakdur,
-                minoutbreaksize,
-            )
-        end
+        ensemble_thresholds_vec[sim] = classify_all_outbreaks!(
+            @view(ensemble_inc_arr[:, 1, sim]),
+            @view(ensemble_inc_arr[:, 3, sim]),
+            outbreak_thresholds,
+            minoutbreakdur,
+            minoutbreaksize,
+        )
     end
     return nothing
 end
 
-function calculate_outbreak_thresholds(outbreakrle)
+function calculate_outbreak_thresholds(outbreakrle; ncols = 4)
     # Calculate upper and lower indices of consecutive days of infection
     outbreakaccum = accumulate(+, outbreakrle[2])
     upperbound_indices = findall(isequal(1), outbreakrle[1])
-    @inbounds outbreakuppers = outbreakaccum[upperbound_indices]
-    @inbounds outbreaklowers = map(
-        x -> x - 1 == 0 ? 1 : outbreakaccum[x - 1] + 1, upperbound_indices
+
+    outbreak_thresholds = zeros(Int64, length(upperbound_indices), ncols)
+
+    @inbounds outbreak_thresholds[:, 2] .= @view(
+        outbreakaccum[upperbound_indices]
+    )
+    map!(
+        x -> x - 1 == 0 ? 1 : outbreakaccum[x - 1] + 1,
+        @view(outbreak_thresholds[:, 1]),
+        upperbound_indices,
     )
 
-    return (outbreaklowers, outbreakuppers)
+    return outbreak_thresholds
 end
 
-function calculate_period_sum!(outvec, incvec)
-    @inbounds outvec .= sum(incvec)
-    return nothing
-end
-
-function classify_outbreak!(
-    outvec, periodsumvec, upper_time, lower_time, minoutbreakdur,
+function classify_all_outbreaks!(
+    incidence_vec,
+    detectionstatus_vec,
+    all_thresholds_arr,
+    minoutbreakdur,
     minoutbreaksize,
+)
+    for (row, (lower, upper)) in pairs(eachrow(all_thresholds_arr[:, 1:2]))
+        all_thresholds_arr[row, 3] = sum(
+            @view(incidence_vec[lower:upper])
+        )
+
+        all_thresholds_arr[row, 4] = classify_outbreak(
+            all_thresholds_arr[row, 3],
+            upper,
+            lower,
+            minoutbreakdur,
+            minoutbreaksize,
+        )
+
+        @view(detectionstatus_vec[lower:upper]) .= @view(
+            all_thresholds_arr[row, 4]
+        )
+    end
+
+    return @view(
+        all_thresholds_arr[(all_thresholds_arr[:, 1] .!= 0), :]
+    )
+end
+
+function calculate_period_sum(incvec)
+    return sum(incvec)
+end
+
+function classify_outbreak(
+    periodsumvec,
+    upper_time,
+    lower_time,
+    minoutbreakdur,
+    minoutbreaksize
 )
     if upper_time - lower_time >= minoutbreakdur &&
         periodsumvec >= minoutbreaksize
-        @inbounds outvec .= 1
+        return 1
     end
-    return nothing
+    return 0
 end
 # end

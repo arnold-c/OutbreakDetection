@@ -4,10 +4,11 @@ using DrWatson
 
 using ProgressMeter
 using FLoops
+using NaNMath: NaNMath
 
 using OutbreakDetection
 
-include(srcdir("makie-plotting-setup.jl"))
+includet(srcdir("makie-plotting-setup.jl"))
 
 #%%
 sensitivity_vec = collect(0.8:0.2:1.0)
@@ -48,13 +49,13 @@ outbreak_specification = OutbreakSpecification(5, 30, 500)
 percent_visit_clinic = 0.6
 outbreak_detect_spec_vec = map(
     threshold -> OutbreakDetectionSpecification(
-        threshold, 7, percent_visit_clinic, 0.8, 3
+        threshold, 7, percent_visit_clinic, 0.8, 0
     ),
     detectthreshold_vec,
 )
 clinical_case_outbreak_detect_spec_vec = map(
     threshold -> OutbreakDetectionSpecification(
-        threshold, 7, percent_visit_clinic, 1.0, 3
+        threshold, 7, percent_visit_clinic, 1.0, 0
     ),
     detectthreshold_vec,
 )
@@ -106,38 +107,351 @@ prog = Progress(length(ensemble_scenario_spec_vec))
 end
 
 #%%
-sort!(ensemble_chars_vec, by = x -> (x.outbreak_detect_spec.detection_threshold, x.ind_test_spec.specificity))
+sort!(
+    ensemble_chars_vec;
+    by = x -> (
+        x.outbreak_detect_spec.detection_threshold,
+        x.ind_test_spec.specificity,
+    ),
+);
 
 #%%
 compare_outbreak_sens_spec_plot = compare_ensemble_OTchars_plots(
     ensemble_chars_vec,
-    :sensitivity,
-    :specificity,
-    :detection_threshold;
-    char1_label = "Sensitivity",
-    char2_label = "Specificity",
-    char3_label = "Detection Threshold",
+    :detection_threshold,
+    [
+        (
+            char = :daily_sensitivity,
+            label = "Sensitivity",
+            color = (DAILY_SENSITIVITY_COLOR, 0.7),
+        ),
+        (
+            char = :daily_specificity,
+            label = "Specificity",
+            color = (DAILY_SPECIFICITY_COLOR, 0.7),
+        ),
+    ];
+    columnfacetchar_label = "Detection Threshold",
+    bins = 0.0:0.01:1.01,
 )
 
 save(
     plotsdir("ensemble/testing-comparison/compare_outbreak_sens_spec_plot.png"),
-    compare_outbreak_sens_spec_plot,
-)
+    compare_outbreak_sens_spec_plot;
+    resolution = (2200, 1200),
+);
 
 #%%
 compare_outbreak_ppv_npv_plot = compare_ensemble_OTchars_plots(
     ensemble_chars_vec,
-    :ppv,
-    :npv,
-    :detection_threshold;
-    char1_label = "PPV",
-    char2_label = "NPV",
-    char3_label = "Detection Threshold",
-    char1_color = :green,
-    char2_color = :purple,
+    :detection_threshold,
+    [
+        (
+            char = :daily_ppv,
+            label = "PPV",
+            color = (DAILY_PPV_COLOR, 0.7),
+        ),
+        (
+            char = :daily_npv,
+            label = "NPV",
+            color = (DAILY_NPV_COLOR, 0.7),
+        ),
+    ];
+    columnfacetchar_label = "Detection Threshold",
+    bins = 0.0:0.01:1.01,
 )
 
 save(
     plotsdir("ensemble/testing-comparison/compare_outbreak_ppv_npv_plot.png"),
-    compare_outbreak_ppv_npv_plot,
+    compare_outbreak_ppv_npv_plot;
+    resolution = (2200, 1200),
+);
+
+#%%
+compare_outbreak_detection_delays_plot = compare_ensemble_OTchars_plots(
+    ensemble_chars_vec,
+    :detection_threshold,
+    [
+    (
+        char = :detectiondelays,
+        color = (DETECTION_DELAY_COLOR, 1.0),
+    )
+    ];
+    xlabel = "Detection Delay (days)",
+    columnfacetchar_label = "Detection Threshold",
+    binwidth = 5.0,
+    meanlines = true,
+    legend = false,
+)
+
+save(
+    plotsdir(
+        "ensemble/testing-comparison/compare_outbreak_detection_delays_plot.png"
+    ),
+    compare_outbreak_detection_delays_plot;
+    resolution = (2200, 1200),
+);
+
+#%%
+compare_outbreak_alert_per_outbreak_plot = compare_ensemble_OTchars_plots(
+    ensemble_chars_vec,
+    :detection_threshold,
+    [
+    (
+        char = :n_alerts_per_outbreak,
+        color = (N_ALERTS_PER_OUTBREAK_COLOR, 1.0),
+    )
+    ];
+    xlabel = "Alerts per Outbreak",
+    columnfacetchar_label = "Detection Threshold",
+    binwidth = 1.0,
+    meanlines = true,
+    legend = false,
+)
+
+save(
+    plotsdir(
+        "ensemble/testing-comparison/compare_outbreak_alert_per_outbreak_plot.png",
+    ),
+    compare_outbreak_alert_per_outbreak_plot;
+    resolution = (2200, 1200),
+);
+
+#%%
+compare_outbreak_false_alerts_plot = compare_ensemble_OTchars_plots(
+    ensemble_chars_vec,
+    :detection_threshold,
+    [
+    (
+        char = :n_false_alerts,
+        color = (N_FALSE_ALERTS_COLOR, 1.0),
+    )
+    ];
+    xlabel = "# False Alerts",
+    columnfacetchar_label = "Detection Threshold",
+    binwidth = 1.0,
+    meanlines = true,
+    legend = false,
+)
+
+save(
+    plotsdir(
+        "ensemble/testing-comparison/compare_outbreak_false_alerts_plot.png"
+    ),
+    compare_outbreak_false_alerts_plot;
+    resolution = (2200, 1200),
+)
+
+#%%
+compare_outbreak_number_alerts_plot = compare_ensemble_OTchars_plots(
+    ensemble_chars_vec,
+    :detection_threshold,
+    [
+    (
+        char = :ndetectoutbreaks,
+        color = (N_ALERTS_COLOR, 1.0),
+    )
+    ];
+    xlabel = "# Alerts",
+    columnfacetchar_label = "Detection Threshold",
+    binwidth = 10.0,
+    meanlines = true,
+    legend = false,
+)
+
+save(
+    plotsdir(
+        "ensemble/testing-comparison/compare_outbreak_number_alerts_plot.png"
+    ),
+    compare_outbreak_number_alerts_plot;
+    resolution = (2200, 1200),
+)
+
+#%%
+compare_outbreak_numbers_plot = compare_ensemble_OTchars_plots(
+    ensemble_chars_vec,
+    :detection_threshold,
+    [
+    (
+        char = :noutbreaks,
+        color = (N_OUTBREAKS_COLOR, 1.0),
+    )
+    ];
+    xlabel = "# Outbreaks",
+    columnfacetchar_label = "Detection Threshold",
+    binwidth = 1.0,
+    meanlines = true,
+    legend = false,
+)
+
+save(
+    plotsdir(
+        "ensemble/testing-comparison/compare_outbreak_numbers_plot.png"
+    ),
+    compare_outbreak_numbers_plot;
+    resolution = (2200, 1200),
+)
+
+#%%
+compare_outbreak_missed_plot = compare_ensemble_OTchars_plots(
+    ensemble_chars_vec,
+    :detection_threshold,
+    [
+    (
+        char = :n_missed_outbreaks,
+        color = (N_MISSED_OUTBREAKS_COLOR, 1.0),
+    )
+    ];
+    xlabel = "# Missed Outbreaks",
+    columnfacetchar_label = "Detection Threshold",
+    binwidth = 1.0,
+    meanlines = true,
+    legend = false,
+)
+
+save(
+    plotsdir(
+        "ensemble/testing-comparison/compare_outbreak_missed_plot.png"
+    ),
+    compare_outbreak_missed_plot;
+    resolution = (2200, 1200),
+)
+
+#%%
+compare_outbreak_detect_missed_size_plot = compare_ensemble_OTchars_plots(
+    ensemble_chars_vec,
+    :detection_threshold,
+    [
+        (
+            char = :detected_outbreak_size,
+            label = "Size of Outbreaks Detected",
+            color = (PERC_OUTBREAKS_DETECTED_COLOR, 0.7),
+        ),
+        (
+            char = :missed_outbreak_size,
+            label = "Size of Outbreaks Missed",
+            color = (PERC_OUTBREAKS_MISSED_COLOR, 0.7),
+        ),
+    ];
+    columnfacetchar_label = "Detection Threshold",
+    binwidth = 200,
+    normalization = :pdf,
+)
+
+save(
+    plotsdir(
+        "ensemble/testing-comparison/compare_outbreak_detect_missed_size_plot.png",
+    ),
+    compare_outbreak_detect_missed_size_plot;
+    resolution = (2200, 1200),
+)
+
+#%%
+compare_outbreak_true_outbreak_perc_plot = compare_ensemble_OTchars_plots(
+    ensemble_chars_vec,
+    :detection_threshold,
+    [
+        (
+            char = :perc_true_outbreaks_detected,
+            label = "Percent Outbreaks Detected",
+            color = (PERC_OUTBREAKS_DETECTED_COLOR, 0.7),
+        ),
+        (
+            char = :perc_true_outbreaks_missed,
+            label = "Percent Outbreaks Missed",
+            color = (PERC_OUTBREAKS_MISSED_COLOR, 0.7)),
+    ];
+    columnfacetchar_label = "Detection Threshold",
+    binwidth = 0.02,
+)
+
+save(
+    plotsdir(
+        "ensemble/testing-comparison/compare_outbreak_true_outbreak_perc_plot.png",
+    ),
+    compare_outbreak_true_outbreak_perc_plot;
+    resolution = (2200, 1200),
+)
+
+for i in eachindex(ensemble_chars_vec)
+    perc_alerts_sum = sum(
+        ensemble_chars_vec[i].OT_chars.perc_true_outbreaks_detected .+
+        ensemble_chars_vec[i].OT_chars.perc_true_outbreaks_missed .- 1.0,
+    )
+    if perc_alerts_sum != 0.0
+        @error "Warning. Sum of perc_alerts_false + perc_alerts_correct != 1.0, for i = $i. perc_alerts_sum = $perc_alerts_sum"
+    end
+end
+
+#%%
+compare_outbreak_alerts_perc_plot = compare_ensemble_OTchars_plots(
+    ensemble_chars_vec,
+    :detection_threshold,
+    [
+        (
+            char = :perc_alerts_correct,
+            label = "Percent Alerts\nThat Are Correct",
+            color = (PERC_ALERTS_CORRECT_COLOR, 0.7),
+        ),
+        (
+            char = :perc_alerts_false,
+            label = "Percent Alerts\nThat Are False",
+            color = (PERC_ALERTS_FALSE_COLOR, 0.7)),
+    ];
+    columnfacetchar_label = "Detection Threshold",
+    bins = -0.01:0.02:1.01,
+)
+
+save(
+    plotsdir(
+        "ensemble/testing-comparison/compare_outbreak_alerts_perc_plot.png"
+    ),
+    compare_outbreak_alerts_perc_plot;
+    resolution = (2200, 1200),
+)
+
+for i in eachindex(ensemble_chars_vec)
+    perc_alerts_sum = sum(
+        ensemble_chars_vec[i].OT_chars.perc_alerts_false .+
+        ensemble_chars_vec[i].OT_chars.perc_alerts_correct .- 1.0,
+    )
+    if perc_alerts_sum != 0.0
+        @error "Warning. Sum of perc_alerts_false + perc_alerts_correct != 1.0, for i = $i. perc_alerts_sum = $perc_alerts_sum,\nTimes no outbreaks detected = $(length(findall(==(0), ensemble_chars_vec[i].OT_chars.ndetectoutbreaks)))"
+        nan_perc_alerts_sum = NaNMath.sum(
+            ensemble_chars_vec[i].OT_chars.perc_alerts_false .+
+            ensemble_chars_vec[i].OT_chars.perc_alerts_correct .- 1.0,
+        )
+        if nan_perc_alerts_sum != 0.0
+            @error "Ignoring NaN values in the percentage of alerts doesn't correct the issue"
+            continue
+        end
+        @info "Ignoring NaN values in the percentage of alerts does correct the issue"
+    end
+end
+
+#%%
+compare_outbreak_true_outbreak_alerts_perc_plot = compare_ensemble_OTchars_plots(
+    ensemble_chars_vec,
+    :detection_threshold,
+    [
+        (
+            char = :perc_alerts_correct,
+            label = "Percent Alerts\nThat Are Correct",
+            color = (PERC_ALERTS_CORRECT_COLOR, 0.7),
+        ),
+        (
+            char = :perc_true_outbreaks_detected,
+            label = "Percent Outbreaks\nThat Are Detected",
+            color = (PERC_OUTBREAKS_DETECTED_COLOR, 0.7)),
+    ];
+    columnfacetchar_label = "Detection Threshold",
+    bins = -0.01:0.02:1.01,
+)
+
+save(
+    plotsdir(
+        "ensemble/testing-comparison/compare_outbreak_true_outbreak_alerts_perc_plot.png",
+    ),
+    compare_outbreak_true_outbreak_alerts_perc_plot;
+    resolution = (2200, 1200),
 )

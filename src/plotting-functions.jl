@@ -17,6 +17,21 @@ using NaNMath: NaNMath
 seircolors = ["dodgerblue4", "green", "firebrick3", "chocolate2", "purple"]
 seir_state_labels = ["S", "E", "I", "R", "N"]
 
+DAILY_SENSITIVITY_COLOR = "#2A3965"
+DAILY_SPECIFICITY_COLOR = "#C31D60"
+DAILY_PPV_COLOR = "#22D37D"
+DAILY_NPV_COLOR = "#6f366bff"
+DETECTION_DELAY_COLOR = "#AE560A"
+N_ALERTS_PER_OUTBREAK_COLOR = "#86B1A3"
+N_FALSE_ALERTS_COLOR = "#D06778"
+N_ALERTS_COLOR = "#00857E"
+N_OUTBREAKS_COLOR = "#F4A157"
+N_MISSED_OUTBREAKS_COLOR = "#5E5C6C"
+PERC_OUTBREAKS_DETECTED_COLOR = "#F0780F"
+PERC_OUTBREAKS_MISSED_COLOR = "#3A3842"
+PERC_ALERTS_CORRECT_COLOR = "#004643"
+PERC_ALERTS_FALSE_COLOR = "#852938"
+
 function create_sir_plot(sol_df; labels = ["S", "I", "R", "N"], annual = annual)
     time_function(t) = annual == true ? t / 365.0 : t
     if annual == true
@@ -188,14 +203,25 @@ function create_sir_quantiles_plot(
     )
 end
 
-outbreakcols = [ColorSchemes.magma[i] for i in (200, 20)]
-
-function detect_outbreak_plot(
-    incidencearr, ensemblearr, timeparams; colormap = outbreakcols, kwargs...
+function incidence_prevalence_plot(
+    incidencearr,
+    ensemblearr,
+    thresholdsarr,
+    timeparams;
+    colormap = [N_MISSED_OUTBREAKS_COLOR, PERC_OUTBREAKS_DETECTED_COLOR],
+    threshold = 5,
+    kwargs...,
 )
     @unpack trange = timeparams
     times = collect(trange) ./ 365
     kwargs_dict = Dict(kwargs)
+
+    period_sum_arr = zeros(Int64, length(times), 2)
+    for (lower, upper, periodsum, outbreakstatus) in
+        eachrow(thresholdsarr[1])
+        period_sum_arr[lower:upper, 1] .= periodsum
+        period_sum_arr[lower:upper, 2] .= outbreakstatus
+    end
 
     fig = Figure()
     ax_prev = Axis(fig[1, 1]; ylabel = "Prevalence")
@@ -206,13 +232,32 @@ function detect_outbreak_plot(
 
     linkxaxes!(ax_prev, ax_inc, ax_periodsum)
 
-    lines!(ax_prev, times, ensemblearr[:, 2, 1])
-    lines!(ax_inc, times, incidencearr[:, 1, 1])
+    lines!(
+        ax_prev,
+        times,
+        ensemblearr[:, 2, 1];
+        color = period_sum_arr[:, 2],
+        colormap = colormap,
+    )
+    lines!(
+        ax_inc,
+        times,
+        incidencearr[:, 1, 1];
+        color = period_sum_arr[:, 2],
+        colormap = colormap,
+    )
+    hlines!(
+        ax_inc,
+        threshold;
+        color = :black,
+        linestyle = :dash,
+        linewidth = 2,
+    )
     barplot!(
         ax_periodsum,
         times,
-        incidencearr[:, 3, 1];
-        color = incidencearr[:, 4, 1],
+        period_sum_arr[:, 1];
+        color = period_sum_arr[:, 2],
         colormap = colormap,
     )
 
@@ -233,14 +278,11 @@ function detect_outbreak_plot(
         ylims!(ax_inc, kwargs_dict[:ylims_inc])
     end
 
-    axislegend(
-        ax_periodsum,
+    Legend(
+        fig[:, 2],
         [PolyElement(; color = col) for col in colormap],
-        ["Not Outbreak", "Outbreak"];
-        bgcolor = :white,
-        framecolor = :white,
-        framevisible = true,
-        padding = (10.0f0, 10.0f0, 8.0f0, 8.0f0),
+        ["Not Outbreak", "Outbreak"],
+        "True\nOutbreak Status",
     )
 
     return fig
@@ -278,7 +320,12 @@ function incidence_testing_plot(
     timeparams,
     detectthreshold;
     sim = 1,
-    colormap = outbreakcols,
+    outbreakcolormap = [
+        N_MISSED_OUTBREAKS_COLOR, PERC_OUTBREAKS_DETECTED_COLOR
+    ],
+    alertcolormap = [
+        N_MISSED_OUTBREAKS_COLOR, N_ALERTS_COLOR
+    ],
     kwargs...,
 )
     times = collect(timeparams.trange) ./ 365
@@ -296,23 +343,23 @@ function incidence_testing_plot(
 
     lines!(
         inc_test_ax1, times, incarr[:, 1, sim];
-        color = incarr[:, 4, sim],
-        colormap = colormap,
+        color = incarr[:, 3, sim],
+        colormap = outbreakcolormap,
     )
     lines!(
         inc_test_ax2, times, incarr[:, 1, sim] .+ noisearr[:, 1, sim];
-        color = incarr[:, 4, sim],
-        colormap = colormap,
+        color = incarr[:, 3, sim],
+        colormap = outbreakcolormap,
     )
     lines!(
         inc_test_ax3, times, testingarr[:, 3, sim];
         color = testingarr[:, 7, sim],
-        colormap = colormap,
+        colormap = alertcolormap,
     )
     lines!(
         inc_test_ax4, times, testingarr[:, 6, sim];
         color = testingarr[:, 7, sim],
-        colormap = colormap,
+        colormap = alertcolormap,
     )
 
     linkxaxes!(inc_test_ax1, inc_test_ax2, inc_test_ax3, inc_test_ax4)
@@ -357,16 +404,16 @@ function incidence_testing_plot(
 
     Legend(
         inc_test_fig[1:2, 2],
-        [PolyElement(; color = col) for col in outbreakcols],
+        [PolyElement(; color = col) for col in outbreakcolormap],
         ["Not Outbreak", "Outbreak"],
         "True\nOutbreak Status",
     )
 
     Legend(
         inc_test_fig[3:4, 2],
-        [PolyElement(; color = col) for col in outbreakcols],
+        [PolyElement(; color = col) for col in alertcolormap],
         ["Not Outbreak", "Outbreak"],
-        "Detected\nOutbreak Status",
+        "Alert Status",
     )
 
     return inc_test_fig
@@ -449,7 +496,7 @@ function ensemble_outbreak_distribution_plot(testarr, infecarr)
 
     hist!(
         outbreak_dist_ax,
-        vec(sum(@view(infecarr[:, 4, :]); dims = 1)) ./ size(infecarr, 1);
+        vec(sum(@view(infecarr[:, 3, :]); dims = 1)) ./ size(infecarr, 1);
         bins = 0.0:0.01:0.7,
         color = (:blue, 0.5),
         strokecolor = :black,
@@ -476,52 +523,59 @@ end
 
 function ensemble_OTChars_plot(
     OTChars,
-    char1,
-    char2;
-    bins = 0.0:10.0:450.0,
-    char1_color = :blue,
-    char2_color = :red,
-    char1_label = "True Outbreaks",
-    char2_label = "Tested Outbreaks",
-    xlabel = "Number of Outbreaks",
+    testspec,
+    detectspec,
+    plottingchars;
+    columnfacetchar = :detection_threshold,
+    columnfacetchar_label = "Detection Threshold",
+    xlabel = "Alert Characteristic Value",
+    ylabel = "Density",
+    binwidth = 10.0,
+    legend = true,
     legendlabel = "# Outbreaks",
+    meanlines = true,
+    meanlabels = true,
+    normalization = :none,
+    kwargs...,
 )
+    otchars_vec = Vector{NamedTuple}(undef, 1)
+    otchars_vec[1] = (;
+        OT_chars = OTChars,
+        ind_test_spec = testspec,
+        outbreak_detect_spec = detectspec,
+    )
+    kwargs_dict = Dict{Symbol,Any}(kwargs)
+
+    @pack! kwargs_dict = columnfacetchar_label,
+    binwidth, xlabel, ylabel,
+    legendlabel
+
     fig = Figure()
-    ax = Axis(fig[1, 1]; xlabel = xlabel)
 
-    hist!(
-        ax,
-        map(outbreakchar -> getfield(outbreakchar, char1), OTChars);
-        bins = bins,
-        color = (char1_color, 0.5),
-        strokecolor = :black,
-        strokewidth = 1,
-        normalization = :pdf,
-        label = char1_label,
+    construct_OTchars_facets!(
+        fig,
+        otchars_vec,
+        plottingchars,
+        [1],
+        [1],
+        columnfacetchar,
+        kwargs_dict;
+        meanlines = meanlines,
+        meanlabels = meanlabels,
+        normalization = normalization,
     )
 
-    hist!(
-        ax,
-        map(outbreakchar -> getfield(outbreakchar, char2), OTChars);
-        bins = bins,
-        color = (char2_color, 0.5),
-        strokecolor = :black,
-        strokewidth = 1,
-        normalization = :pdf,
-        label = char2_label,
-    )
-
-    @floop for field in (char1, char2)
-        vlines!(
-            ax,
-            [mean(map(outbreakchar -> getfield(outbreakchar, field), OTChars))];
-            color = :black,
-            linestyle = :dash,
-            linewidth = 4,
+    if legend
+        Legend(
+            fig[1, 2],
+            [
+                PolyElement(; color = col) for
+                col in map(chartuple -> chartuple.color, plottingchars)
+            ],
+            [chartuple.label for chartuple in plottingchars];
+            label = legendlabel,
         )
     end
-
-    Legend(fig[1, 2], ax, legendlabel)
 
     return fig
 end
@@ -585,29 +639,79 @@ function test_positivity_distribution_plot(
 
     return draw(
         data(df) *
-        mapping(:positivity => "Test Positivity"; kwargs...) *
-        histogram();
+        mapping(
+            :positivity => "Test Positivity aggregated by $(agg)"; kwargs...
+        ) *
+        histogram(; bins = 0.0:0.05:1.05), ;
         axis = (ylabel = "Count",),
     )
 end
 
 function compare_ensemble_OTchars_plots(
     char_struct_vec,
-    char1::Symbol,
-    char2::Symbol,
-    char3::Symbol;
-    char1_label = "Sensitivity",
-    char2_label = "Specificity",
-    char3_label = "Outbreak Detection",
-    bins = 0.0:0.01:1.01,
-    char1_color = :blue,
-    char2_color = :red,
-    xlabel = "Characteristic Value",
+    columnfacetchar::Symbol,
+    plottingchars;
+    columnfacetchar_label = "Detection Threshold",
+    binwidth = 1.0,
+    xlabel = "Alert Characteristic Value",
     ylabel = "Density",
+    legend = true,
     legendlabel = "Outbreak Chacteristic",
+    meanlines = false,
+    meanlabels = false,
+    normalization = :none,
+    kwargs...,
+)
+    xs, ys = calculate_comparison_plot_facet_dims(
+        char_struct_vec, columnfacetchar
+    )
+    kwargs_dict = Dict{Symbol,Any}(kwargs)
+
+    @pack! kwargs_dict = columnfacetchar_label,
+    binwidth,
+    xlabel,
+    ylabel,
+    legendlabel
+
+    fig = Figure()
+
+    construct_OTchars_facets!(
+        fig,
+        char_struct_vec,
+        plottingchars,
+        xs,
+        ys,
+        columnfacetchar,
+        kwargs_dict;
+        meanlines = meanlines,
+        meanlabels = meanlabels,
+        normalization = normalization,
+    )
+
+    if legend
+        Legend(
+            fig[:, end + 1],
+            [
+                PolyElement(; color = col) for
+                col in map(chartuple -> chartuple.color, plottingchars)
+            ],
+            map(chartuple -> chartuple.label, plottingchars);
+            label = legendlabel,
+        )
+    end
+    return fig
+end
+
+function calculate_comparison_plot_facet_dims(
+    char_struct_vec, facetchar
 )
     xlength = length(
-        Set(getfield.(getfield.(char_struct_vec, :outbreak_detect_spec), char3))
+        Set(
+            getfield.(
+                getfield.(char_struct_vec, :outbreak_detect_spec),
+                facetchar
+            ),
+        ),
     )
     ylength = length(
         Set(getfield.(getfield.(char_struct_vec, :ind_test_spec), :specificity))
@@ -616,8 +720,37 @@ function compare_ensemble_OTchars_plots(
     xs = repeat(1:ylength, xlength)
     ys = repeat(1:xlength; inner = ylength)
 
-    fig = Figure()
+    return xs, ys
+end
+
+function construct_OTchars_facets!(
+    fig,
+    char_struct_vec,
+    plottingchars,
+    xs,
+    ys,
+    columnfacetchar,
+    kwargs_dict;
+    meanlines = false,
+    meanlabels = false,
+    normalization = :pdf,
+)
     for (OT_char_tuple, x, y) in zip(char_struct_vec, xs, ys)
+        charvecs = map(
+            chartuple -> reduce(
+                vcat, getproperty(OT_char_tuple.OT_chars, chartuple.char)
+            ),
+            plottingchars,
+        )
+
+        @unpack binwidth, xlabel, ylabel, columnfacetchar_label = kwargs_dict
+
+        if !haskey(kwargs_dict, :bins)
+            bins = calculate_bins(charvecs, binwidth)
+        else
+            bins = kwargs_dict[:bins]
+        end
+
         gl = fig[x, y] = GridLayout()
         ax = Axis(
             gl[2, 1];
@@ -625,41 +758,71 @@ function compare_ensemble_OTchars_plots(
             ylabel = ylabel,
         )
 
-        hist!(
-            ax,
-            getproperty(OT_char_tuple.OT_chars, char1);
-            bins = bins,
-            color = (char1_color, 0.5),
-            normalization = :pdf,
-        )
+        for charnumber in eachindex(plottingchars)
+            if isempty(charvecs[charnumber])
+                break
+            end
+            hist!(
+                ax,
+                charvecs[charnumber];
+                bins = bins,
+                color = plottingchars[charnumber].color,
+                normalization = normalization,
+            )
 
-        hist!(
-            ax,
-            getproperty(OT_char_tuple.OT_chars, char2);
-            bins = bins,
-            color = (char2_color, 0.5),
-            normalization = :pdf,
-        )
+            if meanlines || meanlabels
+                charmean = mean(charvecs[charnumber])
+            end
+            if meanlines
+                vlines!(
+                    ax,
+                    charmean;
+                    color = :black,
+                    linestyle = :dash,
+                    linewidth = 4,
+                )
+            end
+            if meanlabels
+                hjust = 0
+                vjust = 0
+                if haskey(plottingchars[charnumber], :hjust)
+                    hjust = plottingchars[charnumber].hjust
+                end
+                if haskey(plottingchars[charnumber], :vjust)
+                    vjust = plottingchars[charnumber].vjust
+                end
+                text!(
+                    Point(charmean + hjust, 0 + vjust);
+                    text = "Mean ($(plottingchars[charnumber].label)):\n$(round(charmean, digits = 2))",
+                )
+            end
+        end
 
         Label(
             gl[1, :],
-            L"\text{\textbf{Individual Test} - Sensitivity: %$(OT_char_tuple.ind_test_spec.sensitivity), Specificity: %$(OT_char_tuple.ind_test_spec.specificity), %$(char3_label): %$(getfield(OT_char_tuple.outbreak_detect_spec, char3))}";
+            L"\text{\textbf{Individual Test} - Sensitivity: %$(OT_char_tuple.ind_test_spec.sensitivity), Specificity: %$(OT_char_tuple.ind_test_spec.specificity), %$(columnfacetchar_label): %$(getfield(OT_char_tuple.outbreak_detect_spec, columnfacetchar))}";
             word_wrap = true,
         )
         colsize!(gl, 1, Relative(1))
     end
+end
 
-    Legend(
-        fig[:, end + 1],
-        [
-            PolyElement(; color = col) for
-            col in [(char1_color, 0.5), (char2_color, 0.5)]
-        ],
-        [char1_label, char2_label],
-        ;
-        label = legendlabel,
+function calculate_bins(charvec, binwidth)
+    filteredcharvec = filter(
+        !isempty, charvec
     )
-    return fig
+    minbinvec = minimum.(filteredcharvec)
+    maxbinvec = maximum.(filteredcharvec)
+    minbin = minimum(minbinvec)
+    maxbin = maximum(maxbinvec)
+    minbin -= 3 * binwidth / 2
+    maxbin += 3 * binwidth / 3
+    if minbin == maxbin
+        minbin -= binwidth
+        maxbin += binwidth
+    end
+    return minbin:binwidth:maxbin
 end
 
 # end
+#

@@ -247,7 +247,7 @@ function define_outbreaks(incidence_param_dict)
     test_spec_vec =
         incidence_param_dict
 
-    ensemble_inc_arr = create_inc_infec_arr(
+    ensemble_inc_arr, ensemble_thresholds_vec = create_inc_infec_arr(
         ensemble_inc_vecs, outbreak_spec
     )
 
@@ -258,7 +258,8 @@ function define_outbreaks(incidence_param_dict)
             [outbreak_spec],
             noise_spec_vec,
             filter(
-                spec -> spec.percent_clinic_tested != 1.0, outbreak_detection_spec_vec
+                spec -> spec.percent_clinic_tested != 1.0,
+                outbreak_detection_spec_vec,
             ),
             test_spec_vec,
         ),
@@ -280,19 +281,20 @@ function define_outbreaks(incidence_param_dict)
                 ),
                 [IndividualTestSpecification(1.0, 0.0)],
             ),
-        )...
+        )...,
     )
 
     scenario_param_dict = dict_list(
         @dict(
             scenario_spec = ensemble_scenarios,
-            ensemble_inc_arr
+            ensemble_inc_arr,
+            thresholds_vec = [ensemble_thresholds_vec]
         )
     )
 
     run_OutbreakThresholdChars_creation(scenario_param_dict)
 
-    return @strdict ensemble_inc_arr
+    return @strdict ensemble_inc_arr ensemble_thresholds_vec
 end
 
 function run_OutbreakThresholdChars_creation(
@@ -310,7 +312,8 @@ function run_OutbreakThresholdChars_creation(
 end
 
 function OutbreakThresholdChars_creation(OT_chars_param_dict)
-    @unpack scenario_spec, ensemble_inc_arr = OT_chars_param_dict
+    @unpack scenario_spec, ensemble_inc_arr, thresholds_vec =
+        OT_chars_param_dict
     @unpack noise_specification,
     outbreak_specification,
     outbreak_detection_specification,
@@ -327,7 +330,9 @@ function OutbreakThresholdChars_creation(OT_chars_param_dict)
         individual_test_specification,
     )
 
-    OT_chars = calculate_OutbreakThresholdChars(testarr, ensemble_inc_arr)
+    OT_chars = calculate_OutbreakThresholdChars(
+        testarr, ensemble_inc_arr, thresholds_vec
+    )
 
     return @strdict OT_chars testarr test_positivity_structs
 end
