@@ -186,6 +186,7 @@ struct OutbreakThresholdChars{
     T3<:AbstractFloat,
     T4<:AbstractMatrix{T2},
     T5<:Vector{T2},
+    T6<:Vector{T3},
 }
     daily_crosstab::T1
     daily_tp::T2
@@ -216,6 +217,8 @@ struct OutbreakThresholdChars{
     perc_alerts_false::T3
     perc_alerts_correct::T3
     detectiondelays::T5
+    cases_after_alerts::T5
+    cases_perc_after_alerts::T6
 end
 
 struct OutbreakSpecification{T1<:Integer,T2<:AbstractString}
