@@ -335,6 +335,7 @@ compare_outbreak_detect_missed_size_plot = compare_ensemble_OTchars_plots(
     ];
     columnfacetchar_label = "Detection Threshold",
     binwidth = 200,
+    normalization = :pdf,
 )
 
 save(
