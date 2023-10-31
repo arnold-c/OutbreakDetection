@@ -230,9 +230,14 @@ function calculate_OutbreakThresholdChars(testarr, infecarr, thresholds_vec)
             outbreakbounds, detectionbounds
         )
 
+        first_matched_bounds = filter_first_matched_bounds(
+            detectionchars.matched_bounds
+        )
+        delay_vec = calculate_delay_vec(first_matched_bounds)
         OutbreakThresholdChars(
             dailychars...,
             detectionchars...,
+            delay_vec,
         )
     end
 
@@ -281,8 +286,6 @@ function calculate_outbreak_detection_characteristics(
         outbreakbounds, detectionbounds
     )
 
-    delay_vec = calculate_delay_vec(filtered_matched_bounds)
-
     noutbreaks = size(outbreakbounds, 1)
     ndetectoutbreaks = size(detectionbounds, 1)
 
@@ -329,7 +332,6 @@ function calculate_outbreak_detection_characteristics(
         outbreaksmissed_alerts_prop = outbreaksmissed_alerts_prop,
         perc_alerts_false = perc_alerts_false,
         perc_alerts_correct = perc_alerts_correct,
-        detectiondelays = delay_vec,
     )
 end
 
@@ -379,22 +381,24 @@ function match_outbreak_detection_bounds(outbreakbounds, detectionbounds)
     return filtered_matched_bounds, periodssum_vec, alerts_per_outbreak_vec
 end
 
-function calculate_delay_vec(filtered_matched_bounds)
-    return map(unique(@view(filtered_matched_bounds[:, 1]))) do outbreaklower
-        outbreak_rownumber = findfirst(
-            isequal(outbreaklower), filtered_matched_bounds[:, 1]
-        )
-        @views filtered_matched_bounds[outbreak_rownumber, 3] -
-            filtered_matched_bounds[outbreak_rownumber, 1]
-    end
+function calculate_delay_vec(first_matchedbounds)
+    return @views first_matchedbounds[:, 3] .- first_matchedbounds[:, 1]
 end
 
-function calculate_cases_after_alert(incarr, matchedbounds, delay_vec)
-    casesarr = zeros(Int64, length(delay_vec), 2)
-    calculate_cases_after_alert!(casesarr, incarr, matchedbounds, delay_vec)
-    return casesarr
+function filter_first_matched_bounds(matchedbounds)
+    indices = calculate_first_matched_bounds_index(matchedbounds)
+    return matchedbounds[indices, :]
 end
 
+function calculate_first_matched_bounds_index(matchedbounds)
+    return map(
+        outbreaklower -> findfirst(
+            isequal(outbreaklower),
+            @view(matchedbounds[:, 1])
+        ),
+        unique(@view(matchedbounds[:, 1])),
+    )
+end
 function calculate_cases_after_alert!(
     cases_arr, incarr, matchedbounds, delay_vec
 )
