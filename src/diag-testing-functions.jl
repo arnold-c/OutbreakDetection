@@ -234,10 +234,16 @@ function calculate_OutbreakThresholdChars(testarr, infecarr, thresholds_vec)
             detectionchars.matched_bounds
         )
         delay_vec = calculate_delay_vec(first_matched_bounds)
+        cases_after_alert_vec, caseperc_after_alert_vec = calculate_cases_after_alert(
+            @view(infecarr[:, 1, sim]), first_matched_bounds, delay_vec
+        )
+
         OutbreakThresholdChars(
             dailychars...,
             detectionchars...,
             delay_vec,
+            cases_after_alert_vec,
+            caseperc_after_alert_vec,
         )
     end
 
@@ -399,22 +405,34 @@ function calculate_first_matched_bounds_index(matchedbounds)
         unique(@view(matchedbounds[:, 1])),
     )
 end
+
+function calculate_cases_after_alert(
+    incvec, first_matchedbounds, delay_vec
+)
+    casesvec = zeros(Int64, length(delay_vec))
+    casespercvec = zeros(Float64, length(casesvec))
+    calculate_cases_after_alert!(
+        casesvec, casespercvec, incvec, first_matchedbounds, delay_vec
+    )
+    return casesvec, casespercvec
+end
+
 function calculate_cases_after_alert!(
-    cases_arr, incarr, matchedbounds, delay_vec
+    casesvec, casespercvec, invec, first_matchedbounds, delay_vec
 )
     for (
         alertnumber,
         (outbreaklower, outbreakupper, alertlower, alertupper, periodsum),
     ) in
-        pairs(eachrow(matchedbounds))
-        if @view(delay_vec[alertnumber]) < 0
-            cases_arr[alertnumber, 1] .= periodsum
+        pairs(eachrow(first_matchedbounds))
+        if delay_vec[alertnumber] < 0
+            casesvec[alertnumber, 1] = periodsum
         else
-            @views cases_arr[alertnumber, 1] .= sum(
-                incarr[alertlower:outbreakupper, 1]
+            @views casesvec[alertnumber] = sum(
+                invec[alertlower:outbreakupper]
             )
         end
-        cases_arr[alertnumber, 2] .= cases_arr[alertnumber, 1] / periodsum
+        casespercvec[alertnumber] = casesvec[alertnumber] / periodsum
     end
     return nothing
 end
