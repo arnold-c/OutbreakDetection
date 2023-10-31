@@ -373,14 +373,14 @@ function match_outbreak_detection_bounds(outbreakbounds, detectionbounds)
         outbreak_number += 1
     end
 
-    filtered_matched_bounds = all_matched_bounds[
-        (all_matched_bounds[:, 2] .> 0), :,
-    ]
+    filtered_matched_bounds = @view(
+        all_matched_bounds[(all_matched_bounds[:, 2] .> 0), :]
+    )
     return filtered_matched_bounds, periodssum_vec, alerts_per_outbreak_vec
 end
 
 function calculate_delay_vec(filtered_matched_bounds)
-    return map(unique(filtered_matched_bounds[:, 1])) do outbreaklower
+    return map(unique(@view(filtered_matched_bounds[:, 1]))) do outbreaklower
         outbreak_rownumber = findfirst(
             isequal(outbreaklower), filtered_matched_bounds[:, 1]
         )
