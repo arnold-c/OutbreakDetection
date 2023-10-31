@@ -346,7 +346,7 @@ function match_outbreak_detection_bounds(outbreakbounds, detectionbounds)
         pairs(eachrow(outbreakbounds))
         periodssum_vec[outbreak_number] = periodsum
         for (detectionlower, detectionupper) in
-            eachrow(detectionbounds[detection_rownumber:end, :])
+            eachrow(@view(detectionbounds[detection_rownumber:end, :]))
             if detectionlower > outbreakupper
                 break
             end
