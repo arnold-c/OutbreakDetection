@@ -230,9 +230,20 @@ function calculate_OutbreakThresholdChars(testarr, infecarr, thresholds_vec)
             outbreakbounds, detectionbounds
         )
 
+        first_matched_bounds = filter_first_matched_bounds(
+            detectionchars.matched_bounds
+        )
+        delay_vec = calculate_delay_vec(first_matched_bounds)
+        cases_after_alert_vec, caseperc_after_alert_vec = calculate_cases_after_alert(
+            @view(infecarr[:, 1, sim]), first_matched_bounds, delay_vec
+        )
+
         OutbreakThresholdChars(
             dailychars...,
             detectionchars...,
+            delay_vec,
+            cases_after_alert_vec,
+            caseperc_after_alert_vec,
         )
     end
 
@@ -281,8 +292,6 @@ function calculate_outbreak_detection_characteristics(
         outbreakbounds, detectionbounds
     )
 
-    delay_vec = calculate_delay_vec(filtered_matched_bounds)
-
     noutbreaks = size(outbreakbounds, 1)
     ndetectoutbreaks = size(detectionbounds, 1)
 
@@ -329,7 +338,6 @@ function calculate_outbreak_detection_characteristics(
         outbreaksmissed_alerts_prop = outbreaksmissed_alerts_prop,
         perc_alerts_false = perc_alerts_false,
         perc_alerts_correct = perc_alerts_correct,
-        detectiondelays = delay_vec,
     )
 end
 
@@ -346,7 +354,7 @@ function match_outbreak_detection_bounds(outbreakbounds, detectionbounds)
         pairs(eachrow(outbreakbounds))
         periodssum_vec[outbreak_number] = periodsum
         for (detectionlower, detectionupper) in
-            eachrow(detectionbounds[detection_rownumber:end, :])
+            eachrow(@view(detectionbounds[detection_rownumber:end, :]))
             if detectionlower > outbreakupper
                 break
             end
@@ -373,20 +381,60 @@ function match_outbreak_detection_bounds(outbreakbounds, detectionbounds)
         outbreak_number += 1
     end
 
-    filtered_matched_bounds = all_matched_bounds[
-        (all_matched_bounds[:, 2] .> 0), :,
-    ]
+    filtered_matched_bounds = @view(
+        all_matched_bounds[(all_matched_bounds[:, 2] .> 0), :]
+    )
     return filtered_matched_bounds, periodssum_vec, alerts_per_outbreak_vec
 end
 
-function calculate_delay_vec(filtered_matched_bounds)
-    return map(unique(filtered_matched_bounds[:, 1])) do outbreaklower
-        outbreak_rownumber = findfirst(
-            isequal(outbreaklower), filtered_matched_bounds[:, 1]
-        )
-        @views filtered_matched_bounds[outbreak_rownumber, 3] -
-            filtered_matched_bounds[outbreak_rownumber, 1]
+function calculate_delay_vec(first_matchedbounds)
+    return @views first_matchedbounds[:, 3] .- first_matchedbounds[:, 1]
+end
+
+function filter_first_matched_bounds(matchedbounds)
+    indices = calculate_first_matched_bounds_index(matchedbounds)
+    return matchedbounds[indices, :]
+end
+
+function calculate_first_matched_bounds_index(matchedbounds)
+    return map(
+        outbreaklower -> findfirst(
+            isequal(outbreaklower),
+            @view(matchedbounds[:, 1])
+        ),
+        unique(@view(matchedbounds[:, 1])),
+    )
+end
+
+function calculate_cases_after_alert(
+    incvec, first_matchedbounds, delay_vec
+)
+    casesvec = zeros(Int64, length(delay_vec))
+    casespercvec = zeros(Float64, length(casesvec))
+    calculate_cases_after_alert!(
+        casesvec, casespercvec, incvec, first_matchedbounds, delay_vec
+    )
+    return casesvec, casespercvec
+end
+
+function calculate_cases_after_alert!(
+    casesvec, casespercvec, invec, first_matchedbounds, delay_vec
+)
+    for (
+        alertnumber,
+        (outbreaklower, outbreakupper, alertlower, alertupper, periodsum),
+    ) in
+        pairs(eachrow(first_matchedbounds))
+        if delay_vec[alertnumber] < 0
+            casesvec[alertnumber, 1] = periodsum
+        else
+            @views casesvec[alertnumber] = sum(
+                invec[alertlower:outbreakupper]
+            )
+        end
+        casespercvec[alertnumber] = casesvec[alertnumber] / periodsum
     end
+    return nothing
 end
 
 # end

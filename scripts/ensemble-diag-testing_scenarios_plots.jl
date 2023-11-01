@@ -455,3 +455,53 @@ save(
     compare_outbreak_true_outbreak_alerts_perc_plot;
     resolution = (2200, 1200),
 )
+
+#%%
+compare_outbreak_cases_after_alerts_plot = compare_ensemble_OTchars_plots(
+    ensemble_chars_vec,
+    :detection_threshold,
+    [
+    (
+        char = :cases_after_alerts,
+        color = (PERC_OUTBREAKS_DETECTED_COLOR, 1.0),
+    )
+    ];
+    xlabel = "Cases After Alerts",
+    columnfacetchar_label = "Detection Threshold",
+    binwidth = 50.0,
+    meanlines = true,
+    legend = false,
+)
+
+save(
+    plotsdir(
+        "ensemble/testing-comparison/compare_outbreak_cases_after_alerts_plot.png",
+    ),
+    compare_outbreak_cases_after_alerts_plot;
+    resolution = (2200, 1200),
+)
+
+#%%
+compare_outbreak_cases_perc_after_alerts_plot = compare_ensemble_OTchars_plots(
+    ensemble_chars_vec,
+    :detection_threshold,
+    [
+    (
+        char = :cases_perc_after_alerts,
+        color = (PERC_OUTBREAKS_DETECTED_COLOR, 1.0),
+    )
+    ];
+    xlabel = "Percentage of Outbreak\nAfter Alerts",
+    columnfacetchar_label = "Detection Threshold",
+    binwidth = 0.01,
+    meanlines = true,
+    legend = false,
+)
+
+save(
+    plotsdir(
+        "ensemble/testing-comparison/compare_outbreak_cases_perc_after_alerts_plot.png",
+    ),
+    compare_outbreak_cases_perc_after_alerts_plot;
+    resolution = (2200, 1200),
+)
