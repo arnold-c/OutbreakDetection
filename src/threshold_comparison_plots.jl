@@ -112,7 +112,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
     )
 
     ppv_npv_plotname = "compare-outbreak_clinic-tested-$(percent_clinic_tested)_ppv-npv_plot"
-    save_compare_ensemble_OTchars_plots(
+    save_compare_ensemble_OTchars_plot(
         ensemble_chars_vec,
         :detection_threshold,
         [
@@ -133,7 +133,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
     )
 
     detectiondelay_plotname = "compare-outbreak_clinic-tested-$(percent_clinic_tested)_detectiondelay_plot"
-    save_compare_ensemble_OTchars_plots(
+    save_compare_ensemble_OTchars_plot(
         ensemble_chars_vec,
         :detection_threshold,
         [
@@ -151,7 +151,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
     )
 
     nalertsperoutbreak_plotname = "compare-outbreak_clinic-tested-$(percent_clinic_tested)_nalertsperoutbreak_plot"
-    save_compare_ensemble_OTchars_plots(
+    save_compare_ensemble_OTchars_plot(
         ensemble_chars_vec,
         :detection_threshold,
         [
@@ -169,7 +169,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
     )
 
     nfalsealerts_plotname = "compare-outbreak_clinic-tested-$(percent_clinic_tested)_nfalsealerts_plot"
-    save_compare_ensemble_OTchars_plots(
+    save_compare_ensemble_OTchars_plot(
         ensemble_chars_vec,
         :detection_threshold,
         [
@@ -187,7 +187,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
     )
 
     nalerts_plotname = "compare-outbreak_clinic-tested-$(percent_clinic_tested)_nalerts_plot"
-    save_compare_ensemble_OTchars_plots(
+    save_compare_ensemble_OTchars_plot(
         ensemble_chars_vec,
         :detection_threshold,
         [
@@ -205,7 +205,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
     )
 
     noutbreaks_plotname = "compare-outbreak_clinic-tested-$(percent_clinic_tested)_noutbreaks_plot"
-    save_compare_ensemble_OTchars_plots(
+    save_compare_ensemble_OTchars_plot(
         ensemble_chars_vec,
         :detection_threshold,
         [
@@ -223,7 +223,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
     )
 
     nmissedoutbreaks_plotname = "compare-outbreak_clinic-tested-$(percent_clinic_tested)_nmissedoutbreaks_plot"
-    save_compare_ensemble_OTchars_plots(
+    save_compare_ensemble_OTchars_plot(
         ensemble_chars_vec,
         :detection_threshold,
         [
@@ -241,7 +241,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
     )
 
     size_outbreaks_detectmissed_plotname = "compare-outbreak_clinic-tested-$(percent_clinic_tested)_size-outbreaks-detected-missed_plot"
-    save_compare_ensemble_OTchars_plots(
+    save_compare_ensemble_OTchars_plot(
         ensemble_chars_vec,
         :detection_threshold,
         [
@@ -263,7 +263,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
     )
 
     perc_detectmissed_outbreak_plotname = "compare-outbreak_clinic-tested-$(percent_clinic_tested)_percent-outbreaks-detected-missed_plot"
-    save_compare_ensemble_OTchars_plots(
+    save_compare_ensemble_OTchars_plot(
         ensemble_chars_vec,
         :detection_threshold,
         [
@@ -293,7 +293,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
     end
 
     perc_alerts_correctfalse_plotname = "compare-outbreak_clinic-tested-$(percent_clinic_tested)_percent-alerts-correct-false_plot"
-    save_compare_ensemble_OTchars_plots(
+    save_compare_ensemble_OTchars_plot(
         ensemble_chars_vec,
         :detection_threshold,
         [
@@ -332,7 +332,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
     end
 
     perc_alertscorrect_outbreaksdetected_plotname = "compare-outbreak_clinic-tested-$(percent_clinic_tested)_percent-alerts-correct-outbreaks-detected_plot"
-    save_compare_ensemble_OTchars_plots(
+    save_compare_ensemble_OTchars_plot(
         ensemble_chars_vec,
         :detection_threshold,
         [
@@ -352,7 +352,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
     )
 
     ncasesafteralerts_plotname = "compare-outbreak_clinic-tested-$(percent_clinic_tested)_n-cases-after-alerts_plot"
-    save_compare_ensemble_OTchars_plots(
+    save_compare_ensemble_OTchars_plot(
         ensemble_chars_vec,
         :detection_threshold,
         [
@@ -370,7 +370,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
     )
 
     perc_casesafteralerts_plotname = "compare-outbreak_clinic-tested-$(percent_clinic_tested)_percent-cases-after-alerts_plot"
-    save_compare_ensemble_OTchars_plots(
+    save_compare_ensemble_OTchars_plot(
         ensemble_chars_vec,
         :detection_threshold,
         [
