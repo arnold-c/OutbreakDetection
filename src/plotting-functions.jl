@@ -652,7 +652,8 @@ function save_compare_ensemble_OTchars_plot(
     columnfacetchar::Symbol,
     plottingchars;
     plotname,
-    plotsdir = plotsdir("ensemble/testing-comparison"),
+    plotsrootdir = plotsdir("ensemble/testing-comparison"),
+    clinic_tested_dir,
     plotformat = "png",
     resolution = (2200, 1200),
     columnfacetchar_label = "Detection Threshold",
@@ -683,7 +684,7 @@ function save_compare_ensemble_OTchars_plot(
     )
 
     save(
-        joinpath(plotsdir, "$plotname.$plotformat"),
+        joinpath(plotsrootdir, clinic_tested_dir, "$plotname.$plotformat"),
         plot;
         resolution = resolution,
     )
