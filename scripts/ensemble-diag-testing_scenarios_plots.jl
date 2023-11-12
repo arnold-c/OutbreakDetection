@@ -27,7 +27,7 @@ ensemble_specification = EnsembleSpecification(
             :r_prop => 0.9,
         ),
     ),
-    DynamicsParameters(500_000, 10, 0.2),
+    DynamicsParameters(500_000, 10, 0.2; vaccination_coverage = 0.0),
     SimTimeParameters(;
         tmin = 0.0, tmax = 365.0 * 100, tstep = 1.0
     ),
