@@ -46,16 +46,28 @@ ensemble_specification = EnsembleSpecification(
 noise_specification = NoiseSpecification("poisson", 1.0)
 outbreak_specification = OutbreakSpecification(5, 30, 500)
 
+moving_avg_detection_lag = 7
+test_result_lag = 0
+
 percent_visit_clinic = 0.6
+
 outbreak_detect_spec_vec = map(
     threshold -> OutbreakDetectionSpecification(
-        threshold, 7, percent_visit_clinic, 0.8, 0
+        threshold,
+        moving_avg_detection_lag,
+        percent_visit_clinic,
+        0.8,
+        test_result_lag,
     ),
     detectthreshold_vec,
 )
 clinical_case_outbreak_detect_spec_vec = map(
     threshold -> OutbreakDetectionSpecification(
-        threshold, 7, percent_visit_clinic, 1.0, 0
+        threshold,
+        moving_avg_detection_lag,
+        percent_visit_clinic,
+        1.0,
+        test_result_lag,
     ),
     detectthreshold_vec,
 )
