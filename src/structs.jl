@@ -314,7 +314,8 @@ function ScenarioSpecification(
         "detectthreshold_$(outbreak_detection_specification.detection_threshold)",
         "testlag_$(outbreak_detection_specification.test_result_lag)",
         "moveavglag_$(outbreak_detection_specification.moving_average_lag)",
-        "perc_tested_$(outbreak_detection_specification.percent_tested)",
+        "perc_visit_clinic_$(outbreak_detection_specification.percent_visit_clinic)",
+        "perc_clinic_tested_$(outbreak_detection_specification.percent_clinic_tested)",
         "testsens_$(individual_test_specification.sensitivity)",
         "testspec_$(individual_test_specification.specificity)",
     )
