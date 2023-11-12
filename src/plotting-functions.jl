@@ -17,6 +17,7 @@ using NaNMath: NaNMath
 seircolors = ["dodgerblue4", "green", "firebrick3", "chocolate2", "purple"]
 seir_state_labels = ["S", "E", "I", "R", "N"]
 
+ACCURACY_COLOR = "#004643"
 DAILY_SENSITIVITY_COLOR = "#2A3965"
 DAILY_SPECIFICITY_COLOR = "#C31D60"
 DAILY_PPV_COLOR = "#22D37D"

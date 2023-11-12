@@ -90,6 +90,24 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
 
     clinic_tested_dir = "clinic-tested_$(percent_clinic_tested)"
 
+    accuracy_plotname = "compare-outbreak_clinic-tested-$(percent_clinic_tested)_accuracy_plot"
+    save_compare_ensemble_OTchars_plot(
+        ensemble_chars_vec,
+        :detection_threshold,
+        [
+            (
+                char = :accuracy,
+                label = "Accuracy",
+                color = (ACCURACY_COLOR, 0.7),
+            ),
+        ];
+        columnfacetchar_label = "Detection Threshold",
+        bins = 0.0:0.01:1.01,
+        plotname = accuracy_plotname,
+        clinic_tested_dir = clinic_tested_dir,
+    )
+    @info "Accuracy plot saved"
+
     sens_spec_plotname = "compare-outbreak_clinic-tested-$(percent_clinic_tested)_sens-spec_plot"
     save_compare_ensemble_OTchars_plot(
         ensemble_chars_vec,
