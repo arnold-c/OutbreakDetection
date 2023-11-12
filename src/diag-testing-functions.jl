@@ -12,6 +12,7 @@ using FreqTables
 using ThreadsX
 using FLoops
 using StructArrays
+using NaNMath: NaNMath
 
 # include("detection-thresholds.jl")
 # # using .DetectionThresholds
@@ -318,7 +319,10 @@ function calculate_outbreak_detection_characteristics(
     perc_alerts_false = n_false_alerts / ndetectoutbreaks
     perc_alerts_correct = n_correct_alerts / ndetectoutbreaks # c.f. PPV
 
+    accuracy = NaNMath.mean([perc_true_outbreaks_detected, perc_alerts_correct])
+
     return (
+        accuracy = accuracy,
         matched_bounds = filtered_matched_bounds,
         noutbreaks = noutbreaks,
         ndetectoutbreaks = ndetectoutbreaks,

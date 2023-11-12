@@ -197,6 +197,7 @@ struct OutbreakThresholdChars{
     daily_specificity::T3
     daily_ppv::T3
     daily_npv::T3
+    accuracy::T3
     matchedoutbreakbounds::T4
     noutbreaks::T2
     ndetectoutbreaks::T2
