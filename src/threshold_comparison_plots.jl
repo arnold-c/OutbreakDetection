@@ -90,7 +90,8 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
         ),
     )
 
-    compare_outbreak_sens_spec_plot = compare_ensemble_OTchars_plots(
+    sens_spec_plotname = "compare-outbreak_clinic-tested-$(percent_clinic_tested)_sens-spec_plot.png"
+    save_compare_ensemble_OTchars_plot(
         ensemble_chars_vec,
         :detection_threshold,
         [
@@ -107,17 +108,11 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
         ];
         columnfacetchar_label = "Detection Threshold",
         bins = 0.0:0.01:1.01,
+        plotname = sens_spec_plotname,
     )
 
-    save(
-        plotsdir(
-            "ensemble/testing-comparison/compare_outbreak_sens_spec_plot.png"
-        ),
-        compare_outbreak_sens_spec_plot;
-        resolution = (2200, 1200),
-    )
-
-    compare_outbreak_ppv_npv_plot = compare_ensemble_OTchars_plots(
+    ppv_npv_plotname = "compare-outbreak_clinic-tested-$(percent_clinic_tested)_ppv-npv_plot"
+    save_compare_ensemble_OTchars_plots(
         ensemble_chars_vec,
         :detection_threshold,
         [
@@ -134,17 +129,11 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
         ];
         columnfacetchar_label = "Detection Threshold",
         bins = 0.0:0.01:1.01,
+        ppv_npv_plotname,
     )
 
-    save(
-        plotsdir(
-            "ensemble/testing-comparison/compare_outbreak_ppv_npv_plot.png"
-        ),
-        compare_outbreak_ppv_npv_plot;
-        resolution = (2200, 1200),
-    )
-
-    compare_outbreak_detection_delays_plot = compare_ensemble_OTchars_plots(
+    detectiondelay_plotname = "compare-outbreak_clinic-tested-$(percent_clinic_tested)_detectiondelay_plot"
+    save_compare_ensemble_OTchars_plots(
         ensemble_chars_vec,
         :detection_threshold,
         [
@@ -158,17 +147,11 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
         binwidth = 5.0,
         meanlines = true,
         legend = false,
+        detectiondelay_plotname,
     )
 
-    save(
-        plotsdir(
-            "ensemble/testing-comparison/compare_outbreak_detection_delays_plot.png",
-        ),
-        compare_outbreak_detection_delays_plot;
-        resolution = (2200, 1200),
-    )
-
-    compare_outbreak_alert_per_outbreak_plot = compare_ensemble_OTchars_plots(
+    nalertsperoutbreak_plotname = "compare-outbreak_clinic-tested-$(percent_clinic_tested)_nalertsperoutbreak_plot"
+    save_compare_ensemble_OTchars_plots(
         ensemble_chars_vec,
         :detection_threshold,
         [
@@ -182,17 +165,11 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
         binwidth = 1.0,
         meanlines = true,
         legend = false,
+        plotname = nalertsperoutbreak_plotname,
     )
 
-    save(
-        plotsdir(
-            "ensemble/testing-comparison/compare_outbreak_alert_per_outbreak_plot.png",
-        ),
-        compare_outbreak_alert_per_outbreak_plot;
-        resolution = (2200, 1200),
-    )
-
-    compare_outbreak_false_alerts_plot = compare_ensemble_OTchars_plots(
+    nfalsealerts_plotname = "compare-outbreak_clinic-tested-$(percent_clinic_tested)_nfalsealerts_plot"
+    save_compare_ensemble_OTchars_plots(
         ensemble_chars_vec,
         :detection_threshold,
         [
@@ -206,17 +183,11 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
         binwidth = 1.0,
         meanlines = true,
         legend = false,
+        plotname = nfalsealerts_plotname,
     )
 
-    save(
-        plotsdir(
-            "ensemble/testing-comparison/compare_outbreak_false_alerts_plot.png"
-        ),
-        compare_outbreak_false_alerts_plot;
-        resolution = (2200, 1200),
-    )
-
-    compare_outbreak_number_alerts_plot = compare_ensemble_OTchars_plots(
+    nalerts_plotname = "compare-outbreak_clinic-tested-$(percent_clinic_tested)_nalerts_plot"
+    save_compare_ensemble_OTchars_plots(
         ensemble_chars_vec,
         :detection_threshold,
         [
@@ -230,17 +201,11 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
         binwidth = 10.0,
         meanlines = true,
         legend = false,
+        plotname = nalerts_plotname,
     )
 
-    save(
-        plotsdir(
-            "ensemble/testing-comparison/compare_outbreak_number_alerts_plot.png",
-        ),
-        compare_outbreak_number_alerts_plot;
-        resolution = (2200, 1200),
-    )
-
-    compare_outbreak_numbers_plot = compare_ensemble_OTchars_plots(
+    noutbreaks_plotname = "compare-outbreak_clinic-tested-$(percent_clinic_tested)_noutbreaks_plot"
+    save_compare_ensemble_OTchars_plots(
         ensemble_chars_vec,
         :detection_threshold,
         [
@@ -254,17 +219,11 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
         binwidth = 1.0,
         meanlines = true,
         legend = false,
+        plotname = noutbreaks_plotname,
     )
 
-    save(
-        plotsdir(
-            "ensemble/testing-comparison/compare_outbreak_numbers_plot.png"
-        ),
-        compare_outbreak_numbers_plot;
-        resolution = (2200, 1200),
-    )
-
-    compare_outbreak_missed_plot = compare_ensemble_OTchars_plots(
+    nmissedoutbreaks_plotname = "compare-outbreak_clinic-tested-$(percent_clinic_tested)_nmissedoutbreaks_plot"
+    save_compare_ensemble_OTchars_plots(
         ensemble_chars_vec,
         :detection_threshold,
         [
@@ -278,17 +237,11 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
         binwidth = 1.0,
         meanlines = true,
         legend = false,
+        plotname = nmissedoutbreaks_plotname,
     )
 
-    save(
-        plotsdir(
-            "ensemble/testing-comparison/compare_outbreak_missed_plot.png"
-        ),
-        compare_outbreak_missed_plot;
-        resolution = (2200, 1200),
-    )
-
-    compare_outbreak_detect_missed_size_plot = compare_ensemble_OTchars_plots(
+    size_outbreaks_detectmissed_plotname = "compare-outbreak_clinic-tested-$(percent_clinic_tested)_size-outbreaks-detected-missed_plot"
+    save_compare_ensemble_OTchars_plots(
         ensemble_chars_vec,
         :detection_threshold,
         [
@@ -306,17 +259,11 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
         columnfacetchar_label = "Detection Threshold",
         binwidth = 200,
         normalization = :pdf,
+        plotname = size_outbreaks_detectmissed_plotname,
     )
 
-    save(
-        plotsdir(
-            "ensemble/testing-comparison/compare_outbreak_detect_missed_size_plot.png",
-        ),
-        compare_outbreak_detect_missed_size_plot;
-        resolution = (2200, 1200),
-    )
-
-    compare_outbreak_true_outbreak_perc_plot = compare_ensemble_OTchars_plots(
+    perc_detectmissed_outbreak_plotname = "compare-outbreak_clinic-tested-$(percent_clinic_tested)_percent-outbreaks-detected-missed_plot"
+    save_compare_ensemble_OTchars_plots(
         ensemble_chars_vec,
         :detection_threshold,
         [
@@ -332,14 +279,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
         ];
         columnfacetchar_label = "Detection Threshold",
         binwidth = 0.02,
-    )
-
-    save(
-        plotsdir(
-            "ensemble/testing-comparison/compare_outbreak_true_outbreak_perc_plot.png",
-        ),
-        compare_outbreak_true_outbreak_perc_plot;
-        resolution = (2200, 1200),
+        plotname = perc_detectmissed_outbreak_plotname,
     )
 
     for i in eachindex(ensemble_chars_vec)
@@ -352,7 +292,8 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
         end
     end
 
-    compare_outbreak_alerts_perc_plot = compare_ensemble_OTchars_plots(
+    perc_alerts_correctfalse_plotname = "compare-outbreak_clinic-tested-$(percent_clinic_tested)_percent-alerts-correct-false_plot"
+    save_compare_ensemble_OTchars_plots(
         ensemble_chars_vec,
         :detection_threshold,
         [
@@ -368,14 +309,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
         ];
         columnfacetchar_label = "Detection Threshold",
         bins = -0.01:0.02:1.01,
-    )
-
-    save(
-        plotsdir(
-            "ensemble/testing-comparison/compare_outbreak_alerts_perc_plot.png"
-        ),
-        compare_outbreak_alerts_perc_plot;
-        resolution = (2200, 1200),
+        plotname = perc_alerts_correctfalse_plotname,
     )
 
     for i in eachindex(ensemble_chars_vec)
@@ -397,7 +331,8 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
         end
     end
 
-    compare_outbreak_true_outbreak_alerts_perc_plot = compare_ensemble_OTchars_plots(
+    perc_alertscorrect_outbreaksdetected_plotname = "compare-outbreak_clinic-tested-$(percent_clinic_tested)_percent-alerts-correct-outbreaks-detected_plot"
+    save_compare_ensemble_OTchars_plots(
         ensemble_chars_vec,
         :detection_threshold,
         [
@@ -413,17 +348,11 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
         ];
         columnfacetchar_label = "Detection Threshold",
         bins = -0.01:0.02:1.01,
+        plotname = perc_alertscorrect_outbreaksdetected_plotname,
     )
 
-    save(
-        plotsdir(
-            "ensemble/testing-comparison/compare_outbreak_true_outbreak_alerts_perc_plot.png",
-        ),
-        compare_outbreak_true_outbreak_alerts_perc_plot;
-        resolution = (2200, 1200),
-    )
-
-    compare_outbreak_cases_after_alerts_plot = compare_ensemble_OTchars_plots(
+    ncasesafteralerts_plotname = "compare-outbreak_clinic-tested-$(percent_clinic_tested)_n-cases-after-alerts_plot"
+    save_compare_ensemble_OTchars_plots(
         ensemble_chars_vec,
         :detection_threshold,
         [
@@ -437,17 +366,11 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
         binwidth = 50.0,
         meanlines = true,
         legend = false,
+        plotname = ncasesafteralerts_plotname,
     )
 
-    save(
-        plotsdir(
-            "ensemble/testing-comparison/compare_outbreak_cases_after_alerts_plot.png",
-        ),
-        compare_outbreak_cases_after_alerts_plot;
-        resolution = (2200, 1200),
-    )
-
-    compare_outbreak_cases_perc_after_alerts_plot = compare_ensemble_OTchars_plots(
+    perc_casesafteralerts_plotname = "compare-outbreak_clinic-tested-$(percent_clinic_tested)_percent-cases-after-alerts_plot"
+    save_compare_ensemble_OTchars_plots(
         ensemble_chars_vec,
         :detection_threshold,
         [
@@ -461,13 +384,8 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
         binwidth = 0.01,
         meanlines = true,
         legend = false,
+        plotname = perc_casesafteralerts_plotname,
     )
 
-    return save(
-        plotsdir(
-            "ensemble/testing-comparison/compare_outbreak_cases_perc_after_alerts_plot.png",
-        ),
-        compare_outbreak_cases_perc_after_alerts_plot;
-        resolution = (2200, 1200),
-    )
+    return nothing
 end
