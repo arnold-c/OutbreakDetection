@@ -653,6 +653,7 @@ function save_compare_ensemble_OTchars_plot(
     plottingchars;
     plotname,
     plotsdir = plotsdir("ensemble/testing-comparison"),
+    plotformat = "png",
     resolution = (2200, 1200),
     columnfacetchar_label = "Detection Threshold",
     binwidth = 1.0,
@@ -681,7 +682,11 @@ function save_compare_ensemble_OTchars_plot(
         kwargs...,
     )
 
-    save(joinpath(plotsdir, plotname), plot; resolution = resolution)
+    save(
+        joinpath(plotsdir, plotname, ".", plotformat),
+        plot;
+        resolution = resolution,
+    )
 
     return nothing
 end
