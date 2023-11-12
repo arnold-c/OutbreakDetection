@@ -683,7 +683,7 @@ function save_compare_ensemble_OTchars_plot(
     )
 
     save(
-        joinpath(plotsdir, plotname, ".", plotformat),
+        joinpath(plotsdir, "$plotname.$plotformat"),
         plot;
         resolution = resolution,
     )
