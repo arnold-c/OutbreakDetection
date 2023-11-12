@@ -84,4 +84,7 @@ export seircolors,
     ensemble_outbreak_detect_diff_plot, compare_ensemble_OTchars_plots
 # @reexport using .PlottingFunctions
 
+include("threshold_comparison_plots.jl")
+export plot_all_threshold_comparisons
+
 end
