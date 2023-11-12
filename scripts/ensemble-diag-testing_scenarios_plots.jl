@@ -54,7 +54,7 @@ threshold_comparison_params = (
 )
 
 #%%
-for percent_clinic_tested in percent_clinic_tested_vec
+@showprogress for percent_clinic_tested in percent_clinic_tested_vec
     plot_all_threshold_comparisons(
         percent_clinic_tested, threshold_comparison_params
     )
