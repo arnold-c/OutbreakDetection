@@ -683,8 +683,13 @@ function save_compare_ensemble_OTchars_plot(
         kwargs...,
     )
 
+    plotpath = joinpath(
+        plotsrootdir, clinic_tested_dir
+    )
+    mkpath(plotpath)
+
     save(
-        joinpath(plotsrootdir, clinic_tested_dir, "$plotname.$plotformat"),
+        joinpath(plotpath, "$plotname.$plotformat"),
         plot;
         resolution = resolution,
     )
