@@ -647,6 +647,45 @@ function test_positivity_distribution_plot(
     )
 end
 
+function save_compare_ensemble_OTchars_plot(
+    char_struct_vec,
+    columnfacetchar::Symbol,
+    plottingchars;
+    plotname,
+    plotsdir = plotsdir("ensemble/testing-comparison"),
+    resolution = (2200, 1200),
+    columnfacetchar_label = "Detection Threshold",
+    binwidth = 1.0,
+    xlabel = "Alert Characteristic Value",
+    ylabel = "Density",
+    legend = true,
+    legendlabel = "Outbreak Chacteristic",
+    meanlines = false,
+    meanlabels = false,
+    normalization = :none,
+    kwargs...,
+)
+    plot = compare_ensemble_OTchars_plots(
+        char_struct_vec,
+        columnfacetchar,
+        plottingchars;
+        columnfacetchar_label = columnfacetchar_label,
+        binwidth = binwidth,
+        xlabel = xlabel,
+        ylabel = ylabel,
+        legend = legend,
+        legendlabel = legendlabel,
+        meanlines = meanlines,
+        meanlabels = meanlabels,
+        normalization = normalization,
+        kwargs...,
+    )
+
+    save(joinpath(plotsdir, plotname), plot; resolution = resolution)
+
+    return nothing
+end
+
 function compare_ensemble_OTchars_plots(
     char_struct_vec,
     columnfacetchar::Symbol,
