@@ -248,7 +248,7 @@ end
 struct OutbreakDetectionSpecification{T1<:Integer,T2<:AbstractFloat}
     detection_threshold::T1
     moving_average_lag::T1
-    percent_visit_clinis::T2
+    percent_visit_clinic::T2
     percent_clinic_tested::T2
     percent_tested::T2
     test_result_lag::T1
@@ -257,16 +257,16 @@ end
 function OutbreakDetectionSpecification(
     detection_threshold,
     moving_average_lag,
-    percent_clinic,
+    percent_visit_clinic,
     percent_clinic_tested,
     test_result_lag,
 )
     return OutbreakDetectionSpecification(
         detection_threshold,
         moving_average_lag,
-        percent_clinic,
+        percent_visit_clinic,
         percent_clinic_tested,
-        percent_clinic * percent_clinic_tested,
+        percent_visit_clinic * percent_clinic_tested,
         test_result_lag,
     )
 end
