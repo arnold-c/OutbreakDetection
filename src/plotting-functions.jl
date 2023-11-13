@@ -887,12 +887,6 @@ function compare_optimal_thresholds_chars_plot(
     for percent_clinic_tested in unique_percent_clinic_tested
         optimal_thresholds_chars = optimal_thresholds_vec[(optimal_thresholds_vec.percent_clinic_tested .== percent_clinic_tested)]
 
-        sort!(
-            optimal_thresholds_chars;
-            by = threshold ->
-                threshold.individual_test_specification.specificity,
-        )
-
         plot = create_optimal_thresholds_chars_plot(
             optimal_thresholds_chars,
             plottingchars;
@@ -926,11 +920,18 @@ function create_optimal_thresholds_chars_plot(
 )
     number_tests = length(optimal_thresholds_chars)
 
+    sort!(
+        optimal_thresholds_chars;
+        by = threshold ->
+            threshold.individual_test_specification.specificity,
+    )
+
     fig = Figure()
 
     thresholdschars_structarr =
         optimal_thresholds_chars.outbreak_threshold_chars
     for (x, chartuple) in pairs(plottingchars)
+        bins_vec = Vector{StepRangeLen}(undef, number_tests)
         thresholdschars_vec =
             getproperty.(thresholdschars_structarr, chartuple.char)
 
