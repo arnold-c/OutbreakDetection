@@ -356,12 +356,15 @@ function TestPositivity(true_positive_vec, total_positive_vec, detection_vec)
 end
 
 struct OptimalThresholdCharacteristics{
-    T1<:ScenarioSpecification,
-    T2<:Integer,
-    T3<:AbstractFloat
+    T1<:OutbreakThresholdChars,
+    T2<:IndividualTestSpecification,
+    T3<:AbstractFloat,
+    T4<:Integer,
 }
-    scenario_specification::T1
-    detection_threshold::T2
+    outbreak_threshold_chars::T1
+    individual_test_specification::T2
+    percent_clinic_tested::T3
+    detection_threshold::T4
     accuracy::T3
 end
 # end

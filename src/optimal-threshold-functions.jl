@@ -65,12 +65,17 @@ function calculate_optimal_threshold(
         accuracy_array[i] = median(ensemble_chars_file["OT_chars"].accuracy)
     end
 
-    @views optimal_accuracy = NaNMath.maximum(accuracy_array)
+    optimal_accuracy = NaNMath.maximum(accuracy_array)
     optimal_threshold_index = findfirst(==(optimal_accuracy), accuracy_array)
     optimal_threshold = detectthreshold_vec[optimal_threshold_index]
+    optimal_OT_chars = get_ensemble_file(
+        ensemble_scenario_spec_vec[optimal_threshold_index]
+    )["OT_chars"]
 
     return OptimalThresholdCharacteristics(
-        ensemble_scenario_spec_vec[optimal_threshold_index],
+        optimal_OT_chars,
+        individual_test_specification,
+        percent_clinic_tested,
         optimal_threshold,
         optimal_accuracy,
     )
