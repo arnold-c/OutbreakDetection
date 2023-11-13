@@ -17,11 +17,6 @@ function calculate_OptimalThresholdCharacteristics(
             ind_test_spec,
             base_parameters
         )
-
-        if optimal_thresholds_vec[i].detection_threshold !=
-            optimal_thresholds_vec[i].scenario_specification.outbreak_detection_specification.detection_threshold
-            @error "Warning. The optimal threshold is not the same as the detection threshold for the i = $i scenario specification."
-        end
     end
 
     return StructArray(optimal_thresholds_vec)
@@ -56,6 +51,10 @@ function calculate_optimal_threshold(
         ),
         detectthreshold_vec,
     )
+
+    optimal_accuracy = 0.0
+    optimal_threshold = 0
+    optimal_OT_chars = 0
 
     for (i, ensemble_scenario_spec) in pairs(ensemble_scenario_spec_vec)
         OT_chars = get_ensemble_file(ensemble_scenario_spec)["OT_chars"]

@@ -72,39 +72,36 @@ optimal_thresholds_vec = calculate_OptimalThresholdCharacteristics(
 )
 
 #%%
-testspecs = StructArray(
-    getfield.(
-        optimal_thresholds_vec.scenario_specification,
-        :individual_test_specification,
-    ),
-)
-
-clinictesting =
-    getfield.(
-        getfield.(
-            optimal_thresholds_vec.scenario_specification,
-            :outbreak_detection_specification,
-        ),
-        :percent_clinic_tested,
-    )
 optimal_thresholds_df = DataFrame(;
-    clinictesting,
-    sensitivity = testspecs.sensitivity,
-    specificity = testspecs.specificity,
+    percent_clinic_tested = optimal_thresholds_vec.percent_clinic_tested,
+    sensitivity = getfield.(
+        optimal_thresholds_vec.individual_test_specification, :sensitivity
+    ),
+    specificity = getfield.(
+        optimal_thresholds_vec.individual_test_specification, :specificity
+    ),
     detection_threshold = optimal_thresholds_vec.detection_threshold,
     accuracy = optimal_thresholds_vec.accuracy,
 )
 
+#%%
 @chain optimal_thresholds_df begin
     @orderby :specificity
     unstack(
-        _, [:sensitivity, :specificity], :clinictesting, :detection_threshold
+        _,
+        [:sensitivity, :specificity],
+        :percent_clinic_tested,
+        :detection_threshold,
     )
 end
 
+#%%
 @chain optimal_thresholds_df begin
     @orderby :specificity
     unstack(
-        _, [:sensitivity, :specificity], :clinictesting, :accuracy
+        _,
+        [:sensitivity, :specificity],
+        :percent_clinic_tested,
+        :accuracy,
     )
 end
