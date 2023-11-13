@@ -880,6 +880,7 @@ function create_optimal_thresholds_chars_plot(
     plottingchars;
     kwargs...
 )
+    number_tests = length(optimal_thresholds_chars)
     fig = Figure()
 
     for (x, chartuple) in pairs(plottingchars)
@@ -909,6 +910,10 @@ function create_optimal_thresholds_chars_plot(
                 word_wrap = true,
             )
             colsize!(gl, 1, Relative(1))
+
+            if y < number_tests
+                hidexdecorations!(ax; ticklabels = false, ticks = false)
+            end
         end
     end
 
