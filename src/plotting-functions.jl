@@ -928,25 +928,38 @@ function create_optimal_thresholds_chars_plot(
 
     fig = Figure()
 
+    thresholdschars_structarr =
+        optimal_thresholds_chars.outbreak_threshold_chars
     for (x, chartuple) in pairs(plottingchars)
-        for (y, optimal_thresholds) in
-            pairs(optimal_thresholds_chars)
-            thresholdchars = optimal_thresholds.outbreak_threshold_chars
+        thresholdschars_vec =
+            getproperty.(thresholdschars_structarr, chartuple.char)
 
-            charvecs = reduce(vcat, getproperty(thresholdchars, chartuple.char))
+        charvecs = reduce(vcat, thresholdschars_vec)
 
-            if !haskey(chartuple, :label)
-                label = :none
-            else
-                label = chartuple.label
+        if !haskey(chartuple, :bins)
+            if !haskey(chartuple, :binwidth)
+                @error "The metric $(chartuple.char) wasn't provided with bins or a binwidth"
+                break
             end
+            bins = calculate_bins(charvecs, chartuple.binwidth)
+        else
+            bins = chartuple.bins
+        end
 
+        if !haskey(chartuple, :label)
+            label = :none
+        else
+            label = chartuple.label
+        end
+
+        for (y, optimal_thresholds) in pairs(optimal_thresholds_chars)
             gl = fig[y, x] = GridLayout()
             ax = Axis(gl[2, 1]; xlabel = label)
 
             hist!(
                 ax,
-                charvecs;
+                reduce(vcat, thresholdschars_vec[y]);
+                bins = bins,
                 color = chartuple.color,
             )
             Label(

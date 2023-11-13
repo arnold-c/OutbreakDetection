@@ -114,26 +114,31 @@ compare_optimal_thresholds_chars_plot(
             char = :accuracy,
             label = "Accuracy",
             color = (ACCURACY_COLOR, 0.7),
+            binwidth = 0.01,
         ),
         (
             char = :detectiondelays,
             label = "Detection Delay (Days)",
             color = (DETECTION_DELAY_COLOR, 1.0),
+            binwidth = 10,
         ),
         (
             char = :cases_after_alerts,
             label = "Number of Cases After Alert",
             color = (PERC_OUTBREAKS_DETECTED_COLOR, 1.0),
+            binwidth = 500,
         ),
         (
             char = :detected_outbreak_size,
             label = "Size of Outbreaks Detected",
             color = (PERC_OUTBREAKS_DETECTED_COLOR, 0.7),
+            binwidth = 500,
         ),
         (
             char = :missed_outbreak_size,
             label = "Size of Outbreaks Missed",
             color = (PERC_OUTBREAKS_MISSED_COLOR, 0.7),
+            binwidth = 100,
         ),
     ],
 )
