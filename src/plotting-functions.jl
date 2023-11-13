@@ -960,12 +960,12 @@ function create_optimal_thresholds_chars_plot(
             hist!(
                 ax,
                 reduce(vcat, thresholdschars_vec[y]);
-                bins = bins,
+                bins = bins_vec[y],
                 color = chartuple.color,
             )
             Label(
                 gl[1, :],
-                L"\text{\textbf{Individual Test} - Sensitivity: %$(optimal_thresholds.individual_test_specification.sensitivity), Specificity: %$(optimal_thresholds.individual_test_specification.specificity), Perc Clinic Tested: %$(optimal_thresholds.percent_clinic_tested)}";
+                L"\text{\textbf{Individual Test} - Sensitivity: %$(optimal_thresholds.individual_test_specification.sensitivity), Specificity: %$(optimal_thresholds.individual_test_specification.specificity), Alert Threshold: %$(optimal_thresholds.detection_threshold), Perc Clinic Tested: %$(optimal_thresholds.percent_clinic_tested)}";
                 word_wrap = true,
             )
             colsize!(gl, 1, Relative(1))
