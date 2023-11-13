@@ -13,6 +13,17 @@ includet(srcdir("makie-plotting-setup.jl"))
 #%%
 sensitivity_vec = collect(0.8:0.2:1.0)
 specificity_vec = collect(0.8:0.2:1.0)
+ind_test_spec_vec = Vector{IndividualTestSpecification}(
+    undef,
+    length(sensitivity_vec) + 1
+)
+for (i, sensitivity) in pairs(sensitivity_vec)
+    ind_test_spec_vec[i] = IndividualTestSpecification(
+        sensitivity, specificity_vec[i]
+    )
+end
+ind_test_spec_vec[end] = IndividualTestSpecification(1.0, 0.0)
+
 detectthreshold_vec = collect(4:1:15)
 
 #%%
@@ -52,5 +63,11 @@ threshold_comparison_params = (
 )
 
 #%%
-@showprogress for percent_clinic_tested in percent_clinic_tested_vec
-end
+optimal_thresholds_vec = calculate_OptimalThresholdCharacteristics(
+    percent_clinic_tested_vec,
+    ind_test_spec_vec,
+    threshold_comparison_params
+)
+
+#%%
+optimal_thresholds_vec

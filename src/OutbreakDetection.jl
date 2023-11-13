@@ -16,7 +16,7 @@ include("structs.jl")
 export SimTimeParameters, EnsembleSpecification, DynamicsParameters,
     StateParameters, OutbreakThresholdChars, OutbreakDetectionSpecification,
     OutbreakSpecification, IndividualTestSpecification, NoiseSpecification,
-    ScenarioSpecification, TestPositivity
+    ScenarioSpecification, TestPositivity, OptimalThresholdCharacteristics
 # @reexport using .ODStructs
 
 include("SEIR-model.jl")
@@ -90,6 +90,6 @@ include("threshold_comparison_plots.jl")
 export plot_all_threshold_comparisons
 
 include("optimal-threshold-functions.jl")
-export calculate_optimal_threshold
+export calculate_optimal_threshold, calculate_OptimalThresholdCharacteristics
 
 end

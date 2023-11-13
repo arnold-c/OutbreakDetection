@@ -355,4 +355,13 @@ function TestPositivity(true_positive_vec, total_positive_vec, detection_vec)
     )
 end
 
+struct OptimalThresholdCharacteristics{
+    T1<:ScenarioSpecification,
+    T2<:Integer,
+    T3<:AbstractFloat
+}
+    scenario_specification::T1
+    detection_threshold::T2
+    accuracy::T3
+end
 # end

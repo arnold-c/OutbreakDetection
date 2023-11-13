@@ -1,3 +1,27 @@
+using StructArrays
+
+function calculate_OptimalThresholdCharacteristics(
+    percent_clinic_tested_vec,
+    ind_test_spec_vec,
+    base_parameters
+)
+    optimal_thresholds_vec = Vector{OptimalThresholdCharacteristics}(
+        undef, length(percent_clinic_tested_vec) * length(ind_test_spec_vec)
+    )
+
+    @showprogress for (i, (percent_clinic_tested, ind_test_spec)) in enumerate(
+        Iterators.product(percent_clinic_tested_vec, ind_test_spec_vec)
+    )
+        optimal_thresholds_vec[i] = calculate_optimal_threshold(
+            percent_clinic_tested,
+            ind_test_spec,
+            base_parameters
+        )
+    end
+
+    return StructArray(optimal_thresholds_vec)
+end
+
 function calculate_optimal_threshold(
     percent_clinic_tested,
     individual_test_specification,
@@ -11,56 +35,38 @@ function calculate_optimal_threshold(
     test_result_lag,
     percent_visit_clinic = base_parameters
 
-    ensemble_scenario_spec_vec = Vector{ScenarioSpecification}(
-        undef,
-        length(detectthreshold_vec)
-    )
-    ensemble_chars_vec = Vector(
-        undef, length(ensemble_scenario_spec_vec)
-    )
+    accuracy_array = zeros(Float64, length(detectthreshold_vec))
 
-    outbreak_detect_spec_vec = map(
-        threshold -> OutbreakDetectionSpecification(
-            threshold,
-            moving_avg_detection_lag,
-            percent_visit_clinic,
-            percent_clinic_tested,
-            test_result_lag,
+    ensemble_scenario_spec_vec = map(
+        threshold -> ScenarioSpecification(
+            ensemble_specification,
+            outbreak_specification,
+            noise_specification,
+            OutbreakDetectionSpecification(
+                threshold,
+                moving_avg_detection_lag,
+                percent_visit_clinic,
+                percent_clinic_tested,
+                test_result_lag,
+            ),
+            individual_test_specification,
         ),
         detectthreshold_vec,
     )
 
-    ensemble_scenario_spec_vec = map(
-        outbreak_detect_spec -> ScenarioSpecification(
-            ensemble_specification,
-            outbreak_specification,
-            noise_specification,
-            outbreak_detect_spec,
-            individual_test_specification,
-        ),
-        outbreak_detect_spec_vec,
-    )
-
-    accuracy_array = zeros(Int64, 2, length(detectthreshold_vec))
-
-    @floop for (i, ensemble_scenario_spec) in pairs(ensemble_scenario_spec_vec)
+    for (i, ensemble_scenario_spec) in pairs(ensemble_scenario_spec_vec)
         ensemble_chars_file = get_ensemble_file(ensemble_scenario_spec)
 
-        ensemble_chars_vec[i] = (
-            OT_chars = ensemble_chars_file["OT_chars"],
-            outbreak_detect_spec = ensemble_scenario_spec.outbreak_detection_specification,
-            ind_test_spec = ensemble_scenario_spec.individual_test_specification,
-        )
-
-        accuracy_array[1, i] = float(
-            ensemble_scenario_spec.outbreak_detection_specification.detection_threshold,
-        )
-        accuracy_array[2, i] = median(ensemble_chars_file["OT_chars"].accuracy)
+        accuracy_array[i] = median(ensemble_chars_file["OT_chars"].accuracy)
     end
 
-    optimal_accuracy = NaNMath.maximum(accuracy_array[2, :])
-    optimal_threshold = accuracy_array[
-        1, findfirst(==(optimal_accuracy), accuracy_array[2, :])
-    ]
-    return (threshold = optimal_threshold, accuracy = optimal_accuracy)
+    @views optimal_accuracy = NaNMath.maximum(accuracy_array)
+    optimal_threshold_index = findfirst(==(optimal_accuracy), accuracy_array)
+    optimal_threshold = detectthreshold_vec[optimal_threshold_index]
+
+    return OptimalThresholdCharacteristics(
+        ensemble_scenario_spec_vec[optimal_threshold_index],
+        optimal_threshold,
+        optimal_accuracy,
+    )
 end
