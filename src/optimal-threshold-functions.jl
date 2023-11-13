@@ -40,8 +40,6 @@ function calculate_optimal_threshold(
     test_result_lag,
     percent_visit_clinic = base_parameters
 
-    accuracy_array = zeros(Float64, length(detectthreshold_vec))
-
     ensemble_scenario_spec_vec = map(
         threshold -> ScenarioSpecification(
             ensemble_specification,
@@ -60,17 +58,23 @@ function calculate_optimal_threshold(
     )
 
     for (i, ensemble_scenario_spec) in pairs(ensemble_scenario_spec_vec)
-        ensemble_chars_file = get_ensemble_file(ensemble_scenario_spec)
+        OT_chars = get_ensemble_file(ensemble_scenario_spec)["OT_chars"]
+        accuracy = median(OT_chars.accuracy)
+        detection_threshold =
+            ensemble_scenario_spec.outbreak_detection_specification.detection_threshold
 
-        accuracy_array[i] = median(ensemble_chars_file["OT_chars"].accuracy)
+        if i == 1
+            optimal_accuracy = accuracy
+            optimal_threshold = detection_threshold
+            optimal_OT_chars = OT_chars
+            continue
+        end
+        if !isnan(accuracy) && accuracy > optimal_accuracy
+            optimal_accuracy = accuracy
+            optimal_threshold = detection_threshold
+            optimal_OT_chars = OT_chars
+        end
     end
-
-    optimal_accuracy = NaNMath.maximum(accuracy_array)
-    optimal_threshold_index = findfirst(==(optimal_accuracy), accuracy_array)
-    optimal_threshold = detectthreshold_vec[optimal_threshold_index]
-    optimal_OT_chars = get_ensemble_file(
-        ensemble_scenario_spec_vec[optimal_threshold_index]
-    )["OT_chars"]
 
     return OptimalThresholdCharacteristics(
         optimal_OT_chars,
