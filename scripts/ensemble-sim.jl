@@ -48,7 +48,7 @@ dur_inf_days_vec = [5]
 R_0_vec = [10.0]
 sigma_vec = 1 ./ latent_per_days_vec
 gamma_vec = 1 ./ dur_inf_days_vec
-vaccination_coverage_vec = [0.0, 0.8]
+vaccination_coverage_vec = [0.0]
 
 #%%
 ensemble_spec_vec = create_ensemble_spec_combinations(
@@ -94,10 +94,10 @@ noise_spec_vec = create_combinations_vec(
 )
 
 #%%
-detectthreshold_vec = [2, 4, collect(5:5:20)...]
+detectthreshold_vec = collect(4:1:15)
 moveavglag_vec = [7]
 perc_clinic_vec = [0.6]
-perc_clinic_test_vec = [0.8, 1.0]
+perc_clinic_test_vec = collect(0.2:0.2:1.0)
 testlag_vec = [0]
 
 outbreak_detection_spec_vec = create_combinations_vec(

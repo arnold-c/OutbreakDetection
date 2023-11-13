@@ -92,4 +92,4 @@ clean-ensemble-scenarios:
 	@echo "cleaning ensemble scenario tmp files"
 	$(shell fd -g 'ensemble*scenario' 'tmp/' | xargs rm)
 	@echo "cleaning ensemble scenario plot files"
-	$(shell fd -g '*.png' 'plots/ensemble' | xargs rm -r)
+	$(shell fd -g -I '*.png' 'plots/ensemble' | xargs rm -r)

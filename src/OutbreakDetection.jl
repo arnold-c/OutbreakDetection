@@ -16,7 +16,7 @@ include("structs.jl")
 export SimTimeParameters, EnsembleSpecification, DynamicsParameters,
     StateParameters, OutbreakThresholdChars, OutbreakDetectionSpecification,
     OutbreakSpecification, IndividualTestSpecification, NoiseSpecification,
-    ScenarioSpecification, TestPositivity
+    ScenarioSpecification, TestPositivity, OptimalThresholdCharacteristics
 # @reexport using .ODStructs
 
 include("SEIR-model.jl")
@@ -70,8 +70,9 @@ export create_poisson_noise_arr, create_poisson_noise_arr!
 include("plotting-functions.jl")
 export seircolors,
     seir_state_labels, create_sir_plot, draw_sir_plot,
-    DAILY_SENSITIVITY_COLOR, DAILY_SPECIFICITY_COLOR, DAILY_PPV_COLOR,
-    DAILY_NPV_COLOR, DETECTION_DELAY_COLOR, N_ALERTS_PER_OUTBREAK_COLOR,
+    ACCURACY_COLOR, DAILY_SENSITIVITY_COLOR, DAILY_SPECIFICITY_COLOR,
+    DAILY_PPV_COLOR, DAILY_NPV_COLOR,
+    DETECTION_DELAY_COLOR, N_ALERTS_PER_OUTBREAK_COLOR,
     N_FALSE_ALERTS_COLOR, N_ALERTS_COLOR, N_OUTBREAKS_COLOR,
     N_MISSED_OUTBREAKS_COLOR, PERC_OUTBREAKS_DETECTED_COLOR,
     PERC_OUTBREAKS_MISSED_COLOR, PERC_ALERTS_CORRECT_COLOR,
@@ -81,7 +82,15 @@ export seircolors,
     incidence_prevalence_plot, visualize_ensemble_noise, incidence_testing_plot,
     testing_plot, ensemble_outbreak_distribution_plot, ensemble_OTChars_plot,
     singlescenario_test_positivity_plot, test_positivity_distribution_plot,
-    ensemble_outbreak_detect_diff_plot, compare_ensemble_OTchars_plots
+    ensemble_outbreak_detect_diff_plot, save_compare_ensemble_OTchars_plot,
+    compare_ensemble_OTchars_plots,
+    compare_optimal_thresholds_chars_plot, create_optimal_thresholds_chars_plot
 # @reexport using .PlottingFunctions
+
+include("threshold_comparison_plots.jl")
+export plot_all_threshold_comparisons
+
+include("optimal-threshold-functions.jl")
+export calculate_optimal_threshold, calculate_OptimalThresholdCharacteristics
 
 end

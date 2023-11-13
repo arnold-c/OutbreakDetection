@@ -17,6 +17,7 @@ using NaNMath: NaNMath
 seircolors = ["dodgerblue4", "green", "firebrick3", "chocolate2", "purple"]
 seir_state_labels = ["S", "E", "I", "R", "N"]
 
+ACCURACY_COLOR = "#004643"
 DAILY_SENSITIVITY_COLOR = "#2A3965"
 DAILY_SPECIFICITY_COLOR = "#C31D60"
 DAILY_PPV_COLOR = "#22D37D"
@@ -647,6 +648,56 @@ function test_positivity_distribution_plot(
     )
 end
 
+function save_compare_ensemble_OTchars_plot(
+    char_struct_vec,
+    columnfacetchar::Symbol,
+    plottingchars;
+    plotname,
+    plotsrootdir = plotsdir("ensemble/testing-comparison"),
+    clinic_tested_dir,
+    plotformat = "png",
+    resolution = (2200, 1200),
+    columnfacetchar_label = "Detection Threshold",
+    binwidth = 1.0,
+    xlabel = "Alert Characteristic Value",
+    ylabel = "Density",
+    legend = true,
+    legendlabel = "Outbreak Chacteristic",
+    meanlines = false,
+    meanlabels = false,
+    normalization = :none,
+    kwargs...,
+)
+    plot = compare_ensemble_OTchars_plots(
+        char_struct_vec,
+        columnfacetchar,
+        plottingchars;
+        columnfacetchar_label = columnfacetchar_label,
+        binwidth = binwidth,
+        xlabel = xlabel,
+        ylabel = ylabel,
+        legend = legend,
+        legendlabel = legendlabel,
+        meanlines = meanlines,
+        meanlabels = meanlabels,
+        normalization = normalization,
+        kwargs...,
+    )
+
+    plotpath = joinpath(
+        plotsrootdir, clinic_tested_dir
+    )
+    mkpath(plotpath)
+
+    save(
+        joinpath(plotpath, "$plotname.$plotformat"),
+        plot;
+        resolution = resolution,
+    )
+
+    return nothing
+end
+
 function compare_ensemble_OTchars_plots(
     char_struct_vec,
     columnfacetchar::Symbol,
@@ -800,7 +851,7 @@ function construct_OTchars_facets!(
 
         Label(
             gl[1, :],
-            L"\text{\textbf{Individual Test} - Sensitivity: %$(OT_char_tuple.ind_test_spec.sensitivity), Specificity: %$(OT_char_tuple.ind_test_spec.specificity), %$(columnfacetchar_label): %$(getfield(OT_char_tuple.outbreak_detect_spec, columnfacetchar))}";
+            L"\text{\textbf{Individual Test} - Sensitivity: %$(OT_char_tuple.ind_test_spec.sensitivity), Specificity: %$(OT_char_tuple.ind_test_spec.specificity), %$(columnfacetchar_label): %$(getfield(OT_char_tuple.outbreak_detect_spec, columnfacetchar)), Perc Clinic Tested: %$(OT_char_tuple.outbreak_detect_spec.percent_clinic_tested)}";
             word_wrap = true,
         )
         colsize!(gl, 1, Relative(1))
@@ -824,5 +875,153 @@ function calculate_bins(charvec, binwidth)
     return minbin:binwidth:maxbin
 end
 
+function compare_optimal_thresholds_chars_plot(
+    optimal_thresholds_vec,
+    plottingchars;
+    kwargs...
+)
+    unique_percent_clinic_tested = unique(
+        optimal_thresholds_vec.percent_clinic_tested
+    )
+
+    for percent_clinic_tested in unique_percent_clinic_tested
+        optimal_thresholds_chars = optimal_thresholds_vec[(optimal_thresholds_vec.percent_clinic_tested .== percent_clinic_tested)]
+
+        for (i, chars) in pairs(optimal_thresholds_chars)
+            if chars.individual_test_specification ==
+                IndividualTestSpecification(1.0, 0.0)
+                optimal_thresholds_chars[i] = filter(
+                    vec ->
+                        vec.percent_clinic_tested == 1.0 &&
+                            vec.individual_test_specification ==
+                            IndividualTestSpecification(1.0, 0.0),
+                    optimal_thresholds_vec,
+                )[1]
+            end
+        end
+
+        plot = create_optimal_thresholds_chars_plot(
+            optimal_thresholds_chars,
+            plottingchars;
+            kwargs...
+        )
+
+        plotpath = plotsdir(
+            "ensemble/testing-comparison/clinic-tested_$percent_clinic_tested"
+        )
+        mkpath(plotpath)
+
+        save(
+            joinpath(
+                plotpath,
+                "compare-outreak_clinic-tested-$(percent_clinic_tested)_best-thresholds.png",
+            ),
+            plot;
+            resolution = (2200, 1600),
+        )
+
+        @info "Created optimal thresholds plot for % clinic tested $(percent_clinic_tested)"
+    end
+
+    return nothing
+end
+
+function create_optimal_thresholds_chars_plot(
+    optimal_thresholds_chars,
+    plottingchars;
+    kwargs...
+)
+    number_tests = length(optimal_thresholds_chars)
+
+    sort!(
+        optimal_thresholds_chars;
+        by = threshold ->
+            threshold.individual_test_specification.specificity,
+    )
+
+    fig = Figure()
+
+    thresholdschars_structarr =
+        optimal_thresholds_chars.outbreak_threshold_chars
+    for (x, chartuple) in pairs(plottingchars)
+        bins_vec = Vector{StepRangeLen}(undef, number_tests)
+        thresholdschars_vec =
+            getproperty.(thresholdschars_structarr, chartuple.char)
+
+        charvecs = reduce(vcat, thresholdschars_vec)
+
+        if !haskey(chartuple, :bins)
+            if !haskey(chartuple, :binwidth)
+                @error "The metric $(chartuple.char) wasn't provided with bins or a binwidth"
+                break
+            end
+            if (
+                chartuple.char == :detectiondelays ||
+                chartuple.char == :missed_outbreak_size
+            ) &&
+                optimal_thresholds_chars.individual_test_specification[1] ==
+               IndividualTestSpecification(1.0, 0.0)
+                clinical_char = reduce(
+                    vcat,
+                    getproperty.(
+                        thresholdschars_structarr[1], chartuple.char
+                    ),
+                )
+                nonclinical_char = reduce(
+                    vcat,
+                    getproperty.(
+                        thresholdschars_structarr[2:end], chartuple.char
+                    ),
+                )
+
+                for i in eachindex(bins_vec)
+                    bins_vec[i] = calculate_bins(
+                        nonclinical_char, chartuple.binwidth
+                    )
+                end
+                bins_vec[1] = calculate_bins(
+                    clinical_char, chartuple.binwidth
+                )
+
+            else
+                for i in eachindex(bins_vec)
+                    bins_vec[i] = calculate_bins(charvecs, chartuple.binwidth)
+                end
+            end
+        else
+            bins_vec .= chartuple.bins
+        end
+
+        if !haskey(chartuple, :label)
+            label = :none
+        else
+            label = chartuple.label
+        end
+
+        for (y, optimal_thresholds) in pairs(optimal_thresholds_chars)
+            gl = fig[y, x] = GridLayout()
+            ax = Axis(gl[2, 1]; xlabel = label)
+
+            hist!(
+                ax,
+                reduce(vcat, thresholdschars_vec[y]);
+                bins = bins_vec[y],
+                color = chartuple.color,
+            )
+            Label(
+                gl[1, :],
+                L"\text{\textbf{Individual Test} - Sensitivity: %$(optimal_thresholds.individual_test_specification.sensitivity), Specificity: %$(optimal_thresholds.individual_test_specification.specificity), Alert Threshold: %$(optimal_thresholds.detection_threshold), Perc Clinic Tested: %$(optimal_thresholds.percent_clinic_tested)}";
+                word_wrap = true,
+            )
+            colsize!(gl, 1, Relative(1))
+
+            if y < number_tests
+                hidexdecorations!(ax; ticklabels = false, ticks = false)
+            end
+        end
+    end
+
+    return fig
+end
 # end
 #

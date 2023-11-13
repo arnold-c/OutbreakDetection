@@ -6,6 +6,7 @@
 
 using StaticArrays
 using LabelledArrays
+using StructArrays
 
 # include("transmission-functions.jl")
 # using .TransmissionFunctions
@@ -197,6 +198,7 @@ struct OutbreakThresholdChars{
     daily_specificity::T3
     daily_ppv::T3
     daily_npv::T3
+    accuracy::T3
     matchedoutbreakbounds::T4
     noutbreaks::T2
     ndetectoutbreaks::T2
@@ -248,7 +250,7 @@ end
 struct OutbreakDetectionSpecification{T1<:Integer,T2<:AbstractFloat}
     detection_threshold::T1
     moving_average_lag::T1
-    percent_visit_clinis::T2
+    percent_visit_clinic::T2
     percent_clinic_tested::T2
     percent_tested::T2
     test_result_lag::T1
@@ -257,16 +259,16 @@ end
 function OutbreakDetectionSpecification(
     detection_threshold,
     moving_average_lag,
-    percent_clinic,
+    percent_visit_clinic,
     percent_clinic_tested,
     test_result_lag,
 )
     return OutbreakDetectionSpecification(
         detection_threshold,
         moving_average_lag,
-        percent_clinic,
+        percent_visit_clinic,
         percent_clinic_tested,
-        percent_clinic * percent_clinic_tested,
+        percent_visit_clinic * percent_clinic_tested,
         test_result_lag,
     )
 end
@@ -314,7 +316,8 @@ function ScenarioSpecification(
         "detectthreshold_$(outbreak_detection_specification.detection_threshold)",
         "testlag_$(outbreak_detection_specification.test_result_lag)",
         "moveavglag_$(outbreak_detection_specification.moving_average_lag)",
-        "perc_tested_$(outbreak_detection_specification.percent_tested)",
+        "perc_visit_clinic_$(outbreak_detection_specification.percent_visit_clinic)",
+        "perc_clinic_tested_$(outbreak_detection_specification.percent_clinic_tested)",
         "testsens_$(individual_test_specification.sensitivity)",
         "testspec_$(individual_test_specification.specificity)",
     )
@@ -353,4 +356,16 @@ function TestPositivity(true_positive_vec, total_positive_vec, detection_vec)
     )
 end
 
+struct OptimalThresholdCharacteristics{
+    T1<:StructVector{<:OutbreakThresholdChars},
+    T2<:IndividualTestSpecification,
+    T3<:AbstractFloat,
+    T4<:Integer,
+}
+    outbreak_threshold_chars::T1
+    individual_test_specification::T2
+    percent_clinic_tested::T3
+    detection_threshold::T4
+    accuracy::T3
+end
 # end
