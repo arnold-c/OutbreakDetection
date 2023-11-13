@@ -6,6 +6,7 @@
 
 using StaticArrays
 using LabelledArrays
+using StructArrays
 
 # include("transmission-functions.jl")
 # using .TransmissionFunctions
@@ -356,7 +357,7 @@ function TestPositivity(true_positive_vec, total_positive_vec, detection_vec)
 end
 
 struct OptimalThresholdCharacteristics{
-    T1<:OutbreakThresholdChars,
+    T1<:StructVector{<:OutbreakThresholdChars},
     T2<:IndividualTestSpecification,
     T3<:AbstractFloat,
     T4<:Integer,
