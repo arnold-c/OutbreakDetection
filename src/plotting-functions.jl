@@ -875,12 +875,57 @@ function calculate_bins(charvec, binwidth)
     return minbin:binwidth:maxbin
 end
 
+function compare_optimal_thresholds_chars_plot(
+    optimal_thresholds_vec,
+    plottingchars;
+    kwargs...
+)
+    unique_percent_clinic_tested = unique(
+        optimal_thresholds_vec.percent_clinic_tested
+    )
+
+    for percent_clinic_tested in unique_percent_clinic_tested
+        optimal_thresholds_chars = optimal_thresholds_vec[(optimal_thresholds_vec.percent_clinic_tested .== percent_clinic_tested)]
+
+        sort!(
+            optimal_thresholds_chars;
+            by = threshold ->
+                threshold.individual_test_specification.specificity,
+        )
+
+        plot = create_optimal_thresholds_chars_plot(
+            optimal_thresholds_chars,
+            plottingchars;
+            kwargs...
+        )
+
+        plotpath = plotsdir(
+            "ensemble/testing-comparison/clinic-tested_$percent_clinic_tested"
+        )
+        mkpath(plotpath)
+
+        save(
+            joinpath(
+                plotpath,
+                "compare-outreak_clinic-tested-$(percent_clinic_tested)_best-thresholds.png",
+            ),
+            plot;
+            resolution = (2200, 1600),
+        )
+
+        @info "Created optimal thresholds plot for % clinic tested $(percent_clinic_tested)"
+    end
+
+    return nothing
+end
+
 function create_optimal_thresholds_chars_plot(
     optimal_thresholds_chars,
     plottingchars;
     kwargs...
 )
     number_tests = length(optimal_thresholds_chars)
+
     fig = Figure()
 
     for (x, chartuple) in pairs(plottingchars)
