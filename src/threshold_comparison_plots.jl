@@ -252,7 +252,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
         plotname = noutbreaks_plotname,
         clinic_tested_dir = clinic_tested_dir,
     )
-    @info "Number of outbreakss plot saved"
+    @info "Number of outbreaks plot saved"
 
     nmissedoutbreaks_plotname = "compare-outbreak_clinic-tested-$(percent_clinic_tested)_nmissedoutbreaks_plot"
     save_compare_ensemble_OTchars_plot(
@@ -272,7 +272,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
         plotname = nmissedoutbreaks_plotname,
         clinic_tested_dir = clinic_tested_dir,
     )
-    @info "Number of missed outbreaksss plot saved"
+    @info "Number of missed outbreaks plot saved"
 
     size_outbreaks_detectmissed_plotname = "compare-outbreak_clinic-tested-$(percent_clinic_tested)_size-outbreaks-detected-missed_plot"
     save_compare_ensemble_OTchars_plot(
@@ -296,7 +296,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
         plotname = size_outbreaks_detectmissed_plotname,
         clinic_tested_dir = clinic_tested_dir,
     )
-    @info "Size of outbreakss detected and missed plot saved"
+    @info "Size of outbreaks detected and missed plot saved"
 
     perc_detectmissed_outbreak_plotname = "compare-outbreak_clinic-tested-$(percent_clinic_tested)_percent-outbreaks-detected-missed_plot"
     save_compare_ensemble_OTchars_plot(
@@ -318,7 +318,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
         plotname = perc_detectmissed_outbreak_plotname,
         clinic_tested_dir = clinic_tested_dir,
     )
-    @info "Percent outbreakss detected and missed plot saved"
+    @info "Percent outbreaks detected and missed plot saved"
 
     for i in eachindex(ensemble_chars_vec)
         perc_alerts_sum = sum(
@@ -391,7 +391,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
         plotname = perc_alertscorrect_outbreaksdetected_plotname,
         clinic_tested_dir = clinic_tested_dir,
     )
-    @info "Percent alerts correct and outbreakss detected plot saved"
+    @info "Percent alerts correct and outbreaks detected plot saved"
 
     ncasesafteralerts_plotname = "compare-outbreak_clinic-tested-$(percent_clinic_tested)_n-cases-after-alerts_plot"
     save_compare_ensemble_OTchars_plot(
@@ -434,6 +434,8 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
     @info "Percentage of cases after alerts plot saved"
 
     @info "Finished saving all plots for % clinic tested = $percent_clinic_tested"
+    @info "=============================================="
+    println()
 
     return nothing
 end
