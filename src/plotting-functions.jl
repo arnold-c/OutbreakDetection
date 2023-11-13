@@ -942,26 +942,38 @@ function create_optimal_thresholds_chars_plot(
                 @error "The metric $(chartuple.char) wasn't provided with bins or a binwidth"
                 break
             end
-            for i in eachindex(bins_vec)
-                if (
-                    chartuple.char == :detectiondelays ||
-                    chartuple.char == :missed_outbreak_size
-                ) &&
-                    optimal_thresholds_chars.individual_test_specification[1] ==
-                   IndividualTestSpecification(1.0, 0.0)
-                    clinical_char = reduce(
-                        vcat,
-                        getproperty.(
-                            thresholdschars_structarr[1],
-                            chartuple.char
-                        ),
-                    )
+            if (
+                chartuple.char == :detectiondelays ||
+                chartuple.char == :missed_outbreak_size
+            ) &&
+                optimal_thresholds_chars.individual_test_specification[1] ==
+               IndividualTestSpecification(1.0, 0.0)
+                clinical_char = reduce(
+                    vcat,
+                    getproperty.(
+                        thresholdschars_structarr[1], chartuple.char
+                    ),
+                )
+                nonclinical_char = reduce(
+                    vcat,
+                    getproperty.(
+                        thresholdschars_structarr[2:end], chartuple.char
+                    ),
+                )
 
-                    bins_vec[1] = calculate_bins(
-                        clinical_char, chartuple.binwidth
+                for i in eachindex(bins_vec)
+                    bins_vec[i] = calculate_bins(
+                        nonclinical_char, chartuple.binwidth
                     )
                 end
-                bins_vec[i] = calculate_bins(charvecs, chartuple.binwidth)
+                bins_vec[1] = calculate_bins(
+                    clinical_char, chartuple.binwidth
+                )
+
+            else
+                for i in eachindex(bins_vec)
+                    bins_vec[i] = calculate_bins(charvecs, chartuple.binwidth)
+                end
             end
         else
             bins_vec .= chartuple.bins
