@@ -83,7 +83,7 @@ export seircolors,
     testing_plot, ensemble_outbreak_distribution_plot, ensemble_OTChars_plot,
     singlescenario_test_positivity_plot, test_positivity_distribution_plot,
     ensemble_outbreak_detect_diff_plot, save_compare_ensemble_OTchars_plot,
-    compare_ensemble_OTchars_plots
+    compare_ensemble_OTchars_plots, create_optimal_thresholds_chars_plot
 # @reexport using .PlottingFunctions
 
 include("threshold_comparison_plots.jl")

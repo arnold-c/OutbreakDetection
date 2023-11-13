@@ -875,5 +875,44 @@ function calculate_bins(charvec, binwidth)
     return minbin:binwidth:maxbin
 end
 
+function create_optimal_thresholds_chars_plot(
+    optimal_thresholds_chars,
+    plottingchars;
+    kwargs...
+)
+    fig = Figure()
+
+    for (x, chartuple) in pairs(plottingchars)
+        for (y, optimal_thresholds) in
+            pairs(optimal_thresholds_chars)
+            thresholdchars = optimal_thresholds.outbreak_threshold_chars
+
+            charvecs = reduce(vcat, getproperty(thresholdchars, chartuple.char))
+
+            if !haskey(chartuple, :label)
+                label = :none
+            else
+                label = chartuple.label
+            end
+
+            gl = fig[y, x] = GridLayout()
+            ax = Axis(gl[2, 1]; xlabel = label)
+
+            hist!(
+                ax,
+                charvecs;
+                color = chartuple.color,
+            )
+            Label(
+                gl[1, :],
+                L"\text{\textbf{Individual Test} - Sensitivity: %$(optimal_thresholds.individual_test_specification.sensitivity), Specificity: %$(optimal_thresholds.individual_test_specification.specificity), Perc Clinic Tested: %$(optimal_thresholds.percent_clinic_tested)}";
+                word_wrap = true,
+            )
+            colsize!(gl, 1, Relative(1))
+        end
+    end
+
+    return fig
+end
 # end
 #
