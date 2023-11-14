@@ -167,6 +167,10 @@ function calculate_movingavg(invec, testlag, avglag)
 end
 
 function calculate_movingavg!(outvec, invec, testlag, avglag; Float = true)
+    if avglag == 0
+        outvec .= invec
+        return nothing
+    end
     if Float
         avgfunc =
             (invec, day, avglag) -> mean(@view(invec[(day - avglag + 1):day]))
