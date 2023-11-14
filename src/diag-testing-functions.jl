@@ -158,19 +158,24 @@ function calculate_positives!(
     return nothing
 end
 
-function calculate_movingavg(invec, testlag, avglag)
-    outvec = zeros(Float64, size(invec, 1), 1)
+function calculate_movingavg(invec, avglag; Float = true)
+    if Float
+        outvec = zeros(Float64, size(invec, 1), 1)
+    else
+        outvec = zeros(Int64, size(invec, 1), 1)
+    end
 
-    calculate_movingavg!(outvec, invec, testlag, avglag)
+    calculate_movingavg!(outvec, invec, avglag; Float = Float)
 
     return outvec
 end
 
-function calculate_movingavg!(outvec, invec, testlag, avglag; Float = true)
+function calculate_movingavg!(outvec, invec, avglag; Float = true)
     if avglag == 0
         outvec .= invec
         return nothing
     end
+
     if Float
         avgfunc =
             (invec, day, avglag) -> mean(@view(invec[(day - avglag + 1):day]))
@@ -181,10 +186,11 @@ function calculate_movingavg!(outvec, invec, testlag, avglag; Float = true)
             ))
     end
     for day in eachindex(invec)
-        if day >= testlag + avglag + 1
+        if day >= avglag + 1
             outvec[day] = avgfunc(invec, day, avglag)
         end
     end
+    return nothing
 end
 
 function detectoutbreak(incvec, avgvec, threshold)
