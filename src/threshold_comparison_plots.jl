@@ -9,9 +9,10 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
     percent_visit_clinic = base_parameters
 
     clinical_case_test_spec = IndividualTestSpecification(1.0, 0.0)
-    non_clinical_case_test_spec_vec = test_spec_vec[(
-    test_spec_vec .!= clinical_case_test_spec
-)]
+    non_clinical_case_test_spec_vec = filter(
+        spec -> spec != clinical_case_test_spec,
+        test_spec_vec
+    )
 
     ensemble_scenario_spec_vec = Vector{ScenarioSpecification}(
         undef,

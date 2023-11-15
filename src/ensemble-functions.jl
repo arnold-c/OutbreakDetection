@@ -251,15 +251,41 @@ function define_outbreaks(incidence_param_dict)
         ensemble_inc_vecs, outbreak_spec
     )
 
-    ensemble_scenarios = create_combinations_vec(
+    clinical_case_test_spec = IndividualTestSpecification(1.0, 0.0)
+    non_clinical_case_test_spec_vec = filter(
+        spec -> spec != clinical_case_test_spec,
+        test_spec_vec
+    )
+
+    non_clinical_case_ensemble_scenarios = create_combinations_vec(
         ScenarioSpecification,
         (
             [ensemble_spec],
             [outbreak_spec],
             noise_spec_vec,
             outbreak_detection_spec_vec,
-            test_spec_vec,
+            non_clinical_case_test_spec_vec,
         ),
+    )
+
+    clinical_case_outbreak_detection_spec_vec = filter(
+        spec -> spec.percent_clinic_tested == 1.0,
+        outbreak_detection_spec_vec
+    )
+
+    clinical_case_ensemble_scenarios = create_combinations_vec(
+        ScenarioSpecification,
+        (
+            [ensemble_spec],
+            [outbreak_spec],
+            noise_spec_vec,
+            clinical_case_outbreak_detection_spec_vec,
+            [clinical_case_test_spec],
+        ),
+    )
+
+    ensemble_scenarios = vcat(
+        non_clinical_case_ensemble_scenarios, clinical_case_ensemble_scenarios
     )
 
     scenario_param_dict = dict_list(
