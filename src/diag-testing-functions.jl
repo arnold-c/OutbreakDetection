@@ -103,8 +103,7 @@ function create_testing_arrs!(
         calculate_movingavg!(
             @view(testarr[:, 6, sim]),
             @view(testarr[:, 5, sim]),
-            testlag, moveavglag;
-            Float = false,
+            moveavglag
         )
 
         # TOTAL Test positive individuals trigger outbreak response
