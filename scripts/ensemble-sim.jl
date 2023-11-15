@@ -112,16 +112,11 @@ outbreak_detection_spec_vec = create_combinations_vec(
 )
 
 #%%
-testsens_vec = collect(0.8:0.1:1.0)
-testspec_vec = collect(0.8:0.1:1.0)
-
-test_spec_vec = create_combinations_vec(
-    IndividualTestSpecification,
-    (testsens_vec, testspec_vec)
-)
-
-# Add test that represents all tested clinical cases = positive
-push!(test_spec_vec, IndividualTestSpecification(1.0, 0.0))
+test_spec_vec = [
+    IndividualTestSpecification(0.8, 0.8),
+    IndividualTestSpecification(1.0, 1.0),
+    IndividualTestSpecification(1.0, 0.0),
+]
 
 #%%
 base_param_dict = @dict(

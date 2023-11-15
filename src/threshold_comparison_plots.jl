@@ -1,6 +1,5 @@
 function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
-    @unpack sensitivity_vec,
-    specificity_vec,
+    @unpack test_spec_vec,
     alertthreshold_vec,
     ensemble_specification,
     noise_specification,
@@ -9,9 +8,14 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
     test_result_lag,
     percent_visit_clinic = base_parameters
 
+    clinical_case_test_spec = IndividualTestSpecification(1.0, 0.0)
+    non_clinical_case_test_spec_vec = test_spec_vec[(
+    test_spec_vec .!= clinical_case_test_spec
+)]
+
     ensemble_scenario_spec_vec = Vector{ScenarioSpecification}(
         undef,
-        length(sensitivity_vec) * length(alertthreshold_vec) +
+        length(non_clinical_case_test_spec_vec) * length(alertthreshold_vec) +
         length(alertthreshold_vec),
     )
     ensemble_chars_vec = Vector(
@@ -39,14 +43,11 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
         alertthreshold_vec,
     )
 
-    for (i, ((sens, spec), outbreak_detect_spec)) in enumerate(
+    for (i, (ind_test_spec, outbreak_detect_spec)) in enumerate(
         Iterators.product(
-            zip(sensitivity_vec, specificity_vec),
-            outbreak_detect_spec_vec
+            non_clinical_case_test_spec_vec, outbreak_detect_spec_vec
         ),
     )
-        ind_test_spec = IndividualTestSpecification(sens, spec)
-
         ensemble_scenario_spec = ScenarioSpecification(
             ensemble_specification,
             outbreak_specification,
@@ -66,7 +67,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
             [noise_specification],
             clinical_case_outbreak_detect_spec_vec,
             # TODO: update this to calculate for all detection thresholds
-            [IndividualTestSpecification(1.0, 0.0)],
+            [clinical_case_test_spec],
         ),
     )
 
