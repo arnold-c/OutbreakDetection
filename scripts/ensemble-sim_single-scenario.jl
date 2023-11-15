@@ -172,7 +172,7 @@ save(
 )
 
 #%%
-ensemble_single_scenario_outbreak_detect_plot = ensemble_OTChars_plot(
+ensemble_single_scenario_outbreak_alert_plot = ensemble_OTChars_plot(
     ensemble_single_scenario_detection["OT_chars"],
     ensemble_single_individual_test_spec,
     ensemble_single_scenario_spec.outbreak_detection_specification,
@@ -185,7 +185,7 @@ ensemble_single_scenario_outbreak_detect_plot = ensemble_OTChars_plot(
             vjust = 0.055,
         ),
         (
-            char = :ndetectoutbreaks,
+            char = :nalerts,
             label = "Number of Alerts",
             color = (N_ALERTS_COLOR, 0.5),
             hjust = 2.5,
@@ -196,9 +196,9 @@ ensemble_single_scenario_outbreak_detect_plot = ensemble_OTChars_plot(
 
 save(
     plotsdir(
-        "ensemble/single-scenario/ensemble-sim_single-scenario_outbreak-detection.png",
+        "ensemble/single-scenario/ensemble-sim_single-scenario_outbreak-alerts.png",
     ),
-    ensemble_single_scenario_outbreak_detect_plot,
+    ensemble_single_scenario_outbreak_alert_plot,
 )
 
 #%%
