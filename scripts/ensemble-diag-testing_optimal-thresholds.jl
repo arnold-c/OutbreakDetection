@@ -86,6 +86,7 @@ optimal_thresholds_df = DataFrame(;
         :percent_clinic_tested,
         :alert_threshold,
     )
+    select(_, Cols(x -> startswith(x, "s"), x -> startswith(x, "0"), "1.0"))
 end
 
 #%%
@@ -97,6 +98,7 @@ end
         :percent_clinic_tested,
         :accuracy,
     )
+    select(_, Cols(x -> startswith(x, "s"), x -> startswith(x, "0"), "1.0"))
 end
 
 #%%

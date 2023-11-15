@@ -884,21 +884,21 @@ function compare_optimal_thresholds_chars_plot(
         optimal_thresholds_vec.percent_clinic_tested
     )
 
-    for percent_clinic_tested in unique_percent_clinic_tested
-        optimal_thresholds_chars = optimal_thresholds_vec[(optimal_thresholds_vec.percent_clinic_tested .== percent_clinic_tested)]
+    clinical_case_test_spec = IndividualTestSpecification(1.0, 0.0)
 
-        for (i, chars) in pairs(optimal_thresholds_chars)
-            if chars.individual_test_specification ==
-                IndividualTestSpecification(1.0, 0.0)
-                optimal_thresholds_chars[i] = filter(
-                    vec ->
-                        vec.percent_clinic_tested == 1.0 &&
-                            vec.individual_test_specification ==
-                            IndividualTestSpecification(1.0, 0.0),
-                    optimal_thresholds_vec,
-                )[1]
-            end
-        end
+    for percent_clinic_tested in unique_percent_clinic_tested
+        optimal_thresholds_chars = filter(
+            optimal_thresholds ->
+                optimal_thresholds.percent_clinic_tested ==
+                percent_clinic_tested ||
+                    (
+                        optimal_thresholds.percent_clinic_tested ==
+                        1.0 &&
+                        optimal_thresholds.individual_test_specification ==
+                        clinical_case_test_spec
+                    ),
+            optimal_thresholds_vec,
+        )
 
         plot = create_optimal_thresholds_chars_plot(
             optimal_thresholds_chars,
