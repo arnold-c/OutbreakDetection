@@ -121,7 +121,7 @@ ti = time()
                         500 540 495 550 1000
                     ],
                     noutbreaks = 6,
-                    ndetectoutbreaks = 8,
+                    nalerts = 8,
                     detected_outbreak_size = [600, 700, 900, 1000],
                     missed_outbreak_size = [500, 800],
                     n_true_outbreaks_detected = 4,

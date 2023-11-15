@@ -83,7 +83,7 @@ end
 
 function classify_all_outbreaks!(
     incidence_vec,
-    detectionstatus_vec,
+    alertstatus_vec,
     all_thresholds_arr,
     minoutbreakdur,
     minoutbreaksize,
@@ -101,7 +101,7 @@ function classify_all_outbreaks!(
             minoutbreaksize,
         )
 
-        @view(detectionstatus_vec[lower:upper]) .= @view(
+        @view(alertstatus_vec[lower:upper]) .= @view(
             all_thresholds_arr[row, 4]
         )
     end

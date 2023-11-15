@@ -319,7 +319,7 @@ function incidence_testing_plot(
     noisearr,
     testingarr,
     timeparams,
-    detectthreshold;
+    alertthreshold;
     sim = 1,
     outbreakcolormap = [
         N_MISSED_OUTBREAKS_COLOR, PERC_OUTBREAKS_DETECTED_COLOR
@@ -395,7 +395,7 @@ function incidence_testing_plot(
     map(
         ax -> hlines!(
             ax,
-            detectthreshold;
+            alertthreshold;
             color = :black,
             linestyle = :dash,
             linewidth = 2,
@@ -527,8 +527,8 @@ function ensemble_OTChars_plot(
     testspec,
     detectspec,
     plottingchars;
-    columnfacetchar = :detection_threshold,
-    columnfacetchar_label = "Detection Threshold",
+    columnfacetchar = :alert_threshold,
+    columnfacetchar_label = "Alert Threshold",
     xlabel = "Alert Characteristic Value",
     ylabel = "Density",
     binwidth = 10.0,
@@ -587,7 +587,7 @@ function ensemble_outbreak_detect_diff_plot(OT_chars; binwidth = 1)
         fig[1, 1]; xlabel = "Difference Between Actual - Detected Outbreaks"
     )
 
-    difference = OT_chars.noutbreaks .- OT_chars.ndetectoutbreaks
+    difference = OT_chars.noutbreaks .- OT_chars.nalerts
 
     bins = minimum(difference):binwidth:maximum(difference)
 
@@ -657,7 +657,7 @@ function save_compare_ensemble_OTchars_plot(
     clinic_tested_dir,
     plotformat = "png",
     resolution = (2200, 1200),
-    columnfacetchar_label = "Detection Threshold",
+    columnfacetchar_label = "Alert Threshold",
     binwidth = 1.0,
     xlabel = "Alert Characteristic Value",
     ylabel = "Density",
@@ -702,7 +702,7 @@ function compare_ensemble_OTchars_plots(
     char_struct_vec,
     columnfacetchar::Symbol,
     plottingchars;
-    columnfacetchar_label = "Detection Threshold",
+    columnfacetchar_label = "Alert Threshold",
     binwidth = 1.0,
     xlabel = "Alert Characteristic Value",
     ylabel = "Density",
@@ -1010,7 +1010,7 @@ function create_optimal_thresholds_chars_plot(
             )
             Label(
                 gl[1, :],
-                L"\text{\textbf{Individual Test} - Sensitivity: %$(optimal_thresholds.individual_test_specification.sensitivity), Specificity: %$(optimal_thresholds.individual_test_specification.specificity), Alert Threshold: %$(optimal_thresholds.detection_threshold), Perc Clinic Tested: %$(optimal_thresholds.percent_clinic_tested)}";
+                L"\text{\textbf{Individual Test} - Sensitivity: %$(optimal_thresholds.individual_test_specification.sensitivity), Specificity: %$(optimal_thresholds.individual_test_specification.specificity), Alert Threshold: %$(optimal_thresholds.alert_threshold), Perc Clinic Tested: %$(optimal_thresholds.percent_clinic_tested)}";
                 word_wrap = true,
             )
             colsize!(gl, 1, Relative(1))

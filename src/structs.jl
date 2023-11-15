@@ -201,7 +201,7 @@ struct OutbreakThresholdChars{
     accuracy::T3
     matchedoutbreakbounds::T4
     noutbreaks::T2
-    ndetectoutbreaks::T2
+    nalerts::T2
     detected_outbreak_size::T5
     missed_outbreak_size::T5
     n_true_outbreaks_detected::T2
@@ -248,7 +248,7 @@ function OutbreakSpecification(
 end
 
 struct OutbreakDetectionSpecification{T1<:Integer,T2<:AbstractFloat}
-    detection_threshold::T1
+    alert_threshold::T1
     moving_average_lag::T1
     percent_visit_clinic::T2
     percent_clinic_tested::T2
@@ -257,14 +257,14 @@ struct OutbreakDetectionSpecification{T1<:Integer,T2<:AbstractFloat}
 end
 
 function OutbreakDetectionSpecification(
-    detection_threshold,
+    alert_threshold,
     moving_average_lag,
     percent_visit_clinic,
     percent_clinic_tested,
     test_result_lag,
 )
     return OutbreakDetectionSpecification(
-        detection_threshold,
+        alert_threshold,
         moving_average_lag,
         percent_visit_clinic,
         percent_clinic_tested,
@@ -313,7 +313,7 @@ function ScenarioSpecification(
         outbreak_specification.dirpath,
         "noise_$(noise_specification.noise_type)",
         "noise_mean_scaling_$(noise_specification.noise_mean_scaling)",
-        "detectthreshold_$(outbreak_detection_specification.detection_threshold)",
+        "alertthreshold_$(outbreak_detection_specification.alert_threshold)",
         "testlag_$(outbreak_detection_specification.test_result_lag)",
         "moveavglag_$(outbreak_detection_specification.moving_average_lag)",
         "perc_visit_clinic_$(outbreak_detection_specification.percent_visit_clinic)",
@@ -339,19 +339,19 @@ struct TestPositivity{T1<:AbstractArray{<:AbstractFloat}}
     thirty_day::T1
 end
 
-function TestPositivity(true_positive_vec, total_positive_vec, detection_vec)
+function TestPositivity(true_positive_vec, total_positive_vec, alert_vec)
     return TestPositivity(
         calculate_test_positivity(
-            true_positive_vec, total_positive_vec, detection_vec, 1
+            true_positive_vec, total_positive_vec, alert_vec, 1
         ),
         calculate_test_positivity(
-            true_positive_vec, total_positive_vec, detection_vec, 7
+            true_positive_vec, total_positive_vec, alert_vec, 7
         ),
         calculate_test_positivity(
-            true_positive_vec, total_positive_vec, detection_vec, 14
+            true_positive_vec, total_positive_vec, alert_vec, 14
         ),
         calculate_test_positivity(
-            true_positive_vec, total_positive_vec, detection_vec, 30
+            true_positive_vec, total_positive_vec, alert_vec, 30
         ),
     )
 end
@@ -365,7 +365,7 @@ struct OptimalThresholdCharacteristics{
     outbreak_threshold_chars::T1
     individual_test_specification::T2
     percent_clinic_tested::T3
-    detection_threshold::T4
+    alert_threshold::T4
     accuracy::T3
 end
 # end

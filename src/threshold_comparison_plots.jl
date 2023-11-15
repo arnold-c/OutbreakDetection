@@ -1,7 +1,7 @@
 function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
     @unpack sensitivity_vec,
     specificity_vec,
-    detectthreshold_vec,
+    alertthreshold_vec,
     ensemble_specification,
     noise_specification,
     outbreak_specification,
@@ -11,8 +11,8 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
 
     ensemble_scenario_spec_vec = Vector{ScenarioSpecification}(
         undef,
-        length(sensitivity_vec) * length(detectthreshold_vec) +
-        length(detectthreshold_vec),
+        length(sensitivity_vec) * length(alertthreshold_vec) +
+        length(alertthreshold_vec),
     )
     ensemble_chars_vec = Vector(
         undef, length(ensemble_scenario_spec_vec)
@@ -26,7 +26,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
             percent_clinic_tested,
             test_result_lag,
         ),
-        detectthreshold_vec,
+        alertthreshold_vec,
     )
     clinical_case_outbreak_detect_spec_vec = map(
         threshold -> OutbreakDetectionSpecification(
@@ -36,7 +36,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
             1.0,
             test_result_lag,
         ),
-        detectthreshold_vec,
+        alertthreshold_vec,
     )
 
     for (i, ((sens, spec), outbreak_detect_spec)) in enumerate(
@@ -83,7 +83,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
     sort!(
         ensemble_chars_vec;
         by = x -> (
-            x.outbreak_detect_spec.detection_threshold,
+            x.outbreak_detect_spec.alert_threshold,
             x.ind_test_spec.specificity,
         ),
     )
@@ -93,7 +93,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
     accuracy_plotname = "compare-outbreak_clinic-tested-$(percent_clinic_tested)_accuracy_plot"
     save_compare_ensemble_OTchars_plot(
         ensemble_chars_vec,
-        :detection_threshold,
+        :alert_threshold,
         [
             (
                 char = :accuracy,
@@ -101,7 +101,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
                 color = (ACCURACY_COLOR, 0.7),
             ),
         ];
-        columnfacetchar_label = "Detection Threshold",
+        columnfacetchar_label = "Alert Threshold",
         bins = 0.0:0.01:1.01,
         plotname = accuracy_plotname,
         clinic_tested_dir = clinic_tested_dir,
@@ -111,7 +111,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
     sens_spec_plotname = "compare-outbreak_clinic-tested-$(percent_clinic_tested)_sens-spec_plot"
     save_compare_ensemble_OTchars_plot(
         ensemble_chars_vec,
-        :detection_threshold,
+        :alert_threshold,
         [
             (
                 char = :daily_sensitivity,
@@ -124,7 +124,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
                 color = (DAILY_SPECIFICITY_COLOR, 0.7),
             ),
         ];
-        columnfacetchar_label = "Detection Threshold",
+        columnfacetchar_label = "Alert Threshold",
         bins = 0.0:0.01:1.01,
         plotname = sens_spec_plotname,
         clinic_tested_dir = clinic_tested_dir,
@@ -134,7 +134,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
     ppv_npv_plotname = "compare-outbreak_clinic-tested-$(percent_clinic_tested)_ppv-npv_plot"
     save_compare_ensemble_OTchars_plot(
         ensemble_chars_vec,
-        :detection_threshold,
+        :alert_threshold,
         [
             (
                 char = :daily_ppv,
@@ -147,7 +147,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
                 color = (DAILY_NPV_COLOR, 0.7),
             ),
         ];
-        columnfacetchar_label = "Detection Threshold",
+        columnfacetchar_label = "Alert Threshold",
         bins = 0.0:0.01:1.01,
         plotname = ppv_npv_plotname,
         clinic_tested_dir = clinic_tested_dir,
@@ -157,7 +157,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
     detectiondelay_plotname = "compare-outbreak_clinic-tested-$(percent_clinic_tested)_detectiondelay_plot"
     save_compare_ensemble_OTchars_plot(
         ensemble_chars_vec,
-        :detection_threshold,
+        :alert_threshold,
         [
         (
             char = :detectiondelays,
@@ -165,7 +165,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
         )
     ];
         xlabel = "Detection Delay (days)",
-        columnfacetchar_label = "Detection Threshold",
+        columnfacetchar_label = "Alert Threshold",
         binwidth = 5.0,
         meanlines = true,
         legend = false,
@@ -177,7 +177,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
     nalertsperoutbreak_plotname = "compare-outbreak_clinic-tested-$(percent_clinic_tested)_nalertsperoutbreak_plot"
     save_compare_ensemble_OTchars_plot(
         ensemble_chars_vec,
-        :detection_threshold,
+        :alert_threshold,
         [
         (
             char = :n_alerts_per_outbreak,
@@ -185,7 +185,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
         )
     ];
         xlabel = "Alerts per Outbreak",
-        columnfacetchar_label = "Detection Threshold",
+        columnfacetchar_label = "Alert Threshold",
         binwidth = 1.0,
         meanlines = true,
         legend = false,
@@ -197,7 +197,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
     nfalsealerts_plotname = "compare-outbreak_clinic-tested-$(percent_clinic_tested)_nfalsealerts_plot"
     save_compare_ensemble_OTchars_plot(
         ensemble_chars_vec,
-        :detection_threshold,
+        :alert_threshold,
         [
         (
             char = :n_false_alerts,
@@ -205,7 +205,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
         )
     ];
         xlabel = "# False Alerts",
-        columnfacetchar_label = "Detection Threshold",
+        columnfacetchar_label = "Alert Threshold",
         binwidth = 1.0,
         meanlines = true,
         legend = false,
@@ -217,15 +217,15 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
     nalerts_plotname = "compare-outbreak_clinic-tested-$(percent_clinic_tested)_nalerts_plot"
     save_compare_ensemble_OTchars_plot(
         ensemble_chars_vec,
-        :detection_threshold,
+        :alert_threshold,
         [
         (
-            char = :ndetectoutbreaks,
+            char = :nalerts,
             color = (N_ALERTS_COLOR, 1.0),
         )
     ];
         xlabel = "# Alerts",
-        columnfacetchar_label = "Detection Threshold",
+        columnfacetchar_label = "Alert Threshold",
         binwidth = 10.0,
         meanlines = true,
         legend = false,
@@ -237,7 +237,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
     noutbreaks_plotname = "compare-outbreak_clinic-tested-$(percent_clinic_tested)_noutbreaks_plot"
     save_compare_ensemble_OTchars_plot(
         ensemble_chars_vec,
-        :detection_threshold,
+        :alert_threshold,
         [
         (
             char = :noutbreaks,
@@ -245,7 +245,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
         )
     ];
         xlabel = "# Outbreaks",
-        columnfacetchar_label = "Detection Threshold",
+        columnfacetchar_label = "Alert Threshold",
         binwidth = 1.0,
         meanlines = true,
         legend = false,
@@ -257,7 +257,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
     nmissedoutbreaks_plotname = "compare-outbreak_clinic-tested-$(percent_clinic_tested)_nmissedoutbreaks_plot"
     save_compare_ensemble_OTchars_plot(
         ensemble_chars_vec,
-        :detection_threshold,
+        :alert_threshold,
         [
         (
             char = :n_missed_outbreaks,
@@ -265,7 +265,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
         )
     ];
         xlabel = "# Missed Outbreaks",
-        columnfacetchar_label = "Detection Threshold",
+        columnfacetchar_label = "Alert Threshold",
         binwidth = 1.0,
         meanlines = true,
         legend = false,
@@ -277,7 +277,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
     size_outbreaks_detectmissed_plotname = "compare-outbreak_clinic-tested-$(percent_clinic_tested)_size-outbreaks-detected-missed_plot"
     save_compare_ensemble_OTchars_plot(
         ensemble_chars_vec,
-        :detection_threshold,
+        :alert_threshold,
         [
             (
                 char = :detected_outbreak_size,
@@ -290,7 +290,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
                 color = (PERC_OUTBREAKS_MISSED_COLOR, 0.7),
             ),
         ];
-        columnfacetchar_label = "Detection Threshold",
+        columnfacetchar_label = "Alert Threshold",
         binwidth = 200,
         normalization = :pdf,
         plotname = size_outbreaks_detectmissed_plotname,
@@ -301,7 +301,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
     perc_detectmissed_outbreak_plotname = "compare-outbreak_clinic-tested-$(percent_clinic_tested)_percent-outbreaks-detected-missed_plot"
     save_compare_ensemble_OTchars_plot(
         ensemble_chars_vec,
-        :detection_threshold,
+        :alert_threshold,
         [
             (
                 char = :perc_true_outbreaks_detected,
@@ -313,7 +313,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
                 label = "Percent Outbreaks Missed",
                 color = (PERC_OUTBREAKS_MISSED_COLOR, 0.7)),
         ];
-        columnfacetchar_label = "Detection Threshold",
+        columnfacetchar_label = "Alert Threshold",
         binwidth = 0.02,
         plotname = perc_detectmissed_outbreak_plotname,
         clinic_tested_dir = clinic_tested_dir,
@@ -333,7 +333,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
     perc_alerts_correctfalse_plotname = "compare-outbreak_clinic-tested-$(percent_clinic_tested)_percent-alerts-correct-false_plot"
     save_compare_ensemble_OTchars_plot(
         ensemble_chars_vec,
-        :detection_threshold,
+        :alert_threshold,
         [
             (
                 char = :perc_alerts_correct,
@@ -345,7 +345,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
                 label = "Percent Alerts\nThat Are False",
                 color = (PERC_ALERTS_FALSE_COLOR, 0.7)),
         ];
-        columnfacetchar_label = "Detection Threshold",
+        columnfacetchar_label = "Alert Threshold",
         bins = -0.01:0.02:1.01,
         plotname = perc_alerts_correctfalse_plotname,
         clinic_tested_dir = clinic_tested_dir,
@@ -358,7 +358,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
             ensemble_chars_vec[i].OT_chars.perc_alerts_correct .- 1.0,
         )
         if perc_alerts_sum != 0.0
-            @error "Warning. Sum of perc_alerts_false + perc_alerts_correct != 1.0, for i = $i. perc_alerts_sum = $perc_alerts_sum,\nTimes no outbreaks detected = $(length(findall(==(0), ensemble_chars_vec[i].OT_chars.ndetectoutbreaks)))"
+            @error "Warning. Sum of perc_alerts_false + perc_alerts_correct != 1.0, for i = $i. perc_alerts_sum = $perc_alerts_sum,\nTimes no outbreaks detected = $(length(findall(==(0), ensemble_chars_vec[i].OT_chars.nalerts)))"
             nan_perc_alerts_sum = NaNMath.sum(
                 ensemble_chars_vec[i].OT_chars.perc_alerts_false .+
                 ensemble_chars_vec[i].OT_chars.perc_alerts_correct .- 1.0,
@@ -374,7 +374,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
     perc_alertscorrect_outbreaksdetected_plotname = "compare-outbreak_clinic-tested-$(percent_clinic_tested)_percent-alerts-correct-outbreaks-detected_plot"
     save_compare_ensemble_OTchars_plot(
         ensemble_chars_vec,
-        :detection_threshold,
+        :alert_threshold,
         [
             (
                 char = :perc_alerts_correct,
@@ -386,7 +386,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
                 label = "Percent Outbreaks\nThat Are Detected",
                 color = (PERC_OUTBREAKS_DETECTED_COLOR, 0.7)),
         ];
-        columnfacetchar_label = "Detection Threshold",
+        columnfacetchar_label = "Alert Threshold",
         bins = -0.01:0.02:1.01,
         plotname = perc_alertscorrect_outbreaksdetected_plotname,
         clinic_tested_dir = clinic_tested_dir,
@@ -396,7 +396,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
     ncasesafteralerts_plotname = "compare-outbreak_clinic-tested-$(percent_clinic_tested)_n-cases-after-alerts_plot"
     save_compare_ensemble_OTchars_plot(
         ensemble_chars_vec,
-        :detection_threshold,
+        :alert_threshold,
         [
         (
             char = :cases_after_alerts,
@@ -404,7 +404,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
         )
     ];
         xlabel = "Cases After Alerts",
-        columnfacetchar_label = "Detection Threshold",
+        columnfacetchar_label = "Alert Threshold",
         binwidth = 50.0,
         meanlines = true,
         legend = false,
@@ -416,7 +416,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
     perc_casesafteralerts_plotname = "compare-outbreak_clinic-tested-$(percent_clinic_tested)_percent-cases-after-alerts_plot"
     save_compare_ensemble_OTchars_plot(
         ensemble_chars_vec,
-        :detection_threshold,
+        :alert_threshold,
         [
         (
             char = :cases_perc_after_alerts,
@@ -424,7 +424,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
         )
     ];
         xlabel = "Percentage of Outbreak\nAfter Alerts",
-        columnfacetchar_label = "Detection Threshold",
+        columnfacetchar_label = "Alert Threshold",
         binwidth = 0.01,
         meanlines = true,
         legend = false,

@@ -27,7 +27,7 @@ function calculate_optimal_threshold(
     individual_test_specification,
     base_parameters
 )
-    @unpack detectthreshold_vec,
+    @unpack alertthreshold_vec,
     ensemble_specification,
     noise_specification,
     outbreak_specification,
@@ -49,7 +49,7 @@ function calculate_optimal_threshold(
             ),
             individual_test_specification,
         ),
-        detectthreshold_vec,
+        alertthreshold_vec,
     )
 
     optimal_accuracy = 0.0
@@ -59,18 +59,18 @@ function calculate_optimal_threshold(
     for (i, ensemble_scenario_spec) in pairs(ensemble_scenario_spec_vec)
         OT_chars = get_ensemble_file(ensemble_scenario_spec)["OT_chars"]
         accuracy = median(OT_chars.accuracy)
-        detection_threshold =
-            ensemble_scenario_spec.outbreak_detection_specification.detection_threshold
+        alert_threshold =
+            ensemble_scenario_spec.outbreak_detection_specification.alert_threshold
 
         if i == 1
             optimal_accuracy = accuracy
-            optimal_threshold = detection_threshold
+            optimal_threshold = alert_threshold
             optimal_OT_chars = OT_chars
             continue
         end
         if !isnan(accuracy) && accuracy > optimal_accuracy
             optimal_accuracy = accuracy
-            optimal_threshold = detection_threshold
+            optimal_threshold = alert_threshold
             optimal_OT_chars = OT_chars
         end
     end

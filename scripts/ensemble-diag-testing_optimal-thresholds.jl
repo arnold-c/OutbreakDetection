@@ -55,7 +55,7 @@ percent_visit_clinic = 0.6
 percent_clinic_tested_vec = collect(0.2:0.2:1.0)
 
 threshold_comparison_params = (
-    detectthreshold_vec = detectthreshold_vec,
+    alertthreshold_vec = alertthreshold_vec,
     ensemble_specification = ensemble_specification,
     noise_specification = noise_specification,
     outbreak_specification = outbreak_specification,
@@ -80,7 +80,7 @@ optimal_thresholds_df = DataFrame(;
     specificity = getfield.(
         optimal_thresholds_vec.individual_test_specification, :specificity
     ),
-    detection_threshold = optimal_thresholds_vec.detection_threshold,
+    alert_threshold = optimal_thresholds_vec.alert_threshold,
     accuracy = optimal_thresholds_vec.accuracy,
 )
 
@@ -91,7 +91,7 @@ optimal_thresholds_df = DataFrame(;
         _,
         [:sensitivity, :specificity],
         :percent_clinic_tested,
-        :detection_threshold,
+        :alert_threshold,
     )
 end
 

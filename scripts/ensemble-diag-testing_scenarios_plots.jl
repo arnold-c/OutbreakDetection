@@ -13,7 +13,7 @@ includet(srcdir("makie-plotting-setup.jl"))
 #%%
 sensitivity_vec = collect(0.8:0.2:1.0)
 specificity_vec = collect(0.8:0.2:1.0)
-detectthreshold_vec = [collect(4:2:14)..., collect(18:4:30)...]
+alertthreshold_vec = [collect(4:2:14)..., collect(18:4:30)...]
 
 #%%
 ensemble_specification = EnsembleSpecification(
@@ -44,7 +44,7 @@ percent_clinic_tested_vec = collect(0.2:0.2:1.0)
 threshold_comparison_params = (
     sensitivity_vec = sensitivity_vec,
     specificity_vec = specificity_vec,
-    detectthreshold_vec = detectthreshold_vec,
+    alertthreshold_vec = alertthreshold_vec,
     ensemble_specification = ensemble_specification,
     noise_specification = noise_specification,
     outbreak_specification = outbreak_specification,

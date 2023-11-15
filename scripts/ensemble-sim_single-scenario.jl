@@ -134,7 +134,7 @@ ensemble_single_scenario_incidence_testing_plot = incidence_testing_plot(
     ensemble_single_scenario_noise_array,
     ensemble_single_scenario_detection["testarr"],
     ensemble_single_scenario_spec.ensemble_specification.time_parameters,
-    ensemble_single_scenario_spec.outbreak_detection_specification.detection_threshold;
+    ensemble_single_scenario_spec.outbreak_detection_specification.alert_threshold;
     sim = 1,
 )
 
