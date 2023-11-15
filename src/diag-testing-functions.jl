@@ -147,7 +147,7 @@ end
 function calculate_positives!(
     npos_vec, tested_vec, tlength, lag, tested_multiplier
 )
-    for day in eachindex(tested_vec)
+    @inbounds for day in eachindex(tested_vec)
         if day + lag <= tlength
             npos_vec[day + lag] = Int64(
                 round(tested_vec[day] * tested_multiplier)
