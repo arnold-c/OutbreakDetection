@@ -26,7 +26,7 @@ for (i, sensitivity) in pairs(sensitivity_vec)
 end
 ind_test_spec_vec[end] = IndividualTestSpecification(1.0, 0.0)
 
-detectthreshold_vec = collect(4:1:15)
+alertthreshold_vec = collect(4:1:30)
 
 #%%
 ensemble_specification = EnsembleSpecification(
