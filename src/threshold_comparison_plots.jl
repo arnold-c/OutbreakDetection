@@ -12,10 +12,11 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
         [
             (
                 char = :accuracy,
-                label = "Accuracy",
                 color = (ACCURACY_COLOR, 0.7),
             ),
         ];
+        legend = false,
+        xlabel = "Accuracy",
         columnfacetchar_label = "Alert Threshold",
         bins = 0.0:0.01:1.01,
         plotname = accuracy_plotname,
