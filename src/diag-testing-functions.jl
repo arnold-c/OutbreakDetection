@@ -272,7 +272,8 @@ function calculate_OutbreakThresholdChars(testarr, infecarr, thresholds_vec)
             detectionchars.matched_bounds
         )
         delay_vec = calculate_delay_vec(first_matched_bounds)
-        cases_after_alert_vec, caseperc_after_alert_vec = calculate_cases_after_alert(
+        cases_before_alert_vec, caseperc_before_alert,
+        cases_after_alert_vec, caseperc_after_alert_vec = calculate_cases_before_after_alert(
             @view(infecarr[:, 1, sim]), first_matched_bounds, delay_vec
         )
 
@@ -280,6 +281,8 @@ function calculate_OutbreakThresholdChars(testarr, infecarr, thresholds_vec)
             dailychars...,
             detectionchars...,
             delay_vec,
+            cases_before_alert_vec,
+            caseperc_before_alert,
             cases_after_alert_vec,
             caseperc_after_alert_vec,
         )
@@ -447,33 +450,51 @@ function calculate_first_matched_bounds_index(matchedbounds)
     )
 end
 
-function calculate_cases_after_alert(
+function calculate_cases_before_after_alert(
     incvec, first_matchedbounds, delay_vec
 )
-    casesvec = zeros(Int64, length(delay_vec))
-    casespercvec = zeros(Float64, length(casesvec))
-    calculate_cases_after_alert!(
-        casesvec, casespercvec, incvec, first_matchedbounds, delay_vec
+    casesaftervec = zeros(Int64, length(delay_vec))
+    casesafterpercvec = zeros(Float64, length(casesaftervec))
+    casesbeforevec = zeros(Int64, length(delay_vec))
+    casesbeforepercvec = zeros(Float64, length(casesaftervec))
+    calculate_cases_before_after_alert!(
+        casesbeforevec,
+        casesbeforepercvec,
+        casesaftervec,
+        casesafterpercvec,
+        incvec,
+        first_matchedbounds,
+        delay_vec,
     )
-    return casesvec, casespercvec
+    return casesbeforevec, casesbeforepercvec, casesaftervec, casesafterpercvec
 end
 
-function calculate_cases_after_alert!(
-    casesvec, casespercvec, invec, first_matchedbounds, delay_vec
+function calculate_cases_before_after_alert!(
+    casesbeforevec,
+    casesbeforepercvec,
+    casesaftervec,
+    casesafterpercvec,
+    invec,
+    first_matchedbounds,
+    delay_vec,
 )
     for (
         alertnumber,
         (outbreaklower, outbreakupper, alertlower, alertupper, periodsum),
     ) in
         pairs(eachrow(first_matchedbounds))
-        if delay_vec[alertnumber] < 0
-            casesvec[alertnumber, 1] = periodsum
+        if delay_vec[alertnumber] <= 0
+            casesaftervec[alertnumber, 1] = periodsum
+            casesbeforevec[alertnumber, 1] = 0
         else
-            @views casesvec[alertnumber] = sum(
+            @views casesaftervec[alertnumber] = sum(
                 invec[alertlower:outbreakupper]
             )
+            casesbeforevec[alertnumber] = periodsum - casesaftervec[alertnumber]
         end
-        casespercvec[alertnumber] = casesvec[alertnumber] / periodsum
+        casesbeforepercvec[alertnumber] =
+            casesbeforevec[alertnumber] / periodsum
+        casesafterpercvec[alertnumber] = casesaftervec[alertnumber] / periodsum
     end
     return nothing
 end

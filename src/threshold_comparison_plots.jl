@@ -395,6 +395,46 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
     )
     @info "Percent alerts correct and outbreaks detected plot saved"
 
+    ncasesbeforealerts_plotname = "compare-outbreak_clinic-tested-$(percent_clinic_tested)_n-cases-before-alerts_plot"
+    save_compare_ensemble_OTchars_plot(
+        ensemble_chars_vec,
+        :alert_threshold,
+        [
+        (
+            char = :cases_before_alerts,
+            color = (PERC_OUTBREAKS_DETECTED_COLOR, 1.0),
+        )
+    ];
+        xlabel = "Cases Before Alerts",
+        columnfacetchar_label = "Alert Threshold",
+        binwidth = 50.0,
+        meanlines = true,
+        legend = false,
+        plotname = ncasesbeforealerts_plotname,
+        clinic_tested_dir = clinic_tested_dir,
+    )
+    @info "Number of cases before alerts plot saved"
+
+    perc_casesbeforealerts_plotname = "compare-outbreak_clinic-tested-$(percent_clinic_tested)_percent-cases-before-alerts_plot"
+    save_compare_ensemble_OTchars_plot(
+        ensemble_chars_vec,
+        :alert_threshold,
+        [
+        (
+            char = :cases_perc_before_alerts,
+            color = (PERC_OUTBREAKS_DETECTED_COLOR, 1.0),
+        )
+    ];
+        xlabel = "Percentage of Outbreak\nBefore Alerts",
+        columnfacetchar_label = "Alert Threshold",
+        binwidth = 0.01,
+        meanlines = true,
+        legend = false,
+        plotname = perc_casesbeforealerts_plotname,
+        clinic_tested_dir = clinic_tested_dir,
+    )
+    @info "Percentage of cases before alerts plot saved"
+
     ncasesafteralerts_plotname = "compare-outbreak_clinic-tested-$(percent_clinic_tested)_n-cases-after-alerts_plot"
     save_compare_ensemble_OTchars_plot(
         ensemble_chars_vec,

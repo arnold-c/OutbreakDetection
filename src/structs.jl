@@ -219,6 +219,8 @@ struct OutbreakThresholdChars{
     perc_alerts_false::T3
     perc_alerts_correct::T3
     detectiondelays::T5
+    cases_before_alerts::T5
+    cases_perc_before_alerts::T6
     cases_after_alerts::T5
     cases_perc_after_alerts::T6
 end
