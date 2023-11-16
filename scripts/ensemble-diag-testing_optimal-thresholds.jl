@@ -134,7 +134,7 @@ compare_optimal_thresholds_chars_plot(
         ),
         (
             char = :cases_before_alerts,
-            label = "Number of Cases After Alert",
+            label = "Number of Cases Before Alert",
             color = (PERC_OUTBREAKS_MISSED_COLOR, 1.0),
             binwidth = 500,
         ),
