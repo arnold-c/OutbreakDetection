@@ -5,10 +5,8 @@ function calculate_OptimalThresholdCharacteristics(
     ind_test_spec_vec,
     base_parameters
 )
-    clinical_case_test_spec = IndividualTestSpecification(1.0, 0.0)
-
     non_clinical_case_test_spec_vec = filter(
-        spec -> spec != clinical_case_test_spec,
+        spec -> spec != CLINICAL_CASE_TEST_SPEC,
         ind_test_spec_vec
     )
     non_clinical_case_optimal_thresholds_vec = Vector{
@@ -33,7 +31,7 @@ function calculate_OptimalThresholdCharacteristics(
 
     clinical_case_optimal_thresholds_vec = calculate_optimal_threshold(
         1.0,
-        clinical_case_test_spec,
+        CLINICAL_CASE_TEST_SPEC,
         base_parameters
     )
 
