@@ -251,9 +251,8 @@ function define_outbreaks(incidence_param_dict)
         ensemble_inc_vecs, outbreak_spec
     )
 
-    clinical_case_test_spec = IndividualTestSpecification(1.0, 0.0)
     non_clinical_case_test_spec_vec = filter(
-        spec -> spec != clinical_case_test_spec,
+        spec -> spec != CLINICAL_CASE_TEST_SPEC,
         test_spec_vec
     )
 
@@ -280,7 +279,7 @@ function define_outbreaks(incidence_param_dict)
             [outbreak_spec],
             noise_spec_vec,
             clinical_case_outbreak_detection_spec_vec,
-            [clinical_case_test_spec],
+            [CLINICAL_CASE_TEST_SPEC],
         ),
     )
 

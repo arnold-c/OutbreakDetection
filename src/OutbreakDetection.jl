@@ -19,6 +19,9 @@ export SimTimeParameters, EnsembleSpecification, DynamicsParameters,
     ScenarioSpecification, TestPositivity, OptimalThresholdCharacteristics
 # @reexport using .ODStructs
 
+include("constants.jl")
+export CLINICAL_CASE_TEST_SPEC
+
 include("SEIR-model.jl")
 export seir_mod, seir_mod!, seir_mod_loop!,
     convert_svec_to_matrix, convert_svec_to_matrix!, convert_svec_to_array

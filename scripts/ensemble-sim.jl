@@ -98,7 +98,6 @@ alertthreshold_vec = collect(4:1:30)
 moveavglag_vec = [7]
 perc_clinic_vec = [0.6]
 perc_clinic_test_vec = collect(0.2:0.2:1.0)
-testlag_vec = [0]
 
 outbreak_detection_spec_vec = create_combinations_vec(
     OutbreakDetectionSpecification,
@@ -107,15 +106,17 @@ outbreak_detection_spec_vec = create_combinations_vec(
         moveavglag_vec,
         perc_clinic_vec,
         perc_clinic_test_vec,
-        testlag_vec,
     ),
 )
 
 #%%
 test_spec_vec = [
-    IndividualTestSpecification(0.8, 0.8),
-    IndividualTestSpecification(1.0, 1.0),
-    IndividualTestSpecification(1.0, 0.0),
+    IndividualTestSpecification(0.8, 0.8, 0),
+    CLINICAL_CASE_TEST_SPEC,
+    IndividualTestSpecification(1.0, 1.0, 0),
+    IndividualTestSpecification(1.0, 1.0, 3),
+    IndividualTestSpecification(1.0, 1.0, 7),
+    IndividualTestSpecification(1.0, 1.0, 14),
 ]
 
 #%%

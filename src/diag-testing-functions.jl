@@ -39,7 +39,7 @@ function create_testing_arrs(
         outbreak_detect_spec.alert_threshold,
         outbreak_detect_spec.moving_average_lag,
         outbreak_detect_spec.percent_tested,
-        outbreak_detect_spec.test_result_lag,
+        individual_test_spec.test_result_lag,
         individual_test_spec.sensitivity,
         individual_test_spec.specificity,
     )

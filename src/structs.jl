@@ -255,7 +255,6 @@ struct OutbreakDetectionSpecification{T1<:Integer,T2<:AbstractFloat}
     percent_visit_clinic::T2
     percent_clinic_tested::T2
     percent_tested::T2
-    test_result_lag::T1
 end
 
 function OutbreakDetectionSpecification(
@@ -263,7 +262,6 @@ function OutbreakDetectionSpecification(
     moving_average_lag,
     percent_visit_clinic,
     percent_clinic_tested,
-    test_result_lag,
 )
     return OutbreakDetectionSpecification(
         alert_threshold,
@@ -271,13 +269,13 @@ function OutbreakDetectionSpecification(
         percent_visit_clinic,
         percent_clinic_tested,
         percent_visit_clinic * percent_clinic_tested,
-        test_result_lag,
     )
 end
 
-struct IndividualTestSpecification{T1<:AbstractFloat}
+struct IndividualTestSpecification{T1<:AbstractFloat,T2<:Integer}
     sensitivity::T1
     specificity::T1
+    test_result_lag::T2
 end
 
 struct NoiseSpecification{
@@ -316,12 +314,12 @@ function ScenarioSpecification(
         "noise_$(noise_specification.noise_type)",
         "noise_mean_scaling_$(noise_specification.noise_mean_scaling)",
         "alertthreshold_$(outbreak_detection_specification.alert_threshold)",
-        "testlag_$(outbreak_detection_specification.test_result_lag)",
         "moveavglag_$(outbreak_detection_specification.moving_average_lag)",
         "perc_visit_clinic_$(outbreak_detection_specification.percent_visit_clinic)",
         "perc_clinic_tested_$(outbreak_detection_specification.percent_clinic_tested)",
         "testsens_$(individual_test_specification.sensitivity)",
         "testspec_$(individual_test_specification.specificity)",
+        "testlag_$(individual_test_specification.test_result_lag)",
     )
 
     return ScenarioSpecification(
