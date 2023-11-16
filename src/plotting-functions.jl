@@ -771,7 +771,7 @@ function calculate_comparison_plot_facet_dims(
         ),
     )
     ylength = length(
-        Set(getfield.(getfield.(char_struct_vec, :ind_test_spec), :specificity))
+        Set(getfield.(char_struct_vec, :ind_test_spec))
     )
 
     xs = repeat(1:ylength, xlength)
