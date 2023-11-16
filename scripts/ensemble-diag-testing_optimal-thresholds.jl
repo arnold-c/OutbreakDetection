@@ -83,40 +83,6 @@ optimal_thresholds_df = DataFrame(;
 )
 
 #%%
-@chain optimal_thresholds_df begin
-    @orderby :specificity
-    unstack(
-        _,
-        [:sensitivity, :specificity, :test_lag],
-        :percent_clinic_tested,
-        :alert_threshold,
-    )
-    select(
-        _,
-        Cols(
-            x -> startswith(x, "s"), "test_lag", x -> startswith(x, "0"), "1.0"
-        ),
-    )
-end
-
-#%%
-@chain optimal_thresholds_df begin
-    @orderby :specificity
-    unstack(
-        _,
-        [:sensitivity, :specificity, :test_lag],
-        :percent_clinic_tested,
-        :accuracy,
-    )
-    select(
-        _,
-        Cols(
-            x -> startswith(x, "s"), "test_lag", x -> startswith(x, "0"), "1.0"
-        ),
-    )
-end
-
-#%%
 compare_optimal_thresholds_chars_plot(
     optimal_thresholds_vec,
     [
@@ -160,6 +126,7 @@ compare_optimal_thresholds_chars_plot(
 )
 
 #%%
+create_and_save_xlsx_optimal_threshold_summaries(optimal_thresholds_vec)
 create_and_save_xlsx_optimal_threshold_summaries(
     optimal_thresholds_vec, :detectiondelays
 )

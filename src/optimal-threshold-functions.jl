@@ -180,6 +180,93 @@ function create_wide_optimal_threshold_summary_df(df, characteristic)
     end
 end
 
+function create_and_save_xlsx_optimal_threshold_summaries(
+    optimal_thresholds_vec,
+    filepath = datadir("optimal-threshold-results")
+)
+    long_df = create_optimal_thresholds_df(
+        optimal_thresholds_vec
+    )
+
+    alert_thresholds = create_wide_optimal_thresholds_df(
+        long_df, :alert_threshold
+    )
+    accuracy = create_wide_optimal_thresholds_df(
+        long_df, :accuracy
+    )
+
+    filename = "optimal-threshold-result-tables_thresholds"
+    save_xlsx_optimal_threshold_summaries(
+        (; long_df, alert_thresholds, accuracy), filename; filepath = filepath
+    )
+
+    @info "Saved the thresholds and accuracy table"
+
+    return nothing
+end
+
+function create_optimal_thresholds_df(optimal_thresholds_vec)
+    @chain begin
+        map(optimal_thresholds_vec) do opt
+            percent_clinic_tested = opt.percent_clinic_tested
+
+            ind_test = opt.individual_test_specification
+            sens = ind_test.sensitivity
+            spec = ind_test.specificity
+            test_lag = ind_test.test_result_lag
+
+            alertthreshold = opt.alert_threshold
+            accuracy = opt.accuracy
+
+            return percent_clinic_tested, sens,
+            spec, test_lag, alertthreshold, accuracy
+        end
+        reduce(vcat, _)
+        DataFrame(
+            _,
+            [
+                "percent_clinic_tested",
+                "sensitivity",
+                "specificity",
+                "test_lag",
+                "alert_threshold",
+                "accuracy",
+            ],
+        )
+    end
+end
+
+function create_wide_optimal_thresholds_df(df, characteristic)
+    characteristic_str = string(characteristic)
+    @chain df begin
+        select(
+            _,
+            Cols(
+                x -> startswith(x, "s"),
+                :test_lag,
+                x -> contains(x, "tested"),
+                x -> contains(x, characteristic_str),
+            ),
+        )
+        @orderby :specificity
+        unstack(
+            _,
+            [:sensitivity, :specificity, :test_lag],
+            :percent_clinic_tested,
+            characteristic,
+        )
+        select(
+            _,
+            Cols(
+                x -> startswith(x, "s"),
+                "test_lag",
+                x -> startswith(x, "0"),
+                "1.0",
+            ),
+        )
+    end
+end
+
 function create_optimal_threshold_summary_df(
     optimal_thresholds_vec,
     characteristic;
