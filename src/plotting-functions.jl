@@ -755,7 +755,34 @@ function compare_ensemble_OTchars_plots(
         fig[1, :, Top()],
         "Perc Clinic Tested: $(char_struct_vec[1].outbreak_detect_spec.percent_clinic_tested)",
     )
-    rowsize!(fig.layout, Relative(0.98), 1)
+
+    unique_thresholds = unique(
+        getfield.(
+            getfield.(char_struct_vec, :outbreak_detect_spec), :alert_threshold
+        ),
+    )
+
+    for (j, threshold) in pairs(unique_thresholds)
+        Label(
+            fig[2, j + 1, Top()],
+            "Alert Threshold: $(threshold)",
+        )
+    end
+
+    unique_test_specs = unique(getfield.(char_struct_vec, :ind_test_spec))
+
+    for (i, test_spec) in pairs(unique_test_specs)
+        Label(
+            fig[i + 2, 1, Left()],
+            "Sens: $(test_spec.sensitivity), Spec: $(test_spec.specificity),\nLag: $(test_spec.test_result_lag)";
+            rotation = pi / 2,
+        )
+    end
+
+    rowsize!(fig.layout, 1, 5)
+    rowsize!(fig.layout, 2, 7)
+    colsize!(fig.layout, 1, 7)
+
     return fig
 end
 
@@ -774,8 +801,8 @@ function calculate_comparison_plot_facet_dims(
         Set(getfield.(char_struct_vec, :ind_test_spec))
     )
 
-    xs = repeat(1:ylength, xlength)
-    ys = repeat(1:xlength; inner = ylength)
+    ys = repeat(1:ylength, xlength)
+    xs = repeat(1:xlength; inner = ylength)
 
     return xs, ys
 end
@@ -792,6 +819,10 @@ function construct_OTchars_facets!(
     meanlabels = false,
     normalization = :pdf,
 )
+    number_tests = length(
+        Set(getfield.(char_struct_vec, :ind_test_spec))
+    )
+
     for (OT_char_tuple, x, y) in zip(char_struct_vec, xs, ys)
         charvecs = map(
             chartuple -> reduce(
@@ -808,12 +839,18 @@ function construct_OTchars_facets!(
             bins = kwargs_dict[:bins]
         end
 
-        gl = fig[x, y] = GridLayout()
+        gl = fig[y + 2, x + 1] = GridLayout()
         ax = Axis(
-            gl[2, 1];
+            gl[1, 1];
             xlabel = xlabel,
             ylabel = ylabel,
         )
+
+        if y < number_tests
+            hidexdecorations!(ax; ticklabels = false, ticks = false)
+        end
+
+        hideydecorations!(ax)
 
         for charnumber in eachindex(plottingchars)
             if isempty(charvecs[charnumber])
@@ -850,17 +887,9 @@ function construct_OTchars_facets!(
                 end
                 text!(
                     Point(charmean + hjust, 0 + vjust);
-                    text = "Mean ($(plottingchars[charnumber].label)):\n$(round(charmean, digits = 2))",
                 )
             end
         end
-
-        Label(
-            gl[1, :],
-            "Individual Test - Sensitivity: $(OT_char_tuple.ind_test_spec.sensitivity), Specificity: $(OT_char_tuple.ind_test_spec.specificity), Lag: $(OT_char_tuple.ind_test_spec.test_result_lag), $(columnfacetchar_label): $(getfield(OT_char_tuple.outbreak_detect_spec, columnfacetchar))";
-            word_wrap = true,
-        )
-        colsize!(gl, 1, Relative(1))
     end
 end
 
@@ -889,8 +918,6 @@ function compare_optimal_thresholds_chars_plot(
     unique_percent_clinic_tested = unique(
         optimal_thresholds_vec.percent_clinic_tested
     )
-
-    CLINICAL_CASE_TEST_SPEC
 
     for percent_clinic_tested in unique_percent_clinic_tested
         optimal_thresholds_chars = filter(
@@ -950,7 +977,6 @@ function create_optimal_thresholds_chars_plot(
     thresholdschars_structarr =
         optimal_thresholds_chars.outbreak_threshold_chars
     for (x, chartuple) in pairs(plottingchars)
-        bins_vec = Vector{StepRangeLen}(undef, number_tests)
         thresholdschars_vec =
             getproperty.(thresholdschars_structarr, chartuple.char)
 
