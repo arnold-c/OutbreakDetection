@@ -83,6 +83,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
         by = x -> (
             x.outbreak_detect_spec.alert_threshold,
             x.ind_test_spec.specificity,
+            x.ind_test_spec.test_result_lag,
         ),
     )
 
