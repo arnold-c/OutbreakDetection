@@ -142,7 +142,7 @@ function create_wide_optimal_threshold_summary_df(df, characteristic)
         @orderby :specificity
         unstack(
             _,
-            [:sensitivity, :specificity],
+            [:sensitivity, :specificity, :test_lag],
             :percent_clinic_tested,
             :char,
         )
@@ -167,6 +167,7 @@ function create_optimal_threshold_summary_df(
             ind_test = opt.individual_test_specification
             sens = ind_test.sensitivity
             spec = ind_test.specificity
+            test_lag = ind_test.test_result_lag
 
             alertthreshold = opt.alert_threshold
             accuracy = opt.accuracy
@@ -177,7 +178,7 @@ function create_optimal_threshold_summary_df(
             )
 
             return percent_clinic_tested, sens,
-            spec, alertthreshold, accuracy,
+            spec, test_lag, alertthreshold, accuracy,
             char_mean, chars_percentiles...
         end
         reduce(vcat, _)
@@ -187,6 +188,7 @@ function create_optimal_threshold_summary_df(
                 "percent_clinic_tested",
                 "sensitivity",
                 "specificity",
+                "test_lag",
                 "alert_threshold",
                 "accuracy",
                 char_mean_label,

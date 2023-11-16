@@ -84,7 +84,7 @@ optimal_thresholds_df = DataFrame(;
     @orderby :specificity
     unstack(
         _,
-        [:sensitivity, :specificity],
+        [:sensitivity, :specificity, :test_lag],
         :percent_clinic_tested,
         :alert_threshold,
     )
@@ -96,7 +96,7 @@ end
     @orderby :specificity
     unstack(
         _,
-        [:sensitivity, :specificity],
+        [:sensitivity, :specificity, :test_lag],
         :percent_clinic_tested,
         :accuracy,
     )
