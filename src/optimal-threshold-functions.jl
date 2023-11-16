@@ -181,7 +181,7 @@ function create_wide_optimal_threshold_summary_df(df, characteristic)
 end
 
 function create_and_save_xlsx_optimal_threshold_summaries(
-    optimal_thresholds_vec,
+    optimal_thresholds_vec;
     filepath = datadir("optimal-threshold-results")
 )
     long_df = create_optimal_thresholds_df(
