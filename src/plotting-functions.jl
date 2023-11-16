@@ -955,41 +955,9 @@ function create_optimal_thresholds_chars_plot(
                 @error "The metric $(chartuple.char) wasn't provided with bins or a binwidth"
                 break
             end
-            if (
-                chartuple.char == :detectiondelays ||
-                chartuple.char == :missed_outbreak_size
-            ) &&
-                optimal_thresholds_chars.individual_test_specification[1] ==
-               IndividualTestSpecification(1.0, 0.0)
-                clinical_char = reduce(
-                    vcat,
-                    getproperty.(
-                        thresholdschars_structarr[1], chartuple.char
-                    ),
-                )
-                nonclinical_char = reduce(
-                    vcat,
-                    getproperty.(
-                        thresholdschars_structarr[2:end], chartuple.char
-                    ),
-                )
-
-                for i in eachindex(bins_vec)
-                    bins_vec[i] = calculate_bins(
-                        nonclinical_char, chartuple.binwidth
-                    )
-                end
-                bins_vec[1] = calculate_bins(
-                    clinical_char, chartuple.binwidth
-                )
-
-            else
-                for i in eachindex(bins_vec)
-                    bins_vec[i] = calculate_bins(charvecs, chartuple.binwidth)
-                end
-            end
+            bins = calculate_bins(charvecs, chartuple.binwidth)
         else
-            bins_vec .= chartuple.bins
+            bins .= chartuple.bins
         end
 
         if !haskey(chartuple, :label)
@@ -1005,7 +973,7 @@ function create_optimal_thresholds_chars_plot(
             hist!(
                 ax,
                 reduce(vcat, thresholdschars_vec[y]);
-                bins = bins_vec[y],
+                bins = bins,
                 color = chartuple.color,
             )
             Label(
