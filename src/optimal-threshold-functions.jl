@@ -141,8 +141,6 @@ function create_all_wide_optimal_threshold_summary_dfs(
         summary_stats_symbols[i] = Symbol("perc_$(Int64(stat*100))th")
     end
 
-    @show summary_stats_labels
-
     summary_dfs = map(
         char -> create_wide_optimal_threshold_summary_df(df, char),
         summary_stats_labels,
@@ -157,7 +155,7 @@ function create_wide_optimal_threshold_summary_df(df, characteristic)
             _,
             Cols(
                 x -> startswith(x, "s"),
-                "test_lag",
+                :test_lag,
                 x -> contains(x, "tested"),
                 x -> contains(x, characteristic),
             ),
@@ -170,7 +168,15 @@ function create_wide_optimal_threshold_summary_df(df, characteristic)
             :percent_clinic_tested,
             :char,
         )
-        select(_, Cols(x -> startswith(x, "s"), x -> startswith(x, "0"), "1.0"))
+        select(
+            _,
+            Cols(
+                x -> startswith(x, "s"),
+                "test_lag",
+                x -> startswith(x, "0"),
+                "1.0",
+            ),
+        )
     end
 end
 
