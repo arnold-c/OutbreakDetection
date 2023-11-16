@@ -135,11 +135,12 @@ function create_wide_optimal_threshold_summary_df(df, characteristic)
             _,
             Cols(
                 x -> startswith(x, "s"),
+                "test_lag",
                 x -> contains(x, "tested"),
                 x -> contains(x, characteristic),
             ),
         )
-        rename(_, [4 => :char])
+        rename(_, [5 => :char])
         @orderby :specificity
         unstack(
             _,
@@ -152,6 +153,7 @@ function create_wide_optimal_threshold_summary_df(df, characteristic)
 end
 
 function create_optimal_threshold_summary_df(
+    optimal_thresholds_vec,
     characteristic;
     percentiles = [0.25, 0.5, 0.75]
 )
@@ -216,7 +218,7 @@ function save_xlsx_optimal_threshold_summaries(
     summary_tuple, filename; filepath = datadir("optimal-threshold-results")
 )
     sheet_names = String.(keys(summary_tuple))
-    file = joinpath(filepath, "$(filename).xlx")
+    file = joinpath(filepath, "$(filename).xlsx")
 
     XLSX.openxlsx(file; mode = "w") do xf
         for i in eachindex(sheet_names)
