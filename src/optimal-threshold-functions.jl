@@ -1,4 +1,5 @@
 using StructArrays
+using XLSX: XLSX
 
 function calculate_OptimalThresholdCharacteristics(
     percent_clinic_tested_vec,
@@ -209,4 +210,27 @@ function calculate_optimal_threshold_summaries(
     char_mean = mean(all_chars)
 
     return char_mean, char_percentiles
+end
+
+function save_xlsx_optimal_threshold_summaries(
+    summary_tuple, filename; filepath = datadir("optimal-threshold-results")
+)
+    sheet_names = String.(keys(summary_tuple))
+    file = joinpath(filepath, "$(filename).xlx")
+
+    XLSX.openxlsx(file; mode = "w") do xf
+        for i in eachindex(sheet_names)
+            sheet_name = sheet_names[i]
+            df = summary_tuple[i]
+
+            if i == firstindex(sheet_names)
+                sheet = xf[1]
+                XLSX.rename!(sheet, sheet_name)
+                XLSX.writetable!(sheet, df)
+            else
+                sheet = XLSX.addsheet!(xf, sheet_name)
+                XLSX.writetable!(sheet, df)
+            end
+        end
+    end
 end
