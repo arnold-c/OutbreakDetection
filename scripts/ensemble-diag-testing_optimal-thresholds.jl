@@ -75,6 +75,9 @@ optimal_thresholds_df = DataFrame(;
     specificity = getfield.(
         optimal_thresholds_vec.individual_test_specification, :specificity
     ),
+    test_lag = getfield.(
+        optimal_thresholds_vec.individual_test_specification, :test_result_lag
+    ),
     alert_threshold = optimal_thresholds_vec.alert_threshold,
     accuracy = optimal_thresholds_vec.accuracy,
 )
@@ -88,7 +91,12 @@ optimal_thresholds_df = DataFrame(;
         :percent_clinic_tested,
         :alert_threshold,
     )
-    select(_, Cols(x -> startswith(x, "s"), x -> startswith(x, "0"), "1.0"))
+    select(
+        _,
+        Cols(
+            x -> startswith(x, "s"), "test_lag", x -> startswith(x, "0"), "1.0"
+        ),
+    )
 end
 
 #%%
@@ -100,7 +108,12 @@ end
         :percent_clinic_tested,
         :accuracy,
     )
-    select(_, Cols(x -> startswith(x, "s"), x -> startswith(x, "0"), "1.0"))
+    select(
+        _,
+        Cols(
+            x -> startswith(x, "s"), "test_lag", x -> startswith(x, "0"), "1.0"
+        ),
+    )
 end
 
 #%%
