@@ -651,7 +651,8 @@ end
 function save_compare_ensemble_OTchars_plot(
     char_struct_vec,
     columnfacetchar::Symbol,
-    plottingchars;
+    plottingchars,
+    percent_clinic_tested;
     plotname,
     plotsrootdir = plotsdir("ensemble/testing-comparison"),
     clinic_tested_dir,
@@ -671,7 +672,8 @@ function save_compare_ensemble_OTchars_plot(
     plot = compare_ensemble_OTchars_plots(
         char_struct_vec,
         columnfacetchar,
-        plottingchars;
+        plottingchars,
+        percent_clinic_tested;
         columnfacetchar_label = columnfacetchar_label,
         binwidth = binwidth,
         xlabel = xlabel,
@@ -701,7 +703,8 @@ end
 function compare_ensemble_OTchars_plots(
     char_struct_vec,
     columnfacetchar::Symbol,
-    plottingchars;
+    plottingchars,
+    percent_clinic_tested;
     columnfacetchar_label = "Alert Threshold",
     binwidth = 1.0,
     xlabel = "Alert Characteristic Value",
@@ -753,7 +756,7 @@ function compare_ensemble_OTchars_plots(
 
     Label(
         fig[1, :, Top()],
-        "Perc Clinic Tested: $(char_struct_vec[1].outbreak_detect_spec.percent_clinic_tested)",
+        "Perc Clinic Tested: $(percent_clinic_tested)",
     )
 
     unique_thresholds = unique(

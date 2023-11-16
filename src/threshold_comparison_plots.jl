@@ -14,7 +14,8 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
                 char = :accuracy,
                 color = (ACCURACY_COLOR, 0.7),
             ),
-        ];
+        ],
+        percent_clinic_tested;
         legend = false,
         xlabel = "Accuracy",
         columnfacetchar_label = "Alert Threshold",
@@ -39,7 +40,8 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
                 label = "Specificity",
                 color = (DAILY_SPECIFICITY_COLOR, 0.7),
             ),
-        ];
+        ],
+        percent_clinic_tested;
         columnfacetchar_label = "Alert Threshold",
         bins = 0.0:0.01:1.01,
         plotname = sens_spec_plotname,
@@ -62,7 +64,8 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
                 label = "NPV",
                 color = (DAILY_NPV_COLOR, 0.7),
             ),
-        ];
+        ],
+        percent_clinic_tested;
         columnfacetchar_label = "Alert Threshold",
         bins = 0.0:0.01:1.01,
         plotname = ppv_npv_plotname,
@@ -79,7 +82,8 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
             char = :detectiondelays,
             color = (DETECTION_DELAY_COLOR, 1.0),
         )
-    ];
+    ],
+        percent_clinic_tested;
         xlabel = "Detection Delay (days)",
         columnfacetchar_label = "Alert Threshold",
         binwidth = 5.0,
@@ -99,7 +103,8 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
             char = :n_alerts_per_outbreak,
             color = (N_ALERTS_PER_OUTBREAK_COLOR, 1.0),
         )
-    ];
+    ],
+        percent_clinic_tested;
         xlabel = "Alerts per Outbreak",
         columnfacetchar_label = "Alert Threshold",
         binwidth = 1.0,
@@ -119,7 +124,8 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
             char = :n_false_alerts,
             color = (N_FALSE_ALERTS_COLOR, 1.0),
         )
-    ];
+    ],
+        percent_clinic_tested;
         xlabel = "# False Alerts",
         columnfacetchar_label = "Alert Threshold",
         binwidth = 1.0,
@@ -139,7 +145,8 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
             char = :nalerts,
             color = (N_ALERTS_COLOR, 1.0),
         )
-    ];
+    ],
+        percent_clinic_tested;
         xlabel = "# Alerts",
         columnfacetchar_label = "Alert Threshold",
         binwidth = 10.0,
@@ -159,7 +166,8 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
             char = :noutbreaks,
             color = (N_OUTBREAKS_COLOR, 1.0),
         )
-    ];
+    ],
+        percent_clinic_tested;
         xlabel = "# Outbreaks",
         columnfacetchar_label = "Alert Threshold",
         binwidth = 1.0,
@@ -179,7 +187,8 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
             char = :n_missed_outbreaks,
             color = (N_MISSED_OUTBREAKS_COLOR, 1.0),
         )
-    ];
+    ],
+        percent_clinic_tested;
         xlabel = "# Missed Outbreaks",
         columnfacetchar_label = "Alert Threshold",
         binwidth = 1.0,
@@ -205,7 +214,8 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
                 label = "Size of Outbreaks Missed",
                 color = (PERC_OUTBREAKS_MISSED_COLOR, 0.7),
             ),
-        ];
+        ],
+        percent_clinic_tested;
         columnfacetchar_label = "Alert Threshold",
         binwidth = 200,
         normalization = :pdf,
@@ -228,7 +238,8 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
                 char = :perc_true_outbreaks_missed,
                 label = "Percent Outbreaks Missed",
                 color = (PERC_OUTBREAKS_MISSED_COLOR, 0.7)),
-        ];
+        ],
+        percent_clinic_tested;
         columnfacetchar_label = "Alert Threshold",
         binwidth = 0.02,
         plotname = perc_detectmissed_outbreak_plotname,
@@ -260,7 +271,8 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
                 char = :perc_alerts_false,
                 label = "Percent Alerts\nThat Are False",
                 color = (PERC_ALERTS_FALSE_COLOR, 0.7)),
-        ];
+        ],
+        percent_clinic_tested;
         columnfacetchar_label = "Alert Threshold",
         bins = -0.01:0.02:1.01,
         plotname = perc_alerts_correctfalse_plotname,
@@ -301,7 +313,8 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
                 char = :perc_true_outbreaks_detected,
                 label = "Percent Outbreaks\nThat Are Detected",
                 color = (PERC_OUTBREAKS_DETECTED_COLOR, 0.7)),
-        ];
+        ],
+        percent_clinic_tested;
         columnfacetchar_label = "Alert Threshold",
         bins = -0.01:0.02:1.01,
         plotname = perc_alertscorrect_outbreaksdetected_plotname,
@@ -318,7 +331,8 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
             char = :cases_before_alerts,
             color = (PERC_OUTBREAKS_DETECTED_COLOR, 1.0),
         )
-    ];
+    ],
+        percent_clinic_tested;
         xlabel = "Cases Before Alerts",
         columnfacetchar_label = "Alert Threshold",
         binwidth = 50.0,
@@ -338,7 +352,8 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
             char = :cases_perc_before_alerts,
             color = (PERC_OUTBREAKS_DETECTED_COLOR, 1.0),
         )
-    ];
+    ],
+        percent_clinic_tested;
         xlabel = "Percentage of Outbreak\nBefore Alerts",
         columnfacetchar_label = "Alert Threshold",
         binwidth = 0.01,
@@ -358,7 +373,8 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
             char = :cases_after_alerts,
             color = (PERC_OUTBREAKS_DETECTED_COLOR, 1.0),
         )
-    ];
+    ],
+        percent_clinic_tested;
         xlabel = "Cases After Alerts",
         columnfacetchar_label = "Alert Threshold",
         binwidth = 50.0,
@@ -378,7 +394,8 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
             char = :cases_perc_after_alerts,
             color = (PERC_OUTBREAKS_DETECTED_COLOR, 1.0),
         )
-    ];
+    ],
+        percent_clinic_tested;
         xlabel = "Percentage of Outbreak\nAfter Alerts",
         columnfacetchar_label = "Alert Threshold",
         binwidth = 0.01,
