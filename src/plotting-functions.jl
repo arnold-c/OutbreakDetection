@@ -851,7 +851,7 @@ function construct_OTchars_facets!(
 
         Label(
             gl[1, :],
-            "Individual Test - Sensitivity: $(OT_char_tuple.ind_test_spec.sensitivity), Specificity: $(OT_char_tuple.ind_test_spec.specificity), $(columnfacetchar_label): $(getfield(OT_char_tuple.outbreak_detect_spec, columnfacetchar)), Perc Clinic Tested: $(OT_char_tuple.outbreak_detect_spec.percent_clinic_tested)";
+            "Individual Test - Sensitivity: $(OT_char_tuple.ind_test_spec.sensitivity), Specificity: $(OT_char_tuple.ind_test_spec.specificity), Lag: $(OT_char_tuple.ind_test_spec.test_result_lag), $(columnfacetchar_label): $(getfield(OT_char_tuple.outbreak_detect_spec, columnfacetchar)), Perc Clinic Tested: $(OT_char_tuple.outbreak_detect_spec.percent_clinic_tested)";
             word_wrap = true,
         )
         colsize!(gl, 1, Relative(1))
@@ -978,7 +978,7 @@ function create_optimal_thresholds_chars_plot(
             )
             Label(
                 gl[1, :],
-                "Individual Test - Sensitivity: $(optimal_thresholds.individual_test_specification.sensitivity), Specificity: $(optimal_thresholds.individual_test_specification.specificity), Alert Threshold: $(optimal_thresholds.alert_threshold), Perc Clinic Tested: $(optimal_thresholds.percent_clinic_tested)";
+                "Individual Test - Sensitivity: $(optimal_thresholds.individual_test_specification.sensitivity), Specificity: $(optimal_thresholds.individual_test_specification.specificity), Lag: $(optimal_thresholds.individual_test_specification.test_result_lag), Alert Threshold: $(optimal_thresholds.alert_threshold), Perc Clinic Tested: $(optimal_thresholds.percent_clinic_tested)";
                 word_wrap = true,
             )
             colsize!(gl, 1, Relative(1))
