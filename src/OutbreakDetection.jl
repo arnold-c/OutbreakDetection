@@ -91,6 +91,9 @@ include("threshold_comparison_plots.jl")
 export plot_all_threshold_comparisons
 
 include("optimal-threshold-functions.jl")
-export calculate_optimal_threshold, calculate_OptimalThresholdCharacteristics
+export calculate_optimal_threshold, calculate_OptimalThresholdCharacteristics,
+    calculate_optimal_threshold_summaries, create_optimal_threshold_summary_df,
+    create_wide_optimal_threshold_summary_df,
+    create_all_wide_optimal_threshold_summary_dfs
 
 end

@@ -7,6 +7,7 @@ using FLoops
 using NaNMath: NaNMath
 using DataFrames
 using DataFramesMeta
+using Statistics
 
 using OutbreakDetection
 
@@ -136,4 +137,24 @@ compare_optimal_thresholds_chars_plot(
             binwidth = 100,
         ),
     ],
+)
+
+#%%
+detectiondelays_df = create_optimal_threshold_summary_df(:detectiondelays)
+cases_after_alert_df = create_optimal_threshold_summary_df(:cases_after_alerts)
+detected_outbreak_size_df = create_optimal_threshold_summary_df(
+    :detected_outbreak_size
+)
+missed_outbreak_size_df = create_optimal_threshold_summary_df(
+    :missed_outbreak_size
+)
+
+detectiondelays_wide_dfs = create_all_wide_optimal_threshold_summary_dfs(
+    detectiondelays_df
+)
+cases_after_alert_wide_df = create_all_wide_optimal_threshold_summary_dfs(
+    cases_after_alert_df
+)
+detected_outbreak_size_wide_dfs = create_all_wide_optimal_threshold_summary_dfs(
+    detected_outbreak_size_df
 )

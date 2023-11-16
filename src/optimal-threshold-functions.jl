@@ -106,3 +106,109 @@ function calculate_optimal_threshold(
         optimal_accuracy,
     )
 end
+
+function create_all_wide_optimal_threshold_summary_dfs(
+    df; summary_stats = ["mean", 0.25, 0.50, 0.75]
+)
+    summary_stats_labels = summary_stats
+    summary_stats_symbols = copy(summary_stats)
+
+    for (i, stat) in pairs(summary_stats_labels)
+        if stat == "mean"
+            summary_stats_symbols[i] = Symbol(stat)
+            continue
+        end
+        summary_stats_labels[i] = "$(Int64(stat*100))th"
+        summary_stats_symbols[i] = Symbol("perc_$(Int64(stat*100))th")
+    end
+
+    @show summary_stats_labels
+
+    summary_dfs = map(
+        char -> create_wide_optimal_threshold_summary_df(df, char),
+        summary_stats_labels,
+    )
+
+    return (; zip(summary_stats_symbols, summary_dfs)...)
+end
+
+function create_wide_optimal_threshold_summary_df(df, characteristic)
+    @chain df begin
+        select(
+            _,
+            Cols(
+                x -> startswith(x, "s"),
+                x -> contains(x, "tested"),
+                x -> contains(x, characteristic),
+            ),
+        )
+        rename(_, [4 => :char])
+        @orderby :specificity
+        unstack(
+            _,
+            [:sensitivity, :specificity],
+            :percent_clinic_tested,
+            :char,
+        )
+        select(_, Cols(x -> startswith(x, "s"), x -> startswith(x, "0"), "1.0"))
+    end
+end
+
+function create_optimal_threshold_summary_df(
+    characteristic;
+    percentiles = [0.25, 0.5, 0.75]
+)
+    percentile_labels = map(perc -> "$(Int64(perc*100))th", percentiles)
+    char_percentile_labels = map(
+        perc -> "$(characteristic)_$perc", percentile_labels
+    )
+    char_mean_label = "$(characteristic)_mean"
+
+    @chain begin
+        map(optimal_thresholds_vec) do opt
+            percent_clinic_tested = opt.percent_clinic_tested
+
+            ind_test = opt.individual_test_specification
+            sens = ind_test.sensitivity
+            spec = ind_test.specificity
+
+            alertthreshold = opt.alert_threshold
+            accuracy = opt.accuracy
+
+            char_mean, chars_percentiles = calculate_optimal_threshold_summaries(
+                getfield.(opt.outbreak_threshold_chars, characteristic);
+                percentiles = percentiles,
+            )
+
+            return percent_clinic_tested, sens,
+            spec, alertthreshold, accuracy,
+            char_mean, chars_percentiles...
+        end
+        reduce(vcat, _)
+        DataFrame(
+            _,
+            [
+                "percent_clinic_tested",
+                "sensitivity",
+                "specificity",
+                "alert_threshold",
+                "accuracy",
+                char_mean_label,
+                char_percentile_labels...,
+            ],
+        )
+    end
+end
+
+function calculate_optimal_threshold_summaries(
+    char_vecs; percentiles = [0.25, 0.5, 0.75]
+)
+    all_chars = reduce(vcat, char_vecs)
+
+    char_percentiles = map(
+        percentile -> quantile(all_chars, percentile), percentiles
+    )
+    char_mean = mean(all_chars)
+
+    return char_mean, char_percentiles
+end
