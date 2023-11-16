@@ -890,7 +890,7 @@ function compare_optimal_thresholds_chars_plot(
         optimal_thresholds_vec.percent_clinic_tested
     )
 
-    clinical_case_test_spec = IndividualTestSpecification(1.0, 0.0)
+    CLINICAL_CASE_TEST_SPEC
 
     for percent_clinic_tested in unique_percent_clinic_tested
         optimal_thresholds_chars = filter(
@@ -901,7 +901,7 @@ function compare_optimal_thresholds_chars_plot(
                         optimal_thresholds.percent_clinic_tested ==
                         1.0 &&
                         optimal_thresholds.individual_test_specification ==
-                        clinical_case_test_spec
+                        CLINICAL_CASE_TEST_SPEC
                     ),
             optimal_thresholds_vec,
         )
