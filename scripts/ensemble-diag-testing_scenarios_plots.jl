@@ -12,10 +12,14 @@ includet(srcdir("makie-plotting-setup.jl"))
 
 #%%
 test_spec_vec = [
-    IndividualTestSpecification(0.8, 0.8),
-    IndividualTestSpecification(1.0, 1.0),
-    IndividualTestSpecification(1.0, 0.0),
+    IndividualTestSpecification(0.8, 0.8, 0),
+    CLINICAL_CASE_TEST_SPEC,
+    IndividualTestSpecification(1.0, 1.0, 0),
+    IndividualTestSpecification(1.0, 1.0, 3),
+    IndividualTestSpecification(1.0, 1.0, 7),
+    IndividualTestSpecification(1.0, 1.0, 14),
 ]
+
 alertthreshold_vec = [collect(4:2:14)..., collect(18:4:30)...]
 
 #%%
@@ -40,7 +44,6 @@ noise_specification = NoiseSpecification("poisson", 1.0)
 outbreak_specification = OutbreakSpecification(5, 30, 500)
 
 moving_avg_detection_lag = 7
-test_result_lag = 0
 percent_visit_clinic = 0.6
 percent_clinic_tested_vec = collect(0.2:0.2:1.0)
 
@@ -51,7 +54,6 @@ threshold_comparison_params = (
     noise_specification = noise_specification,
     outbreak_specification = outbreak_specification,
     moving_avg_detection_lag = moving_avg_detection_lag,
-    test_result_lag = test_result_lag,
     percent_visit_clinic = percent_visit_clinic,
 )
 

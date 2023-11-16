@@ -5,12 +5,10 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
     noise_specification,
     outbreak_specification,
     moving_avg_detection_lag,
-    test_result_lag,
     percent_visit_clinic = base_parameters
 
-    clinical_case_test_spec = IndividualTestSpecification(1.0, 0.0)
     non_clinical_case_test_spec_vec = filter(
-        spec -> spec != clinical_case_test_spec,
+        spec -> spec != CLINICAL_CASE_TEST_SPEC,
         test_spec_vec
     )
 
@@ -29,7 +27,6 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
             moving_avg_detection_lag,
             percent_visit_clinic,
             percent_clinic_tested,
-            test_result_lag,
         ),
         alertthreshold_vec,
     )
@@ -38,8 +35,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
             threshold,
             moving_avg_detection_lag,
             percent_visit_clinic,
-            1.0,
-            test_result_lag,
+            1.0
         ),
         alertthreshold_vec,
     )
@@ -68,7 +64,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
             [noise_specification],
             clinical_case_outbreak_detect_spec_vec,
             # TODO: update this to calculate for all detection thresholds
-            [clinical_case_test_spec],
+            [CLINICAL_CASE_TEST_SPEC],
         ),
     )
 
