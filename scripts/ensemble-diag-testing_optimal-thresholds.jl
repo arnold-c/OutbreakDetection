@@ -160,24 +160,18 @@ compare_optimal_thresholds_chars_plot(
 )
 
 #%%
-detectiondelays_df = create_optimal_threshold_summary_df(:detectiondelays)
-cases_before_alerts_df = create_optimal_threshold_summary_df(
-    :cases_before_alerts
+create_and_save_xlsx_optimal_threshold_summaries(
+    optimal_thresholds_vec, :detectiondelays
 )
-cases_after_alerts_df = create_optimal_threshold_summary_df(:cases_after_alerts)
-detected_outbreak_size_df = create_optimal_threshold_summary_df(
-    :detected_outbreak_size
+create_and_save_xlsx_optimal_threshold_summaries(
+    optimal_thresholds_vec, :cases_before_alerts
 )
-missed_outbreak_size_df = create_optimal_threshold_summary_df(
-    :missed_outbreak_size
+create_and_save_xlsx_optimal_threshold_summaries(
+    optimal_thresholds_vec, :cases_after_alerts
 )
-
-detectiondelays_wide_dfs = create_all_wide_optimal_threshold_summary_dfs(
-    detectiondelays_df
+create_and_save_xlsx_optimal_threshold_summaries(
+    optimal_thresholds_vec, :detected_outbreak_size
 )
-cases_after_alerts_wide_df = create_all_wide_optimal_threshold_summary_dfs(
-    cases_after_alerts_df
-)
-detected_outbreak_size_wide_dfs = create_all_wide_optimal_threshold_summary_dfs(
-    detected_outbreak_size_df
+create_and_save_xlsx_optimal_threshold_summaries(
+    optimal_thresholds_vec, :missed_outbreak_size
 )

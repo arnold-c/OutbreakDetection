@@ -98,6 +98,7 @@ export calculate_optimal_threshold, calculate_OptimalThresholdCharacteristics,
     calculate_optimal_threshold_summaries, create_optimal_threshold_summary_df,
     create_wide_optimal_threshold_summary_df,
     create_all_wide_optimal_threshold_summary_dfs,
-    save_xlsx_optimal_threshold_summaries
+    save_xlsx_optimal_threshold_summaries,
+    create_and_save_xlsx_optimal_threshold_summaries
 
 end

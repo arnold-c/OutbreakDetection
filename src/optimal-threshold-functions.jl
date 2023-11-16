@@ -104,6 +104,28 @@ function calculate_optimal_threshold(
     )
 end
 
+function create_and_save_xlsx_optimal_threshold_summaries(
+    optimal_thresholds_vec,
+    characteristic;
+    percentiles = [0.25, 0.5, 0.75],
+    filepath = datadir("optimal-threshold-results"),
+)
+    long_df = create_optimal_threshold_summary_df(
+        optimal_thresholds_vec, characteristic; percentiles = percentiles
+    )
+
+    wide_df_tuples = create_all_wide_optimal_threshold_summary_dfs(long_df)
+
+    filename = "optimal-threshold-result-tables_$(characteristic)"
+    save_xlsx_optimal_threshold_summaries(
+        (; long_df, wide_df_tuples...), filename; filepath = filepath
+    )
+
+    @info "Saved the summary statistics for $(characteristic)"
+
+    return nothing
+end
+
 function create_all_wide_optimal_threshold_summary_dfs(
     df; summary_stats = ["mean", 0.25, 0.50, 0.75]
 )
