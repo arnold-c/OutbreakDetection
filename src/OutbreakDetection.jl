@@ -91,7 +91,7 @@ export seircolors,
 # @reexport using .PlottingFunctions
 
 include("threshold_comparison_plots.jl")
-export plot_all_threshold_comparisons
+export collect_threshold_char_vec, plot_all_threshold_comparisons
 
 include("optimal-threshold-functions.jl")
 export calculate_optimal_threshold, calculate_OptimalThresholdCharacteristics,
