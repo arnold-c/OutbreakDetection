@@ -750,6 +750,12 @@ function compare_ensemble_OTchars_plots(
             label = legendlabel,
         )
     end
+
+    Label(
+        fig[1, :, Top()],
+        "Perc Clinic Tested: $(char_struct_vec[1].outbreak_detect_spec.percent_clinic_tested)",
+    )
+    rowsize!(fig.layout, Relative(0.98), 1)
     return fig
 end
 
@@ -851,7 +857,7 @@ function construct_OTchars_facets!(
 
         Label(
             gl[1, :],
-            "Individual Test - Sensitivity: $(OT_char_tuple.ind_test_spec.sensitivity), Specificity: $(OT_char_tuple.ind_test_spec.specificity), Lag: $(OT_char_tuple.ind_test_spec.test_result_lag), $(columnfacetchar_label): $(getfield(OT_char_tuple.outbreak_detect_spec, columnfacetchar)), Perc Clinic Tested: $(OT_char_tuple.outbreak_detect_spec.percent_clinic_tested)";
+            "Individual Test - Sensitivity: $(OT_char_tuple.ind_test_spec.sensitivity), Specificity: $(OT_char_tuple.ind_test_spec.specificity), Lag: $(OT_char_tuple.ind_test_spec.test_result_lag), $(columnfacetchar_label): $(getfield(OT_char_tuple.outbreak_detect_spec, columnfacetchar))";
             word_wrap = true,
         )
         colsize!(gl, 1, Relative(1))
