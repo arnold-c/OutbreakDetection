@@ -252,7 +252,7 @@ function define_outbreaks(incidence_param_dict)
     )
 
     non_clinical_case_test_spec_vec = filter(
-        spec -> spec != CLINICAL_CASE_TEST_SPEC,
+        spec -> !(spec in CLINICAL_TEST_SPECS),
         test_spec_vec
     )
 
@@ -279,7 +279,7 @@ function define_outbreaks(incidence_param_dict)
             [outbreak_spec],
             noise_spec_vec,
             clinical_case_outbreak_detection_spec_vec,
-            [CLINICAL_CASE_TEST_SPEC],
+            CLINICAL_TEST_SPECS,
         ),
     )
 

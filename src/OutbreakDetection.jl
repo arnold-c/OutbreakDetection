@@ -20,7 +20,7 @@ export SimTimeParameters, EnsembleSpecification, DynamicsParameters,
 # @reexport using .ODStructs
 
 include("constants.jl")
-export CLINICAL_CASE_TEST_SPEC
+export CLINICAL_CASE_TEST_SPEC, EPI_LINKED_CASE_TEST_SPEC, CLINICAL_TEST_SPECS
 
 include("SEIR-model.jl")
 export seir_mod, seir_mod!, seir_mod_loop!,
