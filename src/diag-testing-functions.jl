@@ -36,10 +36,10 @@ function create_testing_arrs(
         ntested_worker_vec,
         incarr,
         noisearr,
-        outbreak_detect_spec.detection_threshold,
+        outbreak_detect_spec.alert_threshold,
         outbreak_detect_spec.moving_average_lag,
         outbreak_detect_spec.percent_tested,
-        outbreak_detect_spec.test_result_lag,
+        individual_test_spec.test_result_lag,
         individual_test_spec.sensitivity,
         individual_test_spec.specificity,
     )
@@ -53,7 +53,7 @@ function create_testing_arrs!(
     ntested_worker_vec,
     incarr,
     noisearr,
-    detectthreshold,
+    alertthreshold,
     moveavglag,
     perc_tested,
     testlag,
@@ -103,8 +103,7 @@ function create_testing_arrs!(
         calculate_movingavg!(
             @view(testarr[:, 6, sim]),
             @view(testarr[:, 5, sim]),
-            testlag, moveavglag;
-            Float = false,
+            moveavglag
         )
 
         # TOTAL Test positive individuals trigger outbreak response
@@ -112,7 +111,7 @@ function create_testing_arrs!(
             @view(testarr[:, 7, sim]),
             @view(testarr[:, 5, sim]),
             @view(testarr[:, 6, sim]),
-            detectthreshold,
+            alertthreshold,
         )
 
         # Triggered outbreak equal to actual outbreak status
@@ -148,7 +147,7 @@ end
 function calculate_positives!(
     npos_vec, tested_vec, tlength, lag, tested_multiplier
 )
-    for day in eachindex(tested_vec)
+    @inbounds for day in eachindex(tested_vec)
         if day + lag <= tlength
             npos_vec[day + lag] = Int64(
                 round(tested_vec[day] * tested_multiplier)
@@ -158,29 +157,67 @@ function calculate_positives!(
     return nothing
 end
 
-function calculate_movingavg(invec, testlag, avglag)
-    outvec = zeros(Float64, size(invec, 1), 1)
+function calculate_movingavg(invec, avglag)
+    outvec = zeros(Float64, size(invec, 1))
 
-    calculate_movingavg!(outvec, invec, testlag, avglag)
+    calculate_movingavg!(outvec, invec, avglag)
 
     return outvec
 end
 
-function calculate_movingavg!(outvec, invec, testlag, avglag; Float = true)
-    if Float
-        avgfunc =
-            (invec, day, avglag) -> mean(@view(invec[(day - avglag + 1):day]))
+function calculate_movingavg(
+    invec::T1, avglag
+) where {T1<:AbstractArray{Integer}}
+    outvec = zeros(eltype(invec), size(invec, 1))
+
+    calculate_movingavg!(outvec, invec, avglag)
+
+    return outvec
+end
+
+function calculate_movingavg!(outvec, invec, avglag)
+    if avglag == 0
+        outvec .= invec
+        return nothing
+    end
+
+    @inbounds for day in eachindex(invec)
+        outvec[day] = calculate_float_daily_movingavg(invec, day, avglag)
+    end
+    return nothing
+end
+
+function calculate_movingavg!(
+    outvec::T1, invec, avglag
+) where {T1<:AbstractArray{<:Integer}}
+    if avglag == 0
+        outvec .= invec
+        return nothing
+    end
+
+    @inbounds for day in eachindex(invec)
+        outvec[day] = calculate_int_daily_movingavg(invec, day, avglag)
+    end
+    return nothing
+end
+
+function calculate_float_daily_movingavg(invec, day, avglag)
+    @inline moveavg_daystart = calculate_daily_movingavg_startday(day, avglag)
+    return mean(@view(invec[moveavg_daystart:day]))
+end
+
+function calculate_int_daily_movingavg(invec, day, avglag)
+    @inline moveavg_daystart = calculate_daily_movingavg_startday(day, avglag)
+    return Int64(round(mean(@view(invec[moveavg_daystart:day]))))
+end
+
+function calculate_daily_movingavg_startday(day, avglag)
+    if day < avglag
+        moveavg_daystart = 1
     else
-        avgfunc =
-            (invec, day, avglag) -> Int64(round(
-                mean(@view(invec[(day - avglag + 1):day]))
-            ))
+        moveavg_daystart = day - avglag + 1
     end
-    for day in eachindex(invec)
-        if day >= testlag + avglag + 1
-            outvec[day] = avgfunc(invec, day, avglag)
-        end
-    end
+    return moveavg_daystart
 end
 
 function detectoutbreak(incvec, avgvec, threshold)
@@ -198,7 +235,7 @@ function detectoutbreak!(outbreakvec, incvec, avgvec, threshold)
 end
 
 function calculate_test_positivity(
-    true_positive_vec, total_positive_vec, detection_vec, agg_days
+    true_positive_vec, total_positive_vec, alert_vec, agg_days
 )
     @views outvec = zeros(Float64, length(true_positive_vec) ÷ agg_days, 2)
     @inbounds for i in axes(outvec, 1)
@@ -207,7 +244,7 @@ function calculate_test_positivity(
 
         @views total_positive_sum = sum(total_positive_vec[start_ind:end_ind])
         @views true_positive_sum = sum(true_positive_vec[start_ind:end_ind])
-        @views num_outbreak_days = sum(detection_vec[start_ind:end_ind])
+        @views num_outbreak_days = sum(alert_vec[start_ind:end_ind])
         agg_outbreak_status = num_outbreak_days >= agg_days / 2 ? 1 : 0
 
         outvec[i, 1] = true_positive_sum / total_positive_sum
@@ -221,21 +258,22 @@ function calculate_OutbreakThresholdChars(testarr, infecarr, thresholds_vec)
         dailychars = calculate_daily_detection_characteristics(
             @view(testarr[:, 7, sim]), @view(infecarr[:, 3, sim])
         )
-        detectrle = rle(@view(testarr[:, 7, sim]))
+        alertrle = rle(@view(testarr[:, 7, sim]))
         outbreakbounds = thresholds_vec[sim][
             (@view(thresholds_vec[sim][:, 4]) .== 1), 1:3
         ]
-        detectionbounds = calculate_outbreak_thresholds(detectrle; ncols = 2)
+        alertbounds = calculate_outbreak_thresholds(alertrle; ncols = 2)
 
         detectionchars = calculate_outbreak_detection_characteristics(
-            outbreakbounds, detectionbounds
+            outbreakbounds, alertbounds
         )
 
         first_matched_bounds = filter_first_matched_bounds(
             detectionchars.matched_bounds
         )
         delay_vec = calculate_delay_vec(first_matched_bounds)
-        cases_after_alert_vec, caseperc_after_alert_vec = calculate_cases_after_alert(
+        cases_before_alert_vec, caseperc_before_alert,
+        cases_after_alert_vec, caseperc_after_alert_vec = calculate_cases_before_after_alert(
             @view(infecarr[:, 1, sim]), first_matched_bounds, delay_vec
         )
 
@@ -243,6 +281,8 @@ function calculate_OutbreakThresholdChars(testarr, infecarr, thresholds_vec)
             dailychars...,
             detectionchars...,
             delay_vec,
+            cases_before_alert_vec,
+            caseperc_before_alert,
             cases_after_alert_vec,
             caseperc_after_alert_vec,
         )
@@ -287,14 +327,14 @@ function calculate_noutbreaks(outbreakrle)
 end
 
 function calculate_outbreak_detection_characteristics(
-    outbreakbounds, detectionbounds
+    outbreakbounds, alertbounds
 )
     filtered_matched_bounds, periodssum_vec, alerts_per_outbreak_vec = match_outbreak_detection_bounds(
-        outbreakbounds, detectionbounds
+        outbreakbounds, alertbounds
     )
 
     noutbreaks = size(outbreakbounds, 1)
-    ndetectoutbreaks = size(detectionbounds, 1)
+    nalerts = size(alertbounds, 1)
 
     detected_outbreak_size = periodssum_vec[(alerts_per_outbreak_vec .> 0)]
     missed_outbreak_size = periodssum_vec[(alerts_per_outbreak_vec .== 0)]
@@ -307,17 +347,17 @@ function calculate_outbreak_detection_characteristics(
 
     n_correct_alerts = size(filtered_matched_bounds, 1)
 
-    n_false_alerts = sum(ndetectoutbreaks - n_correct_alerts)
+    n_false_alerts = sum(nalerts - n_correct_alerts)
 
     perc_true_outbreaks_detected = n_true_outbreaks_detected / noutbreaks
     perc_true_outbreaks_missed = n_missed_outbreaks / noutbreaks
     falsealert_trueoutbreak_prop = n_false_alerts / noutbreaks
     correctalert_trueoutbreak_prop = n_correct_alerts / noutbreaks # c.f. sensitivity
 
-    trueoutbreak_alerts_prop = noutbreaks / ndetectoutbreaks
-    outbreaksmissed_alerts_prop = n_missed_outbreaks / ndetectoutbreaks
-    perc_alerts_false = n_false_alerts / ndetectoutbreaks
-    perc_alerts_correct = n_correct_alerts / ndetectoutbreaks # c.f. PPV
+    trueoutbreak_alerts_prop = noutbreaks / nalerts
+    outbreaksmissed_alerts_prop = n_missed_outbreaks / nalerts
+    perc_alerts_false = n_false_alerts / nalerts
+    perc_alerts_correct = n_correct_alerts / nalerts # c.f. PPV
 
     accuracy = NaNMath.mean([perc_true_outbreaks_detected, perc_alerts_correct])
 
@@ -325,7 +365,7 @@ function calculate_outbreak_detection_characteristics(
         accuracy = accuracy,
         matched_bounds = filtered_matched_bounds,
         noutbreaks = noutbreaks,
-        ndetectoutbreaks = ndetectoutbreaks,
+        nalerts = nalerts,
         detected_outbreak_size = detected_outbreak_size,
         missed_outbreak_size = missed_outbreak_size,
         n_true_outbreaks_detected = n_true_outbreaks_detected,
@@ -345,40 +385,40 @@ function calculate_outbreak_detection_characteristics(
     )
 end
 
-function match_outbreak_detection_bounds(outbreakbounds, detectionbounds)
+function match_outbreak_detection_bounds(outbreakbounds, alertbounds)
     all_matched_bounds = zeros(
-        Int64, size(outbreakbounds, 1) + size(detectionbounds, 1), 5
+        Int64, size(outbreakbounds, 1) + size(alertbounds, 1), 5
     )
     alerts_per_outbreak_vec = zeros(Int64, size(outbreakbounds, 1))
     periodssum_vec = zeros(Int64, size(outbreakbounds, 1))
 
     outbreak_number = 1
-    detection_rownumber = 1
+    alert_rownumber = 1
     for (outbreak_number, (outbreaklower, outbreakupper, periodsum)) in
         pairs(eachrow(outbreakbounds))
         periodssum_vec[outbreak_number] = periodsum
-        for (detectionlower, detectionupper) in
-            eachrow(@view(detectionbounds[detection_rownumber:end, :]))
-            if detectionlower > outbreakupper
+        for (alertlower, alertupper) in
+            eachrow(@view(alertbounds[alert_rownumber:end, :]))
+            if alertlower > outbreakupper
                 break
             end
-            if detectionlower >= outbreaklower
-                all_matched_bounds[detection_rownumber, :] .= outbreaklower,
-                outbreakupper, detectionlower, detectionupper, periodsum
+            if alertlower >= outbreaklower
+                all_matched_bounds[alert_rownumber, :] .= outbreaklower,
+                outbreakupper, alertlower, alertupper, periodsum
 
                 alerts_per_outbreak_vec[outbreak_number] += 1
 
-                detection_rownumber += 1
+                alert_rownumber += 1
                 continue
             end
-            if detectionlower <= outbreaklower &&
-                detectionupper > outbreaklower
-                all_matched_bounds[detection_rownumber, :] .= outbreaklower,
-                outbreakupper, detectionlower, detectionupper, periodsum
+            if alertlower <= outbreaklower &&
+                alertupper > outbreaklower
+                all_matched_bounds[alert_rownumber, :] .= outbreaklower,
+                outbreakupper, alertlower, alertupper, periodsum
 
                 alerts_per_outbreak_vec[outbreak_number] += 1
 
-                detection_rownumber += 1
+                alert_rownumber += 1
                 continue
             end
         end
@@ -410,33 +450,51 @@ function calculate_first_matched_bounds_index(matchedbounds)
     )
 end
 
-function calculate_cases_after_alert(
+function calculate_cases_before_after_alert(
     incvec, first_matchedbounds, delay_vec
 )
-    casesvec = zeros(Int64, length(delay_vec))
-    casespercvec = zeros(Float64, length(casesvec))
-    calculate_cases_after_alert!(
-        casesvec, casespercvec, incvec, first_matchedbounds, delay_vec
+    casesaftervec = zeros(Int64, length(delay_vec))
+    casesafterpercvec = zeros(Float64, length(casesaftervec))
+    casesbeforevec = zeros(Int64, length(delay_vec))
+    casesbeforepercvec = zeros(Float64, length(casesaftervec))
+    calculate_cases_before_after_alert!(
+        casesbeforevec,
+        casesbeforepercvec,
+        casesaftervec,
+        casesafterpercvec,
+        incvec,
+        first_matchedbounds,
+        delay_vec,
     )
-    return casesvec, casespercvec
+    return casesbeforevec, casesbeforepercvec, casesaftervec, casesafterpercvec
 end
 
-function calculate_cases_after_alert!(
-    casesvec, casespercvec, invec, first_matchedbounds, delay_vec
+function calculate_cases_before_after_alert!(
+    casesbeforevec,
+    casesbeforepercvec,
+    casesaftervec,
+    casesafterpercvec,
+    invec,
+    first_matchedbounds,
+    delay_vec,
 )
     for (
         alertnumber,
         (outbreaklower, outbreakupper, alertlower, alertupper, periodsum),
     ) in
         pairs(eachrow(first_matchedbounds))
-        if delay_vec[alertnumber] < 0
-            casesvec[alertnumber, 1] = periodsum
+        if delay_vec[alertnumber] <= 0
+            casesaftervec[alertnumber, 1] = periodsum
+            casesbeforevec[alertnumber, 1] = 0
         else
-            @views casesvec[alertnumber] = sum(
+            @views casesaftervec[alertnumber] = sum(
                 invec[alertlower:outbreakupper]
             )
+            casesbeforevec[alertnumber] = periodsum - casesaftervec[alertnumber]
         end
-        casespercvec[alertnumber] = casesvec[alertnumber] / periodsum
+        casesbeforepercvec[alertnumber] =
+            casesbeforevec[alertnumber] / periodsum
+        casesafterpercvec[alertnumber] = casesaftervec[alertnumber] / periodsum
     end
     return nothing
 end

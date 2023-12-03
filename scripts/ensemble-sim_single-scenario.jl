@@ -26,13 +26,13 @@ ensemble_single_ensemble_spec = EnsembleSpecification(
 )
 
 ensemble_single_outbreak_spec = OutbreakSpecification(5, 30, 500)
-ensemble_single_individual_test_spec = IndividualTestSpecification(0.8, 0.8)
+ensemble_single_individual_test_spec = IndividualTestSpecification(0.8, 0.8, 0)
 ensemble_single_noise_spec = NoiseSpecification("poisson", 1.0)
 ensemble_single_scenario_spec = ScenarioSpecification(
     ensemble_single_ensemble_spec,
     ensemble_single_outbreak_spec,
     ensemble_single_noise_spec,
-    OutbreakDetectionSpecification(5, 7, 0.6, 0.8, 0),
+    OutbreakDetectionSpecification(5, 7, 0.6, 0.8),
     ensemble_single_individual_test_spec,
 )
 
@@ -58,7 +58,7 @@ ensemble_single_scenario_spec2 = ScenarioSpecification(
     ensemble_single_ensemble_spec,
     ensemble_single_outbreak_spec,
     ensemble_single_noise_spec,
-    OutbreakDetectionSpecification(10, 7, 0.6, 0.8, 0),
+    OutbreakDetectionSpecification(10, 7, 0.6, 0.8),
     ensemble_single_individual_test_spec,
 )
 
@@ -134,7 +134,7 @@ ensemble_single_scenario_incidence_testing_plot = incidence_testing_plot(
     ensemble_single_scenario_noise_array,
     ensemble_single_scenario_detection["testarr"],
     ensemble_single_scenario_spec.ensemble_specification.time_parameters,
-    ensemble_single_scenario_spec.outbreak_detection_specification.detection_threshold;
+    ensemble_single_scenario_spec.outbreak_detection_specification.alert_threshold;
     sim = 1,
 )
 
@@ -172,7 +172,7 @@ save(
 )
 
 #%%
-ensemble_single_scenario_outbreak_detect_plot = ensemble_OTChars_plot(
+ensemble_single_scenario_outbreak_alert_plot = ensemble_OTChars_plot(
     ensemble_single_scenario_detection["OT_chars"],
     ensemble_single_individual_test_spec,
     ensemble_single_scenario_spec.outbreak_detection_specification,
@@ -185,7 +185,7 @@ ensemble_single_scenario_outbreak_detect_plot = ensemble_OTChars_plot(
             vjust = 0.055,
         ),
         (
-            char = :ndetectoutbreaks,
+            char = :nalerts,
             label = "Number of Alerts",
             color = (N_ALERTS_COLOR, 0.5),
             hjust = 2.5,
@@ -196,9 +196,9 @@ ensemble_single_scenario_outbreak_detect_plot = ensemble_OTChars_plot(
 
 save(
     plotsdir(
-        "ensemble/single-scenario/ensemble-sim_single-scenario_outbreak-detection.png",
+        "ensemble/single-scenario/ensemble-sim_single-scenario_outbreak-alerts.png",
     ),
-    ensemble_single_scenario_outbreak_detect_plot,
+    ensemble_single_scenario_outbreak_alert_plot,
 )
 
 #%%

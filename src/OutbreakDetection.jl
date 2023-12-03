@@ -19,6 +19,9 @@ export SimTimeParameters, EnsembleSpecification, DynamicsParameters,
     ScenarioSpecification, TestPositivity, OptimalThresholdCharacteristics
 # @reexport using .ODStructs
 
+include("constants.jl")
+export CLINICAL_CASE_TEST_SPEC
+
 include("SEIR-model.jl")
 export seir_mod, seir_mod!, seir_mod_loop!,
     convert_svec_to_matrix, convert_svec_to_matrix!, convert_svec_to_array
@@ -51,7 +54,7 @@ export create_testing_arrs, create_testing_arrs!, calculate_tested!,
     calculate_noutbreaks, calculate_OutbreakThresholdChars,
     calculate_test_positivity, calculate_outbreak_detection_characteristics,
     filter_first_matched_bounds, calculate_first_matched_bounds_index,
-    calculate_cases_after_alert!, calculate_cases_after_alert
+    calculate_cases_before_after_alert!, calculate_cases_before_after_alert
 # @reexport using .DiagTestingFunctions
 
 include("ensemble-functions.jl")
@@ -88,9 +91,17 @@ export seircolors,
 # @reexport using .PlottingFunctions
 
 include("threshold_comparison_plots.jl")
-export plot_all_threshold_comparisons
+export collect_threshold_char_vec, plot_all_threshold_comparisons
 
 include("optimal-threshold-functions.jl")
-export calculate_optimal_threshold, calculate_OptimalThresholdCharacteristics
+export calculate_optimal_threshold, calculate_OptimalThresholdCharacteristics,
+    calculate_optimal_threshold_summaries,
+    create_optimal_thresholds_df, create_wide_optimal_thresholds_df,
+    create_and_save_xlsx_optimal_threshold_summaries,
+    create_optimal_threshold_summary_df,
+    create_wide_optimal_threshold_summary_df,
+    create_all_wide_optimal_threshold_summary_dfs,
+    save_xlsx_optimal_threshold_summaries,
+    create_and_save_xlsx_optimal_threshold_summaries
 
 end

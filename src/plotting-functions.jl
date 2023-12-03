@@ -319,7 +319,7 @@ function incidence_testing_plot(
     noisearr,
     testingarr,
     timeparams,
-    detectthreshold;
+    alertthreshold;
     sim = 1,
     outbreakcolormap = [
         N_MISSED_OUTBREAKS_COLOR, PERC_OUTBREAKS_DETECTED_COLOR
@@ -395,7 +395,7 @@ function incidence_testing_plot(
     map(
         ax -> hlines!(
             ax,
-            detectthreshold;
+            alertthreshold;
             color = :black,
             linestyle = :dash,
             linewidth = 2,
@@ -527,8 +527,8 @@ function ensemble_OTChars_plot(
     testspec,
     detectspec,
     plottingchars;
-    columnfacetchar = :detection_threshold,
-    columnfacetchar_label = "Detection Threshold",
+    columnfacetchar = :alert_threshold,
+    columnfacetchar_label = "Alert Threshold",
     xlabel = "Alert Characteristic Value",
     ylabel = "Density",
     binwidth = 10.0,
@@ -587,7 +587,7 @@ function ensemble_outbreak_detect_diff_plot(OT_chars; binwidth = 1)
         fig[1, 1]; xlabel = "Difference Between Actual - Detected Outbreaks"
     )
 
-    difference = OT_chars.noutbreaks .- OT_chars.ndetectoutbreaks
+    difference = OT_chars.noutbreaks .- OT_chars.nalerts
 
     bins = minimum(difference):binwidth:maximum(difference)
 
@@ -651,13 +651,14 @@ end
 function save_compare_ensemble_OTchars_plot(
     char_struct_vec,
     columnfacetchar::Symbol,
-    plottingchars;
+    plottingchars,
+    percent_clinic_tested;
     plotname,
     plotsrootdir = plotsdir("ensemble/testing-comparison"),
     clinic_tested_dir,
     plotformat = "png",
     resolution = (2200, 1200),
-    columnfacetchar_label = "Detection Threshold",
+    columnfacetchar_label = "Alert Threshold",
     binwidth = 1.0,
     xlabel = "Alert Characteristic Value",
     ylabel = "Density",
@@ -671,7 +672,8 @@ function save_compare_ensemble_OTchars_plot(
     plot = compare_ensemble_OTchars_plots(
         char_struct_vec,
         columnfacetchar,
-        plottingchars;
+        plottingchars,
+        percent_clinic_tested;
         columnfacetchar_label = columnfacetchar_label,
         binwidth = binwidth,
         xlabel = xlabel,
@@ -701,8 +703,9 @@ end
 function compare_ensemble_OTchars_plots(
     char_struct_vec,
     columnfacetchar::Symbol,
-    plottingchars;
-    columnfacetchar_label = "Detection Threshold",
+    plottingchars,
+    percent_clinic_tested;
+    columnfacetchar_label = "Alert Threshold",
     binwidth = 1.0,
     xlabel = "Alert Characteristic Value",
     ylabel = "Density",
@@ -750,6 +753,39 @@ function compare_ensemble_OTchars_plots(
             label = legendlabel,
         )
     end
+
+    Label(
+        fig[1, :, Top()],
+        "Perc Clinic Tested: $(percent_clinic_tested)",
+    )
+
+    unique_thresholds = unique(
+        getfield.(
+            getfield.(char_struct_vec, :outbreak_detect_spec), :alert_threshold
+        ),
+    )
+
+    for (j, threshold) in pairs(unique_thresholds)
+        Label(
+            fig[2, j + 1, Top()],
+            "Alert Threshold: $(threshold)",
+        )
+    end
+
+    unique_test_specs = unique(getfield.(char_struct_vec, :ind_test_spec))
+
+    for (i, test_spec) in pairs(unique_test_specs)
+        Label(
+            fig[i + 2, 1, Left()],
+            "Sens: $(test_spec.sensitivity), Spec: $(test_spec.specificity),\nLag: $(test_spec.test_result_lag)";
+            rotation = pi / 2,
+        )
+    end
+
+    rowsize!(fig.layout, 1, 5)
+    rowsize!(fig.layout, 2, 7)
+    colsize!(fig.layout, 1, 7)
+
     return fig
 end
 
@@ -765,11 +801,11 @@ function calculate_comparison_plot_facet_dims(
         ),
     )
     ylength = length(
-        Set(getfield.(getfield.(char_struct_vec, :ind_test_spec), :specificity))
+        Set(getfield.(char_struct_vec, :ind_test_spec))
     )
 
-    xs = repeat(1:ylength, xlength)
-    ys = repeat(1:xlength; inner = ylength)
+    ys = repeat(1:ylength, xlength)
+    xs = repeat(1:xlength; inner = ylength)
 
     return xs, ys
 end
@@ -786,6 +822,10 @@ function construct_OTchars_facets!(
     meanlabels = false,
     normalization = :pdf,
 )
+    number_tests = length(
+        Set(getfield.(char_struct_vec, :ind_test_spec))
+    )
+
     for (OT_char_tuple, x, y) in zip(char_struct_vec, xs, ys)
         charvecs = map(
             chartuple -> reduce(
@@ -802,12 +842,18 @@ function construct_OTchars_facets!(
             bins = kwargs_dict[:bins]
         end
 
-        gl = fig[x, y] = GridLayout()
+        gl = fig[y + 2, x + 1] = GridLayout()
         ax = Axis(
-            gl[2, 1];
+            gl[1, 1];
             xlabel = xlabel,
             ylabel = ylabel,
         )
+
+        if y < number_tests
+            hidexdecorations!(ax; ticklabels = false, ticks = false)
+        end
+
+        hideydecorations!(ax)
 
         for charnumber in eachindex(plottingchars)
             if isempty(charvecs[charnumber])
@@ -844,17 +890,9 @@ function construct_OTchars_facets!(
                 end
                 text!(
                     Point(charmean + hjust, 0 + vjust);
-                    text = "Mean ($(plottingchars[charnumber].label)):\n$(round(charmean, digits = 2))",
                 )
             end
         end
-
-        Label(
-            gl[1, :],
-            L"\text{\textbf{Individual Test} - Sensitivity: %$(OT_char_tuple.ind_test_spec.sensitivity), Specificity: %$(OT_char_tuple.ind_test_spec.specificity), %$(columnfacetchar_label): %$(getfield(OT_char_tuple.outbreak_detect_spec, columnfacetchar)), Perc Clinic Tested: %$(OT_char_tuple.outbreak_detect_spec.percent_clinic_tested)}";
-            word_wrap = true,
-        )
-        colsize!(gl, 1, Relative(1))
     end
 end
 
@@ -885,20 +923,18 @@ function compare_optimal_thresholds_chars_plot(
     )
 
     for percent_clinic_tested in unique_percent_clinic_tested
-        optimal_thresholds_chars = optimal_thresholds_vec[(optimal_thresholds_vec.percent_clinic_tested .== percent_clinic_tested)]
-
-        for (i, chars) in pairs(optimal_thresholds_chars)
-            if chars.individual_test_specification ==
-                IndividualTestSpecification(1.0, 0.0)
-                optimal_thresholds_chars[i] = filter(
-                    vec ->
-                        vec.percent_clinic_tested == 1.0 &&
-                            vec.individual_test_specification ==
-                            IndividualTestSpecification(1.0, 0.0),
-                    optimal_thresholds_vec,
-                )[1]
-            end
-        end
+        optimal_thresholds_chars = filter(
+            optimal_thresholds ->
+                optimal_thresholds.percent_clinic_tested ==
+                percent_clinic_tested ||
+                    (
+                        optimal_thresholds.percent_clinic_tested ==
+                        1.0 &&
+                        optimal_thresholds.individual_test_specification ==
+                        CLINICAL_CASE_TEST_SPEC
+                    ),
+            optimal_thresholds_vec,
+        )
 
         plot = create_optimal_thresholds_chars_plot(
             optimal_thresholds_chars,
@@ -941,10 +977,17 @@ function create_optimal_thresholds_chars_plot(
 
     fig = Figure()
 
+    Label(
+        fig[1, 4:5, Top()],
+        "Perc Clinic Tested: $(optimal_thresholds_chars[end].percent_clinic_tested)",
+    )
+
     thresholdschars_structarr =
         optimal_thresholds_chars.outbreak_threshold_chars
-    for (x, chartuple) in pairs(plottingchars)
-        bins_vec = Vector{StepRangeLen}(undef, number_tests)
+
+    for (column, chartuple) in pairs(plottingchars)
+        x = column + 1
+
         thresholdschars_vec =
             getproperty.(thresholdschars_structarr, chartuple.char)
 
@@ -955,41 +998,9 @@ function create_optimal_thresholds_chars_plot(
                 @error "The metric $(chartuple.char) wasn't provided with bins or a binwidth"
                 break
             end
-            if (
-                chartuple.char == :detectiondelays ||
-                chartuple.char == :missed_outbreak_size
-            ) &&
-                optimal_thresholds_chars.individual_test_specification[1] ==
-               IndividualTestSpecification(1.0, 0.0)
-                clinical_char = reduce(
-                    vcat,
-                    getproperty.(
-                        thresholdschars_structarr[1], chartuple.char
-                    ),
-                )
-                nonclinical_char = reduce(
-                    vcat,
-                    getproperty.(
-                        thresholdschars_structarr[2:end], chartuple.char
-                    ),
-                )
-
-                for i in eachindex(bins_vec)
-                    bins_vec[i] = calculate_bins(
-                        nonclinical_char, chartuple.binwidth
-                    )
-                end
-                bins_vec[1] = calculate_bins(
-                    clinical_char, chartuple.binwidth
-                )
-
-            else
-                for i in eachindex(bins_vec)
-                    bins_vec[i] = calculate_bins(charvecs, chartuple.binwidth)
-                end
-            end
+            bins = calculate_bins(charvecs, chartuple.binwidth)
         else
-            bins_vec .= chartuple.bins
+            bins .= chartuple.bins
         end
 
         if !haskey(chartuple, :label)
@@ -998,28 +1009,33 @@ function create_optimal_thresholds_chars_plot(
             label = chartuple.label
         end
 
-        for (y, optimal_thresholds) in pairs(optimal_thresholds_chars)
+        for (row, optimal_thresholds) in pairs(optimal_thresholds_chars)
+            y = row + 1
+
             gl = fig[y, x] = GridLayout()
-            ax = Axis(gl[2, 1]; xlabel = label)
+            ax = Axis(gl[1, 1]; xlabel = label)
 
             hist!(
                 ax,
-                reduce(vcat, thresholdschars_vec[y]);
-                bins = bins_vec[y],
+                reduce(vcat, thresholdschars_vec[row]);
+                bins = bins,
                 color = chartuple.color,
             )
+
             Label(
-                gl[1, :],
-                L"\text{\textbf{Individual Test} - Sensitivity: %$(optimal_thresholds.individual_test_specification.sensitivity), Specificity: %$(optimal_thresholds.individual_test_specification.specificity), Alert Threshold: %$(optimal_thresholds.detection_threshold), Perc Clinic Tested: %$(optimal_thresholds.percent_clinic_tested)}";
-                word_wrap = true,
+                fig[y, 1, Left()],
+                "Sens: $(optimal_thresholds.individual_test_specification.sensitivity), Spec: $(optimal_thresholds.individual_test_specification.specificity),\nLag: $(optimal_thresholds.individual_test_specification.test_result_lag), Threshold: $(optimal_thresholds.alert_threshold)";
+                rotation = pi / 2,
             )
-            colsize!(gl, 1, Relative(1))
 
             if y < number_tests
                 hidexdecorations!(ax; ticklabels = false, ticks = false)
             end
         end
     end
+
+    rowsize!(fig.layout, 1, 5)
+    colsize!(fig.layout, 1, 7)
 
     return fig
 end
