@@ -67,22 +67,6 @@ optimal_thresholds_vec = calculate_OptimalThresholdCharacteristics(
 )
 
 #%%
-optimal_thresholds_df = DataFrame(;
-    percent_clinic_tested = optimal_thresholds_vec.percent_clinic_tested,
-    sensitivity = getfield.(
-        optimal_thresholds_vec.individual_test_specification, :sensitivity
-    ),
-    specificity = getfield.(
-        optimal_thresholds_vec.individual_test_specification, :specificity
-    ),
-    test_lag = getfield.(
-        optimal_thresholds_vec.individual_test_specification, :test_result_lag
-    ),
-    alert_threshold = optimal_thresholds_vec.alert_threshold,
-    accuracy = optimal_thresholds_vec.accuracy,
-)
-
-#%%
 compare_optimal_thresholds_chars_plot(
     optimal_thresholds_vec,
     [
