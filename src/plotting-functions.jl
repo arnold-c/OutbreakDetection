@@ -977,9 +977,17 @@ function create_optimal_thresholds_chars_plot(
 
     fig = Figure()
 
+    Label(
+        fig[1, 4:5, Top()],
+        "Perc Clinic Tested: $(optimal_thresholds_chars[end].percent_clinic_tested)",
+    )
+
     thresholdschars_structarr =
         optimal_thresholds_chars.outbreak_threshold_chars
-    for (x, chartuple) in pairs(plottingchars)
+
+    for (column, chartuple) in pairs(plottingchars)
+        x = column + 1
+
         thresholdschars_vec =
             getproperty.(thresholdschars_structarr, chartuple.char)
 
@@ -1001,28 +1009,33 @@ function create_optimal_thresholds_chars_plot(
             label = chartuple.label
         end
 
-        for (y, optimal_thresholds) in pairs(optimal_thresholds_chars)
+        for (row, optimal_thresholds) in pairs(optimal_thresholds_chars)
+            y = row + 1
+
             gl = fig[y, x] = GridLayout()
-            ax = Axis(gl[2, 1]; xlabel = label)
+            ax = Axis(gl[1, 1]; xlabel = label)
 
             hist!(
                 ax,
-                reduce(vcat, thresholdschars_vec[y]);
+                reduce(vcat, thresholdschars_vec[row]);
                 bins = bins,
                 color = chartuple.color,
             )
+
             Label(
-                gl[1, :],
-                "Individual Test - Sensitivity: $(optimal_thresholds.individual_test_specification.sensitivity), Specificity: $(optimal_thresholds.individual_test_specification.specificity), Lag: $(optimal_thresholds.individual_test_specification.test_result_lag), Alert Threshold: $(optimal_thresholds.alert_threshold), Perc Clinic Tested: $(optimal_thresholds.percent_clinic_tested)";
-                word_wrap = true,
+                fig[y, 1, Left()],
+                "Sens: $(optimal_thresholds.individual_test_specification.sensitivity), Spec: $(optimal_thresholds.individual_test_specification.specificity),\nLag: $(optimal_thresholds.individual_test_specification.test_result_lag), Threshold: $(optimal_thresholds.alert_threshold)";
+                rotation = pi / 2,
             )
-            colsize!(gl, 1, Relative(1))
 
             if y < number_tests
                 hidexdecorations!(ax; ticklabels = false, ticks = false)
             end
         end
     end
+
+    rowsize!(fig.layout, 1, 5)
+    colsize!(fig.layout, 1, 7)
 
     return fig
 end
