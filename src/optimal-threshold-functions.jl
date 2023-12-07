@@ -159,34 +159,12 @@ function create_all_wide_optimal_threshold_summary_dfs(
 end
 
 function create_wide_optimal_threshold_summary_df(df, characteristic)
-    @chain df begin
-        select(
-            _,
-            Cols(
-                x -> startswith(x, "s"),
-                :test_lag,
-                x -> contains(x, "tested"),
-                x -> contains(x, characteristic),
-            ),
-        )
-        rename(_, [5 => :char])
-        @orderby :specificity
-        unstack(
-            _,
-            [:sensitivity, :specificity, :test_lag],
-            :percent_clinic_tested,
-            :char,
-        )
-        select(
-            _,
-            Cols(
-                x -> startswith(x, "s"),
-                "test_lag",
-                x -> startswith(x, "0"),
-                "1.0",
-            ),
-        )
-    end
+    characteristic_str = filter(
+        col -> contains(col, characteristic), names(df)
+    )[1]
+    characteristic_sym = Symbol(characteristic_str)
+
+    return create_wide_optimal_thresholds_df(df, characteristic_sym)
 end
 
 function create_and_save_xlsx_optimal_threshold_summaries(
@@ -245,8 +223,7 @@ function create_optimal_thresholds_df(optimal_thresholds_vec)
     end
 end
 
-function create_wide_optimal_thresholds_df(df, characteristic)
-    characteristic_str = string(characteristic)
+function create_wide_optimal_thresholds_df(df, characteristic_sym)
     maindf = @chain df begin
         select(
             _,
@@ -254,14 +231,14 @@ function create_wide_optimal_thresholds_df(df, characteristic)
                 x -> startswith(x, "s"),
                 :test_lag,
                 x -> contains(x, "tested"),
-                x -> contains(x, characteristic_str),
+                characteristic_sym,
             ),
         )
         unstack(
             _,
             [:sensitivity, :specificity, :test_lag],
             :percent_clinic_tested,
-            characteristic,
+            characteristic_sym,
         )
         select(
             _,

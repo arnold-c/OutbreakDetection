@@ -115,18 +115,23 @@ compare_optimal_thresholds_chars_plot(
 
 #%%
 create_and_save_xlsx_optimal_threshold_summaries(optimal_thresholds_vec)
+
 create_and_save_xlsx_optimal_threshold_summaries(
     optimal_thresholds_vec, :detectiondelays
 )
+
 create_and_save_xlsx_optimal_threshold_summaries(
     optimal_thresholds_vec, :cases_before_alerts
 )
+
 create_and_save_xlsx_optimal_threshold_summaries(
     optimal_thresholds_vec, :cases_after_alerts
 )
+
 create_and_save_xlsx_optimal_threshold_summaries(
     optimal_thresholds_vec, :detected_outbreak_size
 )
+
 create_and_save_xlsx_optimal_threshold_summaries(
     optimal_thresholds_vec, :missed_outbreak_size
 )
