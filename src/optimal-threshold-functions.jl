@@ -247,7 +247,7 @@ end
 
 function create_wide_optimal_thresholds_df(df, characteristic)
     characteristic_str = string(characteristic)
-    @chain df begin
+    maindf = @chain df begin
         select(
             _,
             Cols(
@@ -257,7 +257,6 @@ function create_wide_optimal_thresholds_df(df, characteristic)
                 x -> contains(x, characteristic_str),
             ),
         )
-        @orderby :specificity
         unstack(
             _,
             [:sensitivity, :specificity, :test_lag],
@@ -273,6 +272,20 @@ function create_wide_optimal_thresholds_df(df, characteristic)
                 "1.0",
             ),
         )
+    end
+
+    clinical_case_df = subset(
+        maindf,
+        :sensitivity => sens -> sens .== 1.0,
+        :specificity => spec -> spec .== 0 .|| spec .== 0.8,
+    )
+
+    return @chain maindf begin
+        antijoin(
+            _, clinical_case_df; on = [:test_lag, :sensitivity, :specificity]
+        )
+        @orderby :specificity, :test_lag
+        vcat(clinical_case_df, _)
     end
 end
 
