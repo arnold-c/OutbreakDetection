@@ -527,8 +527,6 @@ function ensemble_OTChars_plot(
     testspec,
     detectspec,
     plottingchars;
-    columnfacetchar = :alert_threshold,
-    columnfacetchar_label = "Alert Threshold",
     xlabel = "Alert Characteristic Value",
     ylabel = "Density",
     binwidth = 10.0,
@@ -539,27 +537,29 @@ function ensemble_OTChars_plot(
     normalization = :none,
     kwargs...,
 )
-    otchars_vec = Vector{NamedTuple}(undef, 1)
-    otchars_vec[1] = (;
+    OT_char_tuple = (;
         OT_chars = OTChars,
         ind_test_spec = testspec,
         outbreak_detect_spec = detectspec,
     )
     kwargs_dict = Dict{Symbol,Any}(kwargs)
 
-    @pack! kwargs_dict = columnfacetchar_label,
-    binwidth, xlabel, ylabel,
-    legendlabel
+    @pack! kwargs_dict = binwidth, xlabel, ylabel, legendlabel
+
+    charvecs = map(
+        chartuple -> reduce(
+            vcat, getproperty(OT_char_tuple.OT_chars, chartuple.char)
+        ),
+        plottingchars,
+    )
 
     fig = Figure()
+    ax = Axis(fig[2, 1]; xlabel = xlabel, ylabel = ylabel)
 
-    construct_OTchars_facets!(
-        fig,
-        otchars_vec,
+    construct_single_OTchars_facet!(
+        ax,
+        charvecs,
         plottingchars,
-        [1],
-        [1],
-        columnfacetchar,
         kwargs_dict;
         meanlines = meanlines,
         meanlabels = meanlabels,
@@ -568,7 +568,7 @@ function ensemble_OTChars_plot(
 
     if legend
         Legend(
-            fig[1, 2],
+            fig[2, 2],
             [
                 PolyElement(; color = col) for
                 col in map(chartuple -> chartuple.color, plottingchars)
@@ -577,6 +577,13 @@ function ensemble_OTChars_plot(
             label = legendlabel,
         )
     end
+
+    Label(
+        fig[1, :, Top()],
+        "Sens: $(testspec.sensitivity), Spec: $(testspec.specificity), Lag: $(testspec.test_result_lag),\nThreshold: $(detectspec.alert_threshold), Perc Clinic Tested: $(detectspec.percent_clinic_tested)",
+    )
+
+    rowsize!(fig.layout, 1, 5)
 
     return fig
 end
@@ -735,7 +742,6 @@ function compare_ensemble_OTchars_plots(
         plottingchars,
         xs,
         ys,
-        columnfacetchar,
         kwargs_dict;
         meanlines = meanlines,
         meanlabels = meanlabels,
@@ -810,13 +816,70 @@ function calculate_comparison_plot_facet_dims(
     return xs, ys
 end
 
+function construct_single_OTchars_facet!(
+    ax,
+    charvecs,
+    plottingchars,
+    kwargs_dict;
+    meanlines = false,
+    meanlabels = false,
+    normalization = :pdf,
+)
+    @unpack binwidth = kwargs_dict
+
+    if !haskey(kwargs_dict, :bins)
+        bins = calculate_bins(charvecs, binwidth)
+    else
+        bins = kwargs_dict[:bins]
+    end
+
+    for charnumber in eachindex(plottingchars)
+        if isempty(charvecs[charnumber])
+            break
+        end
+        hist!(
+            ax,
+            charvecs[charnumber];
+            bins = bins,
+            color = plottingchars[charnumber].color,
+            normalization = normalization,
+        )
+
+        if meanlines || meanlabels
+            charmean = mean(charvecs[charnumber])
+        end
+        if meanlines
+            vlines!(
+                ax,
+                charmean;
+                color = :black,
+                linestyle = :dash,
+                linewidth = 4
+            )
+        end
+        if meanlabels
+            hjust = 0
+            vjust = 0
+            if haskey(plottingchars[charnumber], :hjust)
+                hjust = plottingchars[charnumber].hjust
+            end
+            if haskey(plottingchars[charnumber], :vjust)
+                vjust = plottingchars[charnumber].vjust
+            end
+            text!(
+                Point(charmean + hjust, 0 + vjust);
+                text = "Mean ($(plottingchars[charnumber].label)):\n$(round(charmean, digits = 2))",
+            )
+        end
+    end
+end
+
 function construct_OTchars_facets!(
     fig,
     char_struct_vec,
     plottingchars,
     xs,
     ys,
-    columnfacetchar,
     kwargs_dict;
     meanlines = false,
     meanlabels = false,
@@ -834,13 +897,7 @@ function construct_OTchars_facets!(
             plottingchars,
         )
 
-        @unpack binwidth, xlabel, ylabel, columnfacetchar_label = kwargs_dict
-
-        if !haskey(kwargs_dict, :bins)
-            bins = calculate_bins(charvecs, binwidth)
-        else
-            bins = kwargs_dict[:bins]
-        end
+        @unpack xlabel, ylabel = kwargs_dict
 
         gl = fig[y + 2, x + 1] = GridLayout()
         ax = Axis(
@@ -855,44 +912,15 @@ function construct_OTchars_facets!(
 
         hideydecorations!(ax)
 
-        for charnumber in eachindex(plottingchars)
-            if isempty(charvecs[charnumber])
-                break
-            end
-            hist!(
-                ax,
-                charvecs[charnumber];
-                bins = bins,
-                color = plottingchars[charnumber].color,
-                normalization = normalization,
-            )
-
-            if meanlines || meanlabels
-                charmean = mean(charvecs[charnumber])
-            end
-            if meanlines
-                vlines!(
-                    ax,
-                    charmean;
-                    color = :black,
-                    linestyle = :dash,
-                    linewidth = 4,
-                )
-            end
-            if meanlabels
-                hjust = 0
-                vjust = 0
-                if haskey(plottingchars[charnumber], :hjust)
-                    hjust = plottingchars[charnumber].hjust
-                end
-                if haskey(plottingchars[charnumber], :vjust)
-                    vjust = plottingchars[charnumber].vjust
-                end
-                text!(
-                    Point(charmean + hjust, 0 + vjust);
-                )
-            end
-        end
+        construct_single_OTchars_facet!(
+            ax,
+            charvecs,
+            plottingchars,
+            kwargs_dict;
+            meanlines = meanlines,
+            meanlabels = meanlabels,
+            normalization = normalization,
+        )
     end
 end
 
