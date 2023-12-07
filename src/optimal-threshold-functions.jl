@@ -7,9 +7,10 @@ function calculate_OptimalThresholdCharacteristics(
     base_parameters
 )
     non_clinical_case_test_spec_vec = filter(
-        spec -> spec != CLINICAL_CASE_TEST_SPEC,
+        spec -> !(spec in CLINICAL_TEST_SPECS),
         ind_test_spec_vec
     )
+
     non_clinical_case_optimal_thresholds_vec = Vector{
         OptimalThresholdCharacteristics
     }(
@@ -30,11 +31,19 @@ function calculate_OptimalThresholdCharacteristics(
         )
     end
 
-    clinical_case_optimal_thresholds_vec = calculate_optimal_threshold(
-        1.0,
-        CLINICAL_CASE_TEST_SPEC,
-        base_parameters
+    clinical_case_optimal_thresholds_vec = Vector{
+        OptimalThresholdCharacteristics
+    }(
+        undef, length(CLINICAL_TEST_SPECS)
     )
+
+    for (i, ind_test_spec) in enumerate(CLINICAL_TEST_SPECS)
+        clinical_case_optimal_thresholds_vec[i] = calculate_optimal_threshold(
+            1.0,
+            ind_test_spec,
+            base_parameters
+        )
+    end
 
     return StructArray(
         vcat(
