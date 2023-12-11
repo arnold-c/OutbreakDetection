@@ -322,26 +322,26 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
     )
     @info "Percent alerts correct and outbreaks detected plot saved"
 
-    ncasesbeforealerts_plotname = "compare-outbreak_clinic-tested-$(percent_clinic_tested)_n-cases-before-alerts_plot"
+    navoidablecases_plotname = "compare-outbreak_clinic-tested-$(percent_clinic_tested)_n-avoidable-cases_plot"
     save_compare_ensemble_OTchars_plot(
         ensemble_chars_vec,
         :alert_threshold,
         [
         (
-            char = :cases_before_alerts,
-            color = (PERC_OUTBREAKS_DETECTED_COLOR, 1.0),
+            char = :n_avoidable_cases,
+            color = (PERC_ALERTS_CORRECT_COLOR, 1.0),
         )
     ],
         percent_clinic_tested;
-        xlabel = "Cases Before Alerts",
+        xlabel = "Number of Avoidable Cases",
         columnfacetchar_label = "Alert Threshold",
         binwidth = 50.0,
         meanlines = true,
         legend = false,
-        plotname = ncasesbeforealerts_plotname,
+        plotname = navoidablecases_plotname,
         clinic_tested_dir = clinic_tested_dir,
     )
-    @info "Number of cases before alerts plot saved"
+    @info "Number of avoidable cases plot saved"
 
     perc_casesbeforealerts_plotname = "compare-outbreak_clinic-tested-$(percent_clinic_tested)_percent-cases-before-alerts_plot"
     save_compare_ensemble_OTchars_plot(
@@ -364,26 +364,26 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
     )
     @info "Percentage of cases before alerts plot saved"
 
-    ncasesafteralerts_plotname = "compare-outbreak_clinic-tested-$(percent_clinic_tested)_n-cases-after-alerts_plot"
+    nunavoidablecases_plotname = "compare-outbreak_clinic-tested-$(percent_clinic_tested)_n-unavoidable-cases_plot"
     save_compare_ensemble_OTchars_plot(
         ensemble_chars_vec,
         :alert_threshold,
         [
         (
-            char = :cases_after_alerts,
-            color = (PERC_OUTBREAKS_DETECTED_COLOR, 1.0),
+            char = :n_unavoidable_cases,
+            color = (PERC_OUTBREAKS_MISSED_COLOR, 1.0),
         )
     ],
         percent_clinic_tested;
-        xlabel = "Cases After Alerts",
+        xlabel = "Number of Unavoidable Cases",
         columnfacetchar_label = "Alert Threshold",
         binwidth = 50.0,
         meanlines = true,
         legend = false,
-        plotname = ncasesafteralerts_plotname,
+        plotname = nunavoidablecases_plotname,
         clinic_tested_dir = clinic_tested_dir,
     )
-    @info "Number of cases after alerts plot saved"
+    @info "Number of unavoidable cases plot saved"
 
     perc_casesafteralerts_plotname = "compare-outbreak_clinic-tested-$(percent_clinic_tested)_percent-cases-after-alerts_plot"
     save_compare_ensemble_OTchars_plot(
