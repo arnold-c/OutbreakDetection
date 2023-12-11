@@ -45,7 +45,7 @@ outbreak_specification = OutbreakSpecification(5, 30, 500)
 
 moving_avg_detection_lag = 7
 percent_visit_clinic = 0.6
-percent_clinic_tested_vec = collect(0.2:0.2:1.0)
+percent_clinic_tested_vec = collect(0.1:0.1:0.5)
 
 threshold_comparison_params = (
     test_spec_vec = test_spec_vec,
