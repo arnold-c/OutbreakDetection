@@ -284,6 +284,8 @@ function calculate_OutbreakThresholdChars(testarr, infecarr, thresholds_vec)
 
         avoidable_cases = calculate_avoidable_cases(cases_after_alert_vec)
 
+        n_outbreak_cases = unavoidable_cases + avoidable_cases
+
         n_tests = calculate_n_tests(
             @view(testarr[:, 1, sim]), @view(testarr[:, 2, sim])
         )
@@ -298,6 +300,7 @@ function calculate_OutbreakThresholdChars(testarr, infecarr, thresholds_vec)
             caseperc_after_alert_vec,
             unavoidable_cases,
             avoidable_cases,
+            n_outbreak_cases,
             n_tests,
         )
     end
