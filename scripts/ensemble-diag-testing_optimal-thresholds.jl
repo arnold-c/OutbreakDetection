@@ -109,17 +109,9 @@ create_and_save_xlsx_optimal_threshold_summaries(
 )
 
 create_and_save_xlsx_optimal_threshold_summaries(
-    optimal_thresholds_vec, :cases_before_alerts
+    optimal_thresholds_vec, :unavoidable_cases
 )
 
 create_and_save_xlsx_optimal_threshold_summaries(
-    optimal_thresholds_vec, :cases_after_alerts
-)
-
-create_and_save_xlsx_optimal_threshold_summaries(
-    optimal_thresholds_vec, :detected_outbreak_size
-)
-
-create_and_save_xlsx_optimal_threshold_summaries(
-    optimal_thresholds_vec, :missed_outbreak_size
+    optimal_thresholds_vec, :avoidable_cases
 )
