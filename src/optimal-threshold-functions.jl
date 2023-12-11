@@ -136,11 +136,11 @@ function create_and_save_xlsx_optimal_threshold_summaries(
                 "test_lag",
                 "alert_threshold",
                 "accuracy",
-            ]
+            ],
         ]
 
-        for cfr_tuple in kwargs_dict[:cfrs]
-            country, cfr = cfr_tuple
+        @show kwargs_dict[:cfrs]
+        for (country, cfr) in pairs(kwargs_dict[:cfrs])
             cfr_df = long_df[:, Not(names(base_df))]
             cfr_df .*= cfr
 
@@ -150,12 +150,12 @@ function create_and_save_xlsx_optimal_threshold_summaries(
                 cfr_long_df
             )
 
-            round_cfr = round(cfr; digits = 3)
+            round_cfr = round(cfr; digits = 5)
 
             cfr_filename = "optimal-threshold-result-tables_$(characteristic)_$(country)_CFR_$(round_cfr)"
             save_xlsx_optimal_threshold_summaries(
                 (; cfr_long_df, cfr_wide_df_tuples...), cfr_filename;
-                filepath = filepath
+                filepath = filepath,
             )
         end
     end
