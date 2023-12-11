@@ -89,13 +89,13 @@ compare_optimal_thresholds_chars_plot(
         ),
         (
             char = :unavoidable_cases,
-            label = "Number of Cases Before Alert",
+            label = "Unavoidable Cases",
             color = (PERC_OUTBREAKS_MISSED_COLOR, 1.0),
-            binwidth = 50,
+            binwidth = 500,
         ),
         (
             char = :avoidable_cases,
-            label = "Number of Cases After Alert",
+            label = "Avoidable Cases",
             color = (PERC_OUTBREAKS_DETECTED_COLOR, 1.0),
             binwidth = 500,
         ),
