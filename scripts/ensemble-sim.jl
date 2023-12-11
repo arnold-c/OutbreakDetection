@@ -97,7 +97,7 @@ noise_spec_vec = create_combinations_vec(
 alertthreshold_vec = collect(4:1:30)
 moveavglag_vec = [7]
 perc_clinic_vec = [0.6]
-perc_clinic_test_vec = collect(0.2:0.2:1.0)
+perc_clinic_test_vec = collect(0.1:0.1:0.5)
 
 outbreak_detection_spec_vec = create_combinations_vec(
     OutbreakDetectionSpecification,

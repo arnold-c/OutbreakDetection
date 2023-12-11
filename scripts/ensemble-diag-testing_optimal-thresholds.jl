@@ -53,7 +53,7 @@ outbreak_specification = OutbreakSpecification(5, 30, 500)
 
 moving_avg_detection_lag = 7
 percent_visit_clinic = 0.6
-percent_clinic_tested_vec = collect(0.2:0.2:1.0)
+percent_clinic_tested_vec = collect(0.1:0.1:0.5)
 
 threshold_comparison_params = (
     alertthreshold_vec = alertthreshold_vec,
@@ -107,7 +107,7 @@ cfr_df = CSV.read(
     datadir("CFR_2022.csv"),
     DataFrame; delim = ',',
     header = true,
-    types = [String, Int64, Float64]
+    types = [String, Int64, Float64],
 )
 dropmissing!(cfr_df)
 
