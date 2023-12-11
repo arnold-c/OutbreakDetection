@@ -328,7 +328,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
         :alert_threshold,
         [
         (
-            char = :n_avoidable_cases,
+            char = :avoidable_cases,
             color = (PERC_ALERTS_CORRECT_COLOR, 1.0),
         )
     ],
@@ -370,7 +370,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
         :alert_threshold,
         [
         (
-            char = :n_unavoidable_cases,
+            char = :unavoidable_cases,
             color = (PERC_OUTBREAKS_MISSED_COLOR, 1.0),
         )
     ],
