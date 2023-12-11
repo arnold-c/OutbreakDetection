@@ -341,19 +341,19 @@ struct TestPositivity{T1<:AbstractArray{<:AbstractFloat}}
     thirty_day::T1
 end
 
-function TestPositivity(true_positive_vec, total_positive_vec, alert_vec)
+function TestPositivity(true_positive_vec, total_test_vec, alert_vec)
     return TestPositivity(
         calculate_test_positivity(
-            true_positive_vec, total_positive_vec, alert_vec, 1
+            true_positive_vec, total_test_vec, alert_vec, 1
         ),
         calculate_test_positivity(
-            true_positive_vec, total_positive_vec, alert_vec, 7
+            true_positive_vec, total_test_vec, alert_vec, 7
         ),
         calculate_test_positivity(
-            true_positive_vec, total_positive_vec, alert_vec, 14
+            true_positive_vec, total_test_vec, alert_vec, 14
         ),
         calculate_test_positivity(
-            true_positive_vec, total_positive_vec, alert_vec, 30
+            true_positive_vec, total_test_vec, alert_vec, 30
         ),
     )
 end
