@@ -202,6 +202,37 @@ save(
 )
 
 #%%
+ensemble_single_scenario_outbreak_alert_perc_plot = ensemble_OTChars_plot(
+    ensemble_single_scenario_detection["OT_chars"],
+    ensemble_single_individual_test_spec,
+    ensemble_single_scenario_spec.outbreak_detection_specification,
+    (
+        (
+            char = :perc_true_outbreaks_detected,
+            label = "Percent Outbreaks Detected",
+            color = (PERC_OUTBREAKS_DETECTED_COLOR, 1.0),
+            hjust = -0.15,
+            vjust = 60,
+        ),
+        (
+            char = :perc_alerts_correct,
+            label = "Percent Alerts\nThat Are Correct",
+            color = (PERC_ALERTS_CORRECT_COLOR, 0.7),
+            hjust = -0.1,
+            vjust = 60,
+        ),
+    );
+    bins = 0.0:0.01:1.01,
+)
+
+save(
+    plotsdir(
+        "ensemble/single-scenario/ensemble-sim_single-scenario_outbreak-alerts-perc.png",
+    ),
+    ensemble_single_scenario_outbreak_alert_perc_plot,
+)
+
+#%%
 ensemble_single_scenario_outbreak_detect_diff_plot = ensemble_outbreak_detect_diff_plot(
     ensemble_single_scenario_detection["OT_chars"];
     binwidth = 1
