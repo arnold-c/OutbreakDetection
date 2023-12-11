@@ -126,25 +126,40 @@ function create_and_save_xlsx_optimal_threshold_summaries(
         optimal_thresholds_vec, characteristic; percentiles = percentiles
     )
 
-    if haskey(kwargs_dict, :cfrs)
-        base_df = long_df[
-            :,
-            [
-                "percent_clinic_tested",
-                "sensitivity",
-                "specificity",
-                "test_lag",
-                "alert_threshold",
-                "accuracy",
-            ]
-        ]
+    base_columns = [
+        "percent_clinic_tested",
+        "sensitivity",
+        "specificity",
+        "test_lag",
+        "alert_threshold",
+        "accuracy",
+    ]
 
+    if haskey(kwargs_dict, :scale_annual)
+        transform!(
+            long_df,
+            Not(base_columns) .=> x -> x .* kwargs_dict[:scale_annual];
+            renamecols = false,
+        )
+    end
+
+    if haskey(kwargs_dict, :scale_population)
+        transform!(
+            long_df,
+            Not(base_columns) .=> x -> x .* kwargs_dict[:scale_population];
+            renamecols = false,
+        )
+    end
+
+    if haskey(kwargs_dict, :cfrs)
         for cfr_tuple in kwargs_dict[:cfrs]
             country, cfr = cfr_tuple
-            cfr_df = long_df[:, Not(names(base_df))]
-            cfr_df .*= cfr
 
-            cfr_long_df = hcat(base_df, cfr_df)
+            cfr_long_df = transform(
+                long_df,
+                Not(base_columns) .=> x -> x .* kwargs_dict[:scale_population];
+                renamecols = false,
+            )
 
             cfr_wide_df_tuples = create_all_wide_optimal_threshold_summary_dfs(
                 cfr_long_df
@@ -155,7 +170,7 @@ function create_and_save_xlsx_optimal_threshold_summaries(
             cfr_filename = "optimal-threshold-result-tables_$(characteristic)_$(country)_CFR_$(round_cfr)"
             save_xlsx_optimal_threshold_summaries(
                 (; cfr_long_df, cfr_wide_df_tuples...), cfr_filename;
-                filepath = filepath
+                filepath = filepath,
             )
         end
     end
