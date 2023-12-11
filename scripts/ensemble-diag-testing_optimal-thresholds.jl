@@ -87,28 +87,16 @@ compare_optimal_thresholds_chars_plot(
             binwidth = 10,
         ),
         (
-            char = :cases_before_alerts,
+            char = :unavoidable_cases,
             label = "Number of Cases Before Alert",
             color = (PERC_OUTBREAKS_MISSED_COLOR, 1.0),
             binwidth = 50,
         ),
         (
-            char = :cases_after_alerts,
+            char = :avoidable_cases,
             label = "Number of Cases After Alert",
             color = (PERC_OUTBREAKS_DETECTED_COLOR, 1.0),
             binwidth = 500,
-        ),
-        (
-            char = :detected_outbreak_size,
-            label = "Size of Outbreaks Detected",
-            color = (PERC_OUTBREAKS_DETECTED_COLOR, 0.7),
-            binwidth = 500,
-        ),
-        (
-            char = :missed_outbreak_size,
-            label = "Size of Outbreaks Missed",
-            color = (PERC_OUTBREAKS_MISSED_COLOR, 0.7),
-            binwidth = 100,
         ),
     ],
 )
@@ -121,17 +109,9 @@ create_and_save_xlsx_optimal_threshold_summaries(
 )
 
 create_and_save_xlsx_optimal_threshold_summaries(
-    optimal_thresholds_vec, :cases_before_alerts
+    optimal_thresholds_vec, :unavoidable_cases
 )
 
 create_and_save_xlsx_optimal_threshold_summaries(
-    optimal_thresholds_vec, :cases_after_alerts
-)
-
-create_and_save_xlsx_optimal_threshold_summaries(
-    optimal_thresholds_vec, :detected_outbreak_size
-)
-
-create_and_save_xlsx_optimal_threshold_summaries(
-    optimal_thresholds_vec, :missed_outbreak_size
+    optimal_thresholds_vec, :avoidable_cases
 )

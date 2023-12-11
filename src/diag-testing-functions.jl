@@ -272,10 +272,17 @@ function calculate_OutbreakThresholdChars(testarr, infecarr, thresholds_vec)
             detectionchars.matched_bounds
         )
         delay_vec = calculate_delay_vec(first_matched_bounds)
+
         cases_before_alert_vec, caseperc_before_alert,
         cases_after_alert_vec, caseperc_after_alert_vec = calculate_cases_before_after_alert(
             @view(infecarr[:, 1, sim]), first_matched_bounds, delay_vec
         )
+
+        unavoidable_cases = calculate_unavoidable_cases(
+            detectionchars.missed_outbreak_size, cases_before_alert_vec
+        )
+
+        avoidable_cases = calculate_avoidable_cases(cases_after_alert_vec)
 
         OutbreakThresholdChars(
             dailychars...,
@@ -285,10 +292,22 @@ function calculate_OutbreakThresholdChars(testarr, infecarr, thresholds_vec)
             caseperc_before_alert,
             cases_after_alert_vec,
             caseperc_after_alert_vec,
+            unavoidable_cases,
+            avoidable_cases,
         )
     end
 
     return StructArray(OT_chars)
+end
+
+function calculate_unavoidable_cases(
+    missed_outbreak_vec, cases_before_alert_vec
+)
+    return sum(missed_outbreak_vec) + sum(cases_before_alert_vec)
+end
+
+function calculate_avoidable_cases(cases_after_alert_vec)
+    return sum(cases_after_alert_vec)
 end
 
 function calculate_daily_detection_characteristics(testvec, infecvec)
