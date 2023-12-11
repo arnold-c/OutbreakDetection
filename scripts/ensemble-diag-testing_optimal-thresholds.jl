@@ -123,9 +123,13 @@ create_and_save_xlsx_optimal_threshold_summaries(
 )
 
 create_and_save_xlsx_optimal_threshold_summaries(
-    optimal_thresholds_vec, :unavoidable_cases; cfr = cfrs
+    optimal_thresholds_vec, :unavoidable_cases
 )
 
 create_and_save_xlsx_optimal_threshold_summaries(
-    optimal_thresholds_vec, :avoidable_cases; cfr = cfrs
+    optimal_thresholds_vec, :avoidable_cases
+)
+
+create_and_save_xlsx_optimal_threshold_summaries(
+    optimal_thresholds_vec, :n_outbreak_cases; cfrs = cfrs
 )
