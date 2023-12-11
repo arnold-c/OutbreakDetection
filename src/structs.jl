@@ -225,6 +225,7 @@ struct OutbreakThresholdChars{
     cases_perc_after_alerts::T6
     unavoidable_cases::T2
     avoidable_cases::T2
+    n_tests::T2
 end
 
 struct OutbreakSpecification{T1<:Integer,T2<:AbstractString}
