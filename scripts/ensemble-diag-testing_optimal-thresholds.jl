@@ -112,8 +112,7 @@ cfr_df = CSV.read(
 dropmissing!(cfr_df)
 
 gha_cfr = only(cfr_df[cfr_df.country .== "GHA", :CFR])
-cod_cfr = only(cfr_df[cfr_df.country .== "COD", :CFR])
-cfrs = (; GHA = gha_cfr, COD = cod_cfr)
+cfrs = (; GHA = gha_cfr)
 
 #%%
 create_and_save_xlsx_optimal_threshold_summaries(optimal_thresholds_vec)
