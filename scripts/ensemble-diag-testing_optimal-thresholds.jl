@@ -5,6 +5,7 @@ using DrWatson
 using ProgressMeter
 using FLoops
 using NaNMath: NaNMath
+using CSV: CSV
 using DataFrames
 using DataFramesMeta
 using Statistics
@@ -102,6 +103,19 @@ compare_optimal_thresholds_chars_plot(
 )
 
 #%%
+cfr_df = CSV.read(
+    datadir("CFR_2022.csv"),
+    DataFrame; delim = ',',
+    header = true,
+    types = [String, Int64, Float64]
+)
+dropmissing!(cfr_df)
+
+gha_cfr = only(cfr_df[cfr_df.country .== "GHA", :CFR])
+cod_cfr = only(cfr_df[cfr_df.country .== "COD", :CFR])
+cfrs = (; GHA = gha_cfr, COD = cod_cfr)
+
+#%%
 create_and_save_xlsx_optimal_threshold_summaries(optimal_thresholds_vec)
 
 create_and_save_xlsx_optimal_threshold_summaries(
@@ -109,9 +123,9 @@ create_and_save_xlsx_optimal_threshold_summaries(
 )
 
 create_and_save_xlsx_optimal_threshold_summaries(
-    optimal_thresholds_vec, :unavoidable_cases
+    optimal_thresholds_vec, :unavoidable_cases; cfr = cfrs
 )
 
 create_and_save_xlsx_optimal_threshold_summaries(
-    optimal_thresholds_vec, :avoidable_cases
+    optimal_thresholds_vec, :avoidable_cases; cfr = cfrs
 )
