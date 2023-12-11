@@ -131,6 +131,7 @@ countries = [
         code = "GHA",
         cfr = gha_cfr,
         year = "2022",
+        population_size = gha_2022_pop,
         scale_population = gha_2022_scale_population,
     ),
 ]

@@ -163,6 +163,8 @@ function create_and_save_xlsx_optimal_threshold_summaries(
                 country_long_df
             )
 
+            country_info_df = DataFrame(hcat(country...), [keys(country)...])
+
             if !haskey(country, :code)
                 @error "Country $(country) has no code. Please provide one"
             end
@@ -175,7 +177,7 @@ function create_and_save_xlsx_optimal_threshold_summaries(
                 base_filename * "_$(country.code)_$(country.year)"
 
             save_xlsx_optimal_threshold_summaries(
-                (; country_long_df, country_wide_df_tuples...),
+                (; country_info_df, country_long_df, country_wide_df_tuples...),
                 country_filename;
                 filepath = filepath,
             )
@@ -195,7 +197,8 @@ function create_and_save_xlsx_optimal_threshold_summaries(
 
                 cfr_filename = country_filename * "_CFR_$(round_cfr)"
                 save_xlsx_optimal_threshold_summaries(
-                    (; cfr_long_df, cfr_wide_df_tuples...), cfr_filename;
+                    (; country_info_df, cfr_long_df, cfr_wide_df_tuples...),
+                    cfr_filename;
                     filepath = filepath,
                 )
             end
