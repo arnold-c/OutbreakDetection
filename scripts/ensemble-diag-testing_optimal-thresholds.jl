@@ -31,10 +31,13 @@ test_spec_vec = [
 alertthreshold_vec = collect(4:1:30)
 
 #%%
+nyears::Float64 = 100.0
+population_size::Int64 = 500_000
+
 ensemble_specification = EnsembleSpecification(
     ("seasonal-infectivity-import", "tau-leaping"),
     StateParameters(
-        500_000,
+        population_size,
         Dict(
             :s_prop => 0.1,
             :e_prop => 0.0,
@@ -44,7 +47,7 @@ ensemble_specification = EnsembleSpecification(
     ),
     DynamicsParameters(500_000, 10, 0.2; vaccination_coverage = 0.0),
     SimTimeParameters(;
-        tmin = 0.0, tmax = 365.0 * 100, tstep = 1.0
+        tmin = 0.0, tmax = 365.0 * nyears, tstep = 1.0
     ),
     100,
 )
@@ -112,7 +115,25 @@ cfr_df = CSV.read(
 dropmissing!(cfr_df)
 
 gha_cfr = only(cfr_df[cfr_df.country .== "GHA", :CFR])
-cfrs = (; GHA = gha_cfr)
+
+population_df = CSV.read(
+    datadir("input-populations.csv"),
+    DataFrame; delim = ',',
+    header = true
+)
+
+gha_2022_pop = only(population_df[population_df.ISO3_code .== "GHA", "2022"])
+gha_2022_scale_population = gha_2022_pop / population_size
+
+countries = [
+    (;
+        name = "Ghana",
+        code = "GHA",
+        cfr = gha_cfr,
+        year = "2022",
+        scale_population = gha_2022_scale_population,
+    ),
+]
 
 #%%
 create_and_save_xlsx_optimal_threshold_summaries(optimal_thresholds_vec)
@@ -122,13 +143,20 @@ create_and_save_xlsx_optimal_threshold_summaries(
 )
 
 create_and_save_xlsx_optimal_threshold_summaries(
-    optimal_thresholds_vec, :unavoidable_cases
+    optimal_thresholds_vec,
+    :unavoidable_cases;
+    scale_annual = 1 / nyears,
+    countries = countries,
 )
 
 create_and_save_xlsx_optimal_threshold_summaries(
-    optimal_thresholds_vec, :avoidable_cases
+    optimal_thresholds_vec, :avoidable_cases;
+    scale_annual = 1 / nyears,
+    countries = countries,
 )
 
 create_and_save_xlsx_optimal_threshold_summaries(
-    optimal_thresholds_vec, :n_outbreak_cases; cfrs = cfrs
+    optimal_thresholds_vec, :n_outbreak_cases;
+    scale_annual = 1 / nyears,
+    countries = countries,
 )

@@ -135,52 +135,78 @@ function create_and_save_xlsx_optimal_threshold_summaries(
         "accuracy",
     ]
 
+    base_filename = "optimal-threshold-result-tables_$(characteristic)"
+
     if haskey(kwargs_dict, :scale_annual)
         transform!(
             long_df,
             Not(base_columns) .=> x -> x .* kwargs_dict[:scale_annual];
             renamecols = false,
         )
+
+        base_filename = base_filename * "_annual_scale"
     end
 
-    if haskey(kwargs_dict, :scale_population)
-        transform!(
-            long_df,
-            Not(base_columns) .=> x -> x .* kwargs_dict[:scale_population];
-            renamecols = false,
-        )
-    end
+    if haskey(kwargs_dict, :countries)
+        for country in kwargs_dict[:countries]
+            if !haskey(country, :scale_population)
+                @error "Country $(country) has no scale_population. Please provide one"
+            end
 
-    if haskey(kwargs_dict, :cfrs)
-        for cfr_tuple in kwargs_dict[:cfrs]
-            country, cfr = cfr_tuple
-
-            cfr_long_df = transform(
+            country_long_df = transform(
                 long_df,
-                Not(base_columns) .=> x -> x .* kwargs_dict[:scale_population];
+                Not(base_columns) .=> x -> x .* country.scale_population;
                 renamecols = false,
             )
 
-            cfr_wide_df_tuples = create_all_wide_optimal_threshold_summary_dfs(
-                cfr_long_df
+            country_wide_df_tuples = create_all_wide_optimal_threshold_summary_dfs(
+                country_long_df
             )
 
-            round_cfr = round(cfr; digits = 3)
+            if !haskey(country, :code)
+                @error "Country $(country) has no code. Please provide one"
+            end
 
-            cfr_filename = "optimal-threshold-result-tables_$(characteristic)_$(country)_CFR_$(round_cfr)"
+            if !haskey(country, :year)
+                @error "Country $(country) has no year. Please provide one"
+            end
+
+            country_filename =
+                base_filename * "_$(country.code)_$(country.year)"
+
             save_xlsx_optimal_threshold_summaries(
-                (; cfr_long_df, cfr_wide_df_tuples...), cfr_filename;
+                (; country_long_df, country_wide_df_tuples...),
+                country_filename;
                 filepath = filepath,
             )
+
+            if haskey(country, :cfr)
+                cfr_long_df = transform(
+                    country_long_df,
+                    Not(base_columns) .=> x -> x .* country.cfr;
+                    renamecols = false,
+                )
+
+                cfr_wide_df_tuples = create_all_wide_optimal_threshold_summary_dfs(
+                    cfr_long_df
+                )
+
+                round_cfr = round(country.cfr; digits = 3)
+
+                cfr_filename = country_filename * "_CFR_$(round_cfr)"
+                save_xlsx_optimal_threshold_summaries(
+                    (; cfr_long_df, cfr_wide_df_tuples...), cfr_filename;
+                    filepath = filepath,
+                )
+            end
         end
+    else
+        wide_df_tuples = create_all_wide_optimal_threshold_summary_dfs(long_df)
+
+        save_xlsx_optimal_threshold_summaries(
+            (; long_df, wide_df_tuples...), base_filename; filepath = filepath
+        )
     end
-
-    wide_df_tuples = create_all_wide_optimal_threshold_summary_dfs(long_df)
-
-    filename = "optimal-threshold-result-tables_$(characteristic)"
-    save_xlsx_optimal_threshold_summaries(
-        (; long_df, wide_df_tuples...), filename; filepath = filepath
-    )
 
     @info "Saved the summary statistics for $(characteristic)"
 
