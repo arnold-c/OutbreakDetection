@@ -32,7 +32,7 @@ ensemble_single_scenario_spec = ScenarioSpecification(
     ensemble_single_ensemble_spec,
     ensemble_single_outbreak_spec,
     ensemble_single_noise_spec,
-    OutbreakDetectionSpecification(5, 7, 0.6, 0.8),
+    OutbreakDetectionSpecification(5, 7, 0.6, 0.3),
     ensemble_single_individual_test_spec,
 )
 
@@ -58,7 +58,7 @@ ensemble_single_scenario_spec2 = ScenarioSpecification(
     ensemble_single_ensemble_spec,
     ensemble_single_outbreak_spec,
     ensemble_single_noise_spec,
-    OutbreakDetectionSpecification(10, 7, 0.6, 0.8),
+    OutbreakDetectionSpecification(10, 7, 0.6, 0.3),
     ensemble_single_individual_test_spec,
 )
 
