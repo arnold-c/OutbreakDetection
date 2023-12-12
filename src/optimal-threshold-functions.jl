@@ -190,6 +190,7 @@ function create_and_save_xlsx_optimal_threshold_summaries(
                     renamecols = false,
                 )
 
+                rename!(name -> replace(name, r"case" => "death"), cfr_long_df)
 
                 cfr_wide_df_tuples = create_all_wide_optimal_threshold_summary_dfs(
                     cfr_long_df
