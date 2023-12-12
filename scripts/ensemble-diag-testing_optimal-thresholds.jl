@@ -163,5 +163,7 @@ create_and_save_xlsx_optimal_threshold_summaries(
 )
 
 create_and_save_xlsx_optimal_threshold_summaries(
-    optimal_thresholds_vec, :n_tests
+    optimal_thresholds_vec, :n_tests;
+    scale_annual = 1 / nyears,
+    countries = countries,
 )

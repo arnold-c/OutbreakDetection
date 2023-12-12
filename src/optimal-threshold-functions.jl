@@ -182,12 +182,14 @@ function create_and_save_xlsx_optimal_threshold_summaries(
                 filepath = filepath,
             )
 
-            if haskey(country, :cfr)
+            if haskey(country, :cfr) &&
+                occursin("case", String(characteristic))
                 cfr_long_df = transform(
                     country_long_df,
                     Not(base_columns) .=> x -> x .* country.cfr;
                     renamecols = false,
                 )
+
 
                 cfr_wide_df_tuples = create_all_wide_optimal_threshold_summary_dfs(
                     cfr_long_df
