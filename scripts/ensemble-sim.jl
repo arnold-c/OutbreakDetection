@@ -39,16 +39,16 @@ time_p_vec = vec(
 
 #%%
 beta_force_vec = [0.2]
-annual_births_per_k_vec = [10]
+annual_births_per_k_vec = [27]
 seed = 1234
 
 #%%
 latent_per_days_vec = [8]
 dur_inf_days_vec = [5]
-R_0_vec = [10.0]
+R_0_vec = [15.0]
 sigma_vec = 1 ./ latent_per_days_vec
 gamma_vec = 1 ./ dur_inf_days_vec
-vaccination_coverage_vec = [0.0]
+vaccination_coverage_vec = [0.8]
 
 #%%
 ensemble_spec_vec = create_ensemble_spec_combinations(
