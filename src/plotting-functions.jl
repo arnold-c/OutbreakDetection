@@ -892,15 +892,19 @@ function construct_OTchars_facets!(
     for (OT_char_tuple, x, y) in zip(char_struct_vec, xs, ys)
         skipped_plottingchar = 0
 
-        charvecs = Vector{Vector{Int64}}(undef, length(plottingchars))
+        charvecs = Vector{Vector{Union{Int64,Float64}}}(
+            undef, length(plottingchars)
+        )
+
         for (i, chartuple) in pairs(plottingchars)
             charvec = getproperty(OT_char_tuple.OT_chars, chartuple.char)
 
             if sum(isempty.(charvec)) == length(charvec)
                 skipped_plottingchar += 1
-                continue
+                charvecs[i] = eltype(charvec)[]
+            else
+                charvecs[i] = reduce(vcat, charvec)
             end
-            charvecs[i] = reduce(vcat, charvec)
         end
 
         @unpack xlabel, ylabel = kwargs_dict
