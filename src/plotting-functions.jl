@@ -890,12 +890,18 @@ function construct_OTchars_facets!(
     )
 
     for (OT_char_tuple, x, y) in zip(char_struct_vec, xs, ys)
-        charvecs = map(
-            chartuple -> reduce(
-                vcat, getproperty(OT_char_tuple.OT_chars, chartuple.char)
-            ),
-            plottingchars,
-        )
+        skipped_plottingchar = 0
+
+        charvecs = Vector{Vector{Int64}}(undef, length(plottingchars))
+        for (i, chartuple) in pairs(plottingchars)
+            charvec = getproperty(OT_char_tuple.OT_chars, chartuple.char)
+
+            if sum(isempty.(charvec)) == length(charvec)
+                skipped_plottingchar += 1
+                continue
+            end
+            charvecs[i] = reduce(vcat, charvec)
+        end
 
         @unpack xlabel, ylabel = kwargs_dict
 
@@ -911,6 +917,10 @@ function construct_OTchars_facets!(
         end
 
         hideydecorations!(ax)
+
+        if skipped_plottingchar == length(plottingchars)
+            continue
+        end
 
         construct_single_OTchars_facet!(
             ax,
