@@ -16,7 +16,10 @@ include("structs.jl")
 export SimTimeParameters, EnsembleSpecification, DynamicsParameters,
     StateParameters, OutbreakThresholdChars, OutbreakDetectionSpecification,
     OutbreakSpecification, IndividualTestSpecification, NoiseSpecification,
-    ScenarioSpecification, TestPositivity, OptimalThresholdCharacteristics
+    ScenarioSpecification, TestPositivity, OptimalThresholdCharacteristics,
+    POPULATION_N, LATENT_PER_DAYS, DUR_INF_DAYS, R0, SIGMA, GAMMA,
+    LIFE_EXPECTANCY_YEARS,
+    MU, BETA_MEAN, BETA_FORCE, EPSILON
 # @reexport using .ODStructs
 
 include("constants.jl")

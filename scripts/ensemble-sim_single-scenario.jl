@@ -20,7 +20,15 @@ ensemble_single_ensemble_spec = EnsembleSpecification(
         500_000,
         Dict(:s_prop => 0.1, :e_prop => 0.0, :i_prop => 0.0, :r_prop => 0.9),
     ),
-    DynamicsParameters(500_000, 10, 0.2; vaccination_coverage = 0.0),
+    DynamicsParameters(
+        500_000,
+        27,
+        0.2,
+        SIGMA,
+        GAMMA,
+        16.0,
+        0.8,
+    ),
     ensemble_single_time_spec,
     100,
 )

@@ -78,6 +78,32 @@ function DynamicsParameters(
 end
 
 function DynamicsParameters(
+    N::Int64,
+    annual_births_per_k::Int64,
+    beta_force::Float64,
+    sigma::Float64,
+    gamma::Float64,
+    R_0::Float64,
+    vaccination_coverage::Float64,
+)
+    mu = calculate_mu(annual_births_per_k)
+    beta_mean = calculate_beta(R_0, gamma, mu, 1, N)
+    epsilon = calculate_import_rate(mu, R_0, N)
+
+    return DynamicsParameters(
+        beta_mean,
+        beta_force,
+        sigma,
+        gamma,
+        mu,
+        annual_births_per_k,
+        epsilon,
+        R_0,
+        vaccination_coverage,
+    )
+end
+
+function DynamicsParameters(
     N::Int64, annual_births_per_k::Int64, beta_force::Float64;
     vaccination_coverage::Float64 = 0.8,
 )
