@@ -12,6 +12,11 @@ export calculate_beta,
     calculate_mu
 # @reexport using .TransmissionFunctions
 
+include("dynamics-constants.jl")
+export POPULATION_N, LATENT_PER_DAYS, DUR_INF_DAYS, R0, SIGMA, GAMMA,
+    LIFE_EXPECTANCY_YEARS, ANNUAL_BIRTHS_PER_K, VACCINATION_COVERAGE,
+    MU, BETA_MEAN, BETA_FORCE, EPSILON
+
 include("structs.jl")
 export SimTimeParameters, EnsembleSpecification, DynamicsParameters,
     StateParameters, OutbreakThresholdChars, OutbreakDetectionSpecification,
@@ -19,7 +24,7 @@ export SimTimeParameters, EnsembleSpecification, DynamicsParameters,
     ScenarioSpecification, TestPositivity, OptimalThresholdCharacteristics
 # @reexport using .ODStructs
 
-include("constants.jl")
+include("test-constants.jl")
 export CLINICAL_CASE_TEST_SPEC, EPI_LINKED_CASE_TEST_SPEC, CLINICAL_TEST_SPECS
 
 include("SEIR-model.jl")
@@ -87,7 +92,9 @@ export seircolors,
     singlescenario_test_positivity_plot, test_positivity_distribution_plot,
     ensemble_outbreak_detect_diff_plot, save_compare_ensemble_OTchars_plot,
     compare_ensemble_OTchars_plots,
-    compare_optimal_thresholds_chars_plot, create_optimal_thresholds_chars_plot
+    compare_optimal_thresholds_chars_plot, create_optimal_thresholds_chars_plot,
+    compare_optimal_thresholds_test_chars_plot,
+    create_optimal_thresholds_test_chars_plot
 # @reexport using .PlottingFunctions
 
 include("threshold_comparison_plots.jl")

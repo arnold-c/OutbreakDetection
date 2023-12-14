@@ -17,7 +17,7 @@ model_types_vec = [("seasonal-infectivity-import", "tau-leaping")]
 N_vec = [500_000]
 nsims_vec = [100]
 init_states_prop_dict = [
-    Dict(:s_prop => 0.1, :e_prop => 0.00, :i_prop => 0.00, :r_prop => 0.9)
+    Dict(:s_prop => 0.05, :e_prop => 0.00, :i_prop => 0.00, :r_prop => 0.95)
 ]
 
 ensemble_state_p_vec = create_combinations_vec(
@@ -39,16 +39,16 @@ time_p_vec = vec(
 
 #%%
 beta_force_vec = [0.2]
-annual_births_per_k_vec = [10]
+annual_births_per_k_vec = [27]
 seed = 1234
 
 #%%
 latent_per_days_vec = [8]
 dur_inf_days_vec = [5]
-R_0_vec = [10.0]
+R_0_vec = [15.0]
 sigma_vec = 1 ./ latent_per_days_vec
 gamma_vec = 1 ./ dur_inf_days_vec
-vaccination_coverage_vec = [0.0]
+vaccination_coverage_vec = [0.8]
 
 #%%
 ensemble_spec_vec = create_ensemble_spec_combinations(
