@@ -992,7 +992,7 @@ function compare_optimal_thresholds_chars_plot(
         save(
             joinpath(
                 plotpath,
-                "compare-outreak_clinic-tested-$(percent_clinic_tested)_best-thresholds.png",
+                "compare-outbreak_clinic-tested-$(percent_clinic_tested)_best-thresholds.png",
             ),
             plot;
             resolution = (2200, 1600),
@@ -1010,6 +1010,10 @@ function create_optimal_thresholds_chars_plot(
     kwargs...
 )
     number_tests = length(optimal_thresholds_chars)
+    number_plotting_chars = length(plottingchars)
+    midpoint_plotting_chars = Int64(
+        round(number_plotting_chars / 2; digits = 0)
+    )
 
     sort!(
         optimal_thresholds_chars;
@@ -1020,7 +1024,11 @@ function create_optimal_thresholds_chars_plot(
     fig = Figure()
 
     Label(
-        fig[1, 4:5, Top()],
+        fig[
+            1,
+            (midpoint_plotting_chars + 1):(midpoint_plotting_chars + 2),
+            Top(),
+        ],
         "Perc Clinic Tested: $(optimal_thresholds_chars[end].percent_clinic_tested)",
     )
 
@@ -1070,7 +1078,17 @@ function create_optimal_thresholds_chars_plot(
                 rotation = pi / 2,
             )
 
-            if y < number_tests
+            if row < number_tests
+                hidexdecorations!(ax; ticklabels = false, ticks = false)
+            end
+        end
+    end
+
+    rowsize!(fig.layout, 1, 5)
+    colsize!(fig.layout, 1, 7)
+
+    return fig
+end
                 hidexdecorations!(ax; ticklabels = false, ticks = false)
             end
         end
