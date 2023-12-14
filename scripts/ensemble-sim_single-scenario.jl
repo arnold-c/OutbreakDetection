@@ -8,38 +8,15 @@ using ColorSchemes
 using OutbreakDetection
 
 include(srcdir("makie-plotting-setup.jl"))
+includet(srcdir("ensemble-parameters.jl"))
 
 #%%
-ensemble_single_time_spec = SimTimeParameters(;
-    tmin = 0.0, tmax = 365.0 * 100, tstep = 1.0
-)
-
-ensemble_single_ensemble_spec = EnsembleSpecification(
-    ("seasonal-infectivity-import", "tau-leaping"),
-    StateParameters(
-        500_000,
-        Dict(:s_prop => 0.1, :e_prop => 0.0, :i_prop => 0.0, :r_prop => 0.9),
-    ),
-    DynamicsParameters(
-        500_000,
-        27,
-        0.2,
-        SIGMA,
-        GAMMA,
-        16.0,
-        0.8,
-    ),
-    ensemble_single_time_spec,
-    100,
-)
-
-ensemble_single_outbreak_spec = OutbreakSpecification(5, 30, 500)
 ensemble_single_individual_test_spec = IndividualTestSpecification(0.8, 0.8, 0)
-ensemble_single_noise_spec = NoiseSpecification("poisson", 1.0)
+
 ensemble_single_scenario_spec = ScenarioSpecification(
-    ensemble_single_ensemble_spec,
-    ensemble_single_outbreak_spec,
-    ensemble_single_noise_spec,
+    ensemble_specification,
+    ensemble_outbreak_specification,
+    ensemble_noise_specification,
     OutbreakDetectionSpecification(5, 7, 0.6, 0.3),
     ensemble_single_individual_test_spec,
 )
@@ -54,7 +31,7 @@ ensemble_single_scenario_quantiles = get_ensemble_file(
 )
 
 ensemble_single_scenario_incarr = get_ensemble_file(
-    ensemble_single_ensemble_spec, ensemble_single_outbreak_spec
+    ensemble_specification, ensemble_outbreak_specification
 )
 
 ensemble_single_scenario_detection = get_ensemble_file(
@@ -63,9 +40,9 @@ ensemble_single_scenario_detection = get_ensemble_file(
 
 #%%
 ensemble_single_scenario_spec2 = ScenarioSpecification(
-    ensemble_single_ensemble_spec,
-    ensemble_single_outbreak_spec,
-    ensemble_single_noise_spec,
+    ensemble_specification,
+    ensemble_outbreak_specification,
+    ensemble_noise_specification,
     OutbreakDetectionSpecification(10, 7, 0.6, 0.3),
     ensemble_single_individual_test_spec,
 )
@@ -78,7 +55,7 @@ ensemble_single_scenario_detection2 = get_ensemble_file(
 #%%
 ensemble_single_scenario_noise_array = create_poisson_noise_arr(
     ensemble_single_scenario_incarr["ensemble_inc_arr"],
-    ensemble_single_noise_spec,
+    ensemble_noise_specification,
 )
 
 #%%
@@ -127,8 +104,8 @@ save(
 #%%
 ensemble_single_scenario_noise_plot = visualize_ensemble_noise(
     ensemble_single_scenario_incarr["ensemble_inc_arr"],
-    ensemble_single_noise_spec,
-    ensemble_single_time_spec,
+    ensemble_noise_specification,
+    ensemble_time_specification,
 )
 
 save(
