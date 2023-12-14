@@ -39,10 +39,12 @@ const R0 = 10.0
 const SIGMA = 1 / LATENT_PER_DAYS
 const GAMMA = 1 / DUR_INF_DAYS
 const LIFE_EXPECTANCY_YEARS = 62.5
+const ANNUAL_BIRTHS_PER_K = 1000 / LIFE_EXPECTANCY_YEARS
 const MU = 1 / (LIFE_EXPECTANCY_YEARS * 365)
 const BETA_MEAN = calculate_beta(R0, GAMMA, MU, 1, POPULATION_N)
 const BETA_FORCE = 0.2
 const EPSILON = calculate_import_rate(MU, R0, POPULATION_N)
+const VACCINATION_COVERAGE = 0.8
 
 struct DynamicsParameters{T1<:AbstractFloat,T2<:Union{<:Integer,T1}}
     beta_mean::T1
@@ -62,15 +64,13 @@ function DynamicsParameters(
     R_0::Float64;
     vaccination_coverage::Float64 = 0.8,
 )
-    annual_births_per_k = 1000 / LIFE_EXPECTANCY_YEARS
-
     return DynamicsParameters(
         BETA_MEAN,
         BETA_FORCE,
         sigma,
         gamma,
         MU,
-        annual_births_per_k,
+        ANNUAL_BIRTHS_PER_K,
         EPSILON,
         R_0,
         vaccination_coverage,

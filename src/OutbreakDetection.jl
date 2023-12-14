@@ -18,7 +18,7 @@ export SimTimeParameters, EnsembleSpecification, DynamicsParameters,
     OutbreakSpecification, IndividualTestSpecification, NoiseSpecification,
     ScenarioSpecification, TestPositivity, OptimalThresholdCharacteristics,
     POPULATION_N, LATENT_PER_DAYS, DUR_INF_DAYS, R0, SIGMA, GAMMA,
-    LIFE_EXPECTANCY_YEARS,
+    LIFE_EXPECTANCY_YEARS, ANNUAL_BIRTHS_PER_K, VACCINATION_COVERAGE,
     MU, BETA_MEAN, BETA_FORCE, EPSILON
 # @reexport using .ODStructs
 
