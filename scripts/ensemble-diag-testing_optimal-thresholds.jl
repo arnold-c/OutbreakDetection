@@ -80,6 +80,37 @@ compare_optimal_thresholds_chars_plot(
 )
 
 #%%
+compare_optimal_thresholds_test_chars_plot(
+    optimal_thresholds_vec,
+    [
+        (
+            char = :accuracy,
+            label = "Accuracy",
+            color = (ACCURACY_COLOR, 0.7),
+            binwidth = 0.01,
+        ),
+        (
+            char = :detectiondelays,
+            label = "Detection Delay (Days)",
+            color = (DETECTION_DELAY_COLOR, 1.0),
+            binwidth = 10,
+        ),
+        (
+            char = :unavoidable_cases,
+            label = "Unavoidable Cases",
+            color = (PERC_OUTBREAKS_MISSED_COLOR, 1.0),
+            binwidth = 500,
+        ),
+        (
+            char = :avoidable_cases,
+            label = "Avoidable Cases",
+            color = (PERC_OUTBREAKS_DETECTED_COLOR, 1.0),
+            binwidth = 500,
+        ),
+    ],
+)
+
+#%%
 cfr_df = CSV.read(
     datadir("CFR_2022.csv"),
     DataFrame; delim = ',',

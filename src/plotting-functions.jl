@@ -1089,6 +1089,127 @@ function create_optimal_thresholds_chars_plot(
 
     return fig
 end
+
+function compare_optimal_thresholds_test_chars_plot(
+    optimal_thresholds_vec,
+    plottingchars;
+    kwargs...
+)
+    unique_tests = unique(
+        optimal_thresholds_vec.individual_test_specification
+    )
+
+    filter!(x -> !in(x, CLINICAL_TEST_SPECS), unique_tests)
+
+    for test_specification in unique_tests
+        optimal_thresholds_chars = filter(
+            optimal_thresholds ->
+                optimal_thresholds.individual_test_specification ==
+                test_specification,
+            optimal_thresholds_vec,
+        )
+
+        plot = create_optimal_thresholds_test_chars_plot(
+            optimal_thresholds_chars,
+            plottingchars;
+            kwargs...
+        )
+
+        plotpath = plotsdir(
+            "ensemble/testing-comparison/test-specification"
+        )
+        mkpath(plotpath)
+
+        save(
+            joinpath(
+                plotpath,
+                "compare-outbreak_clinic-test-specification_sens-$(test_specification.sensitivity)_spec-$(test_specification.specificity)_lag-$(test_specification.test_result_lag)_best-thresholds.png",
+            ),
+            plot;
+            resolution = (2200, 1600),
+        )
+
+        @info "Created optimal thresholds plot for test specification $(test_specification.sensitivity)_$(test_specification.specificity)_$(test_specification.test_result_lag)"
+    end
+
+    return nothing
+end
+
+function create_optimal_thresholds_test_chars_plot(
+    optimal_thresholds_chars,
+    plottingchars;
+    kwargs...
+)
+    number_clinic_testing_rates = length(optimal_thresholds_chars)
+    number_plotting_chars = length(plottingchars)
+    midpoint_plotting_chars = Int64(
+        round(number_plotting_chars / 2; digits = 0)
+    )
+
+    sort!(
+        optimal_thresholds_chars;
+        by = threshold ->
+            threshold.percent_clinic_tested,
+    )
+
+    fig = Figure()
+
+    Label(
+        fig[
+            1,
+            (midpoint_plotting_chars + 1):(midpoint_plotting_chars + 2),
+            Top(),
+        ],
+        "Test characteristics: Sensitivity $(optimal_thresholds_chars[end].individual_test_specification.sensitivity), Specificity $(optimal_thresholds_chars[end].individual_test_specification.specificity), Lag $(optimal_thresholds_chars[end].individual_test_specification.test_result_lag)",
+    )
+
+    thresholdschars_structarr =
+        optimal_thresholds_chars.outbreak_threshold_chars
+
+    for (column, chartuple) in pairs(plottingchars)
+        x = column + 1
+
+        thresholdschars_vec =
+            getproperty.(thresholdschars_structarr, chartuple.char)
+
+        charvecs = reduce(vcat, thresholdschars_vec)
+
+        if !haskey(chartuple, :bins)
+            if !haskey(chartuple, :binwidth)
+                @error "The metric $(chartuple.char) wasn't provided with bins or a binwidth"
+                break
+            end
+            bins = calculate_bins(charvecs, chartuple.binwidth)
+        else
+            bins .= chartuple.bins
+        end
+
+        if !haskey(chartuple, :label)
+            label = :none
+        else
+            label = chartuple.label
+        end
+
+        for (row, optimal_thresholds) in pairs(optimal_thresholds_chars)
+            y = row + 1
+
+            gl = fig[y, x] = GridLayout()
+            ax = Axis(gl[1, 1]; xlabel = label)
+
+            hist!(
+                ax,
+                reduce(vcat, thresholdschars_vec[row]);
+                bins = bins,
+                color = chartuple.color,
+            )
+
+            Label(
+                fig[y, 1, Left()],
+                "% Clinic Tested: $(optimal_thresholds.percent_clinic_tested), Threshold: $(optimal_thresholds.alert_threshold)";
+                rotation = pi / 2,
+            )
+
+            if row < number_clinic_testing_rates
                 hidexdecorations!(ax; ticklabels = false, ticks = false)
             end
         end
