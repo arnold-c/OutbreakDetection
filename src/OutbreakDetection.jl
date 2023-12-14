@@ -12,17 +12,19 @@ export calculate_beta,
     calculate_mu
 # @reexport using .TransmissionFunctions
 
+include("dynamics-constants.jl")
+export POPULATION_N, LATENT_PER_DAYS, DUR_INF_DAYS, R0, SIGMA, GAMMA,
+    LIFE_EXPECTANCY_YEARS, ANNUAL_BIRTHS_PER_K, VACCINATION_COVERAGE,
+    MU, BETA_MEAN, BETA_FORCE, EPSILON
+
 include("structs.jl")
 export SimTimeParameters, EnsembleSpecification, DynamicsParameters,
     StateParameters, OutbreakThresholdChars, OutbreakDetectionSpecification,
     OutbreakSpecification, IndividualTestSpecification, NoiseSpecification,
-    ScenarioSpecification, TestPositivity, OptimalThresholdCharacteristics,
-    POPULATION_N, LATENT_PER_DAYS, DUR_INF_DAYS, R0, SIGMA, GAMMA,
-    LIFE_EXPECTANCY_YEARS, ANNUAL_BIRTHS_PER_K, VACCINATION_COVERAGE,
-    MU, BETA_MEAN, BETA_FORCE, EPSILON
+    ScenarioSpecification, TestPositivity, OptimalThresholdCharacteristics
 # @reexport using .ODStructs
 
-include("constants.jl")
+include("test-constants.jl")
 export CLINICAL_CASE_TEST_SPEC, EPI_LINKED_CASE_TEST_SPEC, CLINICAL_TEST_SPECS
 
 include("SEIR-model.jl")
