@@ -6,7 +6,7 @@ using OutbreakDetection
 
 singlesim_states_p = StateParameters(;
     N = 500_000,
-    s_prop = 0.1,
+    s_prop = 0.05,
     e_prop = 0.00,
     i_prop = 0.00
 )

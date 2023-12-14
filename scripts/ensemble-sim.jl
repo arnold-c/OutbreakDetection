@@ -17,7 +17,7 @@ model_types_vec = [("seasonal-infectivity-import", "tau-leaping")]
 N_vec = [500_000]
 nsims_vec = [100]
 init_states_prop_dict = [
-    Dict(:s_prop => 0.1, :e_prop => 0.00, :i_prop => 0.00, :r_prop => 0.9)
+    Dict(:s_prop => 0.05, :e_prop => 0.00, :i_prop => 0.00, :r_prop => 0.95)
 ]
 
 ensemble_state_p_vec = create_combinations_vec(
