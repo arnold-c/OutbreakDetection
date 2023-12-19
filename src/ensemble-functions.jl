@@ -342,7 +342,7 @@ function OutbreakThresholdChars_creation(OT_chars_param_dict)
         testarr, ensemble_inc_arr, thresholds_vec
     )
 
-    return @strdict OT_chars testarr
+    return @strdict OT_chars
 end
 
 function get_ensemble_file() end
