@@ -194,24 +194,18 @@ function EnsembleSpecification(
 end
 
 struct OutbreakThresholdChars{
-    T1<:AbstractArray,
+    T1<:AbstractFloat,
     T2<:Integer,
-    T3<:AbstractFloat,
-    T4<:AbstractMatrix{T2},
+    T3<:AbstractMatrix{T2},
+    T4<:Vector{T1},
     T5<:Vector{T2},
-    T6<:Vector{T3},
 }
-    daily_crosstab::T1
-    daily_tp::T2
-    daily_tn::T2
-    daily_fp::T2
-    daily_fn::T2
-    daily_sensitivity::T3
-    daily_specificity::T3
-    daily_ppv::T3
-    daily_npv::T3
-    accuracy::T3
-    matchedoutbreakbounds::T4
+    daily_sensitivity::T1
+    daily_specificity::T1
+    daily_ppv::T1
+    daily_npv::T1
+    accuracy::T1
+    matchedoutbreakbounds::T3
     noutbreaks::T2
     nalerts::T2
     detected_outbreak_size::T5
@@ -222,19 +216,19 @@ struct OutbreakThresholdChars{
     n_false_alerts::T2
     n_alerts_per_outbreak::T5
     period_sum_per_outbreak::T5
-    perc_true_outbreaks_detected::T3
-    perc_true_outbreaks_missed::T3
-    falsealert_trueoutbreak_prop::T3
-    correctalert_trueoutbreak_prop::T3
-    trueoutbreak_alerts_prop::T3
-    outbreaksmissed_alerts_prop::T3
-    perc_alerts_false::T3
-    perc_alerts_correct::T3
+    perc_true_outbreaks_detected::T1
+    perc_true_outbreaks_missed::T1
+    falsealert_trueoutbreak_prop::T1
+    correctalert_trueoutbreak_prop::T1
+    trueoutbreak_alerts_prop::T1
+    outbreaksmissed_alerts_prop::T1
+    perc_alerts_false::T1
+    perc_alerts_correct::T1
     detectiondelays::T5
     cases_before_alerts::T5
-    cases_perc_before_alerts::T6
+    cases_perc_before_alerts::T4
     cases_after_alerts::T5
-    cases_perc_after_alerts::T6
+    cases_perc_after_alerts::T4
     unavoidable_cases::T2
     avoidable_cases::T2
     n_outbreak_cases::T2

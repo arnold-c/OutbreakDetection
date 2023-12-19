@@ -326,7 +326,7 @@ function calculate_daily_detection_characteristics(testvec, infecvec)
     ppv = tp / (tp + fp)
     npv = tn / (tn + fn)
 
-    return crosstab, tp, tn, fp, fn, sens, spec, ppv, npv
+    return sens, spec, ppv, npv
 end
 
 # TODO: write tests that check the function works when crosstab produces a 2x2 table,
