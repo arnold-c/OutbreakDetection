@@ -27,12 +27,10 @@ function create_testing_arrs(
     individual_test_spec::IndividualTestSpecification,
 )
     testarr = zeros(Int64, size(incarr, 1), 8, size(incarr, 3))
-    testpos_vec = Vector{TestPositivity}(undef, size(incarr, 3))
     ntested_worker_vec = Vector{Int64}(undef, size(incarr, 1))
 
     create_testing_arrs!(
         testarr,
-        testpos_vec,
         ntested_worker_vec,
         incarr,
         noisearr,
@@ -44,12 +42,11 @@ function create_testing_arrs(
         individual_test_spec.specificity,
     )
 
-    return testarr, StructArray(testpos_vec)
+    return testarr
 end
 
 function create_testing_arrs!(
     testarr,
-    testpos_vec,
     ntested_worker_vec,
     incarr,
     noisearr,
@@ -117,13 +114,6 @@ function create_testing_arrs!(
         # Triggered outbreak equal to actual outbreak status
         @. testarr[:, 8, sim] =
             @view(testarr[:, 7, sim]) == @view(incarr[:, 3, sim])
-
-        # Posterior prob of infectious / total test tests performed
-        testpos_vec[sim] = TestPositivity(
-            @view(testarr[:, 5, sim]),
-            ntested_worker_vec,
-            @view(testarr[:, 7, sim])
-        )
     end
 
     return nothing
@@ -336,7 +326,7 @@ function calculate_daily_detection_characteristics(testvec, infecvec)
     ppv = tp / (tp + fp)
     npv = tn / (tn + fn)
 
-    return crosstab, tp, tn, fp, fn, sens, spec, ppv, npv
+    return sens, spec, ppv, npv
 end
 
 # TODO: write tests that check the function works when crosstab produces a 2x2 table,

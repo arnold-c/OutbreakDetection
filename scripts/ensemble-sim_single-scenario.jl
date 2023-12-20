@@ -59,12 +59,6 @@ ensemble_single_scenario_noise_array = create_poisson_noise_arr(
 )
 
 #%%
-ensemble_single_scenario_detection["testarr"] ==
-ensemble_single_scenario_detection2["testarr"]
-
-sum(ensemble_single_scenario_detection["testarr"][:, 7, 1])
-sum(ensemble_single_scenario_detection2["testarr"][:, 7, 1])
-
 ensemble_single_scenario_detection["OT_chars"].daily_sensitivity ==
 ensemble_single_scenario_detection2["OT_chars"].daily_sensitivity
 
@@ -114,47 +108,47 @@ save(
 )
 
 #%%
-ensemble_single_scenario_incidence_testing_plot = incidence_testing_plot(
-    ensemble_single_scenario_incarr["ensemble_inc_arr"],
-    ensemble_single_scenario_noise_array,
-    ensemble_single_scenario_detection["testarr"],
-    ensemble_single_scenario_spec.ensemble_specification.time_parameters,
-    ensemble_single_scenario_spec.outbreak_detection_specification.alert_threshold;
-    sim = 1,
-)
-
-save(
-    plotsdir(
-        "ensemble/single-scenario/ensemble-sim_single-scenario_incidence-testing.png",
-    ),
-    ensemble_single_scenario_incidence_testing_plot,
-)
-
-#%%
-ensemble_single_scenario_testing_timeseries_plot = testing_plot(
-    ensemble_single_scenario_detection["testarr"],
-    ensemble_single_scenario_spec.ensemble_specification.time_parameters,
-)
-
-save(
-    plotsdir(
-        "ensemble/single-scenario/ensemble-sim_single-scenario_testing-timeseries.png",
-    ),
-    ensemble_single_scenario_testing_timeseries_plot,
-)
+# ensemble_single_scenario_incidence_testing_plot = incidence_testing_plot(
+#     ensemble_single_scenario_incarr["ensemble_inc_arr"],
+#     ensemble_single_scenario_noise_array,
+#     ensemble_single_scenario_detection["testarr"],
+#     ensemble_single_scenario_spec.ensemble_specification.time_parameters,
+#     ensemble_single_scenario_spec.outbreak_detection_specification.alert_threshold;
+#     sim = 1,
+# )
+#
+# save(
+#     plotsdir(
+#         "ensemble/single-scenario/ensemble-sim_single-scenario_incidence-testing.png",
+#     ),
+#     ensemble_single_scenario_incidence_testing_plot,
+# )
 
 #%%
-ensemble_single_scenario_outbreak_dist_plot = ensemble_outbreak_distribution_plot(
-    ensemble_single_scenario_detection["testarr"],
-    ensemble_single_scenario_incarr["ensemble_inc_arr"],
-)
+# ensemble_single_scenario_testing_timeseries_plot = testing_plot(
+#     ensemble_single_scenario_detection["testarr"],
+#     ensemble_single_scenario_spec.ensemble_specification.time_parameters,
+# )
+#
+# save(
+#     plotsdir(
+#         "ensemble/single-scenario/ensemble-sim_single-scenario_testing-timeseries.png",
+#     ),
+#     ensemble_single_scenario_testing_timeseries_plot,
+# )
 
-save(
-    plotsdir(
-        "ensemble/single-scenario/ensemble-sim_single-scenario_outbreak-distribution.png",
-    ),
-    ensemble_single_scenario_outbreak_dist_plot,
-)
+#%%
+# ensemble_single_scenario_outbreak_dist_plot = ensemble_outbreak_distribution_plot(
+#     ensemble_single_scenario_detection["testarr"],
+#     ensemble_single_scenario_incarr["ensemble_inc_arr"],
+# )
+#
+# save(
+#     plotsdir(
+#         "ensemble/single-scenario/ensemble-sim_single-scenario_outbreak-distribution.png",
+#     ),
+#     ensemble_single_scenario_outbreak_dist_plot,
+# )
 
 #%%
 ensemble_single_scenario_outbreak_alert_plot = ensemble_OTChars_plot(
@@ -296,47 +290,6 @@ save(
         "ensemble/single-scenario/ensemble-sim_single-scenario_ppv-npv-distribution.png",
     ),
     ensemble_single_scenario_ppv_npv_dist_plot,
-)
-
-#%%
-ensemble_single_scenario_posodds_timeseries_plot = singlescenario_test_positivity_plot(
-    ensemble_single_scenario_detection["test_positivity_structs"];
-    agg = :thirty_day,
-)
-
-save(
-    plotsdir(
-        "ensemble/single-scenario/ensemble-sim_single-scenario_posodds-timeseries.png",
-    ),
-    ensemble_single_scenario_posodds_timeseries_plot,
-)
-
-#%%
-ensemble_single_scenario_posodds_dist_plot = test_positivity_distribution_plot(
-    ensemble_single_scenario_detection["test_positivity_structs"];
-    agg = :thirty_day,
-)
-
-save(
-    plotsdir(
-        "ensemble/single-scenario/ensemble-sim_single-scenario_posodds-distribution.png",
-    ),
-    ensemble_single_scenario_posodds_dist_plot,
-)
-
-#%%
-ensemble_single_scenario_posodds_outbreak_dist_plot = test_positivity_distribution_plot(
-    ensemble_single_scenario_detection["test_positivity_structs"];
-    agg = :seven_day,
-    color = :outbreak => "Outbreak Status",
-    layout = :outbreak,
-)
-
-save(
-    plotsdir(
-        "ensemble/single-scenario/ensemble-sim_single-scenario_posodds-outbreak-distribution.png",
-    ),
-    ensemble_single_scenario_posodds_outbreak_dist_plot,
 )
 
 #%%
