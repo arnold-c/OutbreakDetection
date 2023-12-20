@@ -290,7 +290,7 @@ end
 
 abstract type NoiseSpecification end
 
-struct WhiteNoiseSpecification{
+struct PoissonNoiseSpecification{
     T1<:AbstractString,T2<:AbstractFloat
 } <: NoiseSpecification
     noise_type::T1
@@ -301,8 +301,21 @@ struct DynamicalNoiseSpecification{
     T1<:AbstractString,T2<:AbstractFloat
 } <: NoiseSpecification
     noise_type::T1
-    R0::T2
+    R_0::T2
     correlation::T1
+end
+
+function DynamicalNoiseSpecification()
+end
+
+function getdirpath(spec::NoiseSpecification)
+    return reduce(
+        joinpath,
+        map(
+            p -> "$(p)_$(getproperty(spec, p))",
+            propertynames(spec),
+        )
+    )
 end
 
 struct ScenarioSpecification{
@@ -319,16 +332,6 @@ struct ScenarioSpecification{
     outbreak_detection_specification::T4
     individual_test_specification::T5
     dirpath::T6
-end
-
-function getdirpath(spec::NoiseSpecification)
-    return reduce(
-        joinpath,
-        map(
-            p -> "$(p)_$(getproperty(spec, p))",
-            propertynames(spec),
-        )
-    )
 end
 
 function ScenarioSpecification(

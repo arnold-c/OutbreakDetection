@@ -4,8 +4,69 @@
 
 # include("ensemble-functions.jl")
 # using .EnsembleFunctions
+using UnPack
 
-function create_poisson_noise_arr(incarr, noise_spec::NoiseSpecification; seed = 1234)
+function create_dynamical_noise_arr(
+    ensemble_spec::EnsembleSpecification,
+    noise_spec::DynamicalNoiseSpecification;
+    seed = 1234,
+)
+    seed *= 10
+
+    @unpack state_parameters, dynamics_parameters, time_parameters, nsims =
+        ensemble_spec
+    @unpack tlength = time_parameters
+
+    noise_dynamics_parameters = DynamicsParameters(
+        dynamics_parameters.beta_mean,
+        dynamics_parameters.beta_force,
+        dynamics_parameters.sigma,
+        dynamics_parameters.gamma,
+        dynamics_parameters.mu,
+        dynamics_parameters.annual_births_per_k,
+        calculate_import_rate(
+            dynamics_parameters.mu,
+            noise_spec.R_0,
+            state_parameters.init_states.N,
+        ),
+        noise_spec.R_0,
+        dynamics_parameters.vaccination_coverage,
+    )
+
+    ensemble_seir_vecs = Array{typeof(state_parameters.init_states),2}(
+        undef,
+        tlength,
+        nsims
+    )
+
+    ensemble_inc_vecs = Array{typeof(SVector(0)),2}(
+        undef,
+        tlength,
+        nsims,
+    )
+
+    ensemble_beta_arr = zeros(Float64, tlength)
+
+    for sim in axes(ensemble_inc_vecs, 2)
+        run_seed = seed + (sim - 1)
+
+        seir_mod!(
+            @view(ensemble_seir_vecs[:, sim]),
+            @view(ensemble_inc_vecs[:, sim]),
+            ensemble_beta_arr,
+            state_parameters.init_states,
+            noise_dynamics_parameters,
+            time_parameters;
+            seed = run_seed,
+        )
+    end
+
+    return ensemble_inc_vecs
+end
+
+function create_poisson_noise_arr(
+    incarr, noise_spec::PoissonNoiseSpecification; seed = 1234
+)
     noise_arr = zeros(Int64, size(incarr, 1), 1, size(incarr, 3))
 
     create_poisson_noise_arr!(

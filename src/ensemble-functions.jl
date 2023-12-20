@@ -176,6 +176,7 @@ function run_jump_prob(ensemble_param_dict)
         dict[:noise_spec_vec] = noise_spec_vec
         dict[:outbreak_detection_spec_vec] = outbreak_detection_spec_vec
         dict[:test_spec_vec] = test_spec_vec
+        dict[:seed] = seed
     end
 
     run_define_outbreaks(outbreak_spec_dict)
@@ -244,7 +245,7 @@ function define_outbreaks(incidence_param_dict)
     outbreak_spec,
     noise_spec_vec,
     outbreak_detection_spec_vec,
-    test_spec_vec =
+    test_spec_vec, seed =
         incidence_param_dict
 
     ensemble_inc_arr, ensemble_thresholds_vec = create_inc_infec_arr(
@@ -296,7 +297,8 @@ function define_outbreaks(incidence_param_dict)
         @dict(
             scenario_spec = ensemble_scenarios,
             ensemble_inc_arr,
-            thresholds_vec = [ensemble_thresholds_vec]
+            thresholds_vec = [ensemble_thresholds_vec],
+            seed = seed
         )
     )
 
@@ -325,11 +327,18 @@ function OutbreakThresholdChars_creation(OT_chars_param_dict)
     @unpack noise_specification,
     outbreak_specification,
     outbreak_detection_specification,
-    individual_test_specification = scenario_spec
+    individual_test_specification, seed = scenario_spec
 
-    noise_array = create_poisson_noise_arr(
-        ensemble_inc_arr, noise_specification
-    )
+    noise_array = if noise_specification <: PoissonNoiseSpecification
+        create_poisson_noise_arr(
+            ensemble_inc_arr, noise_specification; seed = seed
+        )
+    else
+        create_dynamical_noise_arr(
+            scenario_spec.ensemble_specification, noise_specification;
+            seed = seed,
+        )
+    end
 
     testarr = create_testing_arrs(
         ensemble_inc_arr,
