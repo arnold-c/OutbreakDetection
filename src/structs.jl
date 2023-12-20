@@ -321,6 +321,16 @@ struct ScenarioSpecification{
     dirpath::T6
 end
 
+function getdirpath(spec::NoiseSpecification)
+    return reduce(
+        joinpath,
+        map(
+            p -> "$(p)_$(getproperty(spec, p))",
+            propertynames(spec),
+        )
+    )
+end
+
 function ScenarioSpecification(
     ensemble_specification::EnsembleSpecification,
     outbreak_specification::OutbreakSpecification,
@@ -331,8 +341,7 @@ function ScenarioSpecification(
     dirpath = joinpath(
         ensemble_specification.dirpath,
         outbreak_specification.dirpath,
-        "noise_$(noise_specification.noise_type)",
-        "noise_mean_scaling_$(noise_specification.noise_mean_scaling)",
+        getdirpath(noise_specification),
         "alertthreshold_$(outbreak_detection_specification.alert_threshold)",
         "moveavglag_$(outbreak_detection_specification.moving_average_lag)",
         "perc_visit_clinic_$(outbreak_detection_specification.percent_visit_clinic)",
