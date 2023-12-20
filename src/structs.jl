@@ -288,11 +288,21 @@ struct IndividualTestSpecification{T1<:AbstractFloat,T2<:Integer}
     test_result_lag::T2
 end
 
-struct NoiseSpecification{
+abstract type NoiseSpecification end
+
+struct WhiteNoiseSpecification{
     T1<:AbstractString,T2<:AbstractFloat
-}
+} <: NoiseSpecification
     noise_type::T1
     noise_mean_scaling::T2
+end
+
+struct DynamicalNoiseSpecification{
+    T1<:AbstractString,T2<:AbstractFloat
+} <: NoiseSpecification
+    noise_type::T1
+    R0::T2
+    correlation::T1
 end
 
 struct ScenarioSpecification{

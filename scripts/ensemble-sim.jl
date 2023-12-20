@@ -88,8 +88,8 @@ end
 # struct currently
 poisson_noise_mean_scaling_vec = [1.0]
 
-noise_spec_vec = create_combinations_vec(
-    NoiseSpecification,
+poisson_noise_spec_vec = create_combinations_vec(
+    WhiteNoiseSpecification,
     (["poisson"], poisson_noise_mean_scaling_vec)
 )
 
