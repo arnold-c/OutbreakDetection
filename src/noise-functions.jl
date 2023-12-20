@@ -5,6 +5,7 @@
 # include("ensemble-functions.jl")
 # using .EnsembleFunctions
 using UnPack
+using Match
 
 function create_dynamical_noise_arr(
     ensemble_spec::EnsembleSpecification,
@@ -17,9 +18,23 @@ function create_dynamical_noise_arr(
         ensemble_spec
     @unpack tlength = time_parameters
 
+    noise_beta_force = @match noise_spec.correlation begin
+        "none" => 0.0
+        _ => noise_beta_force
+    end
+
+    noise_seasonality = @match noise_spec.correlation begin
+        "out-of-phase" => @match dynamics_parameters.seasonality begin
+            cos => sin
+            sin => cos
+        end
+        _ => dynamics_parameters.seasonality
+    end
+
     noise_dynamics_parameters = DynamicsParameters(
         dynamics_parameters.beta_mean,
-        dynamics_parameters.beta_force,
+        noise_beta_force,
+        noise_seasonality,
         dynamics_parameters.sigma,
         dynamics_parameters.gamma,
         dynamics_parameters.mu,

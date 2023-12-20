@@ -32,9 +32,12 @@ function SimTimeParameters(; tmin = 0.0, tmax = 365.0 * 100.0, tstep = 1.0)
     )
 end
 
-struct DynamicsParameters{T1<:AbstractFloat,T2<:Union{<:Integer,T1}}
+struct DynamicsParameters{
+    T1<:AbstractFloat,T2<:Union{<:Integer,T1},T3<:Function
+}
     beta_mean::T1
     beta_force::T1
+    seasonality::T3
     sigma::T1
     gamma::T1
     mu::T1
@@ -53,6 +56,7 @@ function DynamicsParameters(
     return DynamicsParameters(
         BETA_MEAN,
         BETA_FORCE,
+        cos,
         sigma,
         gamma,
         MU,
@@ -79,6 +83,7 @@ function DynamicsParameters(
     return DynamicsParameters(
         beta_mean,
         beta_force,
+        cos,
         sigma,
         gamma,
         mu,
@@ -100,6 +105,7 @@ function DynamicsParameters(
     return DynamicsParameters(
         beta_mean,
         beta_force,
+        cos,
         SIGMA,
         GAMMA,
         mu,

@@ -34,7 +34,7 @@ function seir_mod(
         states,
         dynamics_params,
         time_params;
-        seed = seed
+        seed = seed,
     )
 
     return state_vec, inc_vec, beta_vec
@@ -52,7 +52,7 @@ function seir_mod!(
     states,
     dynamics_params,
     time_params;
-    seed = 1234
+    seed = 1234,
 )
     Random.seed!(seed)
 
@@ -73,7 +73,7 @@ function seir_mod!(
     end
 
     @turbo @. beta_vec = calculate_beta_amp(
-        beta_mean, beta_force, trange
+        beta_mean, beta_force, trange; seasonality = dynamics_params.seasonality
     )
 
     @inbounds for i in 2:(time_params.tlength)
@@ -139,7 +139,9 @@ function seir_mod_loop!(
         dN = dS + dE + dI + dR
     end
 
-    return (SVector(S + dS, E + dE, I + dI, R + dR, N + dN), SVector(contact_inf))
+    return (
+        SVector(S + dS, E + dE, I + dI, R + dR, N + dN), SVector(contact_inf)
+    )
 end
 
 function convert_svec_to_matrix(svec)
