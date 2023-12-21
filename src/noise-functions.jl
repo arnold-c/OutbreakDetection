@@ -21,7 +21,7 @@ function create_noise_arr(
 
     noise_beta_force = @match noise_specification.correlation begin
         "none" => 0.0
-        _ => noise_beta_force
+        _ => dynamics_parameters.beta_force
     end
 
     noise_seasonality = @match noise_specification.correlation begin
