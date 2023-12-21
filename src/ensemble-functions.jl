@@ -238,7 +238,8 @@ function run_define_outbreaks(dict_of_outbreak_spec_params)
             outbreak_spec_params,
             "$(outbreak_spec_params[:dirpath])";
             filename = "ensemble-incidence-array",
-            loadfile = false
+            loadfile = false,
+            force = true
         )
     end
 end
