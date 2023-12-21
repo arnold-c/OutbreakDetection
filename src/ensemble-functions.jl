@@ -326,12 +326,12 @@ function run_OutbreakThresholdChars_creation(
 end
 
 function OutbreakThresholdChars_creation(OT_chars_param_dict)
-    @unpack scenario_spec, ensemble_inc_arr, thresholds_vec =
+    @unpack scenario_spec, ensemble_inc_arr, thresholds_vec, seed =
         OT_chars_param_dict
     @unpack noise_specification,
     outbreak_specification,
     outbreak_detection_specification,
-    individual_test_specification, seed = scenario_spec
+    individual_test_specification = scenario_spec
 
     noise_array = if noise_specification <: PoissonNoiseSpecification
         create_poisson_noise_arr(
