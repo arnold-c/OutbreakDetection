@@ -22,6 +22,7 @@ export SimTimeParameters, EnsembleSpecification, DynamicsParameters,
     StateParameters, OutbreakThresholdChars, OutbreakDetectionSpecification,
     OutbreakSpecification, IndividualTestSpecification,
     PoissonNoiseSpecification, DynamicalNoiseSpecification, NoiseSpecification,
+    getdirpath,
     ScenarioSpecification, TestPositivity, OptimalThresholdCharacteristics
 # @reexport using .ODStructs
 
@@ -73,7 +74,7 @@ export create_combinations_vec, create_ensemble_spec_combinations,
 # @reexport using .EnsembleFunctions
 
 include("noise-functions.jl")
-export create_noise_arr, create_poisson_noise_arr!, getdirpath
+export create_noise_arr, add_poisson_noise_arr!
 # @reexport using .NoiseFunctions
 
 include(
