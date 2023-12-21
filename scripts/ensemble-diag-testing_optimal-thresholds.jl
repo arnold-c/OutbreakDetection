@@ -50,6 +50,15 @@ for ensemble_noise_specification in ensemble_noise_specification_vec
 
     noise_specification_path = getdirpath(ensemble_noise_specification)
 
+    plotdirpath = joinpath(
+        plotsdir("ensemble/testing-comparison/optimal-thresholds"),
+        noise_specification_path,
+    )
+
+    tabledirpath = joinpath(
+        datadir("optimal-threshold-results"), noise_specification_path
+    )
+
     compare_optimal_thresholds_chars_plot(
         optimal_thresholds_vec,
         [
@@ -78,7 +87,7 @@ for ensemble_noise_specification in ensemble_noise_specification_vec
                 binwidth = 500,
             ),
         ];
-        noise_specification_path = noise_specification_path,
+        plotdirpath = plotdirpath,
     )
 
     compare_optimal_thresholds_test_chars_plot(
@@ -109,7 +118,7 @@ for ensemble_noise_specification in ensemble_noise_specification_vec
                 binwidth = 500,
             ),
         ];
-        noise_specification_path = noise_specification_path,
+        plotdirpath = plotdirpath,
     )
 
     cfr_df = CSV.read(
@@ -147,12 +156,12 @@ for ensemble_noise_specification in ensemble_noise_specification_vec
 
     create_and_save_xlsx_optimal_threshold_summaries(
         optimal_thresholds_vec;
-        noise_specification_path = noise_specification_path,
+        tabledirpath = tabledirpath
     )
 
     create_and_save_xlsx_optimal_threshold_summaries(
         optimal_thresholds_vec, :detectiondelays;
-        noise_specification_path = noise_specification_path,
+        filepath = tabledirpath
     )
 
     create_and_save_xlsx_optimal_threshold_summaries(
@@ -160,28 +169,28 @@ for ensemble_noise_specification in ensemble_noise_specification_vec
         :unavoidable_cases;
         scale_annual = 1 / nyears,
         countries = countries,
-        noise_specification_path = noise_specification_path,
+        tabledirpath = tabledirpath,
     )
 
     create_and_save_xlsx_optimal_threshold_summaries(
         optimal_thresholds_vec, :avoidable_cases;
         scale_annual = 1 / nyears,
         countries = countries,
-        noise_specification_path = noise_specification_path,
+        tabledirpath = tabledirpath,
     )
 
     create_and_save_xlsx_optimal_threshold_summaries(
         optimal_thresholds_vec, :n_outbreak_cases;
         scale_annual = 1 / nyears,
         countries = countries,
-        noise_specification_path = noise_specification_path,
+        tabledirpath = tabledirpath,
     )
 
     create_and_save_xlsx_optimal_threshold_summaries(
         optimal_thresholds_vec, :n_tests;
         scale_annual = 1 / nyears,
         countries = countries,
-        noise_specification_path = noise_specification_path,
+        tabledirpath = tabledirpath,
     )
 
     @info "All plots saved for $(ensemble_noise_specification.noise_type)"

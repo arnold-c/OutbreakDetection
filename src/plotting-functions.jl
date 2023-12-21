@@ -1098,7 +1098,8 @@ end
 function compare_optimal_thresholds_test_chars_plot(
     optimal_thresholds_vec,
     plottingchars;
-    kwargs...
+    plotdirpath = plotsdir("ensemble/testing-comparison/test-specification"),
+    kwargs...,
 )
     unique_tests = unique(
         optimal_thresholds_vec.individual_test_specification
@@ -1120,14 +1121,11 @@ function compare_optimal_thresholds_test_chars_plot(
             kwargs...
         )
 
-        plotpath = plotsdir(
-            "ensemble/testing-comparison/test-specification"
-        )
-        mkpath(plotpath)
+        mkpath(plotdirpath)
 
         save(
             joinpath(
-                plotpath,
+                plotdirpath,
                 "compare-outbreak_clinic-test-specification_sens-$(test_specification.sensitivity)_spec-$(test_specification.specificity)_lag-$(test_specification.test_result_lag)_best-thresholds.png",
             ),
             plot;
