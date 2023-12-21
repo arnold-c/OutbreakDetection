@@ -309,6 +309,7 @@ struct DynamicalNoiseSpecification{
     noise_type::T1
     R_0::T2
     correlation::T1
+    noise_mean_scaling::T2
 end
 
 function DynamicalNoiseSpecification()

@@ -335,9 +335,9 @@ function OutbreakThresholdChars_creation(OT_chars_param_dict)
     individual_test_specification = scenario_spec
 
     noise_array = create_noise_arr(
-        noise_specification;
-        incarr = ensemble_inc_arr,
-        ensemble_specification = scenario_spec.ensemble_specification,
+        noise_specification,
+        ensemble_inc_arr,
+        scenario_spec.ensemble_specification;
         seed = seed,
     )
 

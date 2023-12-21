@@ -8,8 +8,9 @@ using UnPack
 using Match
 
 function create_noise_arr(
-    noise_specification::DynamicalNoiseSpecification;
-    ensemble_specification::EnsembleSpecification,
+    noise_specification::DynamicalNoiseSpecification,
+    incarr,
+    ensemble_specification::EnsembleSpecification;
     seed = 1234,
     kwargs...,
 )
@@ -88,41 +89,37 @@ function create_noise_arr(
         )
     end
 
-    for sim in axes(ensemble_inc_arr, 2)
-        add_poisson_to_dynamical_noise!(
-            @view(ensemble_inc_arr[:, sim]), 50
-        )
-    end
+    add_poisson_noise_arr!(
+        ensemble_inc_arr, incarr, noise_specification.noise_mean_scaling;
+        seed = seed,
+    )
 
     return ensemble_inc_arr
 end
 
-function add_poisson_to_dynamical_noise!(incvec, poisson_noise_mean)
-    incvec .+= rand(Poisson(poisson_noise_mean), size(incvec, 1))
-    return nothing
-end
-
 function create_noise_arr(
-    noise_specification::PoissonNoiseSpecification;
-    incarr,
+    noise_specification::PoissonNoiseSpecification,
+    incarr;
     seed = 1234,
     kwargs...,
 )
     noise_arr = zeros(Int64, size(incarr, 1), size(incarr, 3))
 
-    create_poisson_noise_arr!(
+    add_poisson_noise_arr!(
         noise_arr, incarr, noise_specification.noise_mean_scaling; seed = seed
     )
 
     return noise_arr
 end
 
-function create_poisson_noise_arr!(
+function add_poisson_noise_arr!(
     noise_arr, incarr, noise_mean_scaling; seed = 1234
 )
     Random.seed!(seed)
+
+    @assert size(incarr, 3) == size(noise_arr, 2)
     @inbounds for sim in axes(incarr, 3)
-        @views noise_arr[:, sim] .= rand(
+        @views noise_arr[:, sim] += rand(
             Poisson(noise_mean_scaling * mean(incarr[:, 1, sim])),
             size(incarr, 1),
         )
