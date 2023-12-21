@@ -302,12 +302,12 @@ function visualize_ensemble_noise(
         noise_fig[1, 1]; xlabel = "Time (years)", ylabel = "Noise Incidence"
     )
 
-    for sim in axes(ensemble_noise_arr, 3)
+    for sim in axes(ensemble_noise_arr, 2)
         lines!(
             noise_ax,
             times,
-            ensemble_noise_arr[:, 1, sim];
-            color = (:red, 0.1)
+            ensemble_noise_arr[:, sim];
+            color = (:red, 0.1),
         )
     end
 
@@ -348,7 +348,7 @@ function incidence_testing_plot(
         colormap = outbreakcolormap,
     )
     lines!(
-        inc_test_ax2, times, incarr[:, 1, sim] .+ noisearr[:, 1, sim];
+        inc_test_ax2, times, incarr[:, 1, sim] .+ noisearr[:, sim];
         color = incarr[:, 3, sim],
         colormap = outbreakcolormap,
     )
