@@ -73,7 +73,7 @@ export create_combinations_vec, create_ensemble_spec_combinations,
 # @reexport using .EnsembleFunctions
 
 include("noise-functions.jl")
-export create_noise_arr, create_poisson_noise_arr!
+export create_noise_arr, create_poisson_noise_arr!, getdirpath
 # @reexport using .NoiseFunctions
 
 include(
