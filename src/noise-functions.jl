@@ -88,7 +88,18 @@ function create_noise_arr(
         )
     end
 
+    for sim in axes(ensemble_inc_arr, 2)
+        add_poisson_to_dynamical_noise!(
+            @view(ensemble_inc_arr[:, sim]), 50
+        )
+    end
+
     return ensemble_inc_arr
+end
+
+function add_poisson_to_dynamical_noise!(incvec, poisson_noise_mean)
+    incvec .+= rand(Poisson(poisson_noise_mean), size(incvec, 1))
+    return nothing
 end
 
 function create_noise_arr(
