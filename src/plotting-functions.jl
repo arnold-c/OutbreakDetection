@@ -958,7 +958,7 @@ end
 function compare_optimal_thresholds_chars_plot(
     optimal_thresholds_vec,
     plottingchars;
-    noise_specification_path = "",
+    plotdirpath = plotsdir("ensemble/optimal-thresholds"),
     kwargs...,
 )
     unique_percent_clinic_tested = unique(
@@ -985,18 +985,11 @@ function compare_optimal_thresholds_chars_plot(
             kwargs...
         )
 
-        plotpath = joinpath(
-            plotsdir(),
-            "ensemble",
-            "testing-comparison",
-            noise_specification_path,
-            "clinic-tested_$percent_clinic_tested",
-        )
-        mkpath(plotpath)
+        mkpath(plotdirpath)
 
         save(
             joinpath(
-                plotpath,
+                plotdirpath,
                 "compare-outbreak_clinic-tested-$(percent_clinic_tested)_best-thresholds.png",
             ),
             plot;
@@ -1098,7 +1091,7 @@ end
 function compare_optimal_thresholds_test_chars_plot(
     optimal_thresholds_vec,
     plottingchars;
-    plotdirpath = plotsdir("ensemble/testing-comparison/test-specification"),
+    plotdirpath = plotsdir("ensemble/optimal-thresholds"),
     kwargs...,
 )
     unique_tests = unique(

@@ -50,14 +50,12 @@ for ensemble_noise_specification in ensemble_noise_specification_vec
 
     noise_specification_path = getdirpath(ensemble_noise_specification)
 
-    plotdirpath = joinpath(
-        plotsdir("ensemble/testing-comparison/optimal-thresholds"),
-        noise_specification_path,
+    baseplotdirpath = joinpath(
+        plotsdir("ensemble/optimal-thresholds"),
+        noise_specification_path
     )
 
-    tabledirpath = joinpath(
-        datadir("optimal-threshold-results"), noise_specification_path
-    )
+    clinictested_plotdirpath = joinpath(baseplotdirpath, "clinic-tested")
 
     compare_optimal_thresholds_chars_plot(
         optimal_thresholds_vec,
@@ -87,8 +85,10 @@ for ensemble_noise_specification in ensemble_noise_specification_vec
                 binwidth = 500,
             ),
         ];
-        plotdirpath = plotdirpath,
+        plotdirpath = clinictested_plotdirpath,
     )
+
+    test_plotdirpath = joinpath(baseplotdirpath, "tests")
 
     compare_optimal_thresholds_test_chars_plot(
         optimal_thresholds_vec,
@@ -118,7 +118,7 @@ for ensemble_noise_specification in ensemble_noise_specification_vec
                 binwidth = 500,
             ),
         ];
-        plotdirpath = plotdirpath,
+        plotdirpath = test_plotdirpath,
     )
 
     cfr_df = CSV.read(
@@ -153,6 +153,10 @@ for ensemble_noise_specification in ensemble_noise_specification_vec
             scale_population = gha_2022_scale_population,
         ),
     ]
+
+    tabledirpath = joinpath(
+        datadir("optimal-threshold-results"), noise_specification_path
+    )
 
     create_and_save_xlsx_optimal_threshold_summaries(
         optimal_thresholds_vec;
