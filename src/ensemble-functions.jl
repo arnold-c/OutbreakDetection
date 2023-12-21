@@ -333,16 +333,12 @@ function OutbreakThresholdChars_creation(OT_chars_param_dict)
     outbreak_detection_specification,
     individual_test_specification = scenario_spec
 
-    noise_array = if noise_specification <: PoissonNoiseSpecification
-        create_poisson_noise_arr(
-            ensemble_inc_arr, noise_specification; seed = seed
-        )
-    else
-        create_dynamical_noise_arr(
-            scenario_spec.ensemble_specification, noise_specification;
-            seed = seed,
-        )
-    end
+    noise_array = create_noise_arr(
+        noise_specification;
+        incarr = ensemble_inc_arr,
+        ensemble_specification = scenario_spec.ensemble_specification,
+        seed = seed,
+    )
 
     testarr = create_testing_arrs(
         ensemble_inc_arr,

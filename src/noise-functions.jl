@@ -7,23 +7,24 @@
 using UnPack
 using Match
 
-function create_dynamical_noise_arr(
-    ensemble_spec::EnsembleSpecification,
-    noise_spec::DynamicalNoiseSpecification;
+function create_noise_arr(
+    noise_specification::DynamicalNoiseSpecification;
+    ensemble_specification::EnsembleSpecification,
     seed = 1234,
+    kwargs...,
 )
     seed *= 10
 
     @unpack state_parameters, dynamics_parameters, time_parameters, nsims =
-        ensemble_spec
+        ensemble_specification
     @unpack tlength = time_parameters
 
-    noise_beta_force = @match noise_spec.correlation begin
+    noise_beta_force = @match noise_specification.correlation begin
         "none" => 0.0
         _ => noise_beta_force
     end
 
-    noise_seasonality = @match noise_spec.correlation begin
+    noise_seasonality = @match noise_specification.correlation begin
         "out-of-phase" => @match dynamics_parameters.seasonality begin
             cos => sin
             sin => cos
@@ -41,10 +42,10 @@ function create_dynamical_noise_arr(
         dynamics_parameters.annual_births_per_k,
         calculate_import_rate(
             dynamics_parameters.mu,
-            noise_spec.R_0,
+            noise_specification.R_0,
             state_parameters.init_states.N,
         ),
-        noise_spec.R_0,
+        noise_specification.R_0,
         dynamics_parameters.vaccination_coverage,
     )
 
@@ -79,13 +80,16 @@ function create_dynamical_noise_arr(
     return ensemble_inc_vecs
 end
 
-function create_poisson_noise_arr(
-    incarr, noise_spec::PoissonNoiseSpecification; seed = 1234
+function create_noise_arr(
+    noise_specification::PoissonNoiseSpecification;
+    incarr,
+    seed = 1234,
+    kwargs...,
 )
     noise_arr = zeros(Int64, size(incarr, 1), 1, size(incarr, 3))
 
     create_poisson_noise_arr!(
-        noise_arr, incarr, noise_spec.noise_mean_scaling; seed = seed
+        noise_arr, incarr, noise_specification.noise_mean_scaling; seed = seed
     )
 
     return noise_arr
