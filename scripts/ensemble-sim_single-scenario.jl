@@ -53,9 +53,10 @@ ensemble_single_scenario_detection2 = get_ensemble_file(
 )
 
 #%%
-ensemble_single_scenario_noise_array = create_poisson_noise_arr(
-    ensemble_single_scenario_incarr["ensemble_inc_arr"],
-    ensemble_noise_specification,
+ensemble_single_scenario_noise_array = create_noise_arr(
+    ensemble_noise_specification;
+    incarr = ensemble_single_scenario_incarr["ensemble_inc_arr"],
+    seed = 1234,
 )
 
 #%%

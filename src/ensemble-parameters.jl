@@ -30,7 +30,7 @@ ensemble_specification = EnsembleSpecification(
     ensemble_nsims,
 )
 
-ensemble_noise_specification = NoiseSpecification("poisson", 1.0)
+ensemble_noise_specification = PoissonNoiseSpecification("poisson", 1.0)
 ensemble_outbreak_specification = OutbreakSpecification(5, 30, 500)
 
 ensemble_moving_avg_detection_lag = 7
