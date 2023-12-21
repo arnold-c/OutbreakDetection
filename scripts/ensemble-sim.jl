@@ -101,6 +101,8 @@ dynamical_noise_spec_vec = create_combinations_vec(
     (["dynamical"], dynamical_noise_R0, dynamical_noise_correlation),
 )
 
+noise_spec_vec = vcat(poisson_noise_spec_vec, dynamical_noise_spec_vec)
+
 #%%
 alertthreshold_vec = collect(4:1:30)
 moveavglag_vec = [7]
