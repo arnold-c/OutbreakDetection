@@ -86,7 +86,8 @@ function calculate_optimal_threshold(
     optimal_OT_chars = 0
 
     for (i, ensemble_scenario_spec) in pairs(ensemble_scenario_spec_vec)
-        OT_chars = get_ensemble_file(ensemble_scenario_spec)["OT_chars"]
+        scenario_chars_file = get_ensemble_file(ensemble_scenario_spec)
+        OT_chars = scenario_chars_file["OT_chars"]
         accuracy = median(OT_chars.accuracy)
         alert_threshold =
             ensemble_scenario_spec.outbreak_detection_specification.alert_threshold
