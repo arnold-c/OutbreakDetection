@@ -28,6 +28,7 @@ end
 
 function create_ensemble_spec_combinations(
     beta_force_vec,
+    seasonality_vec,
     sigma_vec,
     gamma_vec,
     annual_births_per_k_vec,
@@ -41,6 +42,7 @@ function create_ensemble_spec_combinations(
 )
     ensemble_spec_combinations = Iterators.product(
         beta_force_vec,
+        seasonality_vec,
         sigma_vec,
         gamma_vec,
         annual_births_per_k_vec,
@@ -59,6 +61,7 @@ function create_ensemble_spec_combinations(
         i,
         (
             beta_force,
+            seasonality,
             sigma,
             gamma,
             annual_births_per_k,
@@ -83,6 +86,7 @@ function create_ensemble_spec_combinations(
             DynamicsParameters(
                 beta_mean,
                 beta_force,
+                seasonality,
                 sigma,
                 gamma,
                 mu,

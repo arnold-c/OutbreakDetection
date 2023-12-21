@@ -53,6 +53,7 @@ vaccination_coverage_vec = [0.8]
 #%%
 ensemble_spec_vec = create_ensemble_spec_combinations(
     beta_force_vec,
+    [cos],
     sigma_vec,
     gamma_vec,
     annual_births_per_k_vec,
