@@ -257,7 +257,8 @@ end
 
 function create_and_save_xlsx_optimal_threshold_summaries(
     optimal_thresholds_vec;
-    filepath = datadir("optimal-threshold-results")
+    filepath = datadir("optimal-threshold-results"),
+    noise_specification_path = "",
 )
     long_df = create_optimal_thresholds_df(
         optimal_thresholds_vec
@@ -270,7 +271,11 @@ function create_and_save_xlsx_optimal_threshold_summaries(
         long_df, :accuracy
     )
 
-    filename = "optimal-threshold-result-tables_thresholds"
+    filename = joinpath(
+        noise_specification_path,
+        "optimal-threshold-result-tables_thresholds"
+    )
+
     save_xlsx_optimal_threshold_summaries(
         (; long_df, alert_thresholds, accuracy), filename; filepath = filepath
     )
