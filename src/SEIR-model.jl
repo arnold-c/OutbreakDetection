@@ -72,7 +72,7 @@ function seir_mod!(
         inc_vec[1] = SVector(0)
     end
 
-    @turbo @. beta_vec = calculate_beta_amp(
+    @. beta_vec = calculate_beta_amp(
         beta_mean, beta_force, trange; seasonality = dynamics_params.seasonality
     )
 
