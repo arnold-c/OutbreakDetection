@@ -77,7 +77,18 @@ function create_noise_arr(
         )
     end
 
-    return convert_svec_to_matrix(ensemble_inc_vecs)
+    ensemble_inc_arr = zeros(
+        Int64, size(ensemble_inc_vecs, 1), size(ensemble_inc_vecs, 2)
+    )
+
+    for sim in axes(ensemble_inc_vecs, 2)
+        convert_svec_to_matrix!(
+            @view(ensemble_inc_arr[:, sim]),
+            @view(ensemble_inc_vecs[:, sim])
+        )
+    end
+
+    return ensemble_inc_arr
 end
 
 function create_noise_arr(
