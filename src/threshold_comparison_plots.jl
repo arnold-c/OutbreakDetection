@@ -3,7 +3,10 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
         percent_clinic_tested, base_parameters
     )
 
-    clinic_tested_dir = "clinic-tested_$(percent_clinic_tested)"
+    clinic_tested_dir = joinpath(
+        getdirpath(base_parameters[:noise_specification]),
+        "clinic-tested_$(percent_clinic_tested)",
+    )
 
     accuracy_plotname = "compare-outbreak_clinic-tested-$(percent_clinic_tested)_accuracy_plot"
     save_compare_ensemble_OTchars_plot(
