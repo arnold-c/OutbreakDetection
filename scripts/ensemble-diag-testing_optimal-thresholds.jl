@@ -193,6 +193,6 @@ for ensemble_noise_specification in ensemble_noise_specification_vec
         tabledirpath = tabledirpath,
     )
 
-    @info "All plots saved for $(ensemble_noise_specification.noise_type)"
+    @info "All plots and tables saved for $(ensemble_noise_specification.noise_type)"
     println("==============================================")
 end
