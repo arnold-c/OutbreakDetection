@@ -118,6 +118,7 @@ function create_and_save_xlsx_optimal_threshold_summaries(
     characteristic;
     percentiles = [0.25, 0.5, 0.75],
     filepath = datadir("optimal-threshold-results"),
+    noise_specification_path = "",
     kwargs...,
 )
     kwargs_dict = Dict(kwargs)
@@ -135,7 +136,10 @@ function create_and_save_xlsx_optimal_threshold_summaries(
         "accuracy",
     ]
 
-    base_filename = "optimal-threshold-result-tables_$(characteristic)"
+    base_filename = joinpath(
+        noise_specification_path,
+        "optimal-threshold-result-tables_$(characteristic)",
+    )
 
     if haskey(kwargs_dict, :scale_annual)
         transform!(

@@ -958,7 +958,8 @@ end
 function compare_optimal_thresholds_chars_plot(
     optimal_thresholds_vec,
     plottingchars;
-    kwargs...
+    noise_specification_path = "",
+    kwargs...,
 )
     unique_percent_clinic_tested = unique(
         optimal_thresholds_vec.percent_clinic_tested
@@ -984,8 +985,12 @@ function compare_optimal_thresholds_chars_plot(
             kwargs...
         )
 
-        plotpath = plotsdir(
-            "ensemble/testing-comparison/clinic-tested_$percent_clinic_tested"
+        plotpath = joinpath(
+            plotsdir(),
+            "ensemble",
+            "testing-comparison",
+            noise_specification_path,
+            "clinic-tested_$percent_clinic_tested",
         )
         mkpath(plotpath)
 
