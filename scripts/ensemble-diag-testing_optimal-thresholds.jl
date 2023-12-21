@@ -49,6 +49,10 @@ for ensemble_noise_specification in ensemble_noise_specification_vec
     )
 
     noise_specification_path = getdirpath(ensemble_noise_specification)
+    noise_specification_filename = replace(
+        noise_specification_path,
+        "/" => "_",
+    )
 
     baseplotdirpath = joinpath(
         plotsdir("ensemble/optimal-thresholds"),
@@ -160,12 +164,14 @@ for ensemble_noise_specification in ensemble_noise_specification_vec
 
     create_and_save_xlsx_optimal_threshold_summaries(
         optimal_thresholds_vec;
-        tabledirpath = tabledirpath
+        tabledirpath = tabledirpath,
+        noise_specification_filename = noise_specification_filename,
     )
 
     create_and_save_xlsx_optimal_threshold_summaries(
         optimal_thresholds_vec, :detectiondelays;
-        filepath = tabledirpath
+        tabledirpath = tabledirpath,
+        noise_specification_filename = noise_specification_filename,
     )
 
     create_and_save_xlsx_optimal_threshold_summaries(
@@ -174,6 +180,7 @@ for ensemble_noise_specification in ensemble_noise_specification_vec
         scale_annual = 1 / nyears,
         countries = countries,
         tabledirpath = tabledirpath,
+        noise_specification_filename = noise_specification_filename,
     )
 
     create_and_save_xlsx_optimal_threshold_summaries(
@@ -181,6 +188,7 @@ for ensemble_noise_specification in ensemble_noise_specification_vec
         scale_annual = 1 / nyears,
         countries = countries,
         tabledirpath = tabledirpath,
+        noise_specification_filename = noise_specification_filename,
     )
 
     create_and_save_xlsx_optimal_threshold_summaries(
@@ -188,6 +196,7 @@ for ensemble_noise_specification in ensemble_noise_specification_vec
         scale_annual = 1 / nyears,
         countries = countries,
         tabledirpath = tabledirpath,
+        noise_specification_filename = noise_specification_filename,
     )
 
     create_and_save_xlsx_optimal_threshold_summaries(
@@ -195,6 +204,7 @@ for ensemble_noise_specification in ensemble_noise_specification_vec
         scale_annual = 1 / nyears,
         countries = countries,
         tabledirpath = tabledirpath,
+        noise_specification_filename = noise_specification_filename,
     )
 
     @info "All plots and tables saved for $(ensemble_noise_specification.noise_type)"
