@@ -290,28 +290,40 @@ function incidence_prevalence_plot(
 end
 
 function visualize_ensemble_noise(
-    ensemble_inc_arr, ensemble_noise_spec, timeparams
+    ensemble_noise_arr, timespecification, noisedir
 )
-    ensemble_noise_arr = create_noise_arr(
-        ensemble_noise_spec, ensemble_inc_arr; seed = 1234
-    )
+    times = collect(timespecification.trange) ./ 365
+    meanline = vec(mean(ensemble_noise_arr; dims = 2))
+    dailymean = mean(meanline)
 
-    times = collect(timeparams.trange) ./ 365
-    noise_fig = Figure()
-    noise_ax = Axis(
-        noise_fig[1, 1]; xlabel = "Time (years)", ylabel = "Noise Incidence"
-    )
+    fig = Figure()
+    ax = Axis(fig[2, 1]; xlabel = "Time (years)", ylabel = "Noise Incidence")
 
-    for sim in axes(ensemble_noise_arr, 2)
+    for noise_sim in eachcol(ensemble_noise_arr)
         lines!(
-            noise_ax,
+            ax,
             times,
-            ensemble_noise_arr[:, sim];
-            color = (:red, 0.1),
+            noise_sim;
+            color = (:gray, 0.2),
         )
     end
 
-    return noise_fig
+    lines!(
+        ax,
+        times,
+        meanline;
+        color = :black,
+    )
+
+    Label(
+        fig[1, :],
+        "Noise: $(noisedir), Daily Mean: $(round(dailymean, digits = 2))",
+    )
+
+    rowsize!(fig.layout, 1, 5)
+    colsize!(fig.layout, 1, Relative(1))
+
+    return fig
 end
 
 function incidence_testing_plot(

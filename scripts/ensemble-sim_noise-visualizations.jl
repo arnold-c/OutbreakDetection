@@ -42,51 +42,26 @@ for noise_specification in ensemble_noise_specification_vec
         ensemble_specification = ensemble_specification,
         seed = 1234,
     )
-
-    fig = Figure()
-    ax = Axis(fig[2, 1])
-
-    for noise_sim in eachcol(noisearr)
-        lines!(
-            ax,
-            ensemble_time_specification.trange,
-            noise_sim;
-            color = (:gray, 0.2),
-        )
-    end
-
-    meanline = vec(mean(noisearr; dims = 2))
-    dailymean = mean(meanline)
     noisedir = getdirpath(noise_specification)
-    noisepath = replace(noisedir, "/" => "_")
     plotpath = joinpath(
         plotsdir(),
         "ensemble",
         "single-scenario",
-        "noise-visualizations"
+        noisedir,
     )
     mkpath(plotpath)
 
-    lines!(
-        ax,
-        ensemble_time_specification.trange,
-        meanline;
-        color = :black,
+    ensemble_noise_fig = visualize_ensemble_noise(
+        noisearr,
+        ensemble_time_specification,
+        noisedir
     )
-
-    Label(
-        fig[1, :],
-        "Noise: $(noisedir), Daily Mean: $(round(dailymean, digits = 2))",
-    )
-
-    rowsize!(fig.layout, 1, 5)
-    colsize!(fig.layout, 1, Relative(1))
 
     save(
         joinpath(
             plotpath,
-            "$(noisepath).png",
+            "ensemble-sim_single-scenario_noise.png",
         ),
-        fig; resolution = (2200, 1600),
+        ensemble_noise_fig; resolution = (2200, 1600),
     )
 end
