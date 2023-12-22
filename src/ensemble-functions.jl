@@ -28,6 +28,7 @@ end
 
 function create_ensemble_spec_combinations(
     beta_force_vec,
+    seasonality_vec,
     sigma_vec,
     gamma_vec,
     annual_births_per_k_vec,
@@ -41,6 +42,7 @@ function create_ensemble_spec_combinations(
 )
     ensemble_spec_combinations = Iterators.product(
         beta_force_vec,
+        seasonality_vec,
         sigma_vec,
         gamma_vec,
         annual_births_per_k_vec,
@@ -59,6 +61,7 @@ function create_ensemble_spec_combinations(
         i,
         (
             beta_force,
+            seasonality,
             sigma,
             gamma,
             annual_births_per_k,
@@ -83,6 +86,7 @@ function create_ensemble_spec_combinations(
             DynamicsParameters(
                 beta_mean,
                 beta_force,
+                seasonality,
                 sigma,
                 gamma,
                 mu,
@@ -176,6 +180,7 @@ function run_jump_prob(ensemble_param_dict)
         dict[:noise_spec_vec] = noise_spec_vec
         dict[:outbreak_detection_spec_vec] = outbreak_detection_spec_vec
         dict[:test_spec_vec] = test_spec_vec
+        dict[:seed] = seed
     end
 
     run_define_outbreaks(outbreak_spec_dict)
@@ -233,7 +238,8 @@ function run_define_outbreaks(dict_of_outbreak_spec_params)
             outbreak_spec_params,
             "$(outbreak_spec_params[:dirpath])";
             filename = "ensemble-incidence-array",
-            loadfile = false
+            loadfile = false,
+            force = true
         )
     end
 end
@@ -244,7 +250,7 @@ function define_outbreaks(incidence_param_dict)
     outbreak_spec,
     noise_spec_vec,
     outbreak_detection_spec_vec,
-    test_spec_vec =
+    test_spec_vec, seed =
         incidence_param_dict
 
     ensemble_inc_arr, ensemble_thresholds_vec = create_inc_infec_arr(
@@ -296,7 +302,8 @@ function define_outbreaks(incidence_param_dict)
         @dict(
             scenario_spec = ensemble_scenarios,
             ensemble_inc_arr,
-            thresholds_vec = [ensemble_thresholds_vec]
+            thresholds_vec = [ensemble_thresholds_vec],
+            seed = seed
         )
     )
 
@@ -320,15 +327,18 @@ function run_OutbreakThresholdChars_creation(
 end
 
 function OutbreakThresholdChars_creation(OT_chars_param_dict)
-    @unpack scenario_spec, ensemble_inc_arr, thresholds_vec =
+    @unpack scenario_spec, ensemble_inc_arr, thresholds_vec, seed =
         OT_chars_param_dict
     @unpack noise_specification,
     outbreak_specification,
     outbreak_detection_specification,
     individual_test_specification = scenario_spec
 
-    noise_array = create_poisson_noise_arr(
-        ensemble_inc_arr, noise_specification
+    noise_array = create_noise_arr(
+        noise_specification,
+        ensemble_inc_arr;
+        ensemble_specification = scenario_spec.ensemble_specification,
+        seed = seed,
     )
 
     testarr = create_testing_arrs(

@@ -86,7 +86,8 @@ function calculate_optimal_threshold(
     optimal_OT_chars = 0
 
     for (i, ensemble_scenario_spec) in pairs(ensemble_scenario_spec_vec)
-        OT_chars = get_ensemble_file(ensemble_scenario_spec)["OT_chars"]
+        scenario_chars_file = get_ensemble_file(ensemble_scenario_spec)
+        OT_chars = scenario_chars_file["OT_chars"]
         accuracy = median(OT_chars.accuracy)
         alert_threshold =
             ensemble_scenario_spec.outbreak_detection_specification.alert_threshold
@@ -107,6 +108,7 @@ function calculate_optimal_threshold(
     return OptimalThresholdCharacteristics(
         optimal_OT_chars,
         individual_test_specification,
+        noise_specification,
         percent_clinic_tested,
         optimal_threshold,
         optimal_accuracy,
@@ -117,7 +119,8 @@ function create_and_save_xlsx_optimal_threshold_summaries(
     optimal_thresholds_vec,
     characteristic;
     percentiles = [0.25, 0.5, 0.75],
-    filepath = datadir("optimal-threshold-results"),
+    tabledirpath = datadir("optimal-threshold-results"),
+    noise_specification_filename = "",
     kwargs...,
 )
     kwargs_dict = Dict(kwargs)
@@ -135,7 +138,8 @@ function create_and_save_xlsx_optimal_threshold_summaries(
         "accuracy",
     ]
 
-    base_filename = "optimal-threshold-result-tables_$(characteristic)"
+    mkpath(tabledirpath)
+    base_filename = "optimal-threshold-result-tables_$(noise_specification_filename)_$(characteristic)"
 
     if haskey(kwargs_dict, :scale_annual)
         transform!(
@@ -179,7 +183,7 @@ function create_and_save_xlsx_optimal_threshold_summaries(
             save_xlsx_optimal_threshold_summaries(
                 (; country_info_df, country_long_df, country_wide_df_tuples...),
                 country_filename;
-                filepath = filepath,
+                filepath = tabledirpath,
             )
 
             if haskey(country, :cfr) &&
@@ -202,7 +206,7 @@ function create_and_save_xlsx_optimal_threshold_summaries(
                 save_xlsx_optimal_threshold_summaries(
                     (; country_info_df, cfr_long_df, cfr_wide_df_tuples...),
                     cfr_filename;
-                    filepath = filepath,
+                    filepath = tabledirpath,
                 )
             end
         end
@@ -210,7 +214,8 @@ function create_and_save_xlsx_optimal_threshold_summaries(
         wide_df_tuples = create_all_wide_optimal_threshold_summary_dfs(long_df)
 
         save_xlsx_optimal_threshold_summaries(
-            (; long_df, wide_df_tuples...), base_filename; filepath = filepath
+            (; long_df, wide_df_tuples...), base_filename;
+            filepath = tabledirpath,
         )
     end
 
@@ -253,7 +258,8 @@ end
 
 function create_and_save_xlsx_optimal_threshold_summaries(
     optimal_thresholds_vec;
-    filepath = datadir("optimal-threshold-results")
+    tabledirpath = datadir("optimal-threshold-results"),
+    noise_specification_filename = "",
 )
     long_df = create_optimal_thresholds_df(
         optimal_thresholds_vec
@@ -266,9 +272,12 @@ function create_and_save_xlsx_optimal_threshold_summaries(
         long_df, :accuracy
     )
 
-    filename = "optimal-threshold-result-tables_thresholds"
+    mkpath(tabledirpath)
+    filename = "optimal-threshold-result-tables_$(noise_specification_filename)_thresholds"
+
     save_xlsx_optimal_threshold_summaries(
-        (; long_df, alert_thresholds, accuracy), filename; filepath = filepath
+        (; long_df, alert_thresholds, accuracy), filename;
+        filepath = tabledirpath,
     )
 
     @info "Saved the thresholds and accuracy table"

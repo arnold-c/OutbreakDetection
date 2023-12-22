@@ -32,9 +32,12 @@ function SimTimeParameters(; tmin = 0.0, tmax = 365.0 * 100.0, tstep = 1.0)
     )
 end
 
-struct DynamicsParameters{T1<:AbstractFloat,T2<:Union{<:Integer,T1}}
+struct DynamicsParameters{
+    T1<:AbstractFloat,T2<:Union{<:Integer,T1},T3<:Function
+}
     beta_mean::T1
     beta_force::T1
+    seasonality::T3
     sigma::T1
     gamma::T1
     mu::T1
@@ -53,6 +56,7 @@ function DynamicsParameters(
     return DynamicsParameters(
         BETA_MEAN,
         BETA_FORCE,
+        cos,
         sigma,
         gamma,
         MU,
@@ -79,6 +83,7 @@ function DynamicsParameters(
     return DynamicsParameters(
         beta_mean,
         beta_force,
+        cos,
         sigma,
         gamma,
         mu,
@@ -100,6 +105,7 @@ function DynamicsParameters(
     return DynamicsParameters(
         beta_mean,
         beta_force,
+        cos,
         SIGMA,
         GAMMA,
         mu,
@@ -288,11 +294,35 @@ struct IndividualTestSpecification{T1<:AbstractFloat,T2<:Integer}
     test_result_lag::T2
 end
 
-struct NoiseSpecification{
+abstract type NoiseSpecification end
+
+struct PoissonNoiseSpecification{
     T1<:AbstractString,T2<:AbstractFloat
-}
+} <: NoiseSpecification
     noise_type::T1
     noise_mean_scaling::T2
+end
+
+struct DynamicalNoiseSpecification{
+    T1<:AbstractString,T2<:AbstractFloat
+} <: NoiseSpecification
+    noise_type::T1
+    R_0::T2
+    correlation::T1
+    noise_mean_scaling::T2
+end
+
+function DynamicalNoiseSpecification()
+end
+
+function getdirpath(spec::NoiseSpecification)
+    return reduce(
+        joinpath,
+        map(
+            p -> "$(p)_$(getproperty(spec, p))",
+            propertynames(spec),
+        )
+    )
 end
 
 struct ScenarioSpecification{
@@ -321,8 +351,7 @@ function ScenarioSpecification(
     dirpath = joinpath(
         ensemble_specification.dirpath,
         outbreak_specification.dirpath,
-        "noise_$(noise_specification.noise_type)",
-        "noise_mean_scaling_$(noise_specification.noise_mean_scaling)",
+        getdirpath(noise_specification),
         "alertthreshold_$(outbreak_detection_specification.alert_threshold)",
         "moveavglag_$(outbreak_detection_specification.moving_average_lag)",
         "perc_visit_clinic_$(outbreak_detection_specification.percent_visit_clinic)",
@@ -369,13 +398,15 @@ end
 struct OptimalThresholdCharacteristics{
     T1<:StructVector{<:OutbreakThresholdChars},
     T2<:IndividualTestSpecification,
-    T3<:AbstractFloat,
-    T4<:Integer,
+    T3<:NoiseSpecification,
+    T4<:AbstractFloat,
+    T5<:Integer,
 }
     outbreak_threshold_chars::T1
     individual_test_specification::T2
-    percent_clinic_tested::T3
-    alert_threshold::T4
-    accuracy::T3
+    noise_specification::T3
+    percent_clinic_tested::T4
+    alert_threshold::T5
+    accuracy::T4
 end
 # end

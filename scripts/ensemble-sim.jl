@@ -53,6 +53,7 @@ vaccination_coverage_vec = [0.8]
 #%%
 ensemble_spec_vec = create_ensemble_spec_combinations(
     beta_force_vec,
+    [cos],
     sigma_vec,
     gamma_vec,
     annual_births_per_k_vec,
@@ -88,16 +89,31 @@ end
 # struct currently
 poisson_noise_mean_scaling_vec = [1.0]
 
-noise_spec_vec = create_combinations_vec(
-    NoiseSpecification,
+poisson_noise_spec_vec = create_combinations_vec(
+    PoissonNoiseSpecification,
     (["poisson"], poisson_noise_mean_scaling_vec)
 )
+
+dynamical_noise_R0 = [5.0]
+dynamical_noise_correlation = ["in-phase", "out-of-phase", "none"]
+dynamical_noise_mean_scaling_vec = [0.3]
+dynamical_noise_spec_vec = create_combinations_vec(
+    DynamicalNoiseSpecification,
+    (
+        ["dynamical"],
+        dynamical_noise_R0,
+        dynamical_noise_correlation,
+        dynamical_noise_mean_scaling_vec,
+    ),
+)
+
+noise_spec_vec = vcat(poisson_noise_spec_vec, dynamical_noise_spec_vec)
 
 #%%
 alertthreshold_vec = collect(4:1:30)
 moveavglag_vec = [7]
 perc_clinic_vec = [0.6]
-perc_clinic_test_vec = [collect(0.1:0.1:0.5)..., 1.0]
+perc_clinic_test_vec = [collect(0.1:0.1:0.6)..., 1.0]
 
 outbreak_detection_spec_vec = create_combinations_vec(
     OutbreakDetectionSpecification,

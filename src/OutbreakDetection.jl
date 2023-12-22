@@ -20,7 +20,9 @@ export POPULATION_N, LATENT_PER_DAYS, DUR_INF_DAYS, R0, SIGMA, GAMMA,
 include("structs.jl")
 export SimTimeParameters, EnsembleSpecification, DynamicsParameters,
     StateParameters, OutbreakThresholdChars, OutbreakDetectionSpecification,
-    OutbreakSpecification, IndividualTestSpecification, NoiseSpecification,
+    OutbreakSpecification, IndividualTestSpecification,
+    PoissonNoiseSpecification, DynamicalNoiseSpecification, NoiseSpecification,
+    getdirpath,
     ScenarioSpecification, TestPositivity, OptimalThresholdCharacteristics
 # @reexport using .ODStructs
 
@@ -72,10 +74,12 @@ export create_combinations_vec, create_ensemble_spec_combinations,
 # @reexport using .EnsembleFunctions
 
 include("noise-functions.jl")
-export create_poisson_noise_arr, create_poisson_noise_arr!
+export create_noise_arr, add_poisson_noise_arr!
 # @reexport using .NoiseFunctions
 
-include("plotting-functions.jl")
+include(
+    "plotting-functions.jl"
+)
 export seircolors,
     seir_state_labels, create_sir_plot, draw_sir_plot,
     ACCURACY_COLOR, DAILY_SENSITIVITY_COLOR, DAILY_SPECIFICITY_COLOR,

@@ -30,9 +30,32 @@ ensemble_specification = EnsembleSpecification(
     ensemble_nsims,
 )
 
-ensemble_noise_specification = NoiseSpecification("poisson", 1.0)
+poisson_noise_mean_scaling_vec = [1.0]
+
+poisson_noise_spec_vec = create_combinations_vec(
+    PoissonNoiseSpecification,
+    (["poisson"], poisson_noise_mean_scaling_vec)
+)
+
+dynamical_noise_R0 = [5.0]
+dynamical_noise_correlation = ["in-phase", "out-of-phase", "none"]
+dynamical_noise_mean_scaling_vec = [0.3]
+dynamical_noise_spec_vec = create_combinations_vec(
+    DynamicalNoiseSpecification,
+    (
+        ["dynamical"],
+        dynamical_noise_R0,
+        dynamical_noise_correlation,
+        dynamical_noise_mean_scaling_vec,
+    ),
+)
+
+ensemble_noise_specification_vec = vcat(
+    poisson_noise_spec_vec, dynamical_noise_spec_vec
+)
+
 ensemble_outbreak_specification = OutbreakSpecification(5, 30, 500)
 
 ensemble_moving_avg_detection_lag = 7
 ensemble_percent_visit_clinic = 0.6
-ensemble_percent_clinic_tested_vec = collect(0.1:0.1:0.5)
+ensemble_percent_clinic_tested_vec = collect(0.1:0.1:0.6)

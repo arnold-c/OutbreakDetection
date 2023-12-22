@@ -18,6 +18,7 @@ singlesim_time_p = SimTimeParameters(;
 singlesim_dynamics_p = DynamicsParameters(
     BETA_MEAN,
     BETA_FORCE,
+    cos,
     SIGMA,
     GAMMA,
     MU,

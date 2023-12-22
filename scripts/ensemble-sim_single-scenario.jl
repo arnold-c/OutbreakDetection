@@ -11,12 +11,14 @@ include(srcdir("makie-plotting-setup.jl"))
 includet(srcdir("ensemble-parameters.jl"))
 
 #%%
+ensemble_single_noise_specification = poisson_noise_spec_vec[1]
+
 ensemble_single_individual_test_spec = IndividualTestSpecification(0.8, 0.8, 0)
 
 ensemble_single_scenario_spec = ScenarioSpecification(
     ensemble_specification,
     ensemble_outbreak_specification,
-    ensemble_noise_specification,
+    ensemble_single_noise_specification,
     OutbreakDetectionSpecification(5, 7, 0.6, 0.3),
     ensemble_single_individual_test_spec,
 )
@@ -42,7 +44,7 @@ ensemble_single_scenario_detection = get_ensemble_file(
 ensemble_single_scenario_spec2 = ScenarioSpecification(
     ensemble_specification,
     ensemble_outbreak_specification,
-    ensemble_noise_specification,
+    ensemble_single_noise_specification,
     OutbreakDetectionSpecification(10, 7, 0.6, 0.3),
     ensemble_single_individual_test_spec,
 )
@@ -53,9 +55,10 @@ ensemble_single_scenario_detection2 = get_ensemble_file(
 )
 
 #%%
-ensemble_single_scenario_noise_array = create_poisson_noise_arr(
-    ensemble_single_scenario_incarr["ensemble_inc_arr"],
-    ensemble_noise_specification,
+ensemble_single_scenario_noise_array = create_noise_arr(
+    ensemble_single_noise_specification,
+    ensemble_single_scenario_incarr["ensemble_inc_arr"];
+    seed = 1234,
 )
 
 #%%
@@ -98,7 +101,7 @@ save(
 #%%
 ensemble_single_scenario_noise_plot = visualize_ensemble_noise(
     ensemble_single_scenario_incarr["ensemble_inc_arr"],
-    ensemble_noise_specification,
+    ensemble_single_noise_specification,
     ensemble_time_specification,
 )
 

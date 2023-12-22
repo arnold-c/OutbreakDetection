@@ -32,144 +32,181 @@ optimal_threshold_test_spec_vec = [
 optimal_threshold_alertthreshold_vec = collect(4:1:30)
 
 #%%
-optimal_threshold_comparison_params = (
-    alertthreshold_vec = optimal_threshold_alertthreshold_vec,
-    ensemble_specification = ensemble_specification,
-    noise_specification = ensemble_noise_specification,
-    outbreak_specification = ensemble_outbreak_specification,
-    moving_avg_detection_lag = ensemble_moving_avg_detection_lag,
-    percent_visit_clinic = ensemble_percent_visit_clinic,
-)
+for ensemble_noise_specification in ensemble_noise_specification_vec
+    optimal_threshold_comparison_params = (
+        alertthreshold_vec = optimal_threshold_alertthreshold_vec,
+        ensemble_specification = ensemble_specification,
+        noise_specification = ensemble_noise_specification,
+        outbreak_specification = ensemble_outbreak_specification,
+        moving_avg_detection_lag = ensemble_moving_avg_detection_lag,
+        percent_visit_clinic = ensemble_percent_visit_clinic,
+    )
 
-#%%
-optimal_thresholds_vec = calculate_OptimalThresholdCharacteristics(
-    ensemble_percent_clinic_tested_vec,
-    optimal_threshold_test_spec_vec,
-    optimal_threshold_comparison_params,
-)
+    optimal_thresholds_vec = calculate_OptimalThresholdCharacteristics(
+        ensemble_percent_clinic_tested_vec,
+        optimal_threshold_test_spec_vec,
+        optimal_threshold_comparison_params,
+    )
 
-#%%
-compare_optimal_thresholds_chars_plot(
-    optimal_thresholds_vec,
-    [
-        (
-            char = :accuracy,
-            label = "Accuracy",
-            color = (ACCURACY_COLOR, 0.7),
-            binwidth = 0.01,
+    noise_specification_path = getdirpath(ensemble_noise_specification)
+    noise_specification_filename = replace(
+        noise_specification_path,
+        "/" => "_",
+    )
+
+    baseplotdirpath = joinpath(
+        plotsdir("ensemble/optimal-thresholds"),
+        noise_specification_path
+    )
+
+    clinictested_plotdirpath = joinpath(baseplotdirpath, "clinic-tested")
+
+    compare_optimal_thresholds_chars_plot(
+        optimal_thresholds_vec,
+        [
+            (
+                char = :accuracy,
+                label = "Accuracy",
+                color = (ACCURACY_COLOR, 0.7),
+                binwidth = 0.01,
+            ),
+            (
+                char = :detectiondelays,
+                label = "Detection Delay (Days)",
+                color = (DETECTION_DELAY_COLOR, 1.0),
+                binwidth = 10,
+            ),
+            (
+                char = :unavoidable_cases,
+                label = "Unavoidable Cases",
+                color = (PERC_OUTBREAKS_MISSED_COLOR, 1.0),
+                binwidth = 500,
+            ),
+            (
+                char = :avoidable_cases,
+                label = "Avoidable Cases",
+                color = (PERC_OUTBREAKS_DETECTED_COLOR, 1.0),
+                binwidth = 500,
+            ),
+        ];
+        plotdirpath = clinictested_plotdirpath,
+    )
+
+    test_plotdirpath = joinpath(baseplotdirpath, "tests")
+
+    compare_optimal_thresholds_test_chars_plot(
+        optimal_thresholds_vec,
+        [
+            (
+                char = :accuracy,
+                label = "Accuracy",
+                color = (ACCURACY_COLOR, 0.7),
+                binwidth = 0.01,
+            ),
+            (
+                char = :detectiondelays,
+                label = "Detection Delay (Days)",
+                color = (DETECTION_DELAY_COLOR, 1.0),
+                binwidth = 10,
+            ),
+            (
+                char = :unavoidable_cases,
+                label = "Unavoidable Cases",
+                color = (PERC_OUTBREAKS_MISSED_COLOR, 1.0),
+                binwidth = 500,
+            ),
+            (
+                char = :avoidable_cases,
+                label = "Avoidable Cases",
+                color = (PERC_OUTBREAKS_DETECTED_COLOR, 1.0),
+                binwidth = 500,
+            ),
+        ];
+        plotdirpath = test_plotdirpath,
+    )
+
+    cfr_df = CSV.read(
+        datadir("CFR_2022.csv"),
+        DataFrame; delim = ',',
+        header = true,
+        types = [String, Int64, Float64],
+    )
+    dropmissing!(cfr_df)
+
+    gha_cfr = only(cfr_df[cfr_df.country .== "GHA", :CFR])
+
+    population_df = CSV.read(
+        datadir("input-populations.csv"),
+        DataFrame; delim = ',',
+        header = true
+    )
+
+    gha_2022_pop = only(
+        population_df[population_df.ISO3_code .== "GHA", "2022"]
+    )
+    gha_2022_scale_population =
+        gha_2022_pop / ensemble_state_specification.init_states.N
+
+    countries = [
+        (;
+            name = "Ghana",
+            code = "GHA",
+            cfr = gha_cfr,
+            year = "2022",
+            population_size = gha_2022_pop,
+            scale_population = gha_2022_scale_population,
         ),
-        (
-            char = :detectiondelays,
-            label = "Detection Delay (Days)",
-            color = (DETECTION_DELAY_COLOR, 1.0),
-            binwidth = 10,
-        ),
-        (
-            char = :unavoidable_cases,
-            label = "Unavoidable Cases",
-            color = (PERC_OUTBREAKS_MISSED_COLOR, 1.0),
-            binwidth = 500,
-        ),
-        (
-            char = :avoidable_cases,
-            label = "Avoidable Cases",
-            color = (PERC_OUTBREAKS_DETECTED_COLOR, 1.0),
-            binwidth = 500,
-        ),
-    ],
-)
+    ]
 
-#%%
-compare_optimal_thresholds_test_chars_plot(
-    optimal_thresholds_vec,
-    [
-        (
-            char = :accuracy,
-            label = "Accuracy",
-            color = (ACCURACY_COLOR, 0.7),
-            binwidth = 0.01,
-        ),
-        (
-            char = :detectiondelays,
-            label = "Detection Delay (Days)",
-            color = (DETECTION_DELAY_COLOR, 1.0),
-            binwidth = 10,
-        ),
-        (
-            char = :unavoidable_cases,
-            label = "Unavoidable Cases",
-            color = (PERC_OUTBREAKS_MISSED_COLOR, 1.0),
-            binwidth = 500,
-        ),
-        (
-            char = :avoidable_cases,
-            label = "Avoidable Cases",
-            color = (PERC_OUTBREAKS_DETECTED_COLOR, 1.0),
-            binwidth = 500,
-        ),
-    ],
-)
+    tabledirpath = joinpath(
+        datadir("optimal-threshold-results"), noise_specification_path
+    )
 
-#%%
-cfr_df = CSV.read(
-    datadir("CFR_2022.csv"),
-    DataFrame; delim = ',',
-    header = true,
-    types = [String, Int64, Float64],
-)
-dropmissing!(cfr_df)
+    create_and_save_xlsx_optimal_threshold_summaries(
+        optimal_thresholds_vec;
+        tabledirpath = tabledirpath,
+        noise_specification_filename = noise_specification_filename,
+    )
 
-gha_cfr = only(cfr_df[cfr_df.country .== "GHA", :CFR])
+    create_and_save_xlsx_optimal_threshold_summaries(
+        optimal_thresholds_vec, :detectiondelays;
+        tabledirpath = tabledirpath,
+        noise_specification_filename = noise_specification_filename,
+    )
 
-population_df = CSV.read(
-    datadir("input-populations.csv"),
-    DataFrame; delim = ',',
-    header = true
-)
+    create_and_save_xlsx_optimal_threshold_summaries(
+        optimal_thresholds_vec,
+        :unavoidable_cases;
+        scale_annual = 1 / nyears,
+        countries = countries,
+        tabledirpath = tabledirpath,
+        noise_specification_filename = noise_specification_filename,
+    )
 
-gha_2022_pop = only(population_df[population_df.ISO3_code .== "GHA", "2022"])
-gha_2022_scale_population =
-    gha_2022_pop / ensemble_state_specification.init_states.N
+    create_and_save_xlsx_optimal_threshold_summaries(
+        optimal_thresholds_vec, :avoidable_cases;
+        scale_annual = 1 / nyears,
+        countries = countries,
+        tabledirpath = tabledirpath,
+        noise_specification_filename = noise_specification_filename,
+    )
 
-countries = [
-    (;
-        name = "Ghana",
-        code = "GHA",
-        cfr = gha_cfr,
-        year = "2022",
-        population_size = gha_2022_pop,
-        scale_population = gha_2022_scale_population,
-    ),
-]
+    create_and_save_xlsx_optimal_threshold_summaries(
+        optimal_thresholds_vec, :n_outbreak_cases;
+        scale_annual = 1 / nyears,
+        countries = countries,
+        tabledirpath = tabledirpath,
+        noise_specification_filename = noise_specification_filename,
+    )
 
-#%%
-create_and_save_xlsx_optimal_threshold_summaries(optimal_thresholds_vec)
+    create_and_save_xlsx_optimal_threshold_summaries(
+        optimal_thresholds_vec, :n_tests;
+        scale_annual = 1 / nyears,
+        countries = countries,
+        tabledirpath = tabledirpath,
+        noise_specification_filename = noise_specification_filename,
+    )
 
-create_and_save_xlsx_optimal_threshold_summaries(
-    optimal_thresholds_vec, :detectiondelays
-)
-
-create_and_save_xlsx_optimal_threshold_summaries(
-    optimal_thresholds_vec,
-    :unavoidable_cases;
-    scale_annual = 1 / nyears,
-    countries = countries,
-)
-
-create_and_save_xlsx_optimal_threshold_summaries(
-    optimal_thresholds_vec, :avoidable_cases;
-    scale_annual = 1 / nyears,
-    countries = countries,
-)
-
-create_and_save_xlsx_optimal_threshold_summaries(
-    optimal_thresholds_vec, :n_outbreak_cases;
-    scale_annual = 1 / nyears,
-    countries = countries,
-)
-
-create_and_save_xlsx_optimal_threshold_summaries(
-    optimal_thresholds_vec, :n_tests;
-    scale_annual = 1 / nyears,
-    countries = countries,
-)
+    @info "All plots and tables saved for $(ensemble_noise_specification.noise_type)"
+    println("==============================================")
+end

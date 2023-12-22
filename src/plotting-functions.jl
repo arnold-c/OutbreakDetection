@@ -292,8 +292,8 @@ end
 function visualize_ensemble_noise(
     ensemble_inc_arr, ensemble_noise_spec, timeparams
 )
-    ensemble_noise_arr = create_poisson_noise_arr(
-        ensemble_inc_arr, ensemble_noise_spec
+    ensemble_noise_arr = create_noise_arr(
+        ensemble_noise_spec, ensemble_inc_arr; seed = 1234
     )
 
     times = collect(timeparams.trange) ./ 365
@@ -302,12 +302,12 @@ function visualize_ensemble_noise(
         noise_fig[1, 1]; xlabel = "Time (years)", ylabel = "Noise Incidence"
     )
 
-    for sim in axes(ensemble_noise_arr, 3)
+    for sim in axes(ensemble_noise_arr, 2)
         lines!(
             noise_ax,
             times,
-            ensemble_noise_arr[:, 1, sim];
-            color = (:red, 0.1)
+            ensemble_noise_arr[:, sim];
+            color = (:red, 0.1),
         )
     end
 
@@ -348,7 +348,7 @@ function incidence_testing_plot(
         colormap = outbreakcolormap,
     )
     lines!(
-        inc_test_ax2, times, incarr[:, 1, sim] .+ noisearr[:, 1, sim];
+        inc_test_ax2, times, incarr[:, 1, sim] .+ noisearr[:, sim];
         color = incarr[:, 3, sim],
         colormap = outbreakcolormap,
     )
@@ -676,33 +676,33 @@ function save_compare_ensemble_OTchars_plot(
     normalization = :none,
     kwargs...,
 )
-    plot = compare_ensemble_OTchars_plots(
-        char_struct_vec,
-        columnfacetchar,
-        plottingchars,
-        percent_clinic_tested;
-        columnfacetchar_label = columnfacetchar_label,
-        binwidth = binwidth,
-        xlabel = xlabel,
-        ylabel = ylabel,
-        legend = legend,
-        legendlabel = legendlabel,
-        meanlines = meanlines,
-        meanlabels = meanlabels,
-        normalization = normalization,
-        kwargs...,
-    )
-
-    plotpath = joinpath(
+    plotdirpath = joinpath(
         plotsrootdir, clinic_tested_dir
     )
-    mkpath(plotpath)
+    mkpath(plotdirpath)
 
-    save(
-        joinpath(plotpath, "$plotname.$plotformat"),
-        plot;
-        resolution = resolution,
-    )
+    plotpath = joinpath(plotdirpath, "$plotname.$plotformat")
+
+    if !isfile(plotpath)
+        plot = compare_ensemble_OTchars_plots(
+            char_struct_vec,
+            columnfacetchar,
+            plottingchars,
+            percent_clinic_tested;
+            columnfacetchar_label = columnfacetchar_label,
+            binwidth = binwidth,
+            xlabel = xlabel,
+            ylabel = ylabel,
+            legend = legend,
+            legendlabel = legendlabel,
+            meanlines = meanlines,
+            meanlabels = meanlabels,
+            normalization = normalization,
+            kwargs...,
+        )
+
+        save(plotpath, plot; resolution = resolution)
+    end
 
     return nothing
 end
@@ -762,7 +762,7 @@ function compare_ensemble_OTchars_plots(
 
     Label(
         fig[1, :, Top()],
-        "Perc Clinic Tested: $(percent_clinic_tested)",
+        "Perc Clinic Tested: $(percent_clinic_tested), Noise: $(getdirpath(char_struct_vec[end].noise_specification))",
     )
 
     unique_thresholds = unique(
@@ -958,7 +958,8 @@ end
 function compare_optimal_thresholds_chars_plot(
     optimal_thresholds_vec,
     plottingchars;
-    kwargs...
+    plotdirpath = plotsdir("ensemble/optimal-thresholds"),
+    kwargs...,
 )
     unique_percent_clinic_tested = unique(
         optimal_thresholds_vec.percent_clinic_tested
@@ -984,14 +985,11 @@ function compare_optimal_thresholds_chars_plot(
             kwargs...
         )
 
-        plotpath = plotsdir(
-            "ensemble/testing-comparison/clinic-tested_$percent_clinic_tested"
-        )
-        mkpath(plotpath)
+        mkpath(plotdirpath)
 
         save(
             joinpath(
-                plotpath,
+                plotdirpath,
                 "compare-outbreak_clinic-tested-$(percent_clinic_tested)_best-thresholds.png",
             ),
             plot;
@@ -1029,7 +1027,7 @@ function create_optimal_thresholds_chars_plot(
             (midpoint_plotting_chars + 1):(midpoint_plotting_chars + 2),
             Top(),
         ],
-        "Perc Clinic Tested: $(optimal_thresholds_chars[end].percent_clinic_tested)",
+        "Perc Clinic Tested: $(optimal_thresholds_chars[end].percent_clinic_tested), Noise: $(getdirpath(optimal_thresholds_chars[end].noise_specification))",
     )
 
     thresholdschars_structarr =
@@ -1093,7 +1091,8 @@ end
 function compare_optimal_thresholds_test_chars_plot(
     optimal_thresholds_vec,
     plottingchars;
-    kwargs...
+    plotdirpath = plotsdir("ensemble/optimal-thresholds"),
+    kwargs...,
 )
     unique_tests = unique(
         optimal_thresholds_vec.individual_test_specification
@@ -1115,14 +1114,11 @@ function compare_optimal_thresholds_test_chars_plot(
             kwargs...
         )
 
-        plotpath = plotsdir(
-            "ensemble/testing-comparison/test-specification"
-        )
-        mkpath(plotpath)
+        mkpath(plotdirpath)
 
         save(
             joinpath(
-                plotpath,
+                plotdirpath,
                 "compare-outbreak_clinic-test-specification_sens-$(test_specification.sensitivity)_spec-$(test_specification.specificity)_lag-$(test_specification.test_result_lag)_best-thresholds.png",
             ),
             plot;
@@ -1160,7 +1156,7 @@ function create_optimal_thresholds_test_chars_plot(
             (midpoint_plotting_chars + 1):(midpoint_plotting_chars + 2),
             Top(),
         ],
-        "Test characteristics: Sensitivity $(optimal_thresholds_chars[end].individual_test_specification.sensitivity), Specificity $(optimal_thresholds_chars[end].individual_test_specification.specificity), Lag $(optimal_thresholds_chars[end].individual_test_specification.test_result_lag)",
+        "Test characteristics: Sensitivity $(optimal_thresholds_chars[end].individual_test_specification.sensitivity), Specificity $(optimal_thresholds_chars[end].individual_test_specification.specificity), Lag $(optimal_thresholds_chars[end].individual_test_specification.test_result_lag), Noise: $(getdirpath(optimal_thresholds_chars[end].noise_specification))",
     )
 
     thresholdschars_structarr =

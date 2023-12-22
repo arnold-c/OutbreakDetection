@@ -67,7 +67,7 @@ function create_testing_arrs!(
 
         # Number of noise individuals tested
         calculate_tested!(
-            @view(testarr[:, 2, sim]), @view(noisearr[:, 1, sim]), perc_tested
+            @view(testarr[:, 2, sim]), @view(noisearr[:, sim]), perc_tested
         )
 
         # Number of TOTAL individuals tested
