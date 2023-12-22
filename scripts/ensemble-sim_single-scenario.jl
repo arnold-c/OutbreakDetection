@@ -17,17 +17,20 @@ ensemble_single_outbreak_detection_spec = OutbreakDetectionSpecification(
 )
 
 #%%
-ensemble_single_scenario_sol = get_ensemble_file(
+ensemble_single_seir_arr = get_ensemble_file(
     ensemble_specification
-)
+)["ensemble_seir_arr"]
 
 ensemble_single_scenario_quantiles = get_ensemble_file(
     ensemble_specification, 95
 )
 
-ensemble_single_scenario_incarr = get_ensemble_file(
+ensemble_single_scenario_inc_file = get_ensemble_file(
     ensemble_specification, ensemble_outbreak_specification
 )
+
+ensemble_single_incarr = ensemble_single_scenario_inc_file["ensemble_inc_arr"]
+ensemble_single_periodsum_vecs = ensemble_single_scenario_inc_file["ensemble_thresholds_vec"]
 
 #%%
 ensemble_single_scenario_quantiles_plot = create_sir_quantiles_plot(
@@ -48,11 +51,11 @@ save(
 
 #%%
 ensemble_single_scenario_incidence_prevalence_plot = incidence_prevalence_plot(
-    ensemble_single_scenario_incarr["ensemble_inc_arr"],
-    ensemble_single_scenario_sol["ensemble_seir_arr"],
-    ensemble_single_scenario_incarr["ensemble_thresholds_vec"],
+    ensemble_single_incarr,
+    ensemble_single_seir_arr,
+    ensemble_single_periodsum_vecs,
     ensemble_time_specification;
-    threshold = 5,
+    threshold = ensemble_outbreak_specification.outbreak_threshold,
 )
 
 save(
@@ -77,7 +80,7 @@ for noise_specification in ensemble_noise_specification_vec
 
     noisearr = create_noise_arr(
         noise_specification,
-        ensemble_single_scenario_incarr["ensemble_inc_arr"];
+        ensemble_single_incarr;
         ensemble_specification = ensemble_specification,
         seed = 1234,
     )
