@@ -9,8 +9,8 @@ using Match
 
 function create_noise_arr(
     noise_specification::DynamicalNoiseSpecification,
-    incarr,
-    ensemble_specification::EnsembleSpecification;
+    incarr;
+    ensemble_specification::EnsembleSpecification,
     seed = 1234,
     kwargs...,
 )
