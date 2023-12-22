@@ -676,33 +676,33 @@ function save_compare_ensemble_OTchars_plot(
     normalization = :none,
     kwargs...,
 )
-    plot = compare_ensemble_OTchars_plots(
-        char_struct_vec,
-        columnfacetchar,
-        plottingchars,
-        percent_clinic_tested;
-        columnfacetchar_label = columnfacetchar_label,
-        binwidth = binwidth,
-        xlabel = xlabel,
-        ylabel = ylabel,
-        legend = legend,
-        legendlabel = legendlabel,
-        meanlines = meanlines,
-        meanlabels = meanlabels,
-        normalization = normalization,
-        kwargs...,
-    )
-
-    plotpath = joinpath(
+    plotdirpath = joinpath(
         plotsrootdir, clinic_tested_dir
     )
-    mkpath(plotpath)
+    mkpath(plotdirpath)
 
-    save(
-        joinpath(plotpath, "$plotname.$plotformat"),
-        plot;
-        resolution = resolution,
-    )
+    plotpath = joinpath(plotdirpath, "$plotname.$plotformat")
+
+    if !isfile(plotpath)
+        plot = compare_ensemble_OTchars_plots(
+            char_struct_vec,
+            columnfacetchar,
+            plottingchars,
+            percent_clinic_tested;
+            columnfacetchar_label = columnfacetchar_label,
+            binwidth = binwidth,
+            xlabel = xlabel,
+            ylabel = ylabel,
+            legend = legend,
+            legendlabel = legendlabel,
+            meanlines = meanlines,
+            meanlabels = meanlabels,
+            normalization = normalization,
+            kwargs...,
+        )
+
+        save(plotpath, plot; resolution = resolution)
+    end
 
     return nothing
 end
