@@ -15,7 +15,6 @@ ensemble_single_individual_test_spec = IndividualTestSpecification(0.8, 0.8, 0)
 
 #%%
 for noise_specification in ensemble_noise_specification_vec
-    @show noise_specification
     scenario_specification = ScenarioSpecification(
         ensemble_specification,
         ensemble_outbreak_specification,
