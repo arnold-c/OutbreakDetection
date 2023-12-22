@@ -71,12 +71,13 @@ for noise_specification in ensemble_noise_specification_vec
         ensemble_specification,
         ensemble_outbreak_specification,
         noise_specification,
+        ensemble_single_outbreak_detection_spec,
         ensemble_single_individual_test_spec,
     )
 
-    ensemble_solution_dict = get_ensemble_file(
-        scenario_specification.ensemble_specification
-    )
+    ensemble_solution_dict = get_ensemble_file(scenario_specification)
+
+    @unpack OT_chars = ensemble_solution_dict
 
     noisearr = create_noise_arr(
         noise_specification,
