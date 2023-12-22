@@ -46,4 +46,6 @@ for ensemble_noise_specification in ensemble_noise_specification_vec
 
     @info "All plots saved for $(ensemble_noise_specification.noise_type)"
     println("==============================================")
+
+    GC.gc()
 end
