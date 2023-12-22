@@ -95,4 +95,7 @@ for noise_specification in ensemble_noise_specification_vec
         ensemble_single_outbreak_detection_spec,
         ensemble_time_specification,
     )
+
+    @info "Finished plotting the single scenario for $(noisedir)"
+    println("=================================================================")
 end

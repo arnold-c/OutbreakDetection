@@ -51,8 +51,9 @@ function plot_all_single_scenarios(
     )
 
     save(
-        plotsdir(
-            "ensemble/single-scenario/ensemble-sim_single-scenario_outbreak-alerts.png",
+        joinpath(
+            ensemble_noise_plotpath,
+            "ensemble-sim_single-scenario_outbreak-alerts.png",
         ),
         ensemble_single_scenario_outbreak_alert_plot,
     )
@@ -81,8 +82,9 @@ function plot_all_single_scenarios(
     )
 
     save(
-        plotsdir(
-            "ensemble/single-scenario/ensemble-sim_single-scenario_outbreak-alerts-perc.png",
+        joinpath(
+            ensemble_noise_plotpath,
+            "ensemble-sim_single-scenario_outbreak-alerts-perc.png",
         ),
         ensemble_single_scenario_outbreak_alert_perc_plot,
     )
@@ -94,8 +96,9 @@ function plot_all_single_scenarios(
     )
 
     save(
-        plotsdir(
-            "ensemble/single-scenario/ensemble-sim_single-scenario_outbreak-detect-diff.png",
+        joinpath(
+            ensemble_noise_plotpath,
+            "ensemble-sim_single-scenario_outbreak-detect-diff.png",
         ),
         ensemble_single_scenario_outbreak_detect_diff_plot,
     )
@@ -129,8 +132,9 @@ function plot_all_single_scenarios(
     )
 
     save(
-        plotsdir(
-            "ensemble/single-scenario/ensemble-sim_single-scenario_sens-spec-distribution.png",
+        joinpath(
+            ensemble_noise_plotpath,
+            "ensemble-sim_single-scenario_sens-spec-distribution.png",
         ),
         ensemble_single_scenario_sens_spec_dist_plot,
     )
@@ -160,8 +164,9 @@ function plot_all_single_scenarios(
     )
 
     save(
-        plotsdir(
-            "ensemble/single-scenario/ensemble-sim_single-scenario_ppv-npv-distribution.png",
+        joinpath(
+            ensemble_noise_plotpath,
+            "ensemble-sim_single-scenario_ppv-npv-distribution.png",
         ),
         ensemble_single_scenario_ppv_npv_dist_plot,
     )
@@ -185,8 +190,9 @@ function plot_all_single_scenarios(
     )
 
     save(
-        plotsdir(
-            "ensemble/single-scenario/ensemble-sim_single-scenario_detection-delay-distribution.png",
+        joinpath(
+            ensemble_noise_plotpath,
+            "ensemble-sim_single-scenario_detection-delay-distribution.png",
         ),
         ensemble_single_scenario_detection_delay_dist_plot,
     )
