@@ -293,7 +293,7 @@ function visualize_ensemble_noise(
     ensemble_inc_arr, ensemble_noise_spec, timeparams
 )
     ensemble_noise_arr = create_noise_arr(
-        ensemble_noise_spec; incarr = ensemble_inc_arr
+        ensemble_noise_spec, ensemble_inc_arr; seed = 1234
     )
 
     times = collect(timeparams.trange) ./ 365
