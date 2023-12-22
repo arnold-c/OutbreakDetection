@@ -11,59 +11,20 @@ include(srcdir("makie-plotting-setup.jl"))
 includet(srcdir("ensemble-parameters.jl"))
 
 #%%
-ensemble_single_noise_specification = poisson_noise_spec_vec[1]
-
 ensemble_single_individual_test_spec = IndividualTestSpecification(0.8, 0.8, 0)
-
-ensemble_single_scenario_spec = ScenarioSpecification(
-    ensemble_specification,
-    ensemble_outbreak_specification,
-    ensemble_single_noise_specification,
-    OutbreakDetectionSpecification(5, 7, 0.6, 0.3),
-    ensemble_single_individual_test_spec,
-)
 
 #%%
 ensemble_single_scenario_sol = get_ensemble_file(
-    ensemble_single_scenario_spec.ensemble_specification
+    ensemble_specification
 )
 
 ensemble_single_scenario_quantiles = get_ensemble_file(
-    ensemble_single_scenario_spec.ensemble_specification, 95
+    ensemble_specification, 95
 )
 
 ensemble_single_scenario_incarr = get_ensemble_file(
     ensemble_specification, ensemble_outbreak_specification
 )
-
-ensemble_single_scenario_detection = get_ensemble_file(
-    ensemble_single_scenario_spec
-)
-
-#%%
-ensemble_single_scenario_spec2 = ScenarioSpecification(
-    ensemble_specification,
-    ensemble_outbreak_specification,
-    ensemble_single_noise_specification,
-    OutbreakDetectionSpecification(10, 7, 0.6, 0.3),
-    ensemble_single_individual_test_spec,
-)
-
-#%%
-ensemble_single_scenario_detection2 = get_ensemble_file(
-    ensemble_single_scenario_spec2
-)
-
-#%%
-ensemble_single_scenario_noise_array = create_noise_arr(
-    ensemble_single_noise_specification,
-    ensemble_single_scenario_incarr["ensemble_inc_arr"];
-    seed = 1234,
-)
-
-#%%
-ensemble_single_scenario_detection["OT_chars"].daily_sensitivity ==
-ensemble_single_scenario_detection2["OT_chars"].daily_sensitivity
 
 #%%
 ensemble_single_scenario_quantiles_plot = create_sir_quantiles_plot(
@@ -99,16 +60,6 @@ save(
 )
 
 #%%
-ensemble_single_scenario_noise_plot = visualize_ensemble_noise(
-    ensemble_single_scenario_incarr["ensemble_inc_arr"],
-    ensemble_single_noise_specification,
-    ensemble_time_specification,
-)
-
-save(
-    plotsdir("ensemble/single-scenario/ensemble-sim_single-scenario_noise.png"),
-    ensemble_single_scenario_noise_plot,
-)
 
 #%%
 # ensemble_single_scenario_incidence_testing_plot = incidence_testing_plot(
