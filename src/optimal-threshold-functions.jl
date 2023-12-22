@@ -108,6 +108,7 @@ function calculate_optimal_threshold(
     return OptimalThresholdCharacteristics(
         optimal_OT_chars,
         individual_test_specification,
+        noise_specification,
         percent_clinic_tested,
         optimal_threshold,
         optimal_accuracy,

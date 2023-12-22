@@ -398,13 +398,15 @@ end
 struct OptimalThresholdCharacteristics{
     T1<:StructVector{<:OutbreakThresholdChars},
     T2<:IndividualTestSpecification,
-    T3<:AbstractFloat,
-    T4<:Integer,
+    T3<:NoiseSpecification,
+    T4<:AbstractFloat,
+    T5<:Integer,
 }
     outbreak_threshold_chars::T1
     individual_test_specification::T2
-    percent_clinic_tested::T3
-    alert_threshold::T4
-    accuracy::T3
+    noise_specification::T3
+    percent_clinic_tested::T4
+    alert_threshold::T5
+    accuracy::T4
 end
 # end

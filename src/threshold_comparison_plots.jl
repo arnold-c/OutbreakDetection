@@ -493,6 +493,7 @@ function collect_threshold_char_vec(percent_clinic_tested, base_parameters)
             OT_chars = ensemble_chars_file["OT_chars"],
             outbreak_detect_spec = ensemble_scenario_spec.outbreak_detection_specification,
             ind_test_spec = ensemble_scenario_spec.individual_test_specification,
+            noise_specification = noise_specification,
         )
     end
 

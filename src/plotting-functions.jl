@@ -762,7 +762,7 @@ function compare_ensemble_OTchars_plots(
 
     Label(
         fig[1, :, Top()],
-        "Perc Clinic Tested: $(percent_clinic_tested)",
+        "Perc Clinic Tested: $(percent_clinic_tested), Noise: $(getdirpath(char_struct_vec[end].noise_specification))",
     )
 
     unique_thresholds = unique(
@@ -1027,7 +1027,7 @@ function create_optimal_thresholds_chars_plot(
             (midpoint_plotting_chars + 1):(midpoint_plotting_chars + 2),
             Top(),
         ],
-        "Perc Clinic Tested: $(optimal_thresholds_chars[end].percent_clinic_tested)",
+        "Perc Clinic Tested: $(optimal_thresholds_chars[end].percent_clinic_tested), Noise: $(getdirpath(optimal_thresholds_chars[end].noise_specification))",
     )
 
     thresholdschars_structarr =
@@ -1156,7 +1156,7 @@ function create_optimal_thresholds_test_chars_plot(
             (midpoint_plotting_chars + 1):(midpoint_plotting_chars + 2),
             Top(),
         ],
-        "Test characteristics: Sensitivity $(optimal_thresholds_chars[end].individual_test_specification.sensitivity), Specificity $(optimal_thresholds_chars[end].individual_test_specification.specificity), Lag $(optimal_thresholds_chars[end].individual_test_specification.test_result_lag)",
+        "Test characteristics: Sensitivity $(optimal_thresholds_chars[end].individual_test_specification.sensitivity), Specificity $(optimal_thresholds_chars[end].individual_test_specification.specificity), Lag $(optimal_thresholds_chars[end].individual_test_specification.test_result_lag), Noise: $(getdirpath(optimal_thresholds_chars[end].noise_specification))",
     )
 
     thresholdschars_structarr =
