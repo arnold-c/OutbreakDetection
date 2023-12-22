@@ -58,4 +58,4 @@ ensemble_outbreak_specification = OutbreakSpecification(5, 30, 500)
 
 ensemble_moving_avg_detection_lag = 7
 ensemble_percent_visit_clinic = 0.6
-ensemble_percent_clinic_tested_vec = collect(0.1:0.1:0.5)
+ensemble_percent_clinic_tested_vec = collect(0.1:0.1:0.6)
