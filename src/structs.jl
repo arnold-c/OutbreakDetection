@@ -202,26 +202,27 @@ end
 struct OutbreakThresholdChars{
     T1<:AbstractFloat,
     T2<:Integer,
-    T3<:AbstractMatrix{T2},
-    T4<:Vector{T1},
-    T5<:Vector{T2},
+    T3<:Vector{<:AbstractFloat},
+    T4<:Vector{<:Integer},
+    T5<:AbstractMatrix{<:AbstractFloat},
+    T6<:AbstractMatrix{<:Integer},
 }
     daily_sensitivity::T1
     daily_specificity::T1
     daily_ppv::T1
     daily_npv::T1
     accuracy::T1
-    matchedoutbreakbounds::T3
+    matchedoutbreakbounds::T6
     noutbreaks::T2
     nalerts::T2
-    detected_outbreak_size::T5
-    missed_outbreak_size::T5
+    detected_outbreak_size::T4
+    missed_outbreak_size::T4
     n_true_outbreaks_detected::T2
     n_missed_outbreaks::T2
     n_correct_alerts::T2
     n_false_alerts::T2
-    n_alerts_per_outbreak::T5
-    period_sum_per_outbreak::T5
+    n_alerts_per_outbreak::T4
+    period_sum_per_outbreak::T4
     perc_true_outbreaks_detected::T1
     perc_true_outbreaks_missed::T1
     falsealert_trueoutbreak_prop::T1
@@ -230,16 +231,16 @@ struct OutbreakThresholdChars{
     outbreaksmissed_alerts_prop::T1
     perc_alerts_false::T1
     perc_alerts_correct::T1
-    detectiondelays::T5
-    cases_before_alerts::T5
-    cases_perc_before_alerts::T4
-    cases_after_alerts::T5
-    cases_perc_after_alerts::T4
+    detectiondelays::T4
+    cases_before_alerts::T4
+    cases_perc_before_alerts::T3
+    cases_after_alerts::T4
+    cases_perc_after_alerts::T3
     unavoidable_cases::T2
     avoidable_cases::T2
     n_outbreak_cases::T2
     n_tests::T2
-    noise_rubella_prop::T4
+    noise_rubella_prop::T5
 end
 
 struct OutbreakSpecification{T1<:Integer,T2<:AbstractString}
