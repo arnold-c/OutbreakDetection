@@ -89,12 +89,18 @@ function create_noise_arr(
         )
     end
 
+    poisson_noise = zeros(Float64, size(incarr, 1), size(incarr, 3))
+
     add_poisson_noise_arr!(
-        ensemble_inc_arr, incarr, noise_specification.noise_mean_scaling;
+        poisson_noise, incarr, noise_specification.noise_mean_scaling;
         seed = seed,
     )
 
-    return ensemble_inc_arr
+    ensemble_inc_arr .+= poisson_noise
+
+    noise_rubella_prop = poisson_noise ./ ensemble_inc_arr
+
+    return ensemble_inc_arr, noise_rubella_prop
 end
 
 function create_noise_arr(
@@ -109,7 +115,8 @@ function create_noise_arr(
         noise_arr, incarr, noise_specification.noise_mean_scaling; seed = seed
     )
 
-    return noise_arr
+    noise_rubella_prop = ones(Float64, size(incarr, 1), size(incarr, 3))
+    return noise_arr, noise_rubella_prop
 end
 
 function add_poisson_noise_arr!(
