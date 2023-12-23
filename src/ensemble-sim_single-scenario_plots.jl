@@ -202,9 +202,11 @@ function plot_all_single_scenarios(
     ensemble_single_scenario_incidence_testing_plot = incidence_testing_plot(
         incarr,
         noisearr,
+        noisedir,
         testarr,
+        test_specification,
         time_specification,
-        outbreak_detection_specification.alert_threshold;
+        outbreak_detection_specification;
         sim = 1,
     )
 

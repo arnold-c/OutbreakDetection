@@ -329,9 +329,11 @@ end
 function incidence_testing_plot(
     incarr,
     noisearr,
+    noisedir,
     testingarr,
+    test_specification,
     timeparams,
-    alertthreshold;
+    detection_specification;
     sim = 1,
     outbreakcolormap = [
         N_MISSED_OUTBREAKS_COLOR, PERC_OUTBREAKS_DETECTED_COLOR
@@ -407,12 +409,17 @@ function incidence_testing_plot(
     map(
         ax -> hlines!(
             ax,
-            alertthreshold;
+            detection_specification.alert_threshold;
             color = :black,
             linestyle = :dash,
             linewidth = 2,
         ),
         [inc_test_ax3, inc_test_ax4],
+    )
+
+    Label(
+        inc_test_fig[0, :, Top()],
+        "Sens: $(test_specification.sensitivity), Spec: $(test_specification.specificity), Lag: $(test_specification.test_result_lag),\nThreshold: $(detection_specification.alert_threshold), Perc Clinic Tested: $(detection_specification.percent_clinic_tested)\nNoise: $(noisedir)",
     )
 
     Legend(
@@ -428,6 +435,9 @@ function incidence_testing_plot(
         ["Not Outbreak", "Outbreak"],
         "Alert Status",
     )
+
+    rowsize!(inc_test_fig.layout, 0, 5)
+    colsize!(inc_test_fig.layout, 1, Relative(0.92))
 
     return inc_test_fig
 end
