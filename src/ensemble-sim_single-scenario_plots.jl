@@ -199,15 +199,16 @@ function plot_all_single_scenarios(
         ensemble_single_scenario_detection_delay_dist_plot,
     )
 
+    incidence_testing_plottitle = "Sens: $(test_specification.sensitivity), Spec: $(test_specification.specificity), Lag: $(test_specification.test_result_lag),\nThreshold: $(outbreak_detection_specification.alert_threshold), Perc Clinic Tested: $(outbreak_detection_specification.percent_clinic_tested)\nNoise: $(noisedir)"
+
     ensemble_single_scenario_incidence_testing_plot = incidence_testing_plot(
         incarr,
         noisearr,
-        noisedir,
         testarr,
-        test_specification,
-        time_specification,
-        outbreak_detection_specification;
+        outbreak_detection_specification,
+        time_specification;
         sim = 1,
+        plottitle = incidence_testing_plottitle,
     )
 
     save(

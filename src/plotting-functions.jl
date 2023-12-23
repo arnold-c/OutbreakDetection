@@ -329,11 +329,9 @@ end
 function incidence_testing_plot(
     incarr,
     noisearr,
-    noisedir,
     testingarr,
-    test_specification,
-    timeparams,
-    detection_specification;
+    detection_specification,
+    timeparams;
     sim = 1,
     outbreakcolormap = [
         N_MISSED_OUTBREAKS_COLOR, PERC_OUTBREAKS_DETECTED_COLOR
@@ -341,6 +339,7 @@ function incidence_testing_plot(
     alertcolormap = [
         N_MISSED_OUTBREAKS_COLOR, N_ALERTS_COLOR
     ],
+    plottitle = "",
     kwargs...,
 )
     times = collect(timeparams.trange) ./ 365
@@ -419,7 +418,7 @@ function incidence_testing_plot(
 
     Label(
         inc_test_fig[0, :, Top()],
-        "Sens: $(test_specification.sensitivity), Spec: $(test_specification.specificity), Lag: $(test_specification.test_result_lag),\nThreshold: $(detection_specification.alert_threshold), Perc Clinic Tested: $(detection_specification.percent_clinic_tested)\nNoise: $(noisedir)",
+        plottitle,
     )
 
     Legend(
