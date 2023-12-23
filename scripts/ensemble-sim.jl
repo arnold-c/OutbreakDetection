@@ -87,7 +87,7 @@ end
 # Could pass variables to ensemble function and calculate each simulations and
 # scenario's noise mean, but that would break implementation using NoiseSpecification
 # struct currently
-poisson_noise_mean_scaling_vec = [1.0]
+poisson_noise_mean_scaling_vec = [8.0]
 
 poisson_noise_spec_vec = create_combinations_vec(
     PoissonNoiseSpecification,
@@ -96,7 +96,7 @@ poisson_noise_spec_vec = create_combinations_vec(
 
 dynamical_noise_R0 = [5.0]
 dynamical_noise_correlation = ["in-phase", "out-of-phase", "none"]
-dynamical_noise_mean_scaling_vec = [0.3]
+dynamical_noise_mean_scaling_vec = [1.0]
 dynamical_noise_spec_vec = create_combinations_vec(
     DynamicalNoiseSpecification,
     (
