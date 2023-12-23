@@ -365,7 +365,7 @@ function incidence_testing_plot(
         colormap = outbreakcolormap,
     )
     lines!(
-        inc_test_ax3, times, testingarr[:, 3, sim];
+        inc_test_ax3, times, testingarr[:, 5, sim];
         color = testingarr[:, 7, sim],
         colormap = alertcolormap,
     )
