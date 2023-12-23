@@ -334,7 +334,7 @@ function OutbreakThresholdChars_creation(OT_chars_param_dict)
     outbreak_detection_specification,
     individual_test_specification = scenario_spec
 
-    noise_array = create_noise_arr(
+    noise_array, noise_rubella_prop = create_noise_arr(
         noise_specification,
         ensemble_inc_arr;
         ensemble_specification = scenario_spec.ensemble_specification,
@@ -349,7 +349,7 @@ function OutbreakThresholdChars_creation(OT_chars_param_dict)
     )
 
     OT_chars = calculate_OutbreakThresholdChars(
-        testarr, ensemble_inc_arr, thresholds_vec
+        testarr, ensemble_inc_arr, thresholds_vec, noise_rubella_prop
     )
 
     return @strdict OT_chars
