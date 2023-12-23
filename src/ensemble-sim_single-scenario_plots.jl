@@ -219,20 +219,20 @@ function plot_all_single_scenarios(
         ensemble_single_scenario_incidence_testing_plot,
     )
 
-    #%%
-    # ensemble_single_scenario_testing_timeseries_plot = testing_plot(
-    #     ensemble_single_scenario_detection["testarr"],
-    #     ensemble_time_specification,
-    # )
-    #
-    # save(
-    #     plotsdir(
-    #         "ensemble/single-scenario/ensemble-sim_single-scenario_testing-timeseries.png",
-    #     ),
-    #     ensemble_single_scenario_testing_timeseries_plot,
-    # )
+    ensemble_single_scenario_testing_timeseries_plot = testing_plot(
+        testarr,
+        time_specification;
+        plottitle = incidence_testing_plottitle
+    )
 
-    #%%
+    save(
+        joinpath(
+            ensemble_noise_plotpath,
+            "ensemble-sim_single-scenario_testing-timeseries.png",
+        ),
+        ensemble_single_scenario_testing_timeseries_plot,
+    )
+
     # ensemble_single_scenario_outbreak_dist_plot = ensemble_outbreak_distribution_plot(
     #     ensemble_single_scenario_detection["testarr"],
     #     ensemble_single_scenario_incarr["ensemble_inc_arr"],
