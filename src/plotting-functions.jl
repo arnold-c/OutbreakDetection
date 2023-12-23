@@ -498,7 +498,7 @@ function testing_plot(
     return testing_fig
 end
 
-function ensemble_outbreak_distribution_plot(testarr, infecarr)
+function ensemble_outbreak_distribution_plot(testarr, infecarr; plottitle = "")
     outbreak_dist_fig = Figure()
     outbreak_dist_ax = Axis(
         outbreak_dist_fig[1, 1];
@@ -528,6 +528,14 @@ function ensemble_outbreak_distribution_plot(testarr, infecarr)
     )
 
     Legend(outbreak_dist_fig[1, 2], outbreak_dist_ax, "Outbreak Proportion")
+
+    Label(
+        outbreak_dist_fig[0, :, Top()],
+        plottitle,
+    )
+
+    rowsize!(outbreak_dist_fig.layout, 0, 5)
+    colsize!(outbreak_dist_fig.layout, 1, Relative(0.92))
 
     return outbreak_dist_fig
 end
