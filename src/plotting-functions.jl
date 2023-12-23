@@ -290,36 +290,48 @@ function incidence_prevalence_plot(
 end
 
 function visualize_ensemble_noise(
-    ensemble_inc_arr, ensemble_noise_spec, timeparams
+    ensemble_noise_arr, timespecification, noisedir
 )
-    ensemble_noise_arr = create_noise_arr(
-        ensemble_noise_spec, ensemble_inc_arr; seed = 1234
-    )
+    times = collect(timespecification.trange) ./ 365
+    meanline = vec(mean(ensemble_noise_arr; dims = 2))
+    dailymean = mean(meanline)
 
-    times = collect(timeparams.trange) ./ 365
-    noise_fig = Figure()
-    noise_ax = Axis(
-        noise_fig[1, 1]; xlabel = "Time (years)", ylabel = "Noise Incidence"
-    )
+    fig = Figure()
+    ax = Axis(fig[2, 1]; xlabel = "Time (years)", ylabel = "Noise Incidence")
 
-    for sim in axes(ensemble_noise_arr, 2)
+    for noise_sim in eachcol(ensemble_noise_arr)
         lines!(
-            noise_ax,
+            ax,
             times,
-            ensemble_noise_arr[:, sim];
-            color = (:red, 0.1),
+            noise_sim;
+            color = (:gray, 0.2),
         )
     end
 
-    return noise_fig
+    lines!(
+        ax,
+        times,
+        meanline;
+        color = :black,
+    )
+
+    Label(
+        fig[1, :],
+        "Noise: $(noisedir), Daily Mean: $(round(dailymean, digits = 2))",
+    )
+
+    rowsize!(fig.layout, 1, 5)
+    colsize!(fig.layout, 1, Relative(1))
+
+    return fig
 end
 
 function incidence_testing_plot(
     incarr,
     noisearr,
     testingarr,
-    timeparams,
-    alertthreshold;
+    detection_specification,
+    timeparams;
     sim = 1,
     outbreakcolormap = [
         N_MISSED_OUTBREAKS_COLOR, PERC_OUTBREAKS_DETECTED_COLOR
@@ -327,6 +339,7 @@ function incidence_testing_plot(
     alertcolormap = [
         N_MISSED_OUTBREAKS_COLOR, N_ALERTS_COLOR
     ],
+    plottitle = "",
     kwargs...,
 )
     times = collect(timeparams.trange) ./ 365
@@ -353,7 +366,7 @@ function incidence_testing_plot(
         colormap = outbreakcolormap,
     )
     lines!(
-        inc_test_ax3, times, testingarr[:, 3, sim];
+        inc_test_ax3, times, testingarr[:, 5, sim];
         color = testingarr[:, 7, sim],
         colormap = alertcolormap,
     )
@@ -395,12 +408,17 @@ function incidence_testing_plot(
     map(
         ax -> hlines!(
             ax,
-            alertthreshold;
+            detection_specification.alert_threshold;
             color = :black,
             linestyle = :dash,
             linewidth = 2,
         ),
         [inc_test_ax3, inc_test_ax4],
+    )
+
+    Label(
+        inc_test_fig[0, :, Top()],
+        plottitle,
     )
 
     Legend(
@@ -417,35 +435,28 @@ function incidence_testing_plot(
         "Alert Status",
     )
 
+    rowsize!(inc_test_fig.layout, 0, 5)
+    colsize!(inc_test_fig.layout, 1, Relative(0.92))
+
     return inc_test_fig
 end
 
-function testing_plot(testingarr, timeparams)
+function testing_plot(
+    testingarr, timeparams; plottitle = "", sim1_num = 1, sim2_num = 25
+)
     times = collect(timeparams.trange) ./ 365
 
     testing_fig = Figure()
     testing_grid = testing_fig[1, 1] = GridLayout()
     sim1_ax = Axis(
         testing_grid[1, 1];
-        title = "Simulation 1",
+        title = "Simulation $sim1_num",
         xlabel = "Time (years)",
         ylabel = "Number tested",
     )
     sim2_ax = Axis(
         testing_grid[2, 1];
-        title = "Simulation 2",
-        xlabel = "Time (years)",
-        ylabel = "Number tested",
-    )
-    sim3_ax = Axis(
-        testing_grid[1, 2];
-        title = "Simulation 3",
-        xlabel = "Time (years)",
-        ylabel = "Number tested",
-    )
-    sim4_ax = Axis(
-        testing_grid[2, 2];
-        title = "Simulation 4",
+        title = "Simulation $sim2_num",
         xlabel = "Time (years)",
         ylabel = "Number tested",
     )
@@ -456,39 +467,38 @@ function testing_plot(testingarr, timeparams)
         (:red, :blue, :black),
     )
         lines!(
-            sim1_ax, times, testingarr[:, ind, 1]; color = col, label = label
+            sim1_ax, times, testingarr[:, ind, sim1_num]; color = col,
+            label = label,
         )
         lines!(
-            sim2_ax, times, testingarr[:, ind, 2]; color = col, label = label
-        )
-        lines!(
-            sim3_ax, times, testingarr[:, ind, 3]; color = col, label = label
-        )
-        lines!(
-            sim4_ax, times, testingarr[:, ind, 4]; color = col, label = label
+            sim2_ax, times, testingarr[:, ind, sim2_num]; color = col,
+            label = label,
         )
     end
 
     linkxaxes!(sim1_ax, sim2_ax)
-    linkxaxes!(sim3_ax, sim4_ax)
 
-    linkyaxes!(sim1_ax, sim3_ax)
-    linkyaxes!(sim2_ax, sim4_ax)
-
-    map(hidexdecorations!, [sim1_ax, sim3_ax])
-    map(hideydecorations!, [sim3_ax, sim4_ax])
+    hidexdecorations!(sim1_ax)
 
     Legend(
-        testing_fig[2, :],
+        testing_fig[:, 2],
         sim1_ax,
         "Type of Individual";
-        orientation = :horizontal,
+        orientation = :vertical,
     )
+
+    Label(
+        testing_fig[0, :, Top()],
+        plottitle,
+    )
+
+    rowsize!(testing_fig.layout, 0, 5)
+    colsize!(testing_fig.layout, 1, Relative(0.92))
 
     return testing_fig
 end
 
-function ensemble_outbreak_distribution_plot(testarr, infecarr)
+function ensemble_outbreak_distribution_plot(testarr, infecarr; plottitle = "")
     outbreak_dist_fig = Figure()
     outbreak_dist_ax = Axis(
         outbreak_dist_fig[1, 1];
@@ -519,6 +529,14 @@ function ensemble_outbreak_distribution_plot(testarr, infecarr)
 
     Legend(outbreak_dist_fig[1, 2], outbreak_dist_ax, "Outbreak Proportion")
 
+    Label(
+        outbreak_dist_fig[0, :, Top()],
+        plottitle,
+    )
+
+    rowsize!(outbreak_dist_fig.layout, 0, 5)
+    colsize!(outbreak_dist_fig.layout, 1, Relative(0.92))
+
     return outbreak_dist_fig
 end
 
@@ -527,6 +545,7 @@ function ensemble_OTChars_plot(
     testspec,
     detectspec,
     plottingchars;
+    plottitle = "",
     xlabel = "Alert Characteristic Value",
     ylabel = "Density",
     binwidth = 10.0,
@@ -580,7 +599,7 @@ function ensemble_OTChars_plot(
 
     Label(
         fig[1, :, Top()],
-        "Sens: $(testspec.sensitivity), Spec: $(testspec.specificity), Lag: $(testspec.test_result_lag),\nThreshold: $(detectspec.alert_threshold), Perc Clinic Tested: $(detectspec.percent_clinic_tested)",
+        plottitle,
     )
 
     rowsize!(fig.layout, 1, 5)
