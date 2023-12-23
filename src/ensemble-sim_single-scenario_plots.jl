@@ -30,6 +30,8 @@ function plot_all_single_scenarios(
         ensemble_noise_fig; resolution = (2200, 1600),
     )
 
+    noise_plottitle = "Sens: $(test_specification.sensitivity), Spec: $(test_specification.specificity), Lag: $(test_specification.test_result_lag),\nThreshold: $(outbreak_detection_specification.alert_threshold), Perc Clinic Tested: $(outbreak_detection_specification.percent_clinic_tested)\nNoise: $(noisedir)"
+
     ensemble_single_scenario_outbreak_alert_plot = ensemble_OTChars_plot(
         OT_chars,
         test_specification,
@@ -49,7 +51,8 @@ function plot_all_single_scenarios(
                 hjust = 11,
                 vjust = 50,
             ),
-        ),
+        );
+        plottitle = noise_plottitle,
     )
 
     save(
@@ -81,6 +84,7 @@ function plot_all_single_scenarios(
             ),
         );
         bins = 0.0:0.01:1.01,
+        plottitle = noise_plottitle,
     )
 
     save(
@@ -126,6 +130,7 @@ function plot_all_single_scenarios(
             ),
         );
         bins = -0.005:0.01:1.005,
+        plottitle = noise_plottitle,
         legendlabel = "Outbreak Characteristic",
         normalization = :pdf,
         meanlines = true,
@@ -163,6 +168,7 @@ function plot_all_single_scenarios(
         );
         bins = -0.005:0.01:1.005,
         normalization = :pdf,
+        plottitle = noise_plottitle,
     )
 
     save(
@@ -187,6 +193,7 @@ function plot_all_single_scenarios(
         ),
     );
         binwidth = 1,
+        plottitle = noise_plottitle,
         xlabel = "Detection Delay (days)",
         legend = false,
     )
@@ -199,8 +206,6 @@ function plot_all_single_scenarios(
         ensemble_single_scenario_detection_delay_dist_plot,
     )
 
-    incidence_testing_plottitle = "Sens: $(test_specification.sensitivity), Spec: $(test_specification.specificity), Lag: $(test_specification.test_result_lag),\nThreshold: $(outbreak_detection_specification.alert_threshold), Perc Clinic Tested: $(outbreak_detection_specification.percent_clinic_tested)\nNoise: $(noisedir)"
-
     ensemble_single_scenario_incidence_testing_plot = incidence_testing_plot(
         incarr,
         noisearr,
@@ -208,7 +213,7 @@ function plot_all_single_scenarios(
         outbreak_detection_specification,
         time_specification;
         sim = 1,
-        plottitle = incidence_testing_plottitle,
+        plottitle = noise_plottitle,
     )
 
     save(
@@ -222,7 +227,7 @@ function plot_all_single_scenarios(
     ensemble_single_scenario_testing_timeseries_plot = testing_plot(
         testarr,
         time_specification;
-        plottitle = incidence_testing_plottitle
+        plottitle = noise_plottitle
     )
 
     save(
@@ -236,7 +241,7 @@ function plot_all_single_scenarios(
     ensemble_single_scenario_outbreak_dist_plot = ensemble_outbreak_distribution_plot(
         testarr,
         incarr;
-        plottitle = incidence_testing_plottitle
+        plottitle = noise_plottitle
     )
 
     save(

@@ -545,6 +545,7 @@ function ensemble_OTChars_plot(
     testspec,
     detectspec,
     plottingchars;
+    plottitle = "",
     xlabel = "Alert Characteristic Value",
     ylabel = "Density",
     binwidth = 10.0,
@@ -598,7 +599,7 @@ function ensemble_OTChars_plot(
 
     Label(
         fig[1, :, Top()],
-        "Sens: $(testspec.sensitivity), Spec: $(testspec.specificity), Lag: $(testspec.test_result_lag),\nThreshold: $(detectspec.alert_threshold), Perc Clinic Tested: $(detectspec.percent_clinic_tested)",
+        plottitle,
     )
 
     rowsize!(fig.layout, 1, 5)
