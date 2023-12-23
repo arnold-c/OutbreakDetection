@@ -2,6 +2,8 @@ function plot_all_single_scenarios(
     noisearr,
     noisedir,
     OT_chars,
+    incarr,
+    testarr,
     test_specification,
     outbreak_detection_specification,
     time_specification,
@@ -197,21 +199,22 @@ function plot_all_single_scenarios(
         ensemble_single_scenario_detection_delay_dist_plot,
     )
 
-    # ensemble_single_scenario_incidence_testing_plot = incidence_testing_plot(
-    #     ensemble_single_scenario_incarr["ensemble_inc_arr"],
-    #     ensemble_single_scenario_noise_array,
-    #     ensemble_single_scenario_detection["testarr"],
-    #     ensemble_time_specification,
-    #     ensemble_single_scenario_spec.outbreak_detection_specification.alert_threshold;
-    #     sim = 1,
-    # )
-    #
-    # save(
-    #     plotsdir(
-    #         "ensemble/single-scenario/ensemble-sim_single-scenario_incidence-testing.png",
-    #     ),
-    #     ensemble_single_scenario_incidence_testing_plot,
-    # )
+    ensemble_single_scenario_incidence_testing_plot = incidence_testing_plot(
+        incarr,
+        noisearr,
+        testarr,
+        time_specification,
+        outbreak_detection_specification.alert_threshold;
+        sim = 1,
+    )
+
+    save(
+        joinpath(
+            ensemble_noise_plotpath,
+            "ensemble-sim_single-scenario_incidence-testing.png",
+        ),
+        ensemble_single_scenario_incidence_testing_plot,
+    )
 
     #%%
     # ensemble_single_scenario_testing_timeseries_plot = testing_plot(

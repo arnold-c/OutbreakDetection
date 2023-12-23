@@ -87,10 +87,19 @@ for noise_specification in ensemble_noise_specification_vec
     )
     noisedir = getdirpath(noise_specification)
 
+    testarr = create_testing_arrs(
+        ensemble_single_incarr,
+        noisearr,
+        ensemble_single_outbreak_detection_spec,
+        ensemble_single_individual_test_spec,
+    )
+
     plot_all_single_scenarios(
         noisearr,
         noisedir,
         OT_chars,
+        ensemble_single_incarr,
+        testarr,
         ensemble_single_individual_test_spec,
         ensemble_single_outbreak_detection_spec,
         ensemble_time_specification,
