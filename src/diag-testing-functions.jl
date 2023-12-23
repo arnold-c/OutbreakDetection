@@ -243,7 +243,9 @@ function calculate_test_positivity(
     return outvec
 end
 
-function calculate_OutbreakThresholdChars(testarr, infecarr, thresholds_vec)
+function calculate_OutbreakThresholdChars(
+    testarr, infecarr, thresholds_vec, noise_rubella_prop
+)
     OT_chars = map(axes(infecarr, 3)) do sim
         dailychars = calculate_daily_detection_characteristics(
             @view(testarr[:, 7, sim]), @view(infecarr[:, 3, sim])
@@ -292,6 +294,7 @@ function calculate_OutbreakThresholdChars(testarr, infecarr, thresholds_vec)
             avoidable_cases,
             n_outbreak_cases,
             n_tests,
+            noise_rubella_prop,
         )
     end
 
