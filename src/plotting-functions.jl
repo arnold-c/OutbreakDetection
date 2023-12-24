@@ -290,14 +290,15 @@ function incidence_prevalence_plot(
 end
 
 function visualize_ensemble_noise(
-    ensemble_noise_arr, timespecification, noisedir
+    ensemble_noise_arr, timespecification, noisedir;
+    xlabel = "Time (years)", ylabel = "Noise Incidence",
 )
     times = collect(timespecification.trange) ./ 365
     meanline = vec(mean(ensemble_noise_arr; dims = 2))
     dailymean = mean(meanline)
 
     fig = Figure()
-    ax = Axis(fig[2, 1]; xlabel = "Time (years)", ylabel = "Noise Incidence")
+    ax = Axis(fig[2, 1]; xlabel = xlabel, ylabel = ylabel)
 
     for noise_sim in eachcol(ensemble_noise_arr)
         lines!(

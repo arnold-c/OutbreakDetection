@@ -1,5 +1,6 @@
 function plot_all_single_scenarios(
     noisearr,
+    poisson_noise_prop,
     noisedir,
     OT_chars,
     incarr,
@@ -28,6 +29,19 @@ function plot_all_single_scenarios(
             "ensemble-sim_single-scenario_noise.png"
         ),
         ensemble_noise_fig; resolution = (2200, 1600),
+    )
+
+    ensemble_poisson_noise_prop_fig = visualize_ensemble_noise(
+        poisson_noise_prop, time_specification, noisedir;
+        ylabel = "Poisson Noise Proportion",
+    )
+
+    save(
+        joinpath(
+            ensemble_noise_plotpath,
+            "ensemble-sim_single-scenario_poisson-noise-proportion.png",
+        ),
+        ensemble_poisson_noise_prop_fig; resolution = (2200, 1600),
     )
 
     noise_plottitle = "Sens: $(test_specification.sensitivity), Spec: $(test_specification.specificity), Lag: $(test_specification.test_result_lag),\nThreshold: $(outbreak_detection_specification.alert_threshold), Perc Clinic Tested: $(outbreak_detection_specification.percent_clinic_tested)\nNoise: $(noisedir)"

@@ -79,7 +79,7 @@ for noise_specification in ensemble_noise_specification_vec
 
     @unpack OT_chars = ensemble_solution_dict
 
-    noisearr = create_noise_arr(
+    noisearr, poisson_noise_prop = create_noise_arr(
         noise_specification,
         ensemble_single_incarr;
         ensemble_specification = ensemble_specification,
@@ -96,6 +96,7 @@ for noise_specification in ensemble_noise_specification_vec
 
     plot_all_single_scenarios(
         noisearr,
+        poisson_noise_prop,
         noisedir,
         OT_chars,
         ensemble_single_incarr,
