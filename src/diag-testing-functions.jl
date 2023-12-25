@@ -294,7 +294,7 @@ function calculate_OutbreakThresholdChars(
             avoidable_cases,
             n_outbreak_cases,
             n_tests,
-            noise_rubella_prop,
+            NaNMath.mean(noise_rubella_prop),
         )
     end
 

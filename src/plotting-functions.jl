@@ -290,7 +290,7 @@ function incidence_prevalence_plot(
 end
 
 function visualize_ensemble_noise(
-    ensemble_noise_arr, timespecification, noisedir;
+    ensemble_noise_arr, poisson_noise_prop, timespecification, noisedir;
     xlabel = "Time (years)", ylabel = "Noise Incidence",
 )
     times = collect(timespecification.trange) ./ 365
@@ -318,7 +318,7 @@ function visualize_ensemble_noise(
 
     Label(
         fig[1, :],
-        "Noise: $(noisedir), Daily Mean: $(round(dailymean, digits = 2))",
+        "Noise: $(noisedir), Daily Mean: $(round(dailymean, digits = 2))\nPoisson Noise Proportion: $(round(poisson_noise_prop, digits = 2))",
     )
 
     rowsize!(fig.layout, 1, 5)
