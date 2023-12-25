@@ -31,8 +31,38 @@ optimal_threshold_test_spec_vec = [
 
 optimal_threshold_alertthreshold_vec = collect(4:1:30)
 
+R_0_vec = collect(8.0:4.0:20.0)
+
+ensemble_dynamics_spec_vec = create_combinations_vec(
+    DynamicsParameters,
+    (
+        [ensemble_state_specification.init_states.N],
+        [27],
+        [0.2],
+        [SIGMA],
+        [GAMMA],
+        R_0_vec,
+        [0.8],
+    ),
+)
+
+ensemble_spec_vec = create_combinations_vec(
+    EnsembleSpecification,
+    (
+        [ensemble_model_type],
+        [ensemble_state_specification],
+        ensemble_dynamics_spec_vec,
+        [ensemble_time_specification],
+        [ensemble_nsims],
+    ),
+)
+
 #%%
-for ensemble_noise_specification in ensemble_noise_specification_vec
+for (ensemble_noise_specification, ensemble_specification) in
+    Iterators.product(ensemble_noise_specification_vec, ensemble_spec_vec)
+    @info "Creating plots and tables for R0: $(ensemble_specification.dynamics_parameters.R_0), $(getdirpath(ensemble_noise_specification))"
+    println("==============================================")
+
     optimal_threshold_comparison_params = (
         alertthreshold_vec = optimal_threshold_alertthreshold_vec,
         ensemble_specification = ensemble_specification,
@@ -56,7 +86,8 @@ for ensemble_noise_specification in ensemble_noise_specification_vec
 
     baseplotdirpath = joinpath(
         plotsdir("ensemble/optimal-thresholds"),
-        noise_specification_path
+        "R0_$(ensemble_specification.dynamics_parameters.R_0)",
+        noise_specification_path,
     )
 
     clinictested_plotdirpath = joinpath(baseplotdirpath, "clinic-tested")
@@ -130,6 +161,7 @@ for ensemble_noise_specification in ensemble_noise_specification_vec
         DataFrame; delim = ',',
         header = true,
         types = [String, Int64, Float64],
+        silencewarnings = true,
     )
     dropmissing!(cfr_df)
 
@@ -159,7 +191,9 @@ for ensemble_noise_specification in ensemble_noise_specification_vec
     ]
 
     tabledirpath = joinpath(
-        datadir("optimal-threshold-results"), noise_specification_path
+        datadir("optimal-threshold-results"),
+        "R0_$(ensemble_specification.dynamics_parameters.R_0)",
+        noise_specification_path,
     )
 
     create_and_save_xlsx_optimal_threshold_summaries(
@@ -221,6 +255,8 @@ for ensemble_noise_specification in ensemble_noise_specification_vec
         noise_specification_filename = noise_specification_filename,
     )
 
-    @info "All plots and tables saved for $(ensemble_noise_specification.noise_type)"
+    @info "All plots and tables saved for R0: $(ensemble_specification.dynamics_parameters.R_0), $(getdirpath(ensemble_noise_specification))"
+    println()
     println("==============================================")
+    println()
 end
