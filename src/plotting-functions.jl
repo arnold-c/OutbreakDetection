@@ -295,7 +295,7 @@ function visualize_ensemble_noise(
 )
     times = collect(timespecification.trange) ./ 365
     meanline = vec(mean(ensemble_noise_arr; dims = 2))
-    dailymean = mean(meanline)
+    dailymean = NaNMath.mean(meanline)
 
     fig = Figure()
     ax = Axis(fig[2, 1]; xlabel = xlabel, ylabel = ylabel)
