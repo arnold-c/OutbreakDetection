@@ -207,6 +207,20 @@ for ensemble_noise_specification in ensemble_noise_specification_vec
         noise_specification_filename = noise_specification_filename,
     )
 
+    create_and_save_xlsx_optimal_threshold_summaries(
+        optimal_thresholds_vec, :noutbreaks;
+        scale_annual = 1 / nyears,
+        tabledirpath = tabledirpath,
+        noise_specification_filename = noise_specification_filename,
+    )
+
+    create_and_save_xlsx_optimal_threshold_summaries(
+        optimal_thresholds_vec, :nalerts;
+        scale_annual = 1 / nyears,
+        tabledirpath = tabledirpath,
+        noise_specification_filename = noise_specification_filename,
+    )
+
     @info "All plots and tables saved for $(ensemble_noise_specification.noise_type)"
     println("==============================================")
 end
