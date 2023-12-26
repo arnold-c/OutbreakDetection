@@ -1,12 +1,9 @@
 include config.mk
 
 .PHONY: all
-all: single-sim-targets ensemble-targets
+all: single-sim-targets ensemble-targets test-targets
 
 # Single simulation targets
-.PHONY: single-sim_scripts
-single-sim_scripts: $(SINGLESIM_SCRIPTS)
-
 SINGLESIM_TARGETS = single-sim_setup single-sim single-sim_plots #single-sim_bifurcation
 .PHONY: $(SINGLESIM_TARGETS) single-sim-targets
 $(SINGLESIM_TARGETS): %: tmp/%
@@ -52,8 +49,22 @@ tmp/ensemble-diag-testing_optimal-thresholds: scripts/ensemble-diag-testing_opti
 	julia $<
 	@touch $@
 
+
+
+
+# Test targets
+TEST_TARGETS = runtests
+.PHONY: $(TEST_TARGETS) test-targets
+$(TEST_TARGETS): %: tmp/%
+test-targets: $(TEST_TARGETS)
+
+tmp/runtests: test/runtests.jl single-sim-targets ensemble-targets
+	julia $<
+	@touch $@
+
+# Cleaning targets
 .PHONY: clean-all clean-tmp clean-all-ensemble clean-ensemble-scenarios clean-plots clean-ensemble-sims clean-ensemble-quantiles clean-single-sim clean-ensemble-optimal-thresholds
-clean-all: clean-tmp clean-single-sim clean-plots clean-all-ensemble
+clean-all: clean-tmp clean-single-sim clean-plots clean-all-ensemble clean-tests
 
 clean-tmp:
 	@echo "cleaning all tmp files"
@@ -104,3 +115,7 @@ clean-ensemble-optimal-thresholds:
 	$(shell fd -g 'optimal-thresholds' 'plots/' | xargs rm -r)
 	@echo "cleaning ensemble optimal thresholds tmp files"
 	$(shell fd -g 'ensemble-diag-testing_optimal-thresholds' 'tmp/' | xargs rm)
+
+clean-tests:
+	@echo "cleaning tests"
+	$(shell fd -g 'test' 'tmp/' | xargs rm)
