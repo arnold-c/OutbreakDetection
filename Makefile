@@ -52,8 +52,8 @@ tmp/ensemble-diag-testing_optimal-thresholds: scripts/ensemble-diag-testing_opti
 	julia $<
 	@touch $@
 
-.PHONY: clean-all clean-tmp clean-all-ensemble clean-ensemble-scenarios clean-plots clean-ensemble-sims clean-ensemble-quantiles clean-single-sim
-clean-all: clean-tmp clean-single-sim clean-plots clean-all-ensemble clean-ensemble-sims clean-ensemble-quantiles
+.PHONY: clean-all clean-tmp clean-all-ensemble clean-ensemble-scenarios clean-plots clean-ensemble-sims clean-ensemble-quantiles clean-single-sim clean-ensemble-optimal-thresholds
+clean-all: clean-tmp clean-single-sim clean-plots clean-all-ensemble
 
 clean-tmp:
 	@echo "cleaning all tmp files"
@@ -71,7 +71,7 @@ clean-plots:
 	@echo "cleaning plot output files"
 	$(shell fd -g '*.png' 'plots/' -HI | xargs rm -r)
 
-clean-all-ensemble: clean-ensemble-sims clean-ensemble-quantiles clean-ensemble-scenarios
+clean-all-ensemble: clean-ensemble-sims clean-ensemble-quantiles clean-ensemble-scenarios clean-ensemble-optimal-thresholds
 	@echo "cleaning all ensemble output files"
 	$(shell fd . 'data' -td --exclude 'singlesim' -HI | xargs rm -r)
 	@echo "cleaning all ensemble tmp files"
@@ -96,3 +96,11 @@ clean-ensemble-scenarios:
 	$(shell fd -g 'ensemble*scenario' 'tmp/' | xargs rm)
 	@echo "cleaning ensemble scenario plot files"
 	$(shell fd -g -I '*.png' 'plots/ensemble' | xargs rm -r)
+
+clean-ensemble-optimal-thresholds:
+	@echo "cleaning ensemble optimal threshold results"
+	$(shell fd -g 'optimal-threshold-results' 'data/' | xargs rm -r)
+	@echo "cleaning ensemble optimal threshold plots"
+	$(shell fd -g 'optimal-thresholds' 'plots/' | xargs rm -r)
+	@echo "cleaning ensemble optimal thresholds tmp files"
+	$(shell fd -g 'ensemble-diag-testing_optimal-thresholds' 'tmp/' | xargs rm)
