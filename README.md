@@ -1,20 +1,18 @@
 # OutbreakDetection
 
-This code base is using the [Julia Language](https://julialang.org/) and
-[DrWatson](https://juliadynamics.github.io/DrWatson.jl/stable/)
-to make a reproducible scientific project named
+This code base is using the [Julia Language](https://julialang.org/) and [DrWatson](https://juliadynamics.github.io/DrWatson.jl/stable/) to make a reproducible scientific project named
 > OutbreakDetection
-
-It is authored by Callum Arnold.
 
 ## Getting Started
 ### Installing dependencies
 
 To (locally) reproduce this project, do the following:
 
-0. Download this code base. Notice that raw data are not included in the
-   git-history and may need to be downloaded independently.
-1. Open a Julia console and do:
+0. Download this code base.
+You can do this by cloning the repository or by downloading the zip file.
+Notice that raw data are not included in the git-history and may need to be downloaded independently.
+1. Install Julia. I would recommend you use the [`juliaup` installer](https://github.com/JuliaLang/juliaup) as it makes it much easier to deal with multiple versions of Julia, as well as keep them up to date.
+2. Open a Julia console and do:
 
    ```
    julia> using Pkg
@@ -28,6 +26,7 @@ This will install all necessary packages for you to be able to run the scripts a
 everything should work out of the box, including correctly finding local paths.
 
 You may notice that most scripts start with the commands:
+
 ```julia
 using DrWatson
 @quickactivate "OutbreakDetection"
