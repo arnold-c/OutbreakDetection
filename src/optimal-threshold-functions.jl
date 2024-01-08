@@ -413,6 +413,10 @@ function calculate_optimal_threshold_summaries(
 )
     all_chars = reduce(vcat, char_vecs)
 
+    if isempty(all_chars)
+        return missing, repeat([missing], length(percentiles))
+    end
+
     char_percentiles = map(
         percentile -> quantile(all_chars, percentile), percentiles
     )

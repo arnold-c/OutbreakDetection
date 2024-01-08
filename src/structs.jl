@@ -182,6 +182,7 @@ function EnsembleSpecification(
         "N_$(state_parameters.init_states.N)",
         "r_$(state_parameters.init_state_props.r_prop)",
         "nsims_$(nsims)",
+        "R0_$(dynamics_parameters.R_0)",
         "vaccination_coverage_$(dynamics_parameters.vaccination_coverage)",
         "births_per_k_$(dynamics_parameters.annual_births_per_k)",
         "beta_force_$(dynamics_parameters.beta_force)",
@@ -204,15 +205,14 @@ struct OutbreakThresholdChars{
     T2<:Integer,
     T3<:Vector{<:AbstractFloat},
     T4<:Vector{<:Integer},
-    T5<:AbstractMatrix{<:AbstractFloat},
-    T6<:AbstractMatrix{<:Integer},
+    T5<:AbstractMatrix{<:Integer},
 }
     daily_sensitivity::T1
     daily_specificity::T1
     daily_ppv::T1
     daily_npv::T1
     accuracy::T1
-    matchedoutbreakbounds::T6
+    matchedoutbreakbounds::T5
     noutbreaks::T2
     nalerts::T2
     detected_outbreak_size::T4
@@ -240,7 +240,7 @@ struct OutbreakThresholdChars{
     avoidable_cases::T2
     n_outbreak_cases::T2
     n_tests::T2
-    noise_rubella_prop::T5
+    noise_rubella_prop::T1
 end
 
 struct OutbreakSpecification{T1<:Integer,T2<:AbstractString}
