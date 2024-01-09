@@ -43,8 +43,8 @@ annual_births_per_k_vec = [27]
 seed = 1234
 
 #%%
-latent_per_days_vec = [8]
-dur_inf_days_vec = [5]
+latent_per_days_vec = [LATENT_PER_DAYS]
+dur_inf_days_vec = [DUR_INF_DAYS]
 R_0_vec = collect(8.0:4.0:20.0)
 sigma_vec = 1 ./ latent_per_days_vec
 gamma_vec = 1 ./ dur_inf_days_vec
@@ -95,6 +95,8 @@ poisson_noise_spec_vec = create_combinations_vec(
 )
 
 dynamical_noise_R0 = [5.0]
+dynamical_noise_latent_period = [7]
+dynamical_noise_duration_infection = [14]
 dynamical_noise_correlation = ["in-phase", "out-of-phase", "none"]
 dynamical_noise_mean_scaling_vec = [1.0]
 dynamical_noise_spec_vec = create_combinations_vec(
@@ -102,6 +104,8 @@ dynamical_noise_spec_vec = create_combinations_vec(
     (
         ["dynamical"],
         dynamical_noise_R0,
+        dynamical_noise_latent_period,
+        dynamical_noise_duration_infection,
         dynamical_noise_correlation,
         dynamical_noise_mean_scaling_vec,
     ),
@@ -110,7 +114,7 @@ dynamical_noise_spec_vec = create_combinations_vec(
 noise_spec_vec = vcat(poisson_noise_spec_vec, dynamical_noise_spec_vec)
 
 #%%
-alertthreshold_vec = collect(4:1:30)
+alertthreshold_vec = collect(1:1:30)
 moveavglag_vec = [7]
 perc_clinic_vec = [0.6]
 perc_clinic_test_vec = [collect(0.1:0.1:0.6)..., 1.0]

@@ -1,7 +1,7 @@
 const POPULATION_N = 500_000
-const LATENT_PER_DAYS = 8
-const DUR_INF_DAYS = 5
-const R0 = 10.0
+const LATENT_PER_DAYS = 10
+const DUR_INF_DAYS = 8
+const R0 = 16.0
 const SIGMA = 1 / LATENT_PER_DAYS
 const GAMMA = 1 / DUR_INF_DAYS
 const LIFE_EXPECTANCY_YEARS = 62.5

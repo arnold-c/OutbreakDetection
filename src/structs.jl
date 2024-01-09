@@ -183,6 +183,8 @@ function EnsembleSpecification(
         "r_$(state_parameters.init_state_props.r_prop)",
         "nsims_$(nsims)",
         "R0_$(dynamics_parameters.R_0)",
+        "latent_period_$(round(1 / dynamics_parameters.sigma; digits = 2))",
+        "infectious_period_$(round(1 / dynamics_parameters.gamma; digits = 2))",
         "vaccination_coverage_$(dynamics_parameters.vaccination_coverage)",
         "births_per_k_$(dynamics_parameters.annual_births_per_k)",
         "beta_force_$(dynamics_parameters.beta_force)",
@@ -306,10 +308,12 @@ struct PoissonNoiseSpecification{
 end
 
 struct DynamicalNoiseSpecification{
-    T1<:AbstractString,T2<:AbstractFloat
+    T1<:AbstractString,T2<:AbstractFloat,T3<:Integer
 } <: NoiseSpecification
     noise_type::T1
     R_0::T2
+    latent_period::T3
+    duration_infection::T3
     correlation::T1
     noise_mean_scaling::T2
 end
