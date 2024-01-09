@@ -29,7 +29,7 @@ optimal_threshold_test_spec_vec = [
     IndividualTestSpecification(1.0, 1.0, 14),
 ]
 
-optimal_threshold_alertthreshold_vec = collect(4:1:30)
+optimal_threshold_alertthreshold_vec = collect(1:1:30)
 
 R_0_vec = collect(8.0:4.0:20.0)
 

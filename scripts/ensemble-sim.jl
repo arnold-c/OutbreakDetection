@@ -110,7 +110,7 @@ dynamical_noise_spec_vec = create_combinations_vec(
 noise_spec_vec = vcat(poisson_noise_spec_vec, dynamical_noise_spec_vec)
 
 #%%
-alertthreshold_vec = collect(4:1:30)
+alertthreshold_vec = collect(1:1:30)
 moveavglag_vec = [7]
 perc_clinic_vec = [0.6]
 perc_clinic_test_vec = [collect(0.1:0.1:0.6)..., 1.0]
