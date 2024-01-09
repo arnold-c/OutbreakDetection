@@ -95,6 +95,8 @@ poisson_noise_spec_vec = create_combinations_vec(
 )
 
 dynamical_noise_R0 = [5.0]
+dynamical_noise_latent_period = [7]
+dynamical_noise_duration_infection = [14]
 dynamical_noise_correlation = ["in-phase", "out-of-phase", "none"]
 dynamical_noise_mean_scaling_vec = [1.0]
 dynamical_noise_spec_vec = create_combinations_vec(
@@ -102,6 +104,8 @@ dynamical_noise_spec_vec = create_combinations_vec(
     (
         ["dynamical"],
         dynamical_noise_R0,
+        dynamical_noise_latent_period,
+        dynamical_noise_duration_infection,
         dynamical_noise_correlation,
         dynamical_noise_mean_scaling_vec,
     ),

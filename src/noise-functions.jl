@@ -37,8 +37,8 @@ function create_noise_arr(
         dynamics_parameters.beta_mean,
         noise_beta_force,
         noise_seasonality,
-        dynamics_parameters.sigma,
-        dynamics_parameters.gamma,
+        1 / noise_specification.latent_period,
+        1 / noise_specification.duration_infection,
         dynamics_parameters.mu,
         dynamics_parameters.annual_births_per_k,
         calculate_import_rate(

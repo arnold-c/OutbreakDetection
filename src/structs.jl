@@ -308,10 +308,12 @@ struct PoissonNoiseSpecification{
 end
 
 struct DynamicalNoiseSpecification{
-    T1<:AbstractString,T2<:AbstractFloat
+    T1<:AbstractString,T2<:AbstractFloat,T3<:Integer
 } <: NoiseSpecification
     noise_type::T1
     R_0::T2
+    latent_period::T3
+    duration_infection::T3
     correlation::T1
     noise_mean_scaling::T2
 end
