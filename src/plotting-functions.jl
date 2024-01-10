@@ -690,7 +690,7 @@ function save_compare_ensemble_OTchars_plot(
     plotsrootdir = plotsdir("ensemble/testing-comparison"),
     clinic_tested_dir,
     plotformat = "png",
-    resolution = (2200, 1200),
+    size = (2200, 1200),
     columnfacetchar_label = "Alert Threshold",
     binwidth = 1.0,
     xlabel = "Alert Characteristic Value",
@@ -727,7 +727,7 @@ function save_compare_ensemble_OTchars_plot(
             kwargs...,
         )
 
-        save(plotpath, plot; resolution = resolution)
+        save(plotpath, plot; size = size)
     end
 
     return nothing
@@ -1019,7 +1019,7 @@ function compare_optimal_thresholds_chars_plot(
                 "compare-outbreak_clinic-tested-$(percent_clinic_tested)_best-thresholds.png",
             ),
             plot;
-            resolution = (2200, 1600),
+            size = (2200, 1600),
         )
 
         @info "Created optimal thresholds plot for % clinic tested $(percent_clinic_tested)"
@@ -1148,7 +1148,7 @@ function compare_optimal_thresholds_test_chars_plot(
                 "compare-outbreak_clinic-test-specification_sens-$(test_specification.sensitivity)_spec-$(test_specification.specificity)_lag-$(test_specification.test_result_lag)_best-thresholds.png",
             ),
             plot;
-            resolution = (2200, 1600),
+            size = (2200, 1600),
         )
 
         @info "Created optimal thresholds plot for test specification $(test_specification.sensitivity)_$(test_specification.specificity)_$(test_specification.test_result_lag)"
