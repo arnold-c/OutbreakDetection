@@ -35,12 +35,13 @@ for noise_specification in ensemble_noise_specification_vec
         scenario_specification
     )
 
-    noisearr = create_noise_arr(
+    noisearr, poisson_noise_prop = create_noise_arr(
         noise_specification,
         incarr["ensemble_inc_arr"];
         ensemble_specification = ensemble_specification,
         seed = 1234,
     )
+
     noisedir = getdirpath(noise_specification)
     plotpath = joinpath(
         plotsdir(),
@@ -52,6 +53,7 @@ for noise_specification in ensemble_noise_specification_vec
 
     ensemble_noise_fig = visualize_ensemble_noise(
         noisearr,
+        poisson_noise_prop,
         ensemble_time_specification,
         noisedir
     )
@@ -61,6 +63,6 @@ for noise_specification in ensemble_noise_specification_vec
             plotpath,
             "ensemble-sim_single-scenario_noise.png",
         ),
-        ensemble_noise_fig; resolution = (2200, 1600),
+        ensemble_noise_fig; size = (2200, 1600),
     )
 end
