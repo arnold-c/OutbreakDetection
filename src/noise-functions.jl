@@ -27,8 +27,8 @@ function create_noise_arr(
 
     noise_seasonality = @match noise_specification.correlation begin
         "out-of-phase" => @match dynamics_parameters.seasonality begin
-            cos => sin
-            sin => cos
+            $cos => sin
+            $sin => cos
         end
         _ => dynamics_parameters.seasonality
     end
