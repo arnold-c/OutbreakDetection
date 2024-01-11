@@ -290,12 +290,18 @@ function incidence_prevalence_plot(
 end
 
 function visualize_ensemble_noise(
-    ensemble_noise_arr, poisson_noise_prop, timespecification, noisedir;
+    ensemble_noise_arr, poisson_noise_prop_vec, timespecification, noisedir;
     xlabel = "Time (years)", ylabel = "Noise Incidence",
 )
     times = collect(timespecification.trange) ./ 365
     meanline = vec(mean(ensemble_noise_arr; dims = 2))
     dailymean = NaNMath.mean(meanline)
+    poisson_noise_prop = NaNMath.mean(poisson_noise_prop_vec)
+
+    poisson_noise_arr = ensemble_noise_arr .* poisson_noise_prop_vec
+    poisson_noise_daily_mean = NaNMath.mean(poisson_noise_arr)
+    dynamic_noise_arr = ensemble_noise_arr .- poisson_noise_arr
+    dynamic_noise_daily_mean = NaNMath.mean(dynamic_noise_arr)
 
     fig = Figure()
     ax = Axis(fig[2, 1]; xlabel = xlabel, ylabel = ylabel)
@@ -318,7 +324,7 @@ function visualize_ensemble_noise(
 
     Label(
         fig[1, :],
-        "Noise: $(noisedir), Daily Mean: $(round(dailymean, digits = 2))\nPoisson Noise Proportion: $(round(poisson_noise_prop, digits = 2))",
+        "Noise: $(noisedir), Total Daily Mean: $(round(dailymean, digits = 2)), Poisson Noise Proportion: $(round(poisson_noise_prop, digits = 2))\nDynamic Daily Mean: $(round(dynamic_noise_daily_mean, digits = 2)) Poisson Daily Mean: $(round(poisson_noise_daily_mean, digits = 2))",
     )
 
     rowsize!(fig.layout, 1, 5)
@@ -684,7 +690,7 @@ function save_compare_ensemble_OTchars_plot(
     plotsrootdir = plotsdir("ensemble/testing-comparison"),
     clinic_tested_dir,
     plotformat = "png",
-    resolution = (2200, 1200),
+    size = (2200, 1200),
     columnfacetchar_label = "Alert Threshold",
     binwidth = 1.0,
     xlabel = "Alert Characteristic Value",
@@ -721,7 +727,7 @@ function save_compare_ensemble_OTchars_plot(
             kwargs...,
         )
 
-        save(plotpath, plot; resolution = resolution)
+        save(plotpath, plot; size = size)
     end
 
     return nothing
@@ -1013,7 +1019,7 @@ function compare_optimal_thresholds_chars_plot(
                 "compare-outbreak_clinic-tested-$(percent_clinic_tested)_best-thresholds.png",
             ),
             plot;
-            resolution = (2200, 1600),
+            size = (2200, 1600),
         )
 
         @info "Created optimal thresholds plot for % clinic tested $(percent_clinic_tested)"
@@ -1142,7 +1148,7 @@ function compare_optimal_thresholds_test_chars_plot(
                 "compare-outbreak_clinic-test-specification_sens-$(test_specification.sensitivity)_spec-$(test_specification.specificity)_lag-$(test_specification.test_result_lag)_best-thresholds.png",
             ),
             plot;
-            resolution = (2200, 1600),
+            size = (2200, 1600),
         )
 
         @info "Created optimal thresholds plot for test specification $(test_specification.sensitivity)_$(test_specification.specificity)_$(test_specification.test_result_lag)"

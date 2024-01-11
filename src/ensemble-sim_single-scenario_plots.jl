@@ -19,7 +19,7 @@ function plot_all_single_scenarios(
 
     ensemble_noise_fig = visualize_ensemble_noise(
         noisearr,
-        NaNMath.mean(poisson_noise_prop),
+        poisson_noise_prop,
         time_specification,
         noisedir
     )
