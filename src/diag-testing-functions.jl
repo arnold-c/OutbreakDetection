@@ -26,14 +26,16 @@ function create_testing_arrs(
     outbreak_detect_spec::OutbreakDetectionSpecification,
     individual_test_spec::IndividualTestSpecification,
 )
-    testarr = zeros(Int64, size(incarr, 1), 8, size(incarr, 3))
+    testarr = zeros(Int64, size(incarr, 1), 7, size(incarr, 3))
     ntested_worker_vec = Vector{Int64}(undef, size(incarr, 1))
+    movingavgarr = zeros(Float64, size(incarr, 1), size(incarr, 3))
 
     create_testing_arrs!(
         testarr,
         ntested_worker_vec,
         incarr,
         noisearr,
+        movingavgarr,
         outbreak_detect_spec.alert_threshold,
         outbreak_detect_spec.moving_average_lag,
         outbreak_detect_spec.percent_tested,
@@ -50,6 +52,7 @@ function create_testing_arrs!(
     ntested_worker_vec,
     incarr,
     noisearr,
+    movingavgarr,
     alertthreshold,
     moveavglag,
     perc_tested,
@@ -98,22 +101,22 @@ function create_testing_arrs!(
 
         # Calculate moving average of TOTAL test positives
         calculate_movingavg!(
-            @view(testarr[:, 6, sim]),
+            @view(movingavgarr[:, sim]),
             @view(testarr[:, 5, sim]),
             moveavglag
         )
 
         # TOTAL Test positive individuals trigger outbreak response
         detectoutbreak!(
-            @view(testarr[:, 7, sim]),
-            @view(testarr[:, 5, sim]),
             @view(testarr[:, 6, sim]),
+            @view(testarr[:, 5, sim]),
+            @view(movingavgarr[:, sim]),
             alertthreshold,
         )
 
         # Triggered outbreak equal to actual outbreak status
-        @. testarr[:, 8, sim] =
-            @view(testarr[:, 7, sim]) == @view(incarr[:, 3, sim])
+        @. testarr[:, 7, sim] =
+            @view(testarr[:, 6, sim]) == @view(incarr[:, 3, sim])
     end
 
     return nothing
