@@ -2,6 +2,8 @@
 using DrWatson
 @quickactivate "OutbreakDetection"
 
+using Random
+using Distributions
 using ProgressMeter
 using FLoops
 using NaNMath: NaNMath
@@ -51,11 +53,14 @@ ensemble_spec_vec = create_combinations_vec(
     ),
 )
 
-sim_number = 1
+Random.seed!(1234)
+sim_numbers = rand(DiscreteUniform(1, 100), 3)
 
 #%%
-for (ensemble_noise_specification, ensemble_specification) in
-    Iterators.product(ensemble_noise_specification_vec, ensemble_spec_vec)
+@showprogress for (ensemble_noise_specification, ensemble_specification) in
+                  Iterators.product(
+    ensemble_noise_specification_vec, ensemble_spec_vec
+)
     @info "Creating plots and tables for R0: $(ensemble_specification.dynamics_parameters.R_0), $(getdirpath(ensemble_noise_specification))"
     println("==============================================")
 
@@ -100,8 +105,6 @@ for (ensemble_noise_specification, ensemble_specification) in
         "single-scenario",
     )
 
-    mkpath(baseplotdirpath)
-
     unique_percent_clinic_tested = unique(
         optimal_thresholds_vec.percent_clinic_tested
     )
@@ -138,28 +141,37 @@ for (ensemble_noise_specification, ensemble_specification) in
                 ind_test_spec
             )
 
-            plot = incidence_testing_plot(
-                incarr,
-                noisearr,
-                testarr,
-                detection_specification,
-                ensemble_time_specification;
-                sim = sim_number,
-                plotitle = "% Clinic Tested: $(percent_clinic_tested), Sens: $(ind_test_spec.sensitivity), Spec: $(ind_test_spec.specificity), Lag: $(ind_test_spec.test_result_lag)",
-            )
+            for sim_number in sim_numbers
+                plot = incidence_testing_plot(
+                    incarr,
+                    noisearr,
+                    testarr,
+                    detection_specification,
+                    ensemble_time_specification;
+                    sim = sim_number,
+                    plottitle = "% Clinic Tested: $(percent_clinic_tested), Sens: $(ind_test_spec.sensitivity), Spec: $(ind_test_spec.specificity), Lag: $(ind_test_spec.test_result_lag), Sim: $(sim_number)",
+                )
 
-            save(
-                joinpath(
+                testdirpath = joinpath(
                     baseplotdirpath,
-                    "single-scenario_clinic-tested-$(percent_clinic_tested)_sens-$(ind_test_spec.sensitivity)_spec-$(ind_test_spec.specificity)_lag-$(ind_test_spec.test_result_lag).png",
-                ),
-                plot;
-                size = (2200, 1600),
-            )
+                    "sens-$(ind_test_spec.sensitivity)_spec-$(ind_test_spec.specificity)_lag-$(ind_test_spec.test_result_lag)",
+                    "sim-$(sim_number)",
+                )
+                mkpath(testdirpath)
+
+                save(
+                    joinpath(
+                        testdirpath,
+                        "single-scenario_clinic-tested-$(percent_clinic_tested)_sens-$(ind_test_spec.sensitivity)_spec-$(ind_test_spec.specificity)_lag-$(ind_test_spec.test_result_lag)_sim-$(sim_number).png",
+                    ),
+                    plot;
+                    size = (2200, 1600),
+                )
+            end
         end
     end
 
-    @info "Timeseries $(sim_number) saved for R0: $(ensemble_specification.dynamics_parameters.R_0), $(getdirpath(ensemble_noise_specification))"
+    @info "Timeseries $(sim_numbers) saved for R0: $(ensemble_specification.dynamics_parameters.R_0), $(getdirpath(ensemble_noise_specification))"
     println()
     println("==============================================")
     println()
