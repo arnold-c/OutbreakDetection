@@ -28,14 +28,14 @@ function create_testing_arrs(
 )
     testarr = zeros(Int64, size(incarr, 1), 7, size(incarr, 3))
     ntested_worker_vec = Vector{Int64}(undef, size(incarr, 1))
-    movingavgarr = zeros(Float64, size(incarr, 1), size(incarr, 3))
+    movingavg_worker_vec = zeros(Float64, size(incarr, 1))
 
     create_testing_arrs!(
         testarr,
         ntested_worker_vec,
         incarr,
         noisearr,
-        movingavgarr,
+        movingavg_worker_vec,
         outbreak_detect_spec.alert_threshold,
         outbreak_detect_spec.moving_average_lag,
         outbreak_detect_spec.percent_tested,
@@ -52,7 +52,7 @@ function create_testing_arrs!(
     ntested_worker_vec,
     incarr,
     noisearr,
-    movingavgarr,
+    movingavg_worker_vec,
     alertthreshold,
     moveavglag,
     perc_tested,
@@ -100,8 +100,7 @@ function create_testing_arrs!(
             @view(testarr[:, 3, sim]) + @view(testarr[:, 4, sim])
 
         # Calculate moving average of TOTAL test positives
-        calculate_movingavg!(
-            @view(movingavgarr[:, sim]),
+        movingavg_worker_vec .= calculate_movingavg(
             @view(testarr[:, 5, sim]),
             moveavglag
         )
@@ -110,7 +109,7 @@ function create_testing_arrs!(
         detectoutbreak!(
             @view(testarr[:, 6, sim]),
             @view(testarr[:, 5, sim]),
-            @view(movingavgarr[:, sim]),
+            movingavg_worker_vec,
             alertthreshold,
         )
 
