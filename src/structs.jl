@@ -301,8 +301,8 @@ function OutbreakDetectionSpecification(
     alert_threshold,
     moving_average_lag,
     percent_visit_clinic,
-    percent_clinic_tested;
-    alert_method = "dailythreshold_movingavg",
+    percent_clinic_tested,
+    alert_method,
 )
     alertdirpath = "alertthreshold_$(alert_threshold)"
     testingdirpath = joinpath(
