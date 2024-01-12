@@ -269,19 +269,38 @@ function OutbreakSpecification(
     )
 end
 
-struct OutbreakDetectionSpecification{T1<:Integer,T2<:AbstractFloat}
+struct AlertMethod{T1<:AbstractString}
+    alert_method::T1
+    function AlertMethod(alert_method::T1) where {T1<:AbstractString}
+        available_test_methods = [
+            "dailythreshold", "movingavg", "dailythreshold_movingavg"
+        ]
+        if !in(alert_method, available_test_methods)
+            error(
+                "$(alert_method) is not a valid test method. It must be one of $(available_test_methods)",
+            )
+        end
+        return new{T1}(alert_method)
+    end
+end
+
+struct OutbreakDetectionSpecification{
+    T1<:Integer,T2<:AbstractFloat,T3<:AlertMethod
+}
     alert_threshold::T1
     moving_average_lag::T1
     percent_visit_clinic::T2
     percent_clinic_tested::T2
     percent_tested::T2
+    alert_method::T3
 end
 
 function OutbreakDetectionSpecification(
     alert_threshold,
     moving_average_lag,
     percent_visit_clinic,
-    percent_clinic_tested,
+    percent_clinic_tested;
+    alert_method = "dailythreshold_movingavg",
 )
     return OutbreakDetectionSpecification(
         alert_threshold,
@@ -289,6 +308,7 @@ function OutbreakDetectionSpecification(
         percent_visit_clinic,
         percent_clinic_tested,
         percent_visit_clinic * percent_clinic_tested,
+        AlertMethod(alert_method),
     )
 end
 
