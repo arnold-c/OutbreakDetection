@@ -378,6 +378,7 @@ function ScenarioSpecification(
         ensemble_specification.dirpath,
         outbreak_specification.dirpath,
         getdirpath(noise_specification),
+        "alertmethod_$(outbreak_detection_specification.alert_method)",
         "alertthreshold_$(outbreak_detection_specification.alert_threshold)",
         "moveavglag_$(outbreak_detection_specification.moving_average_lag)",
         "perc_visit_clinic_$(outbreak_detection_specification.percent_visit_clinic)",
