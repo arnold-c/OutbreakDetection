@@ -39,6 +39,7 @@ function create_testing_arrs(
         outbreak_detect_spec.alert_threshold,
         outbreak_detect_spec.moving_average_lag,
         outbreak_detect_spec.percent_tested,
+        outbreak_detect_spec.alert_method,
         individual_test_spec.test_result_lag,
         individual_test_spec.sensitivity,
         individual_test_spec.specificity,
@@ -55,6 +56,7 @@ function create_testing_arrs!(
     movingavg_worker_vec,
     alertthreshold,
     moveavglag,
+    alert_method,
     perc_tested,
     testlag,
     testsens,
@@ -105,13 +107,22 @@ function create_testing_arrs!(
             moveavglag
         )
 
+        detectoutbreak_args = @match alert_method begin
+            "movingavg" => (
+                @view(testarr[:, 6, sim]),
+                movingavg_worker_vec,
+                alertthreshold,
+            )
+            "dailythreshold_movingavg" => (
+                @view(testarr[:, 6, sim]),
+                @view(testarr[:, 5, sim]),
+                movingavg_worker_vec,
+                alertthreshold,
+            )
+        end
+
         # TOTAL Test positive individuals trigger outbreak response
-        detectoutbreak!(
-            @view(testarr[:, 6, sim]),
-            @view(testarr[:, 5, sim]),
-            movingavg_worker_vec,
-            alertthreshold,
-        )
+        detectoutbreak!(detectoutbreak_args...)
 
         # Triggered outbreak equal to actual outbreak status
         @. testarr[:, 7, sim] =
@@ -222,6 +233,18 @@ end
 
 function detectoutbreak!(outbreakvec, incvec, avgvec, threshold)
     @. outbreakvec = ifelse(incvec >= threshold || avgvec >= threshold, 1, 0)
+
+    return nothing
+end
+
+"""
+    detectoutbreak!(outbreakvec, infectionsvec, threshold)
+
+Determines whether an outbreak has been detected based on an infection timeseries and a threshold.
+The `infectionsvec` can either be a vector of daily infections or a vector of the moving average of daily infections.
+"""
+function detectoutbreak!(outbreakvec, infectionsvec, threshold)
+    @. outbreakvec = ifelse(infectionsvec >= threshold, 1, 0)
 
     return nothing
 end
