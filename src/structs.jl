@@ -304,7 +304,9 @@ function OutbreakDetectionSpecification(
     percent_clinic_tested,
     alert_method,
 )
-    alertdirpath = "alertthreshold_$(alert_threshold)"
+    alertdirpath = joinpath(
+        "alertmethod_$(alert_method)", "alertthreshold_$(alert_threshold)"
+    )
     testingdirpath = joinpath(
         "perc_visit_clinic_$(percent_visit_clinic)",
         "perc_clinic_tested_$(percent_clinic_tested)",
