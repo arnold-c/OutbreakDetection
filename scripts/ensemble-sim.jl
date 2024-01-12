@@ -45,7 +45,8 @@ seed = 1234
 #%%
 latent_per_days_vec = [LATENT_PER_DAYS]
 dur_inf_days_vec = [DUR_INF_DAYS]
-R_0_vec = collect(8.0:4.0:20.0)
+# R_0_vec = collect(8.0:4.0:20.0)
+R_0_vec = [16.0]
 sigma_vec = 1 ./ latent_per_days_vec
 gamma_vec = 1 ./ dur_inf_days_vec
 vaccination_coverage_vec = [0.8]
@@ -114,7 +115,7 @@ dynamical_noise_spec_vec = create_combinations_vec(
 noise_spec_vec = vcat(poisson_noise_spec_vec, dynamical_noise_spec_vec)
 
 #%%
-alertthreshold_vec = collect(1:1:30)
+alertthreshold_vec = collect(1:1:15)
 moveavglag_vec = [7]
 perc_clinic_vec = [0.6]
 perc_clinic_test_vec = [collect(0.1:0.1:0.6)..., 1.0]
@@ -133,12 +134,9 @@ outbreak_detection_spec_vec = create_combinations_vec(
 
 #%%
 test_spec_vec = [
-    IndividualTestSpecification(0.5, 0.5, 0),
-    IndividualTestSpecification(0.7, 0.7, 0),
-    IndividualTestSpecification(0.8, 0.8, 0),
     IndividualTestSpecification(0.85, 0.85, 0),
     IndividualTestSpecification(0.9, 0.9, 0),
-    CLINICAL_TEST_SPECS...,
+    # CLINICAL_TEST_SPECS...,
     IndividualTestSpecification(1.0, 1.0, 0),
     IndividualTestSpecification(1.0, 1.0, 3),
     IndividualTestSpecification(1.0, 1.0, 7),
