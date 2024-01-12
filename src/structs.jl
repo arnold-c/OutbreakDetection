@@ -271,17 +271,17 @@ function OutbreakSpecification(
 end
 
 struct AlertMethod{T1<:AbstractString}
-    alert_method::T1
-    function AlertMethod(alert_method::T1) where {T1<:AbstractString}
+    method_name::T1
+    function AlertMethod(method_name::T1) where {T1<:AbstractString}
         available_test_methods = [
             "dailythreshold", "movingavg", "dailythreshold_movingavg"
         ]
-        if !in(alert_method, available_test_methods)
+        if !in(method_name, available_test_methods)
             error(
-                "$(alert_method) is not a valid test method. It must be one of $(available_test_methods)",
+                "$(method_name) is not a valid test method. It must be one of $(available_test_methods)",
             )
         end
-        return new{T1}(alert_method)
+        return new{T1}(method_name)
     end
 end
 

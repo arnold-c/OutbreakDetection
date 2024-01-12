@@ -36,7 +36,7 @@ function create_testing_arrs(
         incarr,
         noisearr,
         movingavg_worker_vec,
-        outbreak_detect_spec.alert_method,
+        outbreak_detect_spec.alert_method.method_name,
         outbreak_detect_spec.alert_threshold,
         outbreak_detect_spec.moving_average_lag,
         outbreak_detect_spec.percent_tested,
