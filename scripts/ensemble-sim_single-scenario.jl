@@ -11,9 +11,11 @@ include(srcdir("makie-plotting-setup.jl"))
 includet(srcdir("ensemble-parameters.jl"))
 
 #%%
-ensemble_single_individual_test_spec = IndividualTestSpecification(0.8, 0.8, 0)
+ensemble_single_individual_test_spec = IndividualTestSpecification(
+    0.85, 0.85, 0
+)
 ensemble_single_outbreak_detection_spec = OutbreakDetectionSpecification(
-    5, 7, 0.6, 0.3
+    5, 7, 0.6, 0.3, "dailythreshold_movingavg"
 )
 
 #%%
