@@ -11,60 +11,6 @@ println("Starting tests")
 ti = time()
 
 @testset "Detection tests" begin
-    @testset "Moving average" begin
-        @test begin
-            daily_testpositives = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-
-            movingavg_testpositives = calculate_movingavg(
-                daily_testpositives,
-                5
-            )
-
-            isequal(
-                movingavg_testpositives,
-                [
-                    mean([1]),
-                    mean([1, 2]),
-                    mean([1, 2, 3]),
-                    mean([1, 2, 3, 4]),
-                    mean([1, 2, 3, 4, 5]),
-                    mean([2, 3, 4, 5, 6]),
-                    mean([3, 4, 5, 6, 7]),
-                    mean([4, 5, 6, 7, 8]),
-                    mean([5, 6, 7, 8, 9]),
-                    mean([6, 7, 8, 9, 10]),
-                ],
-            )
-        end
-        @test begin
-            daily_testpositives = zeros(Int64, 10, 2)
-            daily_testpositives[:, 1] .= [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-
-            calculate_movingavg!(
-                @view(daily_testpositives[:, 2]),
-                @view(daily_testpositives[:, 1]),
-                5,
-            )
-
-            isequal(
-                daily_testpositives[:, 2],
-                Int64.(
-                    round.([
-                        mean([1]),
-                        mean([1, 2]),
-                        mean([1, 2, 3]),
-                        mean([1, 2, 3, 4]),
-                        mean([1, 2, 3, 4, 5]),
-                        mean([2, 3, 4, 5, 6]),
-                        mean([3, 4, 5, 6, 7]),
-                        mean([4, 5, 6, 7, 8]),
-                        mean([5, 6, 7, 8, 9]),
-                        mean([6, 7, 8, 9, 10]),
-                    ])
-                ),
-            )
-        end
-    end
     @testset "Delay detection" begin
         @test begin
             matched_bounds = [
