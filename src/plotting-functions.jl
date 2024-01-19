@@ -687,8 +687,7 @@ function save_compare_ensemble_OTchars_plot(
     plottingchars,
     percent_clinic_tested;
     plotname,
-    plotsrootdir = plotsdir("ensemble/testing-comparison"),
-    clinic_tested_dir,
+    plotdirpath,
     plotformat = "png",
     size = (2200, 1200),
     columnfacetchar_label = "Alert Threshold",
@@ -700,16 +699,14 @@ function save_compare_ensemble_OTchars_plot(
     meanlines = false,
     meanlabels = false,
     normalization = :none,
+    force = false,
     kwargs...,
 )
-    plotdirpath = joinpath(
-        plotsrootdir, clinic_tested_dir
-    )
     mkpath(plotdirpath)
 
     plotpath = joinpath(plotdirpath, "$plotname.$plotformat")
 
-    if !isfile(plotpath)
+    if !isfile(plotpath) || force
         plot = compare_ensemble_OTchars_plots(
             char_struct_vec,
             columnfacetchar,
@@ -728,6 +725,8 @@ function save_compare_ensemble_OTchars_plot(
         )
 
         save(plotpath, plot; size = size)
+
+        Makie.empty!(plot)
     end
 
     return nothing

@@ -107,9 +107,17 @@ sim_numbers = rand(DiscreteUniform(1, 100), 3)
         plotsdir("ensemble/optimal-thresholds"),
         "R0_$(ensemble_specification.dynamics_parameters.R_0)",
         noise_specification_path,
-        "single-scenario",
         alertmethod,
     )
+
+    if alertmethod != "dailythreshold"
+        baseplotdirpath = joinpath(
+            baseplotdirpath,
+            "moveavglag_$(ensemble_moving_avg_detection_lag)",
+        )
+    end
+
+    baseplotdirpath = joinpath(baseplotdirpath, "single-scenario")
 
     unique_percent_clinic_tested = unique(
         optimal_thresholds_vec.percent_clinic_tested

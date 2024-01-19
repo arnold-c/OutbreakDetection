@@ -17,21 +17,22 @@ includet(srcdir("ensemble-parameters.jl"))
 
 #%%
 optimal_threshold_test_spec_vec = [
-    IndividualTestSpecification(0.5, 0.5, 0),
-    IndividualTestSpecification(0.7, 0.7, 0),
-    IndividualTestSpecification(0.8, 0.8, 0),
+    # IndividualTestSpecification(0.5, 0.5, 0),
+    # IndividualTestSpecification(0.7, 0.7, 0),
+    # IndividualTestSpecification(0.8, 0.8, 0),
     IndividualTestSpecification(0.85, 0.85, 0),
     IndividualTestSpecification(0.9, 0.9, 0),
-    CLINICAL_TEST_SPECS...,
+    # CLINICAL_TEST_SPECS...,
     IndividualTestSpecification(1.0, 1.0, 0),
     IndividualTestSpecification(1.0, 1.0, 3),
     IndividualTestSpecification(1.0, 1.0, 7),
     IndividualTestSpecification(1.0, 1.0, 14),
 ]
 
-optimal_threshold_alertthreshold_vec = collect(1:1:30)
+optimal_threshold_alertthreshold_vec = collect(1:1:15)
 
-R_0_vec = collect(8.0:4.0:20.0)
+# R_0_vec = collect(8.0:4.0:20.0)
+R_0_vec = [16.0]
 
 ensemble_dynamics_spec_vec = create_combinations_vec(
     DynamicsParameters,
@@ -57,9 +58,13 @@ ensemble_spec_vec = create_combinations_vec(
     ),
 )
 
+alert_method_vec = ["movingavg", "dailythreshold_movingavg"]
+
 #%%
-for (ensemble_noise_specification, ensemble_specification) in
-    Iterators.product(ensemble_noise_specification_vec, ensemble_spec_vec)
+for (ensemble_noise_specification, ensemble_specification, alertmethod) in
+    Iterators.product(
+    ensemble_noise_specification_vec, ensemble_spec_vec, alert_method_vec
+)
     @info "Creating plots and tables for R0: $(ensemble_specification.dynamics_parameters.R_0), $(getdirpath(ensemble_noise_specification))"
     println("==============================================")
 
@@ -70,6 +75,7 @@ for (ensemble_noise_specification, ensemble_specification) in
         outbreak_specification = ensemble_outbreak_specification,
         moving_avg_detection_lag = ensemble_moving_avg_detection_lag,
         percent_visit_clinic = ensemble_percent_visit_clinic,
+        alertmethod = alertmethod,
     )
 
     optimal_thresholds_vec = calculate_OptimalThresholdCharacteristics(
@@ -88,7 +94,15 @@ for (ensemble_noise_specification, ensemble_specification) in
         plotsdir("ensemble/optimal-thresholds"),
         "R0_$(ensemble_specification.dynamics_parameters.R_0)",
         noise_specification_path,
+        alertmethod,
     )
+
+    if alertmethod != "dailythreshold"
+        baseplotdirpath = joinpath(
+            baseplotdirpath,
+            "moveavglag_$(ensemble_moving_avg_detection_lag)",
+        )
+    end
 
     clinictested_plotdirpath = joinpath(baseplotdirpath, "clinic-tested")
 
