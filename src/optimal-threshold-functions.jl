@@ -121,8 +121,8 @@ function create_and_save_xlsx_optimal_threshold_summaries(
     optimal_thresholds_vec,
     characteristic;
     percentiles = [0.25, 0.5, 0.75],
-    tabledirpath = datadir("optimal-threshold-results"),
-    noise_specification_filename = "",
+    tabledirpath = outdir("ensemble/optimal-threshold-results"),
+    filename = "",
     kwargs...,
 )
     kwargs_dict = Dict(kwargs)
@@ -141,7 +141,7 @@ function create_and_save_xlsx_optimal_threshold_summaries(
     ]
 
     mkpath(tabledirpath)
-    base_filename = "optimal-threshold-result-tables_$(noise_specification_filename)_$(characteristic)"
+    base_filename = "$(filename)_$(characteristic)"
 
     if haskey(kwargs_dict, :scale_annual)
         transform!(
@@ -260,8 +260,8 @@ end
 
 function create_and_save_xlsx_optimal_threshold_summaries(
     optimal_thresholds_vec;
-    tabledirpath = datadir("optimal-threshold-results"),
-    noise_specification_filename = "",
+    tabledirpath = outdir("optimal-threshold-results"),
+    filename = "optimal-threshold-result-tables",
 )
     long_df = create_optimal_thresholds_df(
         optimal_thresholds_vec
@@ -275,7 +275,6 @@ function create_and_save_xlsx_optimal_threshold_summaries(
     )
 
     mkpath(tabledirpath)
-    filename = "optimal-threshold-result-tables_$(noise_specification_filename)_thresholds"
 
     save_xlsx_optimal_threshold_summaries(
         (; long_df, alert_thresholds, accuracy), filename;
@@ -428,7 +427,7 @@ function calculate_optimal_threshold_summaries(
 end
 
 function save_xlsx_optimal_threshold_summaries(
-    summary_tuple, filename; filepath = datadir("optimal-threshold-results")
+    summary_tuple, filename; filepath = outdir("optimal-threshold-results")
 )
     sheet_names = String.(keys(summary_tuple))
     file = joinpath(filepath, "$(filename).xlsx")

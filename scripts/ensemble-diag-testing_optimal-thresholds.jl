@@ -84,23 +84,24 @@ for (ensemble_noise_specification, ensemble_specification, alertmethod) in
     )
 
     noise_specification_path = getdirpath(ensemble_noise_specification)
-    noise_specification_filename = replace(
-        noise_specification_path,
-        "/" => "_",
+    noisespec_alertmethod_path = joinpath(noise_specification_path, alertmethod)
+
+    if alertmethod != "dailythreshold"
+        noisespec_alertmethod_path = joinpath(
+            noisespec_alertmethod_path,
+            "moveavglag_$(ensemble_moving_avg_detection_lag)",
+        )
+    end
+
+    noisespec_alertmethod_filename = replace(
+        noisespec_alertmethod_path,
+        "/" => "_"
     )
 
     basedirpath = joinpath(
         "R0_$(ensemble_specification.dynamics_parameters.R_0)",
-        noise_specification_path,
-        alertmethod,
+        noisespec_alertmethod_path,
     )
-
-    if alertmethod != "dailythreshold"
-        basedirpath = joinpath(
-            basedirpath,
-            "moveavglag_$(ensemble_moving_avg_detection_lag)"
-        )
-    end
 
     baseplotdirpath = joinpath(
         plotsdir("ensemble/optimal-thresholds"),
@@ -208,20 +209,22 @@ for (ensemble_noise_specification, ensemble_specification, alertmethod) in
     ]
 
     tabledirpath = joinpath(
-        outdir("optimal-threshold-results"),
-        basedirpath,
+        outdir("ensemble/optimal-threshold-results"),
+        basedirpath
     )
+
+    tablefilename = "optimal-threshold-result-tables_$(noisespec_alertmethod_filename)_thresholds"
 
     create_and_save_xlsx_optimal_threshold_summaries(
         optimal_thresholds_vec;
         tabledirpath = tabledirpath,
-        noise_specification_filename = noise_specification_filename,
+        filename = tablefilename,
     )
 
     create_and_save_xlsx_optimal_threshold_summaries(
         optimal_thresholds_vec, :detectiondelays;
         tabledirpath = tabledirpath,
-        noise_specification_filename = noise_specification_filename,
+        filename = tablefilename,
     )
 
     create_and_save_xlsx_optimal_threshold_summaries(
@@ -230,7 +233,7 @@ for (ensemble_noise_specification, ensemble_specification, alertmethod) in
         scale_annual = 1 / nyears,
         countries = countries,
         tabledirpath = tabledirpath,
-        noise_specification_filename = noise_specification_filename,
+        filename = tablefilename,
     )
 
     create_and_save_xlsx_optimal_threshold_summaries(
@@ -238,7 +241,7 @@ for (ensemble_noise_specification, ensemble_specification, alertmethod) in
         scale_annual = 1 / nyears,
         countries = countries,
         tabledirpath = tabledirpath,
-        noise_specification_filename = noise_specification_filename,
+        filename = tablefilename,
     )
 
     create_and_save_xlsx_optimal_threshold_summaries(
@@ -246,7 +249,7 @@ for (ensemble_noise_specification, ensemble_specification, alertmethod) in
         scale_annual = 1 / nyears,
         countries = countries,
         tabledirpath = tabledirpath,
-        noise_specification_filename = noise_specification_filename,
+        filename = tablefilename,
     )
 
     create_and_save_xlsx_optimal_threshold_summaries(
@@ -254,21 +257,21 @@ for (ensemble_noise_specification, ensemble_specification, alertmethod) in
         scale_annual = 1 / nyears,
         countries = countries,
         tabledirpath = tabledirpath,
-        noise_specification_filename = noise_specification_filename,
+        filename = tablefilename,
     )
 
     create_and_save_xlsx_optimal_threshold_summaries(
         optimal_thresholds_vec, :noutbreaks;
         scale_annual = 1 / nyears,
         tabledirpath = tabledirpath,
-        noise_specification_filename = noise_specification_filename,
+        filename = tablefilename,
     )
 
     create_and_save_xlsx_optimal_threshold_summaries(
         optimal_thresholds_vec, :nalerts;
         scale_annual = 1 / nyears,
         tabledirpath = tabledirpath,
-        noise_specification_filename = noise_specification_filename,
+        filename = tablefilename,
     )
 
     GC.gc(true)
