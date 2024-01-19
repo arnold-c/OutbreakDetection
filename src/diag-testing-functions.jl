@@ -282,6 +282,29 @@ function calculate_daily_movingavg_startday(day, avglag)
     return moveavg_daystart
 end
 
+@testitem "Detect outbreak" begin
+    using OutbreakDetection
+
+    incvec = [1, 3, 10, 15, 20, 3, 1]
+    avgvec = calculate_movingavg(incvec, 3)
+    threshold = 5
+
+    @test begin
+        outbreakvec = detectoutbreak(incvec, threshold)
+        outbreakvec == [0, 0, 1, 1, 1, 0, 0]
+    end
+
+    @test begin
+        outbreakvec = detectoutbreak(avgvec, threshold)
+        outbreakvec == [0, 0, 0, 1, 1, 1, 1]
+    end
+
+    @test begin
+        outbreakvec = detectoutbreak(incvec, avgvec, threshold)
+        outbreakvec == [0, 0, 1, 1, 1, 1, 1]
+    end
+end
+
 function detectoutbreak(incvec, avgvec, threshold)
     outbreak = zeros(Int64, length(incvec))
 
@@ -290,10 +313,24 @@ function detectoutbreak(incvec, avgvec, threshold)
     return outbreak
 end
 
+"""
+    detectoutbreak!(outbreakvec, incvec, avgvec, threshold)
+
+Determines whether an outbreak has been detected based on an infection daily and moving average timeseries and a threshold.
+`incvec` should be the daily incidence timeseries, and `avgvec` should be the moving average of the daily incidence timeseries.
+"""
 function detectoutbreak!(outbreakvec, incvec, avgvec, threshold)
     @. outbreakvec = ifelse(incvec >= threshold || avgvec >= threshold, 1, 0)
 
     return nothing
+end
+
+function detectoutbreak(infectionsvec, threshold)
+    outbreak = zeros(Int64, length(infectionsvec))
+
+    detectoutbreak!(outbreak, infectionsvec, threshold)
+
+    return outbreak
 end
 
 """
