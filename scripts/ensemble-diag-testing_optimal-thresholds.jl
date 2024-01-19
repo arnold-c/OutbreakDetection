@@ -255,6 +255,8 @@ for (ensemble_noise_specification, ensemble_specification) in
         noise_specification_filename = noise_specification_filename,
     )
 
+    GC.gc(true)
+
     @info "All plots and tables saved for R0: $(ensemble_specification.dynamics_parameters.R_0), $(getdirpath(ensemble_noise_specification))"
     println()
     println("==============================================")

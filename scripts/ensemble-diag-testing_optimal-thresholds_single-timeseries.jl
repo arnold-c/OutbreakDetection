@@ -174,8 +174,11 @@ sim_numbers = rand(DiscreteUniform(1, 100), 3)
                     plot;
                     size = (2200, 1600),
                 )
+
+                Makie.empty!(plot)
             end
         end
+        GC.gc(true)
     end
 
     @info "Timeseries $(sim_numbers) saved for R0: $(ensemble_specification.dynamics_parameters.R_0), $(getdirpath(ensemble_noise_specification))"

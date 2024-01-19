@@ -108,6 +108,7 @@ for noise_specification in ensemble_noise_specification_vec
         ensemble_time_specification,
     )
 
+    GC.gc(true)
     @info "Finished plotting the single scenario for $(noisedir)"
     println("=================================================================")
 end

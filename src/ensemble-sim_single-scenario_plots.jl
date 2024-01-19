@@ -32,6 +32,8 @@ function plot_all_single_scenarios(
         ensemble_noise_fig; size = (2200, 1600),
     )
 
+    Makie.empty!(ensemble_noise_fig)
+
     noise_plottitle = "Sens: $(test_specification.sensitivity), Spec: $(test_specification.specificity), Lag: $(test_specification.test_result_lag),\nThreshold: $(outbreak_detection_specification.alert_threshold), Perc Clinic Tested: $(outbreak_detection_specification.percent_clinic_tested)\nNoise: $(noisedir), Alert Method: $(outbreak_detection_specification.alert_method.method_name)"
 
     ensemble_single_scenario_outbreak_alert_plot = ensemble_OTChars_plot(
@@ -65,6 +67,8 @@ function plot_all_single_scenarios(
         ensemble_single_scenario_outbreak_alert_plot,
     )
 
+    Makie.empty!(ensemble_single_scenario_outbreak_alert_plot)
+
     ensemble_single_scenario_outbreak_alert_perc_plot = ensemble_OTChars_plot(
         OT_chars,
         test_specification,
@@ -97,7 +101,8 @@ function plot_all_single_scenarios(
         ensemble_single_scenario_outbreak_alert_perc_plot,
     )
 
-    #%%
+    Makie.empty!(ensemble_single_scenario_outbreak_alert_perc_plot)
+
     ensemble_single_scenario_outbreak_detect_diff_plot = ensemble_outbreak_detect_diff_plot(
         OT_chars;
         binwidth = 1
@@ -148,6 +153,8 @@ function plot_all_single_scenarios(
         ensemble_single_scenario_sens_spec_dist_plot,
     )
 
+    Makie.empty!(ensemble_single_scenario_sens_spec_dist_plot)
+
     ensemble_single_scenario_ppv_npv_dist_plot = ensemble_OTChars_plot(
         OT_chars,
         test_specification,
@@ -181,6 +188,8 @@ function plot_all_single_scenarios(
         ensemble_single_scenario_ppv_npv_dist_plot,
     )
 
+    Makie.empty!(ensemble_single_scenario_ppv_npv_dist_plot)
+
     ensemble_single_scenario_detection_delay_dist_plot = ensemble_OTChars_plot(
         OT_chars,
         test_specification,
@@ -208,6 +217,8 @@ function plot_all_single_scenarios(
         ensemble_single_scenario_detection_delay_dist_plot,
     )
 
+    Makie.empty!(ensemble_single_scenario_detection_delay_dist_plot)
+
     ensemble_single_scenario_incidence_testing_plot = incidence_testing_plot(
         incarr,
         noisearr,
@@ -226,6 +237,8 @@ function plot_all_single_scenarios(
         ensemble_single_scenario_incidence_testing_plot,
     )
 
+    Makie.empty!(ensemble_single_scenario_incidence_testing_plot)
+
     ensemble_single_scenario_testing_timeseries_plot = testing_plot(
         testarr,
         time_specification;
@@ -240,6 +253,8 @@ function plot_all_single_scenarios(
         ensemble_single_scenario_testing_timeseries_plot,
     )
 
+    Makie.empty!(ensemble_single_scenario_testing_timeseries_plot)
+
     ensemble_single_scenario_outbreak_dist_plot = ensemble_outbreak_distribution_plot(
         testarr,
         incarr;
@@ -253,6 +268,8 @@ function plot_all_single_scenarios(
         ),
         ensemble_single_scenario_outbreak_dist_plot,
     )
+
+    Makie.empty!(ensemble_single_scenario_outbreak_dist_plot)
 
     return nothing
 end

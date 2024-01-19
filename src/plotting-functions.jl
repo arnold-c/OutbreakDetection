@@ -1022,6 +1022,8 @@ function compare_optimal_thresholds_chars_plot(
             size = (2200, 1600),
         )
 
+        Makie.empty!(plot)
+
         @info "Created optimal thresholds plot for % clinic tested $(percent_clinic_tested)"
     end
 
