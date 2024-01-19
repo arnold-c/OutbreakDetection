@@ -10,7 +10,9 @@ using OutbreakDetection
 
 include(srcdir("makie-plotting-setup.jl"))
 
-@unpack singlesim_time_p = load("data/singlesim/single-sim_setup.jld2")
+@unpack singlesim_time_p = load(
+    joinpath(outdir("singlesim"), "single-sim_setup.jld2")
+)
 @unpack trange = singlesim_time_p;
 
 @unpack seir_array, inc_vec, beta_vec, seir_df = load(

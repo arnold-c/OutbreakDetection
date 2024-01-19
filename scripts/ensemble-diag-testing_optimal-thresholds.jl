@@ -208,7 +208,7 @@ for (ensemble_noise_specification, ensemble_specification, alertmethod) in
     ]
 
     tabledirpath = joinpath(
-        datadir("optimal-threshold-results"),
+        outdir("optimal-threshold-results"),
         basedirpath,
     )
 

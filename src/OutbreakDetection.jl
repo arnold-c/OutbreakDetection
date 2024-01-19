@@ -5,6 +5,8 @@ They are just listed here for convenience of sourcing one file.
 module OutbreakDetection
 
 # using Reexport
+include("DrWatson-helpers.jl")
+export outdir
 
 include("transmission-functions.jl")
 export calculate_beta,

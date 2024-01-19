@@ -178,7 +178,7 @@ function EnsembleSpecification(
     time_parameters::SimTimeParameters,
     nsims::Int64,
 )
-    dirpath = datadir(
+    dirpath = outdir(
         modeltypes...,
         "N_$(state_parameters.init_states.N)",
         "r_$(state_parameters.init_state_props.r_prop)",
