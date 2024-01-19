@@ -44,6 +44,8 @@ ensemble_single_scenario_quantiles_plot = create_sir_quantiles_plot(
     timeparams = ensemble_time_specification,
 )
 
+mkpath(plotsdir("ensemble/single-scenario"))
+
 save(
     plotsdir(
         "ensemble/single-scenario/ensemble-sim_single-scenario_quantiles.png"
