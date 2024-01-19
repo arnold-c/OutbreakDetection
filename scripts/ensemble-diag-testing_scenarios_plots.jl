@@ -14,7 +14,7 @@ includet(srcdir("ensemble-parameters.jl"))
 #%%
 threshold_comparison_test_spec_vec = [
     IndividualTestSpecification(0.85, 0.85, 0),
-    # CLINICAL_CASE_TEST_SPEC,
+    CLINICAL_CASE_TEST_SPEC,
     IndividualTestSpecification(1.0, 1.0, 0),
     IndividualTestSpecification(1.0, 1.0, 3),
     IndividualTestSpecification(1.0, 1.0, 7),
@@ -22,7 +22,7 @@ threshold_comparison_test_spec_vec = [
 ]
 
 threshold_comparison_alertthreshold_vec = [
-    1, collect(2:2:14)...#, collect(18:4:30)...
+    1, collect(2:2:14)..., collect(18:4:30)...
 ]
 
 alert_method_vec = ["movingavg", "dailythreshold_movingavg"]

@@ -21,14 +21,13 @@ includet(srcdir("ensemble-parameters.jl"))
 optimal_threshold_test_spec_vec = [
     IndividualTestSpecification(0.85, 0.85, 0),
     IndividualTestSpecification(0.9, 0.9, 0),
-    # CLINICAL_TEST_SPECS...,
+    CLINICAL_TEST_SPECS...,
     IndividualTestSpecification(1.0, 1.0, 0),
 ]
 
 optimal_threshold_alertthreshold_vec = collect(1:1:15)
 
-# R_0_vec = collect(8.0:4.0:20.0)
-R_0_vec = [16.0]
+R_0_vec = collect(8.0:4.0:20.0)
 
 ensemble_dynamics_spec_vec = create_combinations_vec(
     DynamicsParameters,
@@ -113,7 +112,7 @@ sim_numbers = rand(DiscreteUniform(1, 100), 3)
     if alertmethod != "dailythreshold"
         baseplotdirpath = joinpath(
             baseplotdirpath,
-            "moveavglag_$(ensemble_moving_avg_detection_lag)",
+            "moveavglag_$(ensemble_moving_avg_detection_lag)"
         )
     end
 
