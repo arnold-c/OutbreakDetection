@@ -22,7 +22,7 @@ threshold_comparison_test_spec_vec = [
 ]
 
 threshold_comparison_alertthreshold_vec = [
-    1, collect(2:2:14)..., collect(18:4:30)...
+    1, collect(2:2:14)...
 ]
 
 alert_method_vec = ["movingavg", "dailythreshold_movingavg"]
