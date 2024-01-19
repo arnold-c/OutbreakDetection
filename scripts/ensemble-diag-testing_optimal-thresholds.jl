@@ -89,19 +89,23 @@ for (ensemble_noise_specification, ensemble_specification, alertmethod) in
         "/" => "_",
     )
 
-    baseplotdirpath = joinpath(
-        plotsdir("ensemble/optimal-thresholds"),
+    basedirpath = joinpath(
         "R0_$(ensemble_specification.dynamics_parameters.R_0)",
         noise_specification_path,
         alertmethod,
     )
 
     if alertmethod != "dailythreshold"
-        baseplotdirpath = joinpath(
-            baseplotdirpath,
+        basedirpath = joinpath(
+            basedirpath,
             "moveavglag_$(ensemble_moving_avg_detection_lag)"
         )
     end
+
+    baseplotdirpath = joinpath(
+        plotsdir("ensemble/optimal-thresholds"),
+        basedirpath
+    )
 
     clinictested_plotdirpath = joinpath(baseplotdirpath, "clinic-tested")
 
@@ -205,8 +209,7 @@ for (ensemble_noise_specification, ensemble_specification, alertmethod) in
 
     tabledirpath = joinpath(
         datadir("optimal-threshold-results"),
-        "R0_$(ensemble_specification.dynamics_parameters.R_0)",
-        noise_specification_path,
+        basedirpath,
     )
 
     create_and_save_xlsx_optimal_threshold_summaries(
