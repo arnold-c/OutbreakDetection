@@ -7,6 +7,7 @@
 using StaticArrays
 using LabelledArrays
 using StructArrays
+using Match
 
 # include("transmission-functions.jl")
 # using .TransmissionFunctions
@@ -269,12 +270,31 @@ function OutbreakSpecification(
     )
 end
 
-struct OutbreakDetectionSpecification{T1<:Integer,T2<:AbstractFloat}
+struct AlertMethod{T1<:AbstractString}
+    method_name::T1
+    function AlertMethod(method_name::T1) where {T1<:AbstractString}
+        available_test_methods = [
+            "dailythreshold", "movingavg", "dailythreshold_movingavg"
+        ]
+        if !in(method_name, available_test_methods)
+            error(
+                "$(method_name) is not a valid test method. It must be one of $(available_test_methods)",
+            )
+        end
+        return new{T1}(method_name)
+    end
+end
+
+struct OutbreakDetectionSpecification{
+    T1<:Integer,T2<:AbstractFloat,T3<:AlertMethod,T4<:AbstractString
+}
     alert_threshold::T1
     moving_average_lag::T1
     percent_visit_clinic::T2
     percent_clinic_tested::T2
     percent_tested::T2
+    alert_method::T3
+    dirpath::T4
 end
 
 function OutbreakDetectionSpecification(
@@ -282,13 +302,36 @@ function OutbreakDetectionSpecification(
     moving_average_lag,
     percent_visit_clinic,
     percent_clinic_tested,
+    alert_method,
 )
+    alertdirpath = joinpath(
+        "alertmethod_$(alert_method)", "alertthreshold_$(alert_threshold)"
+    )
+    testingdirpath = joinpath(
+        "perc_visit_clinic_$(percent_visit_clinic)",
+        "perc_clinic_tested_$(percent_clinic_tested)",
+    )
+
+    dirpath = @match alert_method begin
+        "dailythreshold" => joinpath(
+            alertdirpath,
+            testingdirpath,
+        )
+        _ => joinpath(
+            alertdirpath,
+            "moveavglag_$(moving_average_lag)",
+            testingdirpath
+        )
+    end
+
     return OutbreakDetectionSpecification(
         alert_threshold,
         moving_average_lag,
         percent_visit_clinic,
         percent_clinic_tested,
         percent_visit_clinic * percent_clinic_tested,
+        AlertMethod(alert_method),
+        dirpath,
     )
 end
 
@@ -358,10 +401,7 @@ function ScenarioSpecification(
         ensemble_specification.dirpath,
         outbreak_specification.dirpath,
         getdirpath(noise_specification),
-        "alertthreshold_$(outbreak_detection_specification.alert_threshold)",
-        "moveavglag_$(outbreak_detection_specification.moving_average_lag)",
-        "perc_visit_clinic_$(outbreak_detection_specification.percent_visit_clinic)",
-        "perc_clinic_tested_$(outbreak_detection_specification.percent_clinic_tested)",
+        outbreak_detection_specification.dirpath,
         "testsens_$(individual_test_specification.sensitivity)",
         "testspec_$(individual_test_specification.specificity)",
         "testlag_$(individual_test_specification.test_result_lag)",

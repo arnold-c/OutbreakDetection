@@ -21,13 +21,14 @@ includet(srcdir("ensemble-parameters.jl"))
 optimal_threshold_test_spec_vec = [
     IndividualTestSpecification(0.85, 0.85, 0),
     IndividualTestSpecification(0.9, 0.9, 0),
-    CLINICAL_TEST_SPECS...,
+    # CLINICAL_TEST_SPECS...,
     IndividualTestSpecification(1.0, 1.0, 0),
 ]
 
-optimal_threshold_alertthreshold_vec = collect(1:1:30)
+optimal_threshold_alertthreshold_vec = collect(1:1:15)
 
-R_0_vec = collect(8.0:4.0:20.0)
+# R_0_vec = collect(8.0:4.0:20.0)
+R_0_vec = [16.0]
 
 ensemble_dynamics_spec_vec = create_combinations_vec(
     DynamicsParameters,
@@ -53,15 +54,18 @@ ensemble_spec_vec = create_combinations_vec(
     ),
 )
 
+alert_method_vec = ["movingavg", "dailythreshold_movingavg"]
+
 Random.seed!(1234)
 sim_numbers = rand(DiscreteUniform(1, 100), 3)
 
 #%%
-@showprogress for (ensemble_noise_specification, ensemble_specification) in
-                  Iterators.product(
-    ensemble_noise_specification_vec, ensemble_spec_vec
+@showprogress for (
+    ensemble_noise_specification, ensemble_specification, alertmethod
+) in Iterators.product(
+    ensemble_noise_specification_vec, ensemble_spec_vec, alert_method_vec
 )
-    @info "Creating plots and tables for R0: $(ensemble_specification.dynamics_parameters.R_0), $(getdirpath(ensemble_noise_specification))"
+    @info "Creating plots and tables for R0: $(ensemble_specification.dynamics_parameters.R_0), $(getdirpath(ensemble_noise_specification)), $(alertmethod)"
     println("==============================================")
 
     optimal_threshold_comparison_params = (
@@ -71,6 +75,7 @@ sim_numbers = rand(DiscreteUniform(1, 100), 3)
         outbreak_specification = ensemble_outbreak_specification,
         moving_avg_detection_lag = ensemble_moving_avg_detection_lag,
         percent_visit_clinic = ensemble_percent_visit_clinic,
+        alertmethod = alertmethod,
     )
 
     optimal_thresholds_vec = calculate_OptimalThresholdCharacteristics(
@@ -103,6 +108,7 @@ sim_numbers = rand(DiscreteUniform(1, 100), 3)
         "R0_$(ensemble_specification.dynamics_parameters.R_0)",
         noise_specification_path,
         "single-scenario",
+        alertmethod,
     )
 
     unique_percent_clinic_tested = unique(
@@ -132,6 +138,7 @@ sim_numbers = rand(DiscreteUniform(1, 100), 3)
                 ensemble_moving_avg_detection_lag,
                 ensemble_percent_visit_clinic,
                 percent_clinic_tested,
+                alertmethod,
             )
 
             testarr = create_testing_arrs(
@@ -149,7 +156,7 @@ sim_numbers = rand(DiscreteUniform(1, 100), 3)
                     detection_specification,
                     ensemble_time_specification;
                     sim = sim_number,
-                    plottitle = "% Clinic Tested: $(percent_clinic_tested), Sens: $(ind_test_spec.sensitivity), Spec: $(ind_test_spec.specificity), Lag: $(ind_test_spec.test_result_lag), Sim: $(sim_number)",
+                    plottitle = "% Clinic Tested: $(percent_clinic_tested), Sens: $(ind_test_spec.sensitivity), Spec: $(ind_test_spec.specificity), Lag: $(ind_test_spec.test_result_lag), Sim: $(sim_number), Alert Method: $(alertmethod)",
                 )
 
                 testdirpath = joinpath(

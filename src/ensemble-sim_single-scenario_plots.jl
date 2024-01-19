@@ -29,10 +29,10 @@ function plot_all_single_scenarios(
             ensemble_noise_plotpath,
             "ensemble-sim_single-scenario_noise.png"
         ),
-        ensemble_noise_fig; resolution = (2200, 1600),
+        ensemble_noise_fig; size = (2200, 1600),
     )
 
-    noise_plottitle = "Sens: $(test_specification.sensitivity), Spec: $(test_specification.specificity), Lag: $(test_specification.test_result_lag),\nThreshold: $(outbreak_detection_specification.alert_threshold), Perc Clinic Tested: $(outbreak_detection_specification.percent_clinic_tested)\nNoise: $(noisedir)"
+    noise_plottitle = "Sens: $(test_specification.sensitivity), Spec: $(test_specification.specificity), Lag: $(test_specification.test_result_lag),\nThreshold: $(outbreak_detection_specification.alert_threshold), Perc Clinic Tested: $(outbreak_detection_specification.percent_clinic_tested)\nNoise: $(noisedir), Alert Method: $(outbreak_detection_specification.alert_method.method_name)"
 
     ensemble_single_scenario_outbreak_alert_plot = ensemble_OTChars_plot(
         OT_chars,

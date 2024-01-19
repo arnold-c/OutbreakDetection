@@ -63,7 +63,8 @@ function calculate_optimal_threshold(
     noise_specification,
     outbreak_specification,
     moving_avg_detection_lag,
-    percent_visit_clinic = base_parameters
+    percent_visit_clinic,
+    alertmethod = base_parameters
 
     ensemble_scenario_spec_vec = map(
         threshold -> ScenarioSpecification(
@@ -75,6 +76,7 @@ function calculate_optimal_threshold(
                 moving_avg_detection_lag,
                 percent_visit_clinic,
                 percent_clinic_tested,
+                alertmethod,
             ),
             individual_test_specification,
         ),
