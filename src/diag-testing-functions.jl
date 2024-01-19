@@ -27,16 +27,14 @@ function create_testing_arrs(
     outbreak_detect_spec::OutbreakDetectionSpecification,
     individual_test_spec::IndividualTestSpecification,
 )
-    testarr = zeros(Int64, size(incarr, 1), 7, size(incarr, 3))
+    testarr = zeros(Int64, size(incarr, 1), 8, size(incarr, 3))
     ntested_worker_vec = Vector{Int64}(undef, size(incarr, 1))
-    movingavg_worker_vec = zeros(Float64, size(incarr, 1))
 
     create_testing_arrs!(
         testarr,
         ntested_worker_vec,
         incarr,
         noisearr,
-        movingavg_worker_vec,
         outbreak_detect_spec.alert_method.method_name,
         outbreak_detect_spec.alert_threshold,
         outbreak_detect_spec.moving_average_lag,
@@ -54,7 +52,6 @@ function create_testing_arrs!(
     ntested_worker_vec,
     incarr,
     noisearr,
-    movingavg_worker_vec,
     alert_method,
     alertthreshold,
     moveavglag,
@@ -103,21 +100,22 @@ function create_testing_arrs!(
             @view(testarr[:, 3, sim]) + @view(testarr[:, 4, sim])
 
         # Calculate moving average of TOTAL test positives
-        movingavg_worker_vec .= calculate_movingavg(
+        calculate_movingavg!(
+            @view(testarr[:, 6, sim]),
             @view(testarr[:, 5, sim]),
             moveavglag
         )
 
         detectoutbreak_args = @match alert_method begin
             "movingavg" => (
+                @view(testarr[:, 7, sim]),
                 @view(testarr[:, 6, sim]),
-                movingavg_worker_vec,
                 alertthreshold,
             )
             "dailythreshold_movingavg" => (
-                @view(testarr[:, 6, sim]),
+                @view(testarr[:, 7, sim]),
                 @view(testarr[:, 5, sim]),
-                movingavg_worker_vec,
+                @view(testarr[:, 6, sim]),
                 alertthreshold,
             )
         end
@@ -126,8 +124,8 @@ function create_testing_arrs!(
         detectoutbreak!(detectoutbreak_args...)
 
         # Triggered outbreak equal to actual outbreak status
-        @. testarr[:, 7, sim] =
-            @view(testarr[:, 6, sim]) == @view(incarr[:, 3, sim])
+        @. testarr[:, 8, sim] =
+            @view(testarr[:, 7, sim]) == @view(incarr[:, 3, sim])
     end
 
     return nothing
