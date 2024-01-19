@@ -64,7 +64,7 @@ for (ensemble_noise_specification, ensemble_specification, alertmethod) in
     Iterators.product(
     ensemble_noise_specification_vec, ensemble_spec_vec, alert_method_vec
 )
-    @info "Creating plots and tables for R0: $(ensemble_specification.dynamics_parameters.R_0), $(getdirpath(ensemble_noise_specification))"
+    @info "Creating plots and tables for R0: $(ensemble_specification.dynamics_parameters.R_0), $(getdirpath(ensemble_noise_specification)), $(alertmethod)"
     println("==============================================")
 
     optimal_threshold_comparison_params = (

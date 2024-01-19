@@ -28,7 +28,7 @@ tmp/single-sim_bifurcation: scripts/single-sim_bifurcation.jl tmp/single-sim
 
 
 # Ensemble targets
-ENSEMBLE_TARGETS = ensemble-sim ensemble-sim_single-scenario ensemble-diag-testing_optimal-thresholds ensemble-diag-testing_scenarios_plots
+ENSEMBLE_TARGETS = ensemble-sim ensemble-sim_single-scenario ensemble-diag-testing_optimal-thresholds ensemble-diag-testing_constant-thresholds ensemble-diag-testing_scenarios_plots
 .PHONY: $(ENSEMBLE_TARGETS) ensemble-targets
 $(ENSEMBLE_TARGETS): %: tmp/%
 ensemble-targets: $(ENSEMBLE_TARGETS)
@@ -46,6 +46,10 @@ tmp/ensemble-sim_single-scenario: scripts/ensemble-sim_single-scenario.jl tmp/en
 	@touch $@
 
 tmp/ensemble-diag-testing_optimal-thresholds: scripts/ensemble-diag-testing_optimal-thresholds.jl tmp/ensemble-sim
+	julia $<
+	@touch $@
+
+tmp/ensemble-diag-testing_constant-thresholds: scripts/ensemble-diag-testing_constant-thresholds.jl tmp/ensemble-sim
 	julia $<
 	@touch $@
 
