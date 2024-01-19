@@ -984,46 +984,59 @@ function compare_optimal_thresholds_chars_plot(
     optimal_thresholds_vec,
     plottingchars;
     plotdirpath = plotsdir("ensemble/optimal-thresholds"),
+    plotformat = "png",
+    force = false,
     kwargs...,
 )
     unique_percent_clinic_tested = unique(
         optimal_thresholds_vec.percent_clinic_tested
     )
 
+    mkpath(plotdirpath)
+
     for percent_clinic_tested in unique_percent_clinic_tested
-        optimal_thresholds_chars = filter(
-            optimal_thresholds ->
-                optimal_thresholds.percent_clinic_tested ==
-                percent_clinic_tested ||
-                    (
-                        optimal_thresholds.percent_clinic_tested ==
-                        1.0 &&
-                        optimal_thresholds.individual_test_specification ==
-                        CLINICAL_CASE_TEST_SPEC
-                    ),
-            optimal_thresholds_vec,
-        )
+        plotname = "compare-outbreak_clinic-tested-$(percent_clinic_tested)_best-thresholds"
+        plotpath = joinpath(plotdirpath, "$plotname.$plotformat")
 
-        plot = create_optimal_thresholds_chars_plot(
-            optimal_thresholds_chars,
-            plottingchars;
-            kwargs...
-        )
+        if !isfile(plotpath) || force
+            optimal_thresholds_chars = filter(
+                optimal_thresholds ->
+                    optimal_thresholds.percent_clinic_tested ==
+                    percent_clinic_tested ||
+                        (
+                            optimal_thresholds.percent_clinic_tested ==
+                            1.0 &&
+                            optimal_thresholds.individual_test_specification ==
+                            CLINICAL_CASE_TEST_SPEC
+                        ),
+                optimal_thresholds_vec,
+            )
 
-        mkpath(plotdirpath)
+            plot = create_optimal_thresholds_chars_plot(
+                optimal_thresholds_chars,
+                plottingchars;
+                kwargs...
+            )
 
-        save(
-            joinpath(
-                plotdirpath,
-                "compare-outbreak_clinic-tested-$(percent_clinic_tested)_best-thresholds.png",
-            ),
-            plot;
-            size = (2200, 1600),
-        )
+            save(
+                joinpath(
+                    plotdirpath,
+                    "compare-outbreak_clinic-tested-$(percent_clinic_tested)_best-thresholds.png",
+                ),
+                plot;
+                size = (2200, 1600),
+            )
 
-        Makie.empty!(plot)
+            Makie.empty!(plot)
 
-        @info "Created optimal thresholds plot for % clinic tested $(percent_clinic_tested)"
+            @info "Created optimal thresholds plot for % clinic tested $(percent_clinic_tested)"
+
+            continue
+        end
+
+        GC.gc(true)
+
+        @info "Optimal thresholds plot for % clinic tested $(percent_clinic_tested) already exists. Skipping."
     end
 
     return nothing
@@ -1119,6 +1132,8 @@ function compare_optimal_thresholds_test_chars_plot(
     optimal_thresholds_vec,
     plottingchars;
     plotdirpath = plotsdir("ensemble/optimal-thresholds"),
+    plotformat = "png",
+    force = false,
     kwargs...,
 )
     unique_tests = unique(
@@ -1127,32 +1142,44 @@ function compare_optimal_thresholds_test_chars_plot(
 
     filter!(x -> !in(x, CLINICAL_TEST_SPECS), unique_tests)
 
+    mkpath(plotdirpath)
+
     for test_specification in unique_tests
-        optimal_thresholds_chars = filter(
-            optimal_thresholds ->
-                optimal_thresholds.individual_test_specification ==
-                test_specification,
-            optimal_thresholds_vec,
-        )
+        plotname = "compare-outbreak_clinic-test-specification_sens-$(test_specification.sensitivity)_spec-$(test_specification.specificity)_lag-$(test_specification.test_result_lag)_best-thresholds"
+        plotpath = joinpath(plotdirpath, "$plotname.$plotformat")
 
-        plot = create_optimal_thresholds_test_chars_plot(
-            optimal_thresholds_chars,
-            plottingchars;
-            kwargs...
-        )
+        if !isfile(plotpath) || force
+            optimal_thresholds_chars = filter(
+                optimal_thresholds ->
+                    optimal_thresholds.individual_test_specification ==
+                    test_specification,
+                optimal_thresholds_vec,
+            )
 
-        mkpath(plotdirpath)
+            plot = create_optimal_thresholds_test_chars_plot(
+                optimal_thresholds_chars,
+                plottingchars;
+                kwargs...
+            )
 
-        save(
-            joinpath(
-                plotdirpath,
-                "compare-outbreak_clinic-test-specification_sens-$(test_specification.sensitivity)_spec-$(test_specification.specificity)_lag-$(test_specification.test_result_lag)_best-thresholds.png",
-            ),
-            plot;
-            size = (2200, 1600),
-        )
+            save(
+                joinpath(
+                    plotdirpath,
+                    "compare-outbreak_clinic-test-specification_sens-$(test_specification.sensitivity)_spec-$(test_specification.specificity)_lag-$(test_specification.test_result_lag)_best-thresholds.png",
+                ),
+                plot;
+                size = (2200, 1600),
+            )
 
-        @info "Created optimal thresholds plot for test specification $(test_specification.sensitivity)_$(test_specification.specificity)_$(test_specification.test_result_lag)"
+            Makie.empty!(plot)
+
+            @info "Created optimal thresholds plot for test specification $(test_specification.sensitivity)_$(test_specification.specificity)_$(test_specification.test_result_lag)"
+            continue
+        end
+
+        GC.gc(true)
+
+        @info "Optimal thresholds plot for test specification $(test_specification.sensitivity)_$(test_specification.specificity)_$(test_specification.test_result_lag) already exists. Skipping."
     end
 
     return nothing
