@@ -220,7 +220,7 @@ for (
         basedirpath,
     )
 
-    tablefilename = "constant-threshold-result-tables_threshold-$(alertthreshold)_$(noisespec_alertmethod_filename)_thresholds"
+    tablefilename = "constant-threshold_threshold-$(alertthreshold)_$(noisespec_alertmethod_filename)_thresholds"
 
     create_and_save_xlsx_optimal_threshold_summaries(
         constant_thresholds_vec;

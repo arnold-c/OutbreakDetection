@@ -213,7 +213,7 @@ for (ensemble_noise_specification, ensemble_specification, alertmethod) in
         basedirpath
     )
 
-    tablefilename = "optimal-threshold-result-tables_$(noisespec_alertmethod_filename)_thresholds"
+    tablefilename = "optimal-threshold_$(noisespec_alertmethod_filename)_thresholds"
 
     create_and_save_xlsx_optimal_threshold_summaries(
         optimal_thresholds_vec;

@@ -97,26 +97,30 @@ sim_numbers = rand(DiscreteUniform(1, 100), 3)
     )
 
     noise_specification_path = getdirpath(ensemble_noise_specification)
-    noise_specification_filename = replace(
-        noise_specification_path,
-        "/" => "_",
+    noisespec_alertmethod_path = joinpath(noise_specification_path, alertmethod)
+
+    if alertmethod != "dailythreshold"
+        noisespec_alertmethod_path = joinpath(
+            noisespec_alertmethod_path,
+            "moveavglag_$(ensemble_moving_avg_detection_lag)",
+        )
+    end
+
+    noisespec_alertmethod_filename = replace(
+        noisespec_alertmethod_path,
+        "/" => "_"
+    )
+
+    basedirpath = joinpath(
+        "R0_$(ensemble_specification.dynamics_parameters.R_0)",
+        noisespec_alertmethod_path,
     )
 
     baseplotdirpath = joinpath(
         plotsdir("ensemble/optimal-thresholds"),
-        "R0_$(ensemble_specification.dynamics_parameters.R_0)",
-        noise_specification_path,
-        alertmethod,
+        basedirpath,
+        "single-timeseries",
     )
-
-    if alertmethod != "dailythreshold"
-        baseplotdirpath = joinpath(
-            baseplotdirpath,
-            "moveavglag_$(ensemble_moving_avg_detection_lag)"
-        )
-    end
-
-    baseplotdirpath = joinpath(baseplotdirpath, "single-scenario")
 
     unique_percent_clinic_tested = unique(
         optimal_thresholds_vec.percent_clinic_tested
@@ -156,16 +160,6 @@ sim_numbers = rand(DiscreteUniform(1, 100), 3)
             )
 
             for sim_number in sim_numbers
-                plot = incidence_testing_plot(
-                    incarr,
-                    noisearr,
-                    testarr,
-                    detection_specification,
-                    ensemble_time_specification;
-                    sim = sim_number,
-                    plottitle = "% Clinic Tested: $(percent_clinic_tested), Sens: $(ind_test_spec.sensitivity), Spec: $(ind_test_spec.specificity), Lag: $(ind_test_spec.test_result_lag), Sim: $(sim_number), Alert Method: $(alertmethod)",
-                )
-
                 testdirpath = joinpath(
                     baseplotdirpath,
                     "sens-$(ind_test_spec.sensitivity)_spec-$(ind_test_spec.specificity)_lag-$(ind_test_spec.test_result_lag)",
@@ -173,16 +167,31 @@ sim_numbers = rand(DiscreteUniform(1, 100), 3)
                 )
                 mkpath(testdirpath)
 
-                save(
-                    joinpath(
-                        testdirpath,
-                        "single-scenario_clinic-tested-$(percent_clinic_tested)_sens-$(ind_test_spec.sensitivity)_spec-$(ind_test_spec.specificity)_lag-$(ind_test_spec.test_result_lag)_sim-$(sim_number).png",
-                    ),
-                    plot;
-                    size = (2200, 1600),
-                )
+                plotname = "single-scenario_clinic-tested-$(percent_clinic_tested)_sens-$(ind_test_spec.sensitivity)_spec-$(ind_test_spec.specificity)_lag-$(ind_test_spec.test_result_lag)_sim-$(sim_number).png"
+                plotpath = joinpath(testdirpath, plotname)
 
-                Makie.empty!(plot)
+                if !isfile(plotpath)
+                    plot = incidence_testing_plot(
+                        incarr,
+                        noisearr,
+                        testarr,
+                        detection_specification,
+                        ensemble_time_specification;
+                        sim = sim_number,
+                        plottitle = "% Clinic Tested: $(percent_clinic_tested), Sens: $(ind_test_spec.sensitivity), Spec: $(ind_test_spec.specificity), Lag: $(ind_test_spec.test_result_lag), Sim: $(sim_number), Alert Method: $(alertmethod)",
+                    )
+
+                    save(
+                        plotpath,
+                        plot;
+                        size = (2200, 1600),
+                    )
+
+                    Makie.empty!(plot)
+
+                    continue
+                end
+                @info "Plot $(plotname) already exists. Skipping."
             end
         end
         GC.gc(true)
