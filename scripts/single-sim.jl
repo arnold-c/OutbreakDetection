@@ -27,7 +27,7 @@ seir_df = create_sir_df(
 
 #%%
 jldsave(
-    "data/singlesim/single-sim_arrays.jld2";
+    "out/singlesim/single-sim_arrays.jld2";
     seir_array,
     inc_vec,
     beta_vec,
