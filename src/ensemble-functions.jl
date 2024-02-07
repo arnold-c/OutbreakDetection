@@ -341,7 +341,7 @@ function OutbreakThresholdChars_creation(OT_chars_param_dict)
         seed = seed,
     )
 
-    testarr = create_testing_arrs(
+    testarr, test_movingvg_arr = create_testing_arrs(
         ensemble_inc_arr,
         noise_array,
         outbreak_detection_specification,
