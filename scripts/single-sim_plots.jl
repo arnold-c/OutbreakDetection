@@ -10,7 +10,9 @@ using OutbreakDetection
 
 include(srcdir("makie-plotting-setup.jl"))
 
-@unpack singlesim_time_p = load("data/singlesim/single-sim_setup.jld2")
+@unpack singlesim_time_p = load(
+    joinpath(outdir("singlesim"), "single-sim_setup.jld2")
+)
 @unpack trange = singlesim_time_p;
 
 @unpack seir_array, inc_vec, beta_vec, seir_df = load(
@@ -22,8 +24,10 @@ singlesim_timeseries_plot = draw_sir_plot(
     seir_df;
     annual = true,
     colors = seircolors,
-    labels = ["S", "E", "I", "R", "N"]
+    labels = ["S", "E", "I", "R", "N"],
 )
+
+mkpath(plotsdir("singlesim"))
 
 save(plotsdir("singlesim/single-sim_timeseries.png"), singlesim_timeseries_plot)
 
@@ -44,9 +48,11 @@ save(
 
 #%%
 singlesim_beta_plot = Figure()
-beta_ax = Axis(singlesim_beta_plot[1, 1]; xlabel = "Time (years)", ylabel = "Beta")
+beta_ax = Axis(
+    singlesim_beta_plot[1, 1]; xlabel = "Time (years)", ylabel = "Beta"
+)
 
-lines!(beta_ax, trange / 365, beta_vec, linewidth = 1)
+lines!(beta_ax, trange / 365, beta_vec; linewidth = 1)
 
 xlims!(beta_ax, (0, 3))
 

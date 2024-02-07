@@ -28,8 +28,11 @@ singlesim_dynamics_p = DynamicsParameters(
     VACCINATION_COVERAGE,
 )
 
+singlesim_dirpath = outdir("singlesim")
+mkpath(singlesim_dirpath)
+
 jldsave(
-    "data/singlesim/single-sim_setup.jld2";
+    joinpath(singlesim_dirpath, "single-sim_setup.jld2");
     singlesim_states_p,
     singlesim_time_p,
     singlesim_dynamics_p,

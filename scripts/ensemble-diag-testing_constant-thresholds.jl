@@ -29,18 +29,58 @@ constant_threshold_test_spec_vec = [
     IndividualTestSpecification(1.0, 1.0, 14),
 ]
 
-constant_threshold = 4
-constant_threshold_alertthreshold_vec = [constant_threshold]
+constant_threshold_alertthreshold_vec = [4]
+
+R_0_vec = collect(8.0:4.0:20.0)
+
+ensemble_dynamics_spec_vec = create_combinations_vec(
+    DynamicsParameters,
+    (
+        [ensemble_state_specification.init_states.N],
+        [27],
+        [0.2],
+        [SIGMA],
+        [GAMMA],
+        R_0_vec,
+        [0.8],
+    ),
+)
+
+ensemble_spec_vec = create_combinations_vec(
+    EnsembleSpecification,
+    (
+        [ensemble_model_type],
+        [ensemble_state_specification],
+        ensemble_dynamics_spec_vec,
+        [ensemble_time_specification],
+        [ensemble_nsims],
+    ),
+)
+
+alert_method_vec = ["movingavg", "dailythreshold_movingavg"]
 
 #%%
-for ensemble_noise_specification in ensemble_noise_specification_vec
+for (
+    ensemble_noise_specification,
+    ensemble_specification,
+    alertmethod,
+    alertthreshold,
+) in
+    Iterators.product(
+    ensemble_noise_specification_vec, ensemble_spec_vec, alert_method_vec,
+    constant_threshold_alertthreshold_vec,
+)
+    @info "Creating tables for R0: $(ensemble_specification.dynamics_parameters.R_0), $(getdirpath(ensemble_noise_specification)), $(alertmethod), constant threshold: $(alertthreshold)"
+    println("==============================================")
+
     optimal_threshold_comparison_params = (
-        alertthreshold_vec = constant_threshold_alertthreshold_vec,
+        alertthreshold_vec = [alertthreshold],
         ensemble_specification = ensemble_specification,
         noise_specification = ensemble_noise_specification,
         outbreak_specification = ensemble_outbreak_specification,
         moving_avg_detection_lag = ensemble_moving_avg_detection_lag,
         percent_visit_clinic = ensemble_percent_visit_clinic,
+        alertmethod = alertmethod,
     )
 
     constant_thresholds_vec = calculate_OptimalThresholdCharacteristics(
@@ -50,16 +90,29 @@ for ensemble_noise_specification in ensemble_noise_specification_vec
     )
 
     noise_specification_path = getdirpath(ensemble_noise_specification)
-    noise_specification_filename = replace(
-        noise_specification_path,
-        "/" => "_",
+    noisespec_alertmethod_path = joinpath(noise_specification_path, alertmethod)
+
+    if alertmethod != "dailythreshold"
+        noisespec_alertmethod_path = joinpath(
+            noisespec_alertmethod_path,
+            "moveavglag_$(ensemble_moving_avg_detection_lag)",
+        )
+    end
+
+    noisespec_alertmethod_filename = replace(
+        noisespec_alertmethod_path,
+        "/" => "_"
+    )
+
+    basedirpath = joinpath(
+        "R0_$(ensemble_specification.dynamics_parameters.R_0)",
+        noisespec_alertmethod_path,
     )
 
     baseplotdirpath = joinpath(
-        plotsdir(
-            "ensemble/constant-thresholds/threshold_$(constant_threshold)"
-        ),
-        noise_specification_path,
+        plotsdir("ensemble/constant-thresholds"),
+        "threshold_$(alertthreshold)",
+        basedirpath,
     )
 
     clinictested_plotdirpath = joinpath(baseplotdirpath, "clinic-tested")
@@ -162,21 +215,23 @@ for ensemble_noise_specification in ensemble_noise_specification_vec
     ]
 
     tabledirpath = joinpath(
-        datadir(
-            "constant-threshold-results/threshold_$(constant_threshold)"
-        ), noise_specification_path,
+        outdir("ensemble/constant-thresholds"),
+        "threshold_$(alertthreshold)",
+        basedirpath,
     )
+
+    tablefilename = "constant-threshold_threshold-$(alertthreshold)_$(noisespec_alertmethod_filename)_thresholds"
 
     create_and_save_xlsx_optimal_threshold_summaries(
         constant_thresholds_vec;
         tabledirpath = tabledirpath,
-        noise_specification_filename = noise_specification_filename,
+        filename = tablefilename,
     )
 
     create_and_save_xlsx_optimal_threshold_summaries(
         constant_thresholds_vec, :detectiondelays;
         tabledirpath = tabledirpath,
-        noise_specification_filename = noise_specification_filename,
+        filename = tablefilename,
     )
 
     create_and_save_xlsx_optimal_threshold_summaries(
@@ -185,7 +240,7 @@ for ensemble_noise_specification in ensemble_noise_specification_vec
         scale_annual = 1 / nyears,
         countries = countries,
         tabledirpath = tabledirpath,
-        noise_specification_filename = noise_specification_filename,
+        filename = tablefilename,
     )
 
     create_and_save_xlsx_optimal_threshold_summaries(
@@ -193,7 +248,7 @@ for ensemble_noise_specification in ensemble_noise_specification_vec
         scale_annual = 1 / nyears,
         countries = countries,
         tabledirpath = tabledirpath,
-        noise_specification_filename = noise_specification_filename,
+        filename = tablefilename,
     )
 
     create_and_save_xlsx_optimal_threshold_summaries(
@@ -201,7 +256,7 @@ for ensemble_noise_specification in ensemble_noise_specification_vec
         scale_annual = 1 / nyears,
         countries = countries,
         tabledirpath = tabledirpath,
-        noise_specification_filename = noise_specification_filename,
+        filename = tablefilename,
     )
 
     create_and_save_xlsx_optimal_threshold_summaries(
@@ -209,7 +264,7 @@ for ensemble_noise_specification in ensemble_noise_specification_vec
         scale_annual = 1 / nyears,
         countries = countries,
         tabledirpath = tabledirpath,
-        noise_specification_filename = noise_specification_filename,
+        filename = tablefilename,
     )
 
     @info "All plots and tables saved for $(ensemble_noise_specification.noise_type)"

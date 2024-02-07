@@ -21,14 +21,13 @@ includet(srcdir("ensemble-parameters.jl"))
 optimal_threshold_test_spec_vec = [
     IndividualTestSpecification(0.85, 0.85, 0),
     IndividualTestSpecification(0.9, 0.9, 0),
-    # CLINICAL_TEST_SPECS...,
+    CLINICAL_TEST_SPECS...,
     IndividualTestSpecification(1.0, 1.0, 0),
 ]
 
 optimal_threshold_alertthreshold_vec = collect(1:1:15)
 
-# R_0_vec = collect(8.0:4.0:20.0)
-R_0_vec = [16.0]
+R_0_vec = collect(8.0:4.0:20.0)
 
 ensemble_dynamics_spec_vec = create_combinations_vec(
     DynamicsParameters,
@@ -98,17 +97,29 @@ sim_numbers = rand(DiscreteUniform(1, 100), 3)
     )
 
     noise_specification_path = getdirpath(ensemble_noise_specification)
-    noise_specification_filename = replace(
-        noise_specification_path,
-        "/" => "_",
+    noisespec_alertmethod_path = joinpath(noise_specification_path, alertmethod)
+
+    if alertmethod != "dailythreshold"
+        noisespec_alertmethod_path = joinpath(
+            noisespec_alertmethod_path,
+            "moveavglag_$(ensemble_moving_avg_detection_lag)",
+        )
+    end
+
+    noisespec_alertmethod_filename = replace(
+        noisespec_alertmethod_path,
+        "/" => "_"
+    )
+
+    basedirpath = joinpath(
+        "R0_$(ensemble_specification.dynamics_parameters.R_0)",
+        noisespec_alertmethod_path,
     )
 
     baseplotdirpath = joinpath(
         plotsdir("ensemble/optimal-thresholds"),
-        "R0_$(ensemble_specification.dynamics_parameters.R_0)",
-        noise_specification_path,
-        "single-scenario",
-        alertmethod,
+        basedirpath,
+        "single-timeseries",
     )
 
     unique_percent_clinic_tested = unique(
@@ -149,16 +160,6 @@ sim_numbers = rand(DiscreteUniform(1, 100), 3)
             )
 
             for sim_number in sim_numbers
-                plot = incidence_testing_plot(
-                    incarr,
-                    noisearr,
-                    testarr,
-                    detection_specification,
-                    ensemble_time_specification;
-                    sim = sim_number,
-                    plottitle = "% Clinic Tested: $(percent_clinic_tested), Sens: $(ind_test_spec.sensitivity), Spec: $(ind_test_spec.specificity), Lag: $(ind_test_spec.test_result_lag), Sim: $(sim_number), Alert Method: $(alertmethod)",
-                )
-
                 testdirpath = joinpath(
                     baseplotdirpath,
                     "sens-$(ind_test_spec.sensitivity)_spec-$(ind_test_spec.specificity)_lag-$(ind_test_spec.test_result_lag)",
@@ -166,16 +167,34 @@ sim_numbers = rand(DiscreteUniform(1, 100), 3)
                 )
                 mkpath(testdirpath)
 
-                save(
-                    joinpath(
-                        testdirpath,
-                        "single-scenario_clinic-tested-$(percent_clinic_tested)_sens-$(ind_test_spec.sensitivity)_spec-$(ind_test_spec.specificity)_lag-$(ind_test_spec.test_result_lag)_sim-$(sim_number).png",
-                    ),
-                    plot;
-                    size = (2200, 1600),
-                )
+                plotname = "single-scenario_clinic-tested-$(percent_clinic_tested)_sens-$(ind_test_spec.sensitivity)_spec-$(ind_test_spec.specificity)_lag-$(ind_test_spec.test_result_lag)_sim-$(sim_number).png"
+                plotpath = joinpath(testdirpath, plotname)
+
+                if !isfile(plotpath)
+                    plot = incidence_testing_plot(
+                        incarr,
+                        noisearr,
+                        testarr,
+                        detection_specification,
+                        ensemble_time_specification;
+                        sim = sim_number,
+                        plottitle = "% Clinic Tested: $(percent_clinic_tested), Sens: $(ind_test_spec.sensitivity), Spec: $(ind_test_spec.specificity), Lag: $(ind_test_spec.test_result_lag), Sim: $(sim_number), Alert Method: $(alertmethod)",
+                    )
+
+                    save(
+                        plotpath,
+                        plot;
+                        size = (2200, 1600),
+                    )
+
+                    Makie.empty!(plot)
+
+                    continue
+                end
+                @info "Plot $(plotname) already exists. Skipping."
             end
         end
+        GC.gc(true)
     end
 
     @info "Timeseries $(sim_numbers) saved for R0: $(ensemble_specification.dynamics_parameters.R_0), $(getdirpath(ensemble_noise_specification))"

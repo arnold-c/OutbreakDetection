@@ -9,7 +9,7 @@ using OutbreakDetection
 
 #%%
 @unpack singlesim_states_p, singlesim_time_p, singlesim_dynamics_p = load(
-    "data/singlesim/single-sim_setup.jld2"
+    joinpath(outdir("singlesim"), "single-sim_setup.jld2")
 )
 
 #%%

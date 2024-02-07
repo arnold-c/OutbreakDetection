@@ -3,9 +3,28 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
         percent_clinic_tested, base_parameters
     )
 
+    @unpack ensemble_specification,
+    noise_specification, alertmethod,
+    moving_avg_detection_lag =
+        base_parameters
+
+    baseplotdirpath = joinpath(
+        plotsdir("ensemble/testing-comparison"),
+        "R0_$(ensemble_specification.dynamics_parameters.R_0)",
+        getdirpath(noise_specification),
+        alertmethod,
+    )
+
+    if alertmethod != "dailythreshold"
+        baseplotdirpath = joinpath(
+            baseplotdirpath,
+            "moveavglag_$(moving_avg_detection_lag)"
+        )
+    end
+
     clinic_tested_dir = joinpath(
-        getdirpath(base_parameters[:noise_specification]),
-        "clinic-tested_$(percent_clinic_tested)",
+        baseplotdirpath,
+        "clinic-tested_$(percent_clinic_tested)"
     )
 
     accuracy_plotname = "compare-outbreak_clinic-tested-$(percent_clinic_tested)_accuracy_plot"
@@ -24,7 +43,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
         columnfacetchar_label = "Alert Threshold",
         bins = 0.0:0.01:1.01,
         plotname = accuracy_plotname,
-        clinic_tested_dir = clinic_tested_dir,
+        plotdirpath = clinic_tested_dir,
     )
     @info "Accuracy plot saved"
 
@@ -48,7 +67,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
         columnfacetchar_label = "Alert Threshold",
         bins = 0.0:0.01:1.01,
         plotname = sens_spec_plotname,
-        clinic_tested_dir = clinic_tested_dir,
+        plotdirpath = clinic_tested_dir,
     )
     @info "Sensitivity and specificity plot saved"
 
@@ -72,7 +91,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
         columnfacetchar_label = "Alert Threshold",
         bins = 0.0:0.01:1.01,
         plotname = ppv_npv_plotname,
-        clinic_tested_dir = clinic_tested_dir,
+        plotdirpath = clinic_tested_dir,
     )
     @info "PPV and NPV plot saved"
 
@@ -93,7 +112,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
         meanlines = true,
         legend = false,
         plotname = detectiondelay_plotname,
-        clinic_tested_dir = clinic_tested_dir,
+        plotdirpath = clinic_tested_dir,
     )
     @info "Detection delay plot saved"
 
@@ -114,7 +133,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
         meanlines = true,
         legend = false,
         plotname = nalertsperoutbreak_plotname,
-        clinic_tested_dir = clinic_tested_dir,
+        plotdirpath = clinic_tested_dir,
     )
     @info "Number of alerts per outbreak plot saved"
 
@@ -135,7 +154,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
         meanlines = true,
         legend = false,
         plotname = nfalsealerts_plotname,
-        clinic_tested_dir = clinic_tested_dir,
+        plotdirpath = clinic_tested_dir,
     )
     @info "Number of false alerts plot saved"
 
@@ -156,7 +175,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
         meanlines = true,
         legend = false,
         plotname = nalerts_plotname,
-        clinic_tested_dir = clinic_tested_dir,
+        plotdirpath = clinic_tested_dir,
     )
     @info "Number of alerts plot saved"
 
@@ -177,7 +196,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
         meanlines = true,
         legend = false,
         plotname = noutbreaks_plotname,
-        clinic_tested_dir = clinic_tested_dir,
+        plotdirpath = clinic_tested_dir,
     )
     @info "Number of outbreaks plot saved"
 
@@ -198,7 +217,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
         meanlines = true,
         legend = false,
         plotname = nmissedoutbreaks_plotname,
-        clinic_tested_dir = clinic_tested_dir,
+        plotdirpath = clinic_tested_dir,
     )
     @info "Number of missed outbreaks plot saved"
 
@@ -223,7 +242,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
         binwidth = 200,
         normalization = :pdf,
         plotname = size_outbreaks_detectmissed_plotname,
-        clinic_tested_dir = clinic_tested_dir,
+        plotdirpath = clinic_tested_dir,
     )
     @info "Size of outbreaks detected and missed plot saved"
 
@@ -246,7 +265,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
         columnfacetchar_label = "Alert Threshold",
         binwidth = 0.02,
         plotname = perc_detectmissed_outbreak_plotname,
-        clinic_tested_dir = clinic_tested_dir,
+        plotdirpath = clinic_tested_dir,
     )
     @info "Percent outbreaks detected and missed plot saved"
 
@@ -279,7 +298,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
         columnfacetchar_label = "Alert Threshold",
         bins = -0.01:0.02:1.01,
         plotname = perc_alerts_correctfalse_plotname,
-        clinic_tested_dir = clinic_tested_dir,
+        plotdirpath = clinic_tested_dir,
     )
     @info "Percent alerts correct and false plot saved"
 
@@ -321,7 +340,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
         columnfacetchar_label = "Alert Threshold",
         bins = -0.01:0.02:1.01,
         plotname = perc_alertscorrect_outbreaksdetected_plotname,
-        clinic_tested_dir = clinic_tested_dir,
+        plotdirpath = clinic_tested_dir,
     )
     @info "Percent alerts correct and outbreaks detected plot saved"
 
@@ -342,7 +361,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
         meanlines = true,
         legend = false,
         plotname = navoidablecases_plotname,
-        clinic_tested_dir = clinic_tested_dir,
+        plotdirpath = clinic_tested_dir,
     )
     @info "Number of avoidable cases plot saved"
 
@@ -363,7 +382,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
         meanlines = true,
         legend = false,
         plotname = perc_casesbeforealerts_plotname,
-        clinic_tested_dir = clinic_tested_dir,
+        plotdirpath = clinic_tested_dir,
     )
     @info "Percentage of cases before alerts plot saved"
 
@@ -384,7 +403,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
         meanlines = true,
         legend = false,
         plotname = nunavoidablecases_plotname,
-        clinic_tested_dir = clinic_tested_dir,
+        plotdirpath = clinic_tested_dir,
     )
     @info "Number of unavoidable cases plot saved"
 
@@ -405,7 +424,7 @@ function plot_all_threshold_comparisons(percent_clinic_tested, base_parameters)
         meanlines = true,
         legend = false,
         plotname = perc_casesafteralerts_plotname,
-        clinic_tested_dir = clinic_tested_dir,
+        plotdirpath = clinic_tested_dir,
     )
     @info "Percentage of cases after alerts plot saved"
 
@@ -423,7 +442,8 @@ function collect_threshold_char_vec(percent_clinic_tested, base_parameters)
     noise_specification,
     outbreak_specification,
     moving_avg_detection_lag,
-    percent_visit_clinic = base_parameters
+    percent_visit_clinic,
+    alertmethod = base_parameters
 
     non_clinical_case_test_spec_vec = filter(
         spec -> spec != CLINICAL_CASE_TEST_SPEC,
@@ -445,6 +465,7 @@ function collect_threshold_char_vec(percent_clinic_tested, base_parameters)
             moving_avg_detection_lag,
             percent_visit_clinic,
             percent_clinic_tested,
+            alertmethod,
         ),
         alertthreshold_vec,
     )
@@ -453,7 +474,8 @@ function collect_threshold_char_vec(percent_clinic_tested, base_parameters)
             threshold,
             moving_avg_detection_lag,
             percent_visit_clinic,
-            1.0
+            1.0,
+            alertmethod,
         ),
         alertthreshold_vec,
     )
