@@ -16,7 +16,7 @@ include(srcdir("makie-plotting-setup.jl"))
 @unpack trange = singlesim_time_p;
 
 @unpack seir_array, inc_vec, beta_vec, seir_df = load(
-    "data/singlesim/single-sim_arrays.jld2"
+    joinpath(outdir("singlesim"), "single-sim_arrays.jld2")
 )
 
 #%%

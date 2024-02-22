@@ -152,7 +152,7 @@ sim_numbers = rand(DiscreteUniform(1, 100), 3)
                 alertmethod,
             )
 
-            testarr = create_testing_arrs(
+            testarr, test_movingvg_arr = create_testing_arrs(
                 incarr,
                 noisearr,
                 detection_specification,
@@ -175,6 +175,7 @@ sim_numbers = rand(DiscreteUniform(1, 100), 3)
                         incarr,
                         noisearr,
                         testarr,
+                        test_movingvg_arr,
                         detection_specification,
                         ensemble_time_specification;
                         sim = sim_number,

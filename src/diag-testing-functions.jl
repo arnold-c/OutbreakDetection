@@ -27,11 +27,13 @@ function create_testing_arrs(
     outbreak_detect_spec::OutbreakDetectionSpecification,
     individual_test_spec::IndividualTestSpecification,
 )
-    testarr = zeros(Int64, size(incarr, 1), 8, size(incarr, 3))
+    testarr = zeros(Int64, size(incarr, 1), 7, size(incarr, 3))
+    test_movingavg_arr = zeros(Int64, size(incarr, 1), size(incarr, 3))
     ntested_worker_vec = Vector{Int64}(undef, size(incarr, 1))
 
     create_testing_arrs!(
         testarr,
+        test_movingavg_arr,
         ntested_worker_vec,
         incarr,
         noisearr,
@@ -44,11 +46,12 @@ function create_testing_arrs(
         individual_test_spec.specificity,
     )
 
-    return testarr
+    return testarr, test_movingavg_arr
 end
 
 function create_testing_arrs!(
     testarr,
+    test_movingavg_arr,
     ntested_worker_vec,
     incarr,
     noisearr,
@@ -101,21 +104,21 @@ function create_testing_arrs!(
 
         # Calculate moving average of TOTAL test positives
         calculate_movingavg!(
-            @view(testarr[:, 6, sim]),
+            @view(test_movingavg_arr[:, sim]),
             @view(testarr[:, 5, sim]),
-            moveavglag
+            moveavglag,
         )
 
         detectoutbreak_args = @match alert_method begin
             "movingavg" => (
-                @view(testarr[:, 7, sim]),
                 @view(testarr[:, 6, sim]),
+                @view(test_movingavg_arr[:, sim]),
                 alertthreshold,
             )
             "dailythreshold_movingavg" => (
-                @view(testarr[:, 7, sim]),
-                @view(testarr[:, 5, sim]),
                 @view(testarr[:, 6, sim]),
+                @view(testarr[:, 5, sim]),
+                @view(test_movingavg_arr[:, sim]),
                 alertthreshold,
             )
         end
@@ -124,8 +127,8 @@ function create_testing_arrs!(
         detectoutbreak!(detectoutbreak_args...)
 
         # Triggered outbreak equal to actual outbreak status
-        @. testarr[:, 8, sim] =
-            @view(testarr[:, 7, sim]) == @view(incarr[:, 3, sim])
+        @. testarr[:, 7, sim] =
+            @view(testarr[:, 6, sim]) == @view(incarr[:, 3, sim])
     end
 
     return nothing
@@ -367,9 +370,9 @@ function calculate_OutbreakThresholdChars(
 )
     OT_chars = map(axes(infecarr, 3)) do sim
         dailychars = calculate_daily_detection_characteristics(
-            @view(testarr[:, 7, sim]), @view(infecarr[:, 3, sim])
+            @view(testarr[:, 6, sim]), @view(infecarr[:, 3, sim])
         )
-        alertrle = rle(@view(testarr[:, 7, sim]))
+        alertrle = rle(@view(testarr[:, 6, sim]))
         outbreakbounds = thresholds_vec[sim][
             (@view(thresholds_vec[sim][:, 4]) .== 1), 1:3
         ]

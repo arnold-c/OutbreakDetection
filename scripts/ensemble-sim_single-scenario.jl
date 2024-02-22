@@ -91,7 +91,7 @@ for noise_specification in ensemble_noise_specification_vec
     )
     noisedir = getdirpath(noise_specification)
 
-    testarr = create_testing_arrs(
+    testarr, test_movingvg_arr = create_testing_arrs(
         ensemble_single_incarr,
         noisearr,
         ensemble_single_outbreak_detection_spec,
@@ -105,6 +105,7 @@ for noise_specification in ensemble_noise_specification_vec
         OT_chars,
         ensemble_single_incarr,
         testarr,
+        test_movingvg_arr,
         ensemble_single_individual_test_spec,
         ensemble_single_outbreak_detection_spec,
         ensemble_time_specification,

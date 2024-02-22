@@ -5,6 +5,7 @@ function plot_all_single_scenarios(
     OT_chars,
     incarr,
     testarr,
+    test_movingvg_arr,
     test_specification,
     outbreak_detection_specification,
     time_specification,
@@ -223,6 +224,7 @@ function plot_all_single_scenarios(
         incarr,
         noisearr,
         testarr,
+        test_movingvg_arr,
         outbreak_detection_specification,
         time_specification;
         sim = 1,

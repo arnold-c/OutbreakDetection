@@ -337,6 +337,7 @@ function incidence_testing_plot(
     incarr,
     noisearr,
     testingarr,
+    test_movingvg_arr,
     detection_specification,
     timeparams;
     sim = 1,
@@ -374,12 +375,12 @@ function incidence_testing_plot(
     )
     lines!(
         inc_test_ax3, times, testingarr[:, 5, sim];
-        color = testingarr[:, 7, sim],
+        color = testingarr[:, 6, sim],
         colormap = alertcolormap,
     )
     lines!(
-        inc_test_ax4, times, testingarr[:, 6, sim];
-        color = testingarr[:, 7, sim],
+        inc_test_ax4, times, test_movingvg_arr[:, sim];
+        color = testingarr[:, 6, sim],
         colormap = alertcolormap,
     )
 
@@ -525,7 +526,7 @@ function ensemble_outbreak_distribution_plot(testarr, infecarr; plottitle = "")
 
     hist!(
         outbreak_dist_ax,
-        vec(sum(@view(testarr[:, 7, :]); dims = 1)) ./ size(testarr, 1);
+        vec(sum(@view(testarr[:, 6, :]); dims = 1)) ./ size(testarr, 1);
         bins = 0.0:0.01:0.7,
         color = (:red, 0.5),
         strokecolor = :black,
