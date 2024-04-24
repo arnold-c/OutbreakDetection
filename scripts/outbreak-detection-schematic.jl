@@ -49,9 +49,11 @@ time_p = SimTimeParameters(; tmin = 0.0, tmax = 365.0 * 20, tstep = 1.0)
 
 outbreak_specification = OutbreakSpecification(5, 30, 500)
 
+movingavg_window = 20
+
 outbreak_detection_specification = OutbreakDetectionSpecification(
-    7,
-    7,
+    8,
+    movingavg_window,
     1.0,
     0.75,
     "movingavg"
@@ -86,7 +88,7 @@ function get_outbreak_status(
         # @show lower, upper
         outbreak_status[lower:upper] .= 1
     end
-    return outbreak_status
+    return outbreak_status, outbreak_thresholds
 end
 
 function shift_vec(invec, shift::T) where {T<:Integer}
@@ -125,12 +127,14 @@ function create_schematic_simulation(
     )[2]
 
     inc_vec =
-        round.(calculate_movingavg(
-            vec(convert_svec_to_matrix(inc_sv)),
-            7,
-        ))
+        round.(
+            calculate_movingavg(
+                vec(convert_svec_to_matrix(inc_sv)),
+                movingavg_window
+            )
+        )
 
-    outbreak_status = get_outbreak_status(
+    outbreak_status, outbreak_thresholds = get_outbreak_status(
         inc_vec, outbreak_specification
     )
 
@@ -142,7 +146,7 @@ function create_schematic_simulation(
     )[2]
 
     noise_vec_tmp = calculate_movingavg(
-        vec(convert_svec_to_matrix(noise_sv)) .* noise_scaling, 7
+        vec(convert_svec_to_matrix(noise_sv)) .* noise_scaling, movingavg_window
     )
 
     noise_vec = shift_vec(noise_vec_tmp, shift_noise)
@@ -179,15 +183,20 @@ function create_schematic_simulation(
         movingavg_testpositives,
         outbreak_detection_specification.alert_threshold,
     )
+    alert_thresholds = calculate_outbreak_thresholds(
+        rle(alertstatus_vec .> 0); ncols = 2
+    )
 
     return inc_vec,
     outbreak_status,
+    outbreak_thresholds,
     noise_vec,
     movingavg_testpositives,
-    alertstatus_vec
+    alertstatus_vec,
+    alert_thresholds
 end
 
-inc_vec, outbreak_status, noise_vec, movingavg_testpositives, alertstatus_vec = create_schematic_simulation(
+inc_vec, outbreak_status, outbreak_thresholds, noise_vec, movingavg_testpositives, alertstatus_vec, alert_bounds = create_schematic_simulation(
     states_p,
     dynamics_p,
     noise_states_p,
@@ -204,10 +213,12 @@ inc_vec, outbreak_status, noise_vec, movingavg_testpositives, alertstatus_vec = 
 function plot_schematic(
     inc_vec,
     outbreakstatus_vec,
+    outbreak_bounds,
     outbreak_specification,
     noise_vec,
     testpositive_vec,
     alertstatus_vec,
+    alert_bounds,
     alertthreshold;
     time_p = SimTimeParameters(; tmin = 0.0, tmax = 365.0 * 10, tstep = 1.0),
     outbreakcolormap = [
@@ -216,16 +227,11 @@ function plot_schematic(
     alertcolormap = [
         N_MISSED_OUTBREAKS_COLOR, N_ALERTS_COLOR
     ],
-    years = false,
     kwargs...,
 )
-    if years == true
-        times = time_p.trange / 365
-    else
-        times = time_p.trange
-    end
-
     kwargs_dict = Dict(kwargs)
+
+    times = collect(time_p.trange)
 
     if haskey(kwargs_dict, :xlims)
         lower = kwargs_dict[:xlims][1] * 365
@@ -236,6 +242,14 @@ function plot_schematic(
         noise_vec = noise_vec[lower:upper]
         testpositive_vec = testpositive_vec[lower:upper]
         alertstatus_vec = alertstatus_vec[lower:upper]
+        outbreak_thresholds_vec = vec(outbreak_bounds)
+        outbreak_thresholds_vec = filter(
+            x -> x >= lower && x <= upper, outbreak_thresholds_vec
+        )
+        alert_thresholds_vec = vec(alert_bounds)
+        alert_thresholds_vec = filter(
+            x -> x >= lower && x <= upper, alert_thresholds_vec
+        )
     end
 
     fig = Figure()
@@ -285,9 +299,39 @@ function plot_schematic(
         linestyle = :dash
     )
 
+    if !isempty(outbreak_thresholds_vec)
+        map(
+            ax -> vlines!(
+                ax,
+                outbreak_thresholds_vec;
+                color = outbreakcolormap[2],
+                linewidth = 2,
+                linestyle = :dash,
+            ),
+            [incax, testax],
+        )
+    end
+
+    if !isempty(alert_thresholds_vec)
+        map(
+            ax -> vlines!(
+                ax,
+                alert_thresholds_vec;
+                color = alertcolormap[2],
+                linewidth = 2,
+                linestyle = :dash,
+            ),
+            [incax, testax],
+        )
+    end
+
     map(
         ax -> hidexdecorations!(ax),
-        [noiseax, incax, testax],
+        [
+            noiseax,
+            incax,
+            # testax
+        ],
     )
 
     linkxaxes!(noiseax, incax, testax)
@@ -296,11 +340,16 @@ function plot_schematic(
 end
 
 plot_schematic(
-    inc_vec, outbreak_status, outbreak_specification, noise_vec,
+    inc_vec,
+    outbreak_status,
+    outbreak_thresholds[:, 1:2],
+    outbreak_specification,
+    noise_vec,
     movingavg_testpositives,
     alertstatus_vec,
-    outbreak_detection_specification.alert_threshold;
-    time_p = time_p,
-    years = true,
+    alert_bounds[
+        (@view(alert_bounds[:, 2]) .- @view(alert_bounds[:, 1]) .> 30), :,
+    ],
+    outbreak_detection_specification.alert_threshold; time_p = time_p,
     xlims = (5, 13),
 )
