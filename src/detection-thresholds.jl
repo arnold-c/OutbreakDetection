@@ -51,12 +51,16 @@ function create_inc_infec_arr!(
             abovethresholdrle; ncols = 4
         )
 
-        ensemble_thresholds_vec[sim] = classify_all_outbreaks!(
+        classify_all_outbreaks!(
             @view(ensemble_inc_arr[:, 1, sim]),
             @view(ensemble_inc_arr[:, 3, sim]),
             outbreak_thresholds,
             minoutbreakdur,
             minoutbreaksize,
+        )
+
+        ensemble_thresholds_vec[sim] = filter_only_outbreaks(
+            outbreak_thresholds
         )
     end
     return nothing
@@ -106,8 +110,12 @@ function classify_all_outbreaks!(
         )
     end
 
+    return nothing
+end
+
+function filter_only_outbreaks(all_thresholds_arr)
     return @view(
-        all_thresholds_arr[(all_thresholds_arr[:, 1] .!= 0), :]
+        all_thresholds_arr[(all_thresholds_arr[:, 4] .!= 0), :]
     )
 end
 
