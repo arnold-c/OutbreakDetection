@@ -138,6 +138,16 @@ function calculate_tested!(outvec, invec, perc_tested)
     @. outvec = round(invec * perc_tested)
 end
 
+function calculate_positives(
+    type_positive_function!, tested_vec, tlength, lag, testcharacteristic
+)
+    outvec = zeros(Int64, tlength)
+    type_positive_function!(
+        outvec, tested_vec, tlength, lag, testcharacteristic
+    )
+    return outvec
+end
+
 function calculate_noise_positives!(outvec, tested_vec, tlength, lag, spec)
     tested_multiplier = 1.0 - spec
     calculate_positives!(outvec, tested_vec, tlength, lag, tested_multiplier)
