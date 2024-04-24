@@ -7,7 +7,7 @@ using ColorSchemes
 
 using OutbreakDetection
 
-include(srcdir("makie-plotting-setup.jl"))
+includet(srcdir("makie-plotting-setup.jl"))
 includet(srcdir("ensemble-parameters.jl"))
 
 #%%
@@ -70,45 +70,31 @@ save(
 )
 
 #%%
+create_testing_related_plots(
+    ensemble_specification,
+    ensemble_outbreak_specification,
+    ensemble_noise_specification_vec[2],
+    ensemble_single_outbreak_detection_spec,
+    ensemble_single_individual_test_spec,
+    ensemble_time_specification,
+    ensemble_single_incarr;
+    seed = 1234,
+    sim = 1,
+    xlims = (0, 10),
+)
+
+#%%
 for noise_specification in ensemble_noise_specification_vec
-    scenario_specification = ScenarioSpecification(
+    create_testing_related_plots(
         ensemble_specification,
         ensemble_outbreak_specification,
         noise_specification,
         ensemble_single_outbreak_detection_spec,
         ensemble_single_individual_test_spec,
-    )
-
-    ensemble_solution_dict = get_ensemble_file(scenario_specification)
-
-    @unpack OT_chars = ensemble_solution_dict
-
-    noisearr, poisson_noise_prop = create_noise_arr(
-        noise_specification,
-        ensemble_single_incarr;
-        ensemble_specification = ensemble_specification,
-        seed = 1234,
-    )
-    noisedir = getdirpath(noise_specification)
-
-    testarr, test_movingvg_arr = create_testing_arrs(
-        ensemble_single_incarr,
-        noisearr,
-        ensemble_single_outbreak_detection_spec,
-        ensemble_single_individual_test_spec,
-    )
-
-    plot_all_single_scenarios(
-        noisearr,
-        poisson_noise_prop,
-        noisedir,
-        OT_chars,
-        ensemble_single_incarr,
-        testarr,
-        test_movingvg_arr,
-        ensemble_single_individual_test_spec,
-        ensemble_single_outbreak_detection_spec,
         ensemble_time_specification,
+        ensemble_single_incarr;
+        seed = 1234,
+        sim = 1,
     )
 
     GC.gc(true)

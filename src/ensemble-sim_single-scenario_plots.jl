@@ -1,3 +1,60 @@
+function create_testing_related_plots(
+    ensemble_specification,
+    outbreak_specification,
+    noise_specification,
+    outbreak_detection_specification,
+    test_specification,
+    time_specification,
+    incarr;
+    seed = 1234,
+    sim = 1,
+    kwargs...,
+)
+    scenario_specification = ScenarioSpecification(
+        ensemble_specification,
+        outbreak_specification,
+        noise_specification,
+        outbreak_detection_specification,
+        test_specification,
+    )
+
+    ensemble_solution_dict = get_ensemble_file(scenario_specification)
+
+    @unpack OT_chars = ensemble_solution_dict
+
+    noisearr, poisson_noise_prop = create_noise_arr(
+        noise_specification,
+        incarr;
+        ensemble_specification = ensemble_specification,
+        seed = seed,
+    )
+    noisedir = getdirpath(noise_specification)
+
+    testarr, test_movingvg_arr = create_testing_arrs(
+        incarr,
+        noisearr,
+        outbreak_detection_specification,
+        test_specification
+    )
+
+    plot_all_single_scenarios(
+        noisearr,
+        poisson_noise_prop,
+        noisedir,
+        OT_chars,
+        incarr,
+        testarr,
+        test_movingvg_arr,
+        test_specification,
+        outbreak_detection_specification,
+        time_specification;
+        sim = sim,
+        kwargs...,
+    )
+
+    return nothing
+end
+
 function plot_all_single_scenarios(
     noisearr,
     poisson_noise_prop,
@@ -8,7 +65,9 @@ function plot_all_single_scenarios(
     test_movingvg_arr,
     test_specification,
     outbreak_detection_specification,
-    time_specification,
+    time_specification;
+    sim = 1,
+    kwargs...,
 )
     ensemble_noise_plotpath = joinpath(
         plotsdir(),
@@ -227,8 +286,9 @@ function plot_all_single_scenarios(
         test_movingvg_arr,
         outbreak_detection_specification,
         time_specification;
-        sim = 1,
+        sim = sim,
         plottitle = noise_plottitle,
+        kwargs...,
     )
 
     save(

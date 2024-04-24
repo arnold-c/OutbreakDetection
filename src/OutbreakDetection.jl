@@ -104,7 +104,7 @@ export seircolors,
 # @reexport using .PlottingFunctions
 
 include("ensemble-sim_single-scenario_plots.jl")
-export plot_all_single_scenarios
+export create_testing_related_plots, plot_all_single_scenarios
 
 include("threshold_comparison_plots.jl")
 export collect_threshold_char_vec, plot_all_threshold_comparisons
