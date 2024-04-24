@@ -91,6 +91,24 @@ function get_outbreak_status(
     return outbreak_status
 end
 
+function shift_vec(invec, shift::T) where {T<:Integer}
+    if shift == 0
+        return invec
+    end
+    outvec = zeros(eltype(invec), length(invec))
+    if shift > 0
+        for i in (shift + 1):lastindex(invec)
+            outvec[i] = invec[i - shift]
+        end
+    end
+    if shift < 0
+        for i in 1:(lastindex(invec) + shift)
+            outvec[i] = invec[i - shift]
+        end
+    end
+    return outvec
+end
+
 function create_schematic_simulation(
     states_p, dynamics_p, noise_states_p, noise_dynamics_p, test_specification,
     time_p; seed = 1234,
