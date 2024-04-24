@@ -75,7 +75,8 @@ function DynamicsParameters(
     sigma::Float64,
     gamma::Float64,
     R_0::Float64,
-    vaccination_coverage::Float64,
+    vaccination_coverage::Float64;
+    seasonality::Function = cos,
 )
     mu = calculate_mu(annual_births_per_k)
     beta_mean = calculate_beta(R_0, gamma, mu, 1, N)
@@ -84,7 +85,7 @@ function DynamicsParameters(
     return DynamicsParameters(
         beta_mean,
         beta_force,
-        cos,
+        seasonality,
         sigma,
         gamma,
         mu,
