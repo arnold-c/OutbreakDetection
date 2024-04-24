@@ -68,27 +68,27 @@ function get_outbreak_status(
 
     abovethresholdrle = rle(abovethreshold_vec)
 
-    all_outbreak_thresholds = calculate_outbreak_thresholds(abovethresholdrle)
+    all_outbreak_bounds = calculate_outbreak_thresholds(abovethresholdrle)
 
     OutbreakDetection.classify_all_outbreaks!(
         inc_vec,
         abovethreshold_vec,
-        all_outbreak_thresholds,
+        all_outbreak_bounds,
         outbreak_specification.minimum_outbreak_duration,
         outbreak_specification.minimum_outbreak_size,
     )
 
-    outbreak_thresholds = OutbreakDetection.filter_only_outbreaks(
-        all_outbreak_thresholds
+    outbreak_bounds = OutbreakDetection.filter_only_outbreaks(
+        all_outbreak_bounds
     )
 
     outbreak_status = zeros(Int64, length(inc_vec))
 
-    for (lower, upper) in eachrow(outbreak_thresholds)
+    for (lower, upper) in eachrow(outbreak_bounds)
         # @show lower, upper
         outbreak_status[lower:upper] .= 1
     end
-    return outbreak_status, outbreak_thresholds
+    return outbreak_status, outbreak_bounds
 end
 
 function shift_vec(invec, shift::T) where {T<:Integer}
@@ -134,7 +134,7 @@ function create_schematic_simulation(
             )
         )
 
-    outbreak_status, outbreak_thresholds = get_outbreak_status(
+    outbreak_status, outbreak_bounds = get_outbreak_status(
         inc_vec, outbreak_specification
     )
 
@@ -183,20 +183,20 @@ function create_schematic_simulation(
         movingavg_testpositives,
         outbreak_detection_specification.alert_threshold,
     )
-    alert_thresholds = calculate_outbreak_thresholds(
+    alert_bounds = calculate_outbreak_thresholds(
         rle(alertstatus_vec .> 0); ncols = 2
     )
 
     return inc_vec,
     outbreak_status,
-    outbreak_thresholds,
+    outbreak_bounds,
     noise_vec,
     movingavg_testpositives,
     alertstatus_vec,
-    alert_thresholds
+    alert_bounds
 end
 
-inc_vec, outbreak_status, outbreak_thresholds, noise_vec, movingavg_testpositives, alertstatus_vec, alert_bounds = create_schematic_simulation(
+inc_vec, outbreak_status, outbreak_bounds, noise_vec, movingavg_testpositives, alertstatus_vec, alert_bounds = create_schematic_simulation(
     states_p,
     dynamics_p,
     noise_states_p,
@@ -242,14 +242,17 @@ function plot_schematic(
         noise_vec = noise_vec[lower:upper]
         testpositive_vec = testpositive_vec[lower:upper]
         alertstatus_vec = alertstatus_vec[lower:upper]
-        outbreak_thresholds_vec = vec(outbreak_bounds)
-        outbreak_thresholds_vec = filter(
-            x -> x >= lower && x <= upper, outbreak_thresholds_vec
-        )
-        alert_thresholds_vec = vec(alert_bounds)
-        alert_thresholds_vec = filter(
-            x -> x >= lower && x <= upper, alert_thresholds_vec
-        )
+
+        outbreak_bounds = outbreak_bounds[
+            (outbreak_bounds[:, 1] .>= lower) .& (outbreak_bounds[:, 2] .<= upper),
+            :,
+        ]
+        outbreak_bounds_vec = vec(outbreak_bounds)
+
+        alert_bounds = alert_bounds[
+            (alert_bounds[:, 1] .>= lower) .& (alert_bounds[:, 2] .<= upper), :,
+        ]
+        alert_bounds_vec = vec(alert_bounds)
     end
 
     fig = Figure()
@@ -262,7 +265,7 @@ function plot_schematic(
         times,
         noise_vec;
         color = :black,
-        linewidth = 2.5,
+        linewidth = 3,
     )
 
     lines!(
@@ -271,7 +274,7 @@ function plot_schematic(
         inc_vec;
         color = outbreakstatus_vec,
         colormap = outbreakcolormap,
-        linewidth = 2.5,
+        linewidth = 3,
     )
 
     hlines!(
@@ -288,7 +291,7 @@ function plot_schematic(
         testpositive_vec;
         color = alertstatus_vec,
         colormap = alertcolormap,
-        linewidth = 2.5,
+        linewidth = 3,
     )
 
     hlines!(
@@ -299,29 +302,34 @@ function plot_schematic(
         linestyle = :dash
     )
 
-    if !isempty(outbreak_thresholds_vec)
-        map(
-            ax -> vlines!(
-                ax,
-                outbreak_thresholds_vec;
-                color = outbreakcolormap[2],
-                linewidth = 2,
-                linestyle = :dash,
-            ),
-            [incax, testax],
+    if !isempty(outbreak_bounds_vec)
+        vspan!(
+            incax,
+            outbreak_bounds[:, 1],
+            outbreak_bounds[:, 2];
+            color = (outbreakcolormap[2], 0.2),
+        )
+
+        vlines!(testax,
+            outbreak_bounds_vec;
+            color = outbreakcolormap[2],
+            linewidth = 3,
         )
     end
 
-    if !isempty(alert_thresholds_vec)
-        map(
-            ax -> vlines!(
-                ax,
-                alert_thresholds_vec;
-                color = alertcolormap[2],
-                linewidth = 2,
-                linestyle = :dash,
-            ),
-            [incax, testax],
+    if !isempty(alert_bounds)
+        vspan!(
+            testax,
+            alert_bounds[:, 1],
+            alert_bounds[:, 2];
+            color = (alertcolormap[2], 0.2),
+        )
+
+        vlines!(
+            incax,
+            alert_bounds_vec;
+            color = alertcolormap[2],
+            linewidth = 3
         )
     end
 
@@ -330,7 +338,7 @@ function plot_schematic(
         [
             noiseax,
             incax,
-            # testax
+            testax,
         ],
     )
 
@@ -342,7 +350,7 @@ end
 plot_schematic(
     inc_vec,
     outbreak_status,
-    outbreak_thresholds[:, 1:2],
+    outbreak_bounds[:, 1:2],
     outbreak_specification,
     noise_vec,
     movingavg_testpositives,
