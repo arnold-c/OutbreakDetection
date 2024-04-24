@@ -50,7 +50,7 @@ time_p = SimTimeParameters(; tmin = 0.0, tmax = 365.0 * 20, tstep = 1.0)
 outbreak_specification = OutbreakSpecification(5, 30, 500)
 
 outbreak_detection_specification = OutbreakDetectionSpecification(
-    5,
+    7,
     7,
     1.0,
     0.75,
@@ -66,9 +66,7 @@ function get_outbreak_status(
 
     abovethresholdrle = rle(abovethreshold_vec)
 
-    all_outbreak_thresholds = calculate_outbreak_thresholds(
-        abovethresholdrle; ncols = 4
-    )
+    all_outbreak_thresholds = calculate_outbreak_thresholds(abovethresholdrle)
 
     OutbreakDetection.classify_all_outbreaks!(
         inc_vec,
@@ -117,6 +115,7 @@ function create_schematic_simulation(
         5, 7, 1.0, 0.5, "movingavg"
     ),
     noise_scaling = 10,
+    shift_noise = 0,
 )
     inc_sv = seir_mod(
         states_p.init_states,
@@ -125,7 +124,11 @@ function create_schematic_simulation(
         seed = seed,
     )[2]
 
-    inc_vec = vec(convert_svec_to_matrix(inc_sv))
+    inc_vec =
+        round.(calculate_movingavg(
+            vec(convert_svec_to_matrix(inc_sv)),
+            7,
+        ))
 
     outbreak_status = get_outbreak_status(
         inc_vec, outbreak_specification
@@ -138,9 +141,11 @@ function create_schematic_simulation(
         seed = seed
     )[2]
 
-    noise_vec = calculate_movingavg(
+    noise_vec_tmp = calculate_movingavg(
         vec(convert_svec_to_matrix(noise_sv)) .* noise_scaling, 7
     )
+
+    noise_vec = shift_vec(noise_vec_tmp, shift_noise)
 
     perc_tested =
         outbreak_detection_specification.percent_visit_clinic *
@@ -176,7 +181,9 @@ function create_schematic_simulation(
     )
 
     return inc_vec,
-    outbreak_status, noise_vec, movingavg_testpositives,
+    outbreak_status,
+    noise_vec,
+    movingavg_testpositives,
     alertstatus_vec
 end
 
@@ -188,8 +195,10 @@ inc_vec, outbreak_status, noise_vec, movingavg_testpositives, alertstatus_vec = 
     test_specification,
     time_p;
     seed = 12345,
+    outbreak_specification = outbreak_specification,
     outbreak_detection_specification = outbreak_detection_specification,
-    noise_scaling = 10,
+    noise_scaling = 15,
+    shift_noise = -100,
 );
 
 function plot_schematic(
