@@ -227,6 +227,7 @@ function plot_schematic(
     alertcolormap = [
         N_MISSED_OUTBREAKS_COLOR, N_ALERTS_COLOR
     ],
+    shade_alert_outbreak_overlap = false,
     kwargs...,
 )
     kwargs_dict = Dict(kwargs)
@@ -302,35 +303,37 @@ function plot_schematic(
         linestyle = :dash
     )
 
-    if !isempty(outbreak_bounds_vec)
-        vspan!(
-            incax,
-            outbreak_bounds[:, 1],
-            outbreak_bounds[:, 2];
-            color = (outbreakcolormap[2], 0.2),
-        )
+    if shade_alert_outbreak_overlap
+        if !isempty(outbreak_bounds_vec)
+            vspan!(
+                incax,
+                outbreak_bounds[:, 1],
+                outbreak_bounds[:, 2];
+                color = (outbreakcolormap[2], 0.2),
+            )
 
-        vlines!(testax,
-            outbreak_bounds_vec;
-            color = outbreakcolormap[2],
-            linewidth = 3,
-        )
-    end
+            vlines!(testax,
+                outbreak_bounds_vec;
+                color = outbreakcolormap[2],
+                linewidth = 3,
+            )
+        end
 
-    if !isempty(alert_bounds)
-        vspan!(
-            testax,
-            alert_bounds[:, 1],
-            alert_bounds[:, 2];
-            color = (alertcolormap[2], 0.2),
-        )
+        if !isempty(alert_bounds)
+            vspan!(
+                testax,
+                alert_bounds[:, 1],
+                alert_bounds[:, 2];
+                color = (alertcolormap[2], 0.2),
+            )
 
-        vlines!(
-            incax,
-            alert_bounds_vec;
-            color = alertcolormap[2],
-            linewidth = 3
-        )
+            vlines!(
+                incax,
+                alert_bounds_vec;
+                color = alertcolormap[2],
+                linewidth = 3
+            )
+        end
     end
 
     map(
@@ -347,7 +350,7 @@ function plot_schematic(
     return fig
 end
 
-plot_schematic(
+schematic_no_shade_fig = plot_schematic(
     inc_vec,
     outbreak_status,
     outbreak_bounds[:, 1:2],
@@ -359,5 +362,34 @@ plot_schematic(
         (@view(alert_bounds[:, 2]) .- @view(alert_bounds[:, 1]) .> 30), :,
     ],
     outbreak_detection_specification.alert_threshold; time_p = time_p,
+    shade_alert_outbreak_overlap = false,
     xlims = (5, 13),
+)
+
+save(
+    joinpath(plotsdir(), "schematic-simulation_no-shade.png"),
+    schematic_no_shade_fig;
+    size = (2200, 1600),
+)
+
+schematic_with_shade_fig = plot_schematic(
+    inc_vec,
+    outbreak_status,
+    outbreak_bounds[:, 1:2],
+    outbreak_specification,
+    noise_vec,
+    movingavg_testpositives,
+    alertstatus_vec,
+    alert_bounds[
+        (@view(alert_bounds[:, 2]) .- @view(alert_bounds[:, 1]) .> 30), :,
+    ],
+    outbreak_detection_specification.alert_threshold; time_p = time_p,
+    shade_alert_outbreak_overlap = true,
+    xlims = (5, 13),
+)
+
+save(
+    joinpath(plotsdir(), "schematic-simulation_with-shade.png"),
+    schematic_with_shade_fig;
+    size = (2200, 1600),
 )
