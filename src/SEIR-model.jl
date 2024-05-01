@@ -12,7 +12,6 @@ using Statistics
 using Distributions
 using Random
 using UnPack
-using LoopVectorization
 using StaticArrays
 
 """
