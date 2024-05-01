@@ -7,12 +7,10 @@ This is a simulation of an SIR model that uses Tau-leaping, with commuter
 imports. All jumps are manually defined.
 """
 
-using DifferentialEquations
 using Statistics
 using Distributions
 using Random
 using UnPack
-using LoopVectorization
 using StaticArrays
 
 """
