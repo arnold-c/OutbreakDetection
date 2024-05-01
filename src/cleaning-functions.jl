@@ -4,8 +4,8 @@
 #     create_sir_all_sims_array, create_sir_all_sims_array!,
 #     create_sir_all_sim_quantiles, create_sir_all_sim_quantiles!
 
-using DataFrames, DataFramesMeta
-using ModelingToolkit, DifferentialEquations
+using DataFrames
+using DataFramesMeta
 using FLoops
 
 function create_sir_df(sir_array::Matrix, trange, states = [:S, :I, :R, :N])
@@ -35,44 +35,6 @@ function create_sir_df(sol, states)
     return create_sir_df_inner(DataFrame(sol), states)
 end
 
-function create_sir_df(sol::RODESolution, states = [:S, :I, :R])
-    @chain DataFrame(sol) begin
-        if "value1" in names(_)
-            rename!(_, [:time, states...])
-        else
-            rename!(s -> replace(s, "(t)" => ""), _)
-            rename!(:timestamp => :time)
-        end
-        if :N in states
-            stack(_, [states...]; variable_name = :State, value_name = :Number)
-        else
-            transform!(_, states => (+) => :N)
-            stack(
-                _, [states..., :N]; variable_name = :State, value_name = :Number
-            )
-        end
-    end
-end
-
-function create_sir_df(sol::ODESolution, states = [:S, :I, :R])
-    @chain DataFrame(sol) begin
-        if "value1" in names(DataFrame(_))
-            rename!(_, [:time, states...])
-        else
-            rename!(s -> replace(s, "(t)" => ""), _)
-            rename!(:timestamp => :time)
-        end
-        if :N in states
-            stack(_, [states...]; variable_name = :State, value_name = :Number)
-        else
-            transform!(_, states => (+) => :N)
-            stack(
-                _, [states..., :N]; variable_name = :State, value_name = :Number
-            )
-        end
-    end
-end
-
 function create_sir_beta_dfs(sol, states = [:S, :I, :R])
     state_df = create_sir_df(sol, states)
 
@@ -93,12 +55,12 @@ end
 
 function create_sir_all_sim_quantiles!(all_sims_array, sim_quantiles; quantiles)
     for state in axes(all_sims_array, 2), time in axes(all_sims_array, 1)
-            sim_quantiles[:, time, state] = quantile(
-                skipmissing(
-                    replace(@view(all_sims_array[time, state, :]), NaN => missing)
-                ),
-                quantiles,
-            )
+        sim_quantiles[:, time, state] = quantile(
+            skipmissing(
+                replace(@view(all_sims_array[time, state, :]), NaN => missing)
+            ),
+            quantiles,
+        )
     end
 end
 
