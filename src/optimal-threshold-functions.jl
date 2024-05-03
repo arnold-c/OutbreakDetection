@@ -183,6 +183,29 @@ function create_and_save_xlsx_optimal_threshold_summaries(
             country_filename =
                 base_filename * "_$(country.code)_$(country.year)"
 
+            if haskey(kwargs_dict, :gt_kwargs)
+                gt_kwargs = kwargs_dict[:gt_kwargs]
+
+                if !haskey(gt_kwargs, :summary_stats)
+                    @error "gt_kwargs does not have summary_stats. Please provide one of the following: mean, perc_25th, perc_50th, perc_75th (or any other percentile that was calculated)"
+                end
+
+                map(gt_kwargs.summary_stats) do stat
+                    statdf = getproperty(country_wide_df_tuples, Symbol(stat))
+
+                    gt_table(
+                        statdf;
+                        testing_rates = gt_kwargs.testing_rates,
+                        colorschemes = gt_kwargs.colorschemes,
+                        save = gt_kwargs.save,
+                        show = gt_kwargs.show,
+                        filepath = tabledirpath,
+                        filename = country_filename * "_$(stat).png",
+                        decimals = gt_kwargs.decimals,
+                    )
+                end
+            end
+
             save_xlsx_optimal_threshold_summaries(
                 (; country_info_df, country_long_df, country_wide_df_tuples...),
                 country_filename;
@@ -229,7 +252,7 @@ function create_and_save_xlsx_optimal_threshold_summaries(
                 gt_table(
                     statdf;
                     testing_rates = gt_kwargs.testing_rates,
-                    colorscheme = gt_kwargs.colorscheme,
+                    colorschemes = gt_kwargs.colorschemes,
                     save = gt_kwargs.save,
                     show = gt_kwargs.show,
                     filepath = tabledirpath,
@@ -311,10 +334,9 @@ function create_and_save_xlsx_optimal_threshold_summaries(
     if haskey(kwargs_dict, :gt_kwargs)
         gt_kwargs = kwargs_dict[:gt_kwargs]
 
-        gt_table(
-            alert_thresholds;
+        alert_thresholds_kwargs = (;
             testing_rates = gt_kwargs.testing_rates,
-            colorscheme = gt_kwargs.alert_threshold_colorscheme,
+            colorschemes = gt_kwargs.alert_threshold_colorscheme,
             filepath = tabledirpath,
             filename = filename * "_alert_thresholds.png",
             save = gt_kwargs.save,
@@ -322,15 +344,32 @@ function create_and_save_xlsx_optimal_threshold_summaries(
             decimals = 0,
         )
 
-        gt_table(
-            accuracy;
+        if haskey(gt_kwargs, :alert_threshold_domain)
+            alert_thresholds_kwargs = (;
+                alert_thresholds_kwargs...,
+                domain = gt_kwargs.alert_threshold_domain,
+            )
+        end
+
+        gt_table(alert_thresholds; alert_thresholds_kwargs...)
+
+        accuracy_kwargs = (;
             testing_rates = gt_kwargs.testing_rates,
-            colorscheme = gt_kwargs.accuracy_colorscheme,
+            colorschemes = gt_kwargs.accuracy_colorscheme,
             filepath = tabledirpath,
             filename = filename * "_accuracy.png",
             save = gt_kwargs.save,
             show = gt_kwargs.show,
         )
+
+        if haskey(gt_kwargs, :accuracy_domain)
+            accuracy_kwargs = (;
+                accuracy_kwargs...,
+                domain = gt_kwargs.accuracy_domain
+            )
+        end
+
+        gt_table(accuracy; accuracy_kwargs...)
     end
 
     @info "Saved the thresholds and accuracy table"
@@ -512,7 +551,7 @@ end
 function gt_table(
     df;
     testing_rates = Between("0.1", "0.6"),
-    colorscheme = "ggsci::green_material",
+    colorschemes = ["ggsci::green_material"],
     save = "no",
     show = "yes",
     filepath = outdir("tables"),
@@ -534,18 +573,22 @@ function gt_table(
         maxval = maximum(matrix)
         minval = minimum(matrix)
         domain = (minval, maxval)
+    else
+        domain = kwarg_dict[:domain]
     end
 
-    if length(colorscheme) !== 1
-        if length(colorscheme) > 2
+    if length(colorschemes) !== 1
+        if length(colorschemes) > 2
             @error "More than 2 colorschemes provided"
+            @show colorschemes
+            @show length(colorschemes)
         end
         domain = ((minval, 0), (0, maxval))
     end
 
     mkpath(filepath)
 
-    @rput filtered save show filepath filename domain colorscheme decimals
+    @rput filtered save show filepath filename domain colorschemes decimals
 
     R"""
     library(gt)
@@ -574,21 +617,21 @@ function gt_table(
         )
      )
 
-    if (length(colorscheme) == 1) {
+    if (length(colorschemes) == 1) {
     table <- table %>%
         data_color(
             columns = 3:ncol(filtered),
             domain = domain,
-            palette = colorscheme
+            palette = colorschemes
         )
     } else {
         colorpalette <- function(x) {
           f_neg <- scales::col_numeric(
-            palette = c(paletteer::paletteer_d(colorscheme[1])[9], '#ffffff'),
+            palette = c(paletteer::paletteer_d(colorschemes[1])[9], '#ffffff'),
             domain = domain[1],
           )
           f_pos <- scales::col_numeric(
-            palette = c('#ffffff', paletteer::paletteer_d(colorscheme[2])[9]),
+            palette = c('#ffffff', paletteer::paletteer_d(colorschemes[2])[9]),
             domain = domain[2]
           )
           ifelse(x < 0, f_neg(x), f_pos(x))

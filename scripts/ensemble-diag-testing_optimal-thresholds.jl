@@ -216,20 +216,20 @@ for (ensemble_noise_specification, ensemble_specification, alertmethod) in
 
     tablefilename = "optimal-threshold_$(noisespec_alertmethod_filename)_thresholds"
 
-    gt_kwargs = (;
-        testing_rates = Between("0.1", "0.6"),
-        alert_threshold_colorscheme = "ggsci::blue_material",
-        accuracy_colorscheme = "ggsci::green_material",
-        save = "yes",
-        show = "no",
-        decimals = 2,
-    )
-
     create_and_save_xlsx_optimal_threshold_summaries(
         optimal_thresholds_vec;
         tabledirpath = tabledirpath,
         filename = tablefilename,
-        gt_kwargs = gt_kwargs,
+        gt_kwargs = (;
+            testing_rates = Between("0.1", "0.6"),
+            alert_threshold_colorscheme = ["ggsci::blue_material"],
+            accuracy_colorscheme = ["ggsci::green_material"],
+            alert_threshold_domain = (0.0, 8.0),
+            accuracy_domain = (0.55, 1.0),
+            save = "yes",
+            show = "no",
+            decimals = 2,
+        ),
     )
 
     create_and_save_xlsx_optimal_threshold_summaries(
@@ -238,10 +238,11 @@ for (ensemble_noise_specification, ensemble_specification, alertmethod) in
         filename = tablefilename,
         gt_kwargs = (;
             testing_rates = Between("0.1", "0.6"),
-            colorscheme = "PuOr",
-            summary_stats = "mean",
+            colorschemes = ["RColorBrewer::Oranges", "RColorBrewer::Purples"],
+            summary_stats = ["mean"],
             save = "yes",
             show = "no",
+            decimals = 2,
         ),
     )
 
@@ -252,6 +253,14 @@ for (ensemble_noise_specification, ensemble_specification, alertmethod) in
         countries = countries,
         tabledirpath = tabledirpath,
         filename = tablefilename,
+        gt_kwargs = (;
+            testing_rates = Between("0.1", "0.6"),
+            colorschemes = ["ggsci::grey_material"],
+            summary_stats = ["mean"],
+            save = "yes",
+            show = "no",
+            decimals = 2,
+        ),
     )
 
     create_and_save_xlsx_optimal_threshold_summaries(
