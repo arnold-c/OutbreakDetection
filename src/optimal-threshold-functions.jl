@@ -557,6 +557,9 @@ function gt_table(
     filepath = outdir("tables"),
     filename = "optimal_thresholds.png",
     decimals = 2,
+    container_width_px = 960,
+    container_height_px = 660,
+    table_width_pct = 100,
     kwargs...,
 )
     kwarg_dict = Dict(kwargs...)
@@ -588,7 +591,7 @@ function gt_table(
 
     mkpath(filepath)
 
-    @rput filtered save show filepath filename domain colorschemes decimals
+    @rput filtered save show filepath filename domain colorschemes decimals container_width_px container_height_px table_width_pct
 
     R"""
     library(gt)
@@ -607,7 +610,10 @@ function gt_table(
         weight = 300
      ) %>%
      tab_options(
-        table.font.size = gt::px(20L),
+        table.font.size = gt::px(23L),
+        table.width = pct(table_width_pct),
+        container.width = px(container_width_px),
+        container.height = px(container_height_px),
      ) %>%
      tab_style(
         style = cell_text(weight = 900),
@@ -615,7 +621,12 @@ function gt_table(
             cells_column_spanners(spanners = everything()),
             cells_column_labels(columns = everything())
         )
-     )
+     ) %>%
+     cols_width(
+        2:ncol(filtered) ~ pct(65/(ncol(filtered) - 2))
+    ) %>%
+    cols_align(align = "center", columns = 2:ncol(filtered))
+
 
     if (length(colorschemes) == 1) {
     table <- table %>%

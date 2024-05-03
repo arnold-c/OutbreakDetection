@@ -259,7 +259,7 @@ for (ensemble_noise_specification, ensemble_specification, alertmethod) in
             summary_stats = ["mean"],
             save = "yes",
             show = "no",
-            decimals = 2,
+            decimals = 0,
         ),
     )
 
