@@ -31,7 +31,8 @@ optimal_threshold_test_spec_vec = [
 
 optimal_threshold_alertthreshold_vec = collect(1:1:15)
 
-R_0_vec = collect(8.0:4.0:20.0)
+# R_0_vec = collect(8.0:4.0:20.0)
+R_0_vec = collect(16.0)
 
 ensemble_dynamics_spec_vec = create_combinations_vec(
     DynamicsParameters,
@@ -110,69 +111,69 @@ for (ensemble_noise_specification, ensemble_specification, alertmethod) in
 
     clinictested_plotdirpath = joinpath(baseplotdirpath, "clinic-tested")
 
-    compare_optimal_thresholds_chars_plot(
-        optimal_thresholds_vec,
-        [
-            (
-                char = :accuracy,
-                label = "Accuracy",
-                color = (ACCURACY_COLOR, 0.7),
-                binwidth = 0.01,
-            ),
-            (
-                char = :detectiondelays,
-                label = "Detection Delay (Days)",
-                color = (DETECTION_DELAY_COLOR, 1.0),
-                binwidth = 10,
-            ),
-            (
-                char = :unavoidable_cases,
-                label = "Unavoidable Cases",
-                color = (PERC_OUTBREAKS_MISSED_COLOR, 1.0),
-                binwidth = 500,
-            ),
-            (
-                char = :avoidable_cases,
-                label = "Avoidable Cases",
-                color = (PERC_OUTBREAKS_DETECTED_COLOR, 1.0),
-                binwidth = 500,
-            ),
-        ];
-        plotdirpath = clinictested_plotdirpath,
-    )
+    # compare_optimal_thresholds_chars_plot(
+    #     optimal_thresholds_vec,
+    #     [
+    #         (
+    #             char = :accuracy,
+    #             label = "Accuracy",
+    #             color = (ACCURACY_COLOR, 0.7),
+    #             binwidth = 0.01,
+    #         ),
+    #         (
+    #             char = :detectiondelays,
+    #             label = "Detection Delay (Days)",
+    #             color = (DETECTION_DELAY_COLOR, 1.0),
+    #             binwidth = 10,
+    #         ),
+    #         (
+    #             char = :unavoidable_cases,
+    #             label = "Unavoidable Cases",
+    #             color = (PERC_OUTBREAKS_MISSED_COLOR, 1.0),
+    #             binwidth = 500,
+    #         ),
+    #         (
+    #             char = :avoidable_cases,
+    #             label = "Avoidable Cases",
+    #             color = (PERC_OUTBREAKS_DETECTED_COLOR, 1.0),
+    #             binwidth = 500,
+    #         ),
+    #     ];
+    #     plotdirpath = clinictested_plotdirpath,
+    # )
 
     test_plotdirpath = joinpath(baseplotdirpath, "tests")
 
-    compare_optimal_thresholds_test_chars_plot(
-        optimal_thresholds_vec,
-        [
-            (
-                char = :accuracy,
-                label = "Accuracy",
-                color = (ACCURACY_COLOR, 0.7),
-                binwidth = 0.01,
-            ),
-            (
-                char = :detectiondelays,
-                label = "Detection Delay (Days)",
-                color = (DETECTION_DELAY_COLOR, 1.0),
-                binwidth = 10,
-            ),
-            (
-                char = :unavoidable_cases,
-                label = "Unavoidable Cases",
-                color = (PERC_OUTBREAKS_MISSED_COLOR, 1.0),
-                binwidth = 500,
-            ),
-            (
-                char = :avoidable_cases,
-                label = "Avoidable Cases",
-                color = (PERC_OUTBREAKS_DETECTED_COLOR, 1.0),
-                binwidth = 500,
-            ),
-        ];
-        plotdirpath = test_plotdirpath,
-    )
+    # compare_optimal_thresholds_test_chars_plot(
+    #     optimal_thresholds_vec,
+    #     [
+    #         (
+    #             char = :accuracy,
+    #             label = "Accuracy",
+    #             color = (ACCURACY_COLOR, 0.7),
+    #             binwidth = 0.01,
+    #         ),
+    #         (
+    #             char = :detectiondelays,
+    #             label = "Detection Delay (Days)",
+    #             color = (DETECTION_DELAY_COLOR, 1.0),
+    #             binwidth = 10,
+    #         ),
+    #         (
+    #             char = :unavoidable_cases,
+    #             label = "Unavoidable Cases",
+    #             color = (PERC_OUTBREAKS_MISSED_COLOR, 1.0),
+    #             binwidth = 500,
+    #         ),
+    #         (
+    #             char = :avoidable_cases,
+    #             label = "Avoidable Cases",
+    #             color = (PERC_OUTBREAKS_DETECTED_COLOR, 1.0),
+    #             binwidth = 500,
+    #         ),
+    #     ];
+    #     plotdirpath = test_plotdirpath,
+    # )
 
     cfr_df = CSV.read(
         datadir("CFR_2022.csv"),
@@ -215,16 +216,33 @@ for (ensemble_noise_specification, ensemble_specification, alertmethod) in
 
     tablefilename = "optimal-threshold_$(noisespec_alertmethod_filename)_thresholds"
 
+    gt_kwargs = (;
+        testing_rates = Between("0.1", "0.6"),
+        alert_threshold_colorscheme = "ggsci::blue_material",
+        accuracy_colorscheme = "ggsci::green_material",
+        save = "yes",
+        show = "no",
+        decimals = 2,
+    )
+
     create_and_save_xlsx_optimal_threshold_summaries(
         optimal_thresholds_vec;
         tabledirpath = tabledirpath,
         filename = tablefilename,
+        gt_kwargs = gt_kwargs,
     )
 
     create_and_save_xlsx_optimal_threshold_summaries(
         optimal_thresholds_vec, :detectiondelays;
         tabledirpath = tabledirpath,
         filename = tablefilename,
+        gt_kwargs = (;
+            testing_rates = Between("0.1", "0.6"),
+            colorscheme = "PuOr",
+            summary_stats = "mean",
+            save = "yes",
+            show = "no",
+        ),
     )
 
     create_and_save_xlsx_optimal_threshold_summaries(
