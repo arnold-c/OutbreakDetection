@@ -202,6 +202,7 @@ function create_and_save_xlsx_optimal_threshold_summaries(
                         filepath = tabledirpath,
                         filename = country_filename * "_$(stat).png",
                         decimals = gt_kwargs.decimals,
+                        gt_kwargs...,
                     )
                 end
             end
@@ -258,6 +259,7 @@ function create_and_save_xlsx_optimal_threshold_summaries(
                     filepath = tabledirpath,
                     filename = base_filename * "_$(stat).png",
                     decimals = gt_kwargs.decimals,
+                    gt_kwargs...,
                 )
             end
         end
@@ -571,16 +573,17 @@ function gt_table(
         rename(:test_scenario => "Test Scenario", :test_lag => "Lag")
     end
 
+    matrix = Matrix(filtered[:, testing_rates])
+    maxval = maximum(matrix)
+    minval = minimum(matrix)
+
     if !haskey(kwarg_dict, :domain)
-        matrix = Matrix(filtered[:, testing_rates])
-        maxval = maximum(matrix)
-        minval = minimum(matrix)
         domain = (minval, maxval)
     else
         domain = kwarg_dict[:domain]
     end
 
-    if length(colorschemes) !== 1
+    if length(colorschemes) !== 1 && !haskey(kwarg_dict, :domain)
         if length(colorschemes) > 2
             @error "More than 2 colorschemes provided"
             @show colorschemes

@@ -58,12 +58,13 @@ ensemble_spec_vec = create_combinations_vec(
     ),
 )
 
-alert_method_vec = ["movingavg", "dailythreshold_movingavg"]
+# alert_method_vec = ["movingavg", "dailythreshold_movingavg"]
+alert_method_vec = ["movingavg"]
 
 #%%
 for (ensemble_noise_specification, ensemble_specification, alertmethod) in
     Iterators.product(
-    ensemble_noise_specification_vec, ensemble_spec_vec, alert_method_vec
+    ensemble_noise_specification_vec[1:2], ensemble_spec_vec, alert_method_vec
 )
     @info "Creating plots and tables for R0: $(ensemble_specification.dynamics_parameters.R_0), $(getdirpath(ensemble_noise_specification)), $(alertmethod)"
     println("==============================================")
@@ -96,7 +97,7 @@ for (ensemble_noise_specification, ensemble_specification, alertmethod) in
 
     noisespec_alertmethod_filename = replace(
         noisespec_alertmethod_path,
-        "/" => "_"
+        "/" => "_",
     )
 
     basedirpath = joinpath(
@@ -106,7 +107,7 @@ for (ensemble_noise_specification, ensemble_specification, alertmethod) in
 
     baseplotdirpath = joinpath(
         plotsdir("ensemble/optimal-thresholds"),
-        basedirpath
+        basedirpath,
     )
 
     clinictested_plotdirpath = joinpath(baseplotdirpath, "clinic-tested")
@@ -189,7 +190,7 @@ for (ensemble_noise_specification, ensemble_specification, alertmethod) in
     population_df = CSV.read(
         datadir("input-populations.csv"),
         DataFrame; delim = ',',
-        header = true
+        header = true,
     )
 
     gha_2022_pop = only(
@@ -211,7 +212,7 @@ for (ensemble_noise_specification, ensemble_specification, alertmethod) in
 
     tabledirpath = joinpath(
         outdir("ensemble/optimal-threshold-results"),
-        basedirpath
+        basedirpath,
     )
 
     tablefilename = "optimal-threshold_$(noisespec_alertmethod_filename)_thresholds"
@@ -239,6 +240,7 @@ for (ensemble_noise_specification, ensemble_specification, alertmethod) in
         gt_kwargs = (;
             testing_rates = Between("0.1", "0.6"),
             colorschemes = ["RColorBrewer::Oranges", "RColorBrewer::Purples"],
+            domain = ((-30.0, 0.0), (0.0, 50.0)),
             summary_stats = ["mean"],
             save = "yes",
             show = "no",
