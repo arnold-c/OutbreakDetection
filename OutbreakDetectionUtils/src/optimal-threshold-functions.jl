@@ -41,13 +41,23 @@ function calculate_OptimalThresholdCharacteristics(
         )
     end
 
+    clinical_case_test_spec_vec = filter(
+        spec -> spec in CLINICAL_TEST_SPECS,
+        ind_test_spec_vec,
+    )
+
+    if length(clinical_case_test_spec_vec) == 0
+        return StructArray(non_clinical_case_optimal_thresholds_vec)
+    end
+
     clinical_case_optimal_thresholds_vec = Vector{
         OptimalThresholdCharacteristics
     }(
-        undef, length(CLINICAL_TEST_SPECS)
+        undef,
+        length(clinical_case_test_spec_vec),
     )
 
-    for (i, ind_test_spec) in enumerate(CLINICAL_TEST_SPECS)
+    for (i, ind_test_spec) in enumerate(clinical_case_test_spec_vec)
         clinical_case_optimal_thresholds_vec[i] = calculate_optimal_threshold(
             1.0,
             ind_test_spec,
@@ -453,6 +463,7 @@ function create_wide_optimal_thresholds_df(df, characteristic_sym)
         )
     end
 
+    # return maindf
     clinical_case_df = subset(
         maindf,
         :sensitivity => sens -> sens .== 1.0,
