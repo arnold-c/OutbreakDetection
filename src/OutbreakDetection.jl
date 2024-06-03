@@ -121,4 +121,19 @@ export calculate_optimal_threshold, calculate_OptimalThresholdCharacteristics,
     create_and_save_xlsx_optimal_threshold_summaries,
     gt_table
 
+
+@static if false
+    include("../scripts/single-sim.jl")
+    include("../scripts/ensemble-sim.jl")
+    include("../scripts/ensemble-sim_single-scenario.jl")
+    include("../scripts/ensemble-sim_noise-visualizations.jl")
+    include("../scripts/ensemble-diag-testing_scenarios_plots.jl")
+    include("../scripts/ensemble-diag-testing_optimal-thresholds.jl")
+    include("../scripts/ensemble-diag-testing_constant-thresholds.jl")
+    include("../scripts/ensemble-diag-testing_optimal-thresholds_single-timeseries.jl")
+    include("../scripts/single-sim_plots.jl")
+    include("../scripts/debugging.jl")
+    include("../scripts/outbreak-detection-schematic.jl")
+end
+
 end
