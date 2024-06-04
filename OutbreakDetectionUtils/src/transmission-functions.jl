@@ -1,4 +1,4 @@
-using LinearAlgebra
+using LinearAlgebra: LinearAlgebra
 
 """
     calculate_beta(R_0, gamma, mu, contact_mat, pop_matrix)
@@ -30,7 +30,7 @@ function calculate_beta(
     V = Diagonal(repeat([gamma + mu], size(contact_mat, 1)))
 
     FV⁻¹ = F * inv(V)
-    eigenvals = eigen(FV⁻¹).values
+    eigenvals = LinearAlgebra.eigen(FV⁻¹).values
     beta = R_0 / maximum(real(eigenvals))
 
     return beta
@@ -93,7 +93,7 @@ function calculateR0(
     V = Diagonal(repeat([gamma + mu], size(contact_mat, 1)))
 
     FV⁻¹ = F * inv(V)
-    eigenvals = eigen(FV⁻¹).values
+    eigenvals = LinearAlgebra.eigen(FV⁻¹).values
 
     R_0 = maximum(real(eigenvals))
 
