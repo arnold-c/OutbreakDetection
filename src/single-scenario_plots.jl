@@ -1,7 +1,7 @@
 using GLMakie
 using NaNMath: NaNMath
 using OutbreakDetectionUtils: ScenarioSpecification, get_ensemble_file,
-    create_noise_arr, create_testing_arrs, get_dirpath
+    create_noise_arr, create_testing_arrs, getdirpath
 
 function singlescenario_test_positivity_plot(
     test_positivity_struct_vec; agg = :seven_day
