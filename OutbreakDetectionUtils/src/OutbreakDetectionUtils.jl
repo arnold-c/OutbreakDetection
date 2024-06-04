@@ -55,6 +55,9 @@ export create_combinations_vec, create_ensemble_spec_combinations,
 include("noise-functions.jl")
 export create_noise_arr, add_poisson_noise_arr!
 
+include("collect-thresholds-vec_functions.jl")
+export collect_threshold_char_vec
+
 include("optimal-threshold-functions.jl")
 export calculate_optimal_threshold, calculate_OptimalThresholdCharacteristics,
     calculate_optimal_threshold_summaries,
