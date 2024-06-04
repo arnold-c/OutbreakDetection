@@ -1,7 +1,4 @@
-using ProgressMeter
-using FLoops
-using StatsBase
-using UnPack
+using StatsBase: StatsBase
 
 function create_inc_infec_arr(
     ensemble_inc_vecs, outbreak_specification::OutbreakSpecification
@@ -40,10 +37,10 @@ function create_inc_infec_arr!(
         ensemble_inc_arr[:, 2, sim] .=
             @view(ensemble_inc_arr[:, 1, sim]) .>= outbreakthreshold
 
-        abovethresholdrle = rle(@view(ensemble_inc_arr[:, 2, sim]))
+        abovethresholdrle = StatsBase.rle(@view(ensemble_inc_arr[:, 2, sim]))
 
         outbreak_thresholds = calculate_outbreak_thresholds(
-            abovethresholdrle; ncols=4
+            abovethresholdrle; ncols = 4
         )
 
         classify_all_outbreaks!(
@@ -61,7 +58,7 @@ function create_inc_infec_arr!(
     return nothing
 end
 
-function calculate_outbreak_thresholds(outbreakrle; ncols=4)
+function calculate_outbreak_thresholds(outbreakrle; ncols = 4)
     # Calculate upper and lower indices of consecutive days of infection
     outbreakaccum = accumulate(+, outbreakrle[2])
     upperbound_indices = findall(isequal(1), outbreakrle[1])
@@ -72,7 +69,7 @@ function calculate_outbreak_thresholds(outbreakrle; ncols=4)
         outbreakaccum[upperbound_indices]
     )
     map!(
-        x -> x - 1 == 0 ? 1 : outbreakaccum[x-1] + 1,
+        x -> x - 1 == 0 ? 1 : outbreakaccum[x - 1] + 1,
         @view(outbreak_thresholds[:, 1]),
         upperbound_indices,
     )
@@ -110,7 +107,7 @@ end
 
 function filter_only_outbreaks(all_thresholds_arr)
     return @view(
-        all_thresholds_arr[(all_thresholds_arr[:, 4].!=0), :]
+        all_thresholds_arr[(all_thresholds_arr[:, 4] .!= 0), :]
     )
 end
 
@@ -123,10 +120,10 @@ function classify_outbreak(
     upper_time,
     lower_time,
     minoutbreakdur,
-    minoutbreaksize
+    minoutbreaksize,
 )
     if upper_time - lower_time >= minoutbreakdur &&
-       periodsumvec >= minoutbreaksize
+        periodsumvec >= minoutbreaksize
         return 1
     end
     return 0
