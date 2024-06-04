@@ -1,6 +1,3 @@
-seircolors = ["dodgerblue4", "green", "firebrick3", "chocolate2", "purple"]
-seir_state_labels = ["S", "E", "I", "R", "N"]
-
 function single_seir_plot(
     sol_df;
     state_colors=seircolors,

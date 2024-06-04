@@ -1,3 +1,6 @@
+seircolors = ["dodgerblue4", "green", "firebrick3", "chocolate2", "purple"]
+seir_state_labels = ["S", "E", "I", "R", "N"]
+
 function time_function(t; annual=true)
     return annual == true ? t / 365.0 : t
 end
