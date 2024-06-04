@@ -1,9 +1,3 @@
-# module NoiseFunctions
-#
-# export create_noise_arr, create_noise_arr!
-
-# include("ensemble-functions.jl")
-# using .EnsembleFunctions
 using UnPack
 using Match
 
@@ -11,7 +5,7 @@ function create_noise_arr(
     noise_specification::DynamicalNoiseSpecification,
     incarr;
     ensemble_specification::EnsembleSpecification,
-    seed = 1234,
+    seed=1234,
     kwargs...,
 )
     seed *= 10
@@ -74,7 +68,7 @@ function create_noise_arr(
             state_parameters.init_states,
             noise_dynamics_parameters,
             time_parameters;
-            seed = run_seed,
+            seed=run_seed,
         )
     end
 
@@ -93,7 +87,7 @@ function create_noise_arr(
 
     add_poisson_noise_arr!(
         poisson_noise, incarr, noise_specification.noise_mean_scaling;
-        seed = seed,
+        seed=seed,
     )
 
     ensemble_inc_arr .+= poisson_noise
@@ -106,13 +100,13 @@ end
 function create_noise_arr(
     noise_specification::PoissonNoiseSpecification,
     incarr;
-    seed = 1234,
+    seed=1234,
     kwargs...,
 )
     noise_arr = zeros(Int64, size(incarr, 1), size(incarr, 3))
 
     add_poisson_noise_arr!(
-        noise_arr, incarr, noise_specification.noise_mean_scaling; seed = seed
+        noise_arr, incarr, noise_specification.noise_mean_scaling; seed=seed
     )
 
     noise_rubella_prop = ones(Float64, size(incarr, 1), size(incarr, 3))
@@ -120,7 +114,7 @@ function create_noise_arr(
 end
 
 function add_poisson_noise_arr!(
-    noise_arr, incarr, noise_mean_scaling; seed = 1234
+    noise_arr, incarr, noise_mean_scaling; seed=1234
 )
     Random.seed!(seed)
 
@@ -132,5 +126,3 @@ function add_poisson_noise_arr!(
         )
     end
 end
-
-# end

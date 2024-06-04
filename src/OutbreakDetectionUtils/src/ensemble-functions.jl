@@ -1,24 +1,7 @@
-# module EnsembleFunctions
-#
-# export run_ensemble_jump_prob, run_jump_prob, summarize_ensemble_jump_prob,
-#     jump_prob_summary, get_ensemble_file
-
 using DrWatson
 using UnPack
 using FLoops
 using ProgressMeter
-
-# include("transmission-functions.jl")
-# # using .TransmissionFunctions
-#
-# include("cleaning-functions.jl")
-# # using .CleaningFunctions
-#
-# include("SEIR-model.jl")
-# # using .SEIRModel
-#
-# include("structs.jl")
-# using .ODStructs
 
 function create_combinations_vec(custom_function, combinations)
     combs = Iterators.product(combinations...)
@@ -103,16 +86,16 @@ function create_ensemble_spec_combinations(
     return ensemble_spec_vec
 end
 
-function run_ensemble_jump_prob(dict_of_ensemble_params; force = false)
+function run_ensemble_jump_prob(dict_of_ensemble_params; force=false)
     prog = Progress(length(dict_of_ensemble_params))
     for ensemble_params in dict_of_ensemble_params
         @produce_or_load(
             run_jump_prob,
             ensemble_params,
             "$(ensemble_params[:ensemble_spec].dirpath)";
-            filename = "ensemble-solution",
-            loadfile = false,
-            force = force
+            filename="ensemble-solution",
+            loadfile=false,
+            force=force
         )
         next!(prog)
     end
@@ -159,7 +142,7 @@ function run_jump_prob(ensemble_param_dict)
             state_parameters.init_states,
             dynamics_parameters,
             time_parameters;
-            seed = run_seed,
+            seed=run_seed,
         )
     end
 
@@ -194,8 +177,8 @@ function summarize_ensemble_jump_prob(dict_of_ensemble_params)
             jump_prob_summary,
             ensemble_params,
             "$(ensemble_params[:ensemble_spec].dirpath)";
-            filename = "ensemble-quantiles_$(ensemble_params[:quantiles])",
-            loadfile = false
+            filename="ensemble-quantiles_$(ensemble_params[:quantiles])",
+            loadfile=false
         )
     end
 end
@@ -217,13 +200,13 @@ function jump_prob_summary(ensemble_param_dict)
     I_init = init_states[:I]
     R_init = init_states[:R]
 
-    qlow = round(0.5 - quantiles / 200; digits = 3)
-    qhigh = round(0.5 + quantiles / 200; digits = 3)
+    qlow = round(0.5 - quantiles / 200; digits=3)
+    qhigh = round(0.5 + quantiles / 200; digits=3)
 
     qs = [qlow, 0.5, qhigh]
 
     ensemble_seir_summary = create_sir_all_sim_quantiles(
-        ensemble_seir_arr; quantiles = qs
+        ensemble_seir_arr; quantiles=qs
     )
 
     caption = "nsims = $nsims, N = $N, S = $S_init, I = $I_init, R = $R_init, beta_force = $beta_force,\nbirths per k/annum = $annual_births_per_k, tstep = $(time_parameters.tstep), quantile int = $quantiles"
@@ -237,9 +220,9 @@ function run_define_outbreaks(dict_of_outbreak_spec_params)
             define_outbreaks,
             outbreak_spec_params,
             "$(outbreak_spec_params[:dirpath])";
-            filename = "ensemble-incidence-array",
-            loadfile = false,
-            force = true
+            filename="ensemble-incidence-array",
+            loadfile=false,
+            force=true
         )
     end
 end
@@ -320,8 +303,8 @@ function run_OutbreakThresholdChars_creation(
             OutbreakThresholdChars_creation,
             OTChars_params,
             "$(OTChars_params[:scenario_spec].dirpath)";
-            filename = "ensemble-scenario",
-            loadfile = false
+            filename="ensemble-scenario",
+            loadfile=false
         )
     end
 end
@@ -337,8 +320,8 @@ function OutbreakThresholdChars_creation(OT_chars_param_dict)
     noise_array, noise_rubella_prop = create_noise_arr(
         noise_specification,
         ensemble_inc_arr;
-        ensemble_specification = scenario_spec.ensemble_specification,
-        seed = seed,
+        ensemble_specification=scenario_spec.ensemble_specification,
+        seed=seed,
     )
 
     testarr, test_movingvg_arr = create_testing_arrs(
@@ -393,5 +376,3 @@ function match_ensemble_file!(criteria, dirpath, container, file)
         push!(container, joinpath(dirpath, file))
     end
 end
-
-# end

@@ -1,8 +1,4 @@
-# module TransmissionFunctions
-
 using LinearAlgebra
-
-# export calculate_beta, calculateR0, calculate_import_rate
 
 """
     calculate_beta(R_0, gamma, mu, contact_mat, pop_matrix)
@@ -57,7 +53,7 @@ Calculate the amplitude of the transmission rate beta as a function of time.
 `beta_mean` is the mean transmission rate, `beta_force` is the amplitude of the `seasonality` function.
 `seasonality` defaults to using the `cosine` function
 """
-function calculate_beta_amp(beta_mean, beta_force, t; seasonality = cos)
+function calculate_beta_amp(beta_mean, beta_force, t; seasonality=cos)
     return beta_mean * (1 + beta_force * seasonality(2pi * t / 365))
 end
 
@@ -127,4 +123,3 @@ Calulate the rate of new infectious individuals imported into the simulation usi
 function calculate_import_rate(mu, R_0, N)
     return (1.06 * mu * (R_0 - 1)) / sqrt(N)
 end
-# end

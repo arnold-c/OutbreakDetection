@@ -1,7 +1,3 @@
-# module SEIRModel
-#
-# export calculate_beta_amp, seir_mod, seir_mod!, seir_mod_loop!
-#
 """
 This is a simulation of an SIR model that uses Tau-leaping, with commuter
 imports. All jumps are manually defined.
@@ -19,7 +15,7 @@ using StaticArrays
 The in-place function to run the SEIR model with a vaccinations going directly to the R compartment and produce the transmission rate array.
 """
 function seir_mod(
-    states, dynamics_params, time_params; seed = 1234
+    states, dynamics_params, time_params; seed=1234
 )
     state_vec = Vector{typeof(states)}(undef, time_params.tlength)
     beta_vec = Vector{Float64}(undef, time_params.tlength)
@@ -32,7 +28,7 @@ function seir_mod(
         states,
         dynamics_params,
         time_params;
-        seed = seed,
+        seed=seed,
     )
 
     return state_vec, inc_vec, beta_vec
@@ -50,7 +46,7 @@ function seir_mod!(
     states,
     dynamics_params,
     time_params;
-    seed = 1234,
+    seed=1234,
 )
     Random.seed!(seed)
 
@@ -71,12 +67,12 @@ function seir_mod!(
     end
 
     @. beta_vec = calculate_beta_amp(
-        beta_mean, beta_force, trange; seasonality = dynamics_params.seasonality
+        beta_mean, beta_force, trange; seasonality=dynamics_params.seasonality
     )
 
     @inbounds for i in 2:(time_params.tlength)
         state_vec[i], inc_vec[i] = seir_mod_loop!(
-            state_vec[i - 1],
+            state_vec[i-1],
             beta_vec[i],
             mu,
             epsilon,
@@ -161,5 +157,3 @@ function convert_svec_to_array(svec)
     end
     return arr
 end
-
-# end

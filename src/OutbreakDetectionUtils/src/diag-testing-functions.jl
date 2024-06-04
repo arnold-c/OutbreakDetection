@@ -1,11 +1,3 @@
-# module DiagTestingFunctions
-#
-# export create_testing_arr, create_testing_arr!, calculate_tested!,
-#     calculate_pos, calculate_pos!, calculate_movingavg, calculate_movingavg!,
-#     detectoutbreak, detectoutbreak!, calculate_ot_characterstics,
-#     calculate_noutbreaks, calculate_OutbreakThresholdChars,
-#     run_OutbreakThresholdChars_creation, OutbreakThresholdChars_creation
-
 using DrWatson
 using StatsBase
 using FreqTables
@@ -14,12 +6,6 @@ using FLoops
 using StructArrays
 using NaNMath: NaNMath
 using TestItems
-
-# include("detection-thresholds.jl")
-# # using .DetectionThresholds
-#
-# include("structs.jl")
-# using .ODStructs
 
 function create_testing_arrs(
     incarr,
@@ -164,7 +150,7 @@ function calculate_positives!(
 )
     @inbounds for day in eachindex(tested_vec)
         if day + lag <= tlength
-            npos_vec[day + lag] = Int64(
+            npos_vec[day+lag] = Int64(
                 round(tested_vec[day] * tested_multiplier)
             )
         end
@@ -384,9 +370,9 @@ function calculate_OutbreakThresholdChars(
         )
         alertrle = rle(@view(testarr[:, 6, sim]))
         outbreakbounds = thresholds_vec[sim][
-            (@view(thresholds_vec[sim][:, 4]) .== 1), 1:3
+            (@view(thresholds_vec[sim][:, 4]).==1), 1:3
         ]
-        alertbounds = calculate_outbreak_thresholds(alertrle; ncols = 2)
+        alertbounds = calculate_outbreak_thresholds(alertrle; ncols=2)
 
         detectionchars = calculate_outbreak_detection_characteristics(
             outbreakbounds, alertbounds
@@ -492,8 +478,8 @@ function calculate_outbreak_detection_characteristics(
     noutbreaks = size(outbreakbounds, 1)
     nalerts = size(alertbounds, 1)
 
-    detected_outbreak_size = periodssum_vec[(alerts_per_outbreak_vec .> 0)]
-    missed_outbreak_size = periodssum_vec[(alerts_per_outbreak_vec .== 0)]
+    detected_outbreak_size = periodssum_vec[(alerts_per_outbreak_vec.>0)]
+    missed_outbreak_size = periodssum_vec[(alerts_per_outbreak_vec.==0)]
 
     n_true_outbreaks_detected = length(
         Set(@view(filtered_matched_bounds[:, 1]))
@@ -518,26 +504,26 @@ function calculate_outbreak_detection_characteristics(
     accuracy = NaNMath.mean([perc_true_outbreaks_detected, perc_alerts_correct])
 
     return (
-        accuracy = accuracy,
-        matched_bounds = filtered_matched_bounds,
-        noutbreaks = noutbreaks,
-        nalerts = nalerts,
-        detected_outbreak_size = detected_outbreak_size,
-        missed_outbreak_size = missed_outbreak_size,
-        n_true_outbreaks_detected = n_true_outbreaks_detected,
-        n_missed_outbreaks = n_missed_outbreaks,
-        n_correct_alerts = n_correct_alerts,
-        n_false_alerts = n_false_alerts,
-        alertsperoutbreak = alerts_per_outbreak_vec,
-        periodsumvec = periodssum_vec,
-        perc_true_outbreaks_detected = perc_true_outbreaks_detected,
-        perc_true_outbreaks_missed = perc_true_outbreaks_missed,
-        falsealert_trueoutbreak_prop = falsealert_trueoutbreak_prop,
-        correctalert_trueoutbreak_prop = correctalert_trueoutbreak_prop,
-        trueoutbreak_alerts_prop = trueoutbreak_alerts_prop,
-        outbreaksmissed_alerts_prop = outbreaksmissed_alerts_prop,
-        perc_alerts_false = perc_alerts_false,
-        perc_alerts_correct = perc_alerts_correct,
+        accuracy=accuracy,
+        matched_bounds=filtered_matched_bounds,
+        noutbreaks=noutbreaks,
+        nalerts=nalerts,
+        detected_outbreak_size=detected_outbreak_size,
+        missed_outbreak_size=missed_outbreak_size,
+        n_true_outbreaks_detected=n_true_outbreaks_detected,
+        n_missed_outbreaks=n_missed_outbreaks,
+        n_correct_alerts=n_correct_alerts,
+        n_false_alerts=n_false_alerts,
+        alertsperoutbreak=alerts_per_outbreak_vec,
+        periodsumvec=periodssum_vec,
+        perc_true_outbreaks_detected=perc_true_outbreaks_detected,
+        perc_true_outbreaks_missed=perc_true_outbreaks_missed,
+        falsealert_trueoutbreak_prop=falsealert_trueoutbreak_prop,
+        correctalert_trueoutbreak_prop=correctalert_trueoutbreak_prop,
+        trueoutbreak_alerts_prop=trueoutbreak_alerts_prop,
+        outbreaksmissed_alerts_prop=outbreaksmissed_alerts_prop,
+        perc_alerts_false=perc_alerts_false,
+        perc_alerts_correct=perc_alerts_correct,
     )
 end
 
@@ -568,7 +554,7 @@ function match_outbreak_detection_bounds(outbreakbounds, alertbounds)
                 continue
             end
             if alertlower <= outbreaklower &&
-                alertupper > outbreaklower
+               alertupper > outbreaklower
                 all_matched_bounds[alert_rownumber, :] .= outbreaklower,
                 outbreakupper, alertlower, alertupper, periodsum
 
@@ -582,7 +568,7 @@ function match_outbreak_detection_bounds(outbreakbounds, alertbounds)
     end
 
     filtered_matched_bounds = @view(
-        all_matched_bounds[(all_matched_bounds[:, 2] .> 0), :]
+        all_matched_bounds[(all_matched_bounds[:, 2].>0), :]
     )
     return filtered_matched_bounds, periodssum_vec, alerts_per_outbreak_vec
 end
@@ -740,7 +726,7 @@ end
                 outbreakbounds, detectionbounds
             ),
             (
-                matched_bounds = [
+                matched_bounds=[
                     10 60 5 15 600
                     10 60 17 40 600
                     10 60 50 80 600
@@ -749,28 +735,26 @@ end
                     380 410 390 420 900
                     500 540 495 550 1000
                 ],
-                noutbreaks = 6,
-                nalerts = 8,
-                detected_outbreak_size = [600, 700, 900, 1000],
-                missed_outbreak_size = [500, 800],
-                n_true_outbreaks_detected = 4,
-                n_missed_outbreaks = 2,
-                n_correct_alerts = 7,
-                n_false_alerts = 1,
-                alertsperoutbreak = [0, 3, 2, 0, 1, 1],
-                periodsumvec = [500, 600, 700, 800, 900, 1000],
-                perc_true_outbreaks_detected = 4 / 6,
-                perc_true_outbreaks_missed = 2 / 6,
-                falsealert_trueoutbreak_prop = 1 / 6,
-                correctalert_trueoutbreak_prop = 7 / 6,
-                trueoutbreak_alerts_prop = 6 / 8,
-                outbreaksmissed_alerts_prop = 2 / 8,
-                perc_alerts_false = 1 / 8,
-                perc_alerts_correct = 7 / 8,
+                noutbreaks=6,
+                nalerts=8,
+                detected_outbreak_size=[600, 700, 900, 1000],
+                missed_outbreak_size=[500, 800],
+                n_true_outbreaks_detected=4,
+                n_missed_outbreaks=2,
+                n_correct_alerts=7,
+                n_false_alerts=1,
+                alertsperoutbreak=[0, 3, 2, 0, 1, 1],
+                periodsumvec=[500, 600, 700, 800, 900, 1000],
+                perc_true_outbreaks_detected=4 / 6,
+                perc_true_outbreaks_missed=2 / 6,
+                falsealert_trueoutbreak_prop=1 / 6,
+                correctalert_trueoutbreak_prop=7 / 6,
+                trueoutbreak_alerts_prop=6 / 8,
+                outbreaksmissed_alerts_prop=2 / 8,
+                perc_alerts_false=1 / 8,
+                perc_alerts_correct=7 / 8,
                 # detectiondelays = [-5, -10, 10, -5],
             ),
         )
     end
 end
-
-# end
