@@ -4,6 +4,7 @@ using DataFrames: DataFrames
 using DataFramesMeta: DataFramesMeta
 using Chain: Chain
 using UnPack: UnPack
+using StatsBase: StatsBase
 using Match: Match
 using XLSX: XLSX
 using RCall: RCall
@@ -528,7 +529,7 @@ function calculate_optimal_threshold_summaries(
     char_percentiles = map(
         percentile -> quantile(all_chars, percentile), percentiles
     )
-    char_mean = mean(all_chars)
+    char_mean = StatsBase.mean(all_chars)
 
     return char_mean, char_percentiles
 end
