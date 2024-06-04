@@ -3,6 +3,7 @@ module OutbreakDetectionUtils
 include("DrWatson-helpers.jl")
 export outdir
 
+
 include("transmission-functions.jl")
 export calculate_beta, calculate_beta_amp, calculateR0, calculate_import_rate, calculate_mu
 
@@ -13,6 +14,15 @@ export SimTimeParameters, EnsembleSpecification, DynamicsParameters,
     PoissonNoiseSpecification, DynamicalNoiseSpecification, NoiseSpecification,
     getdirpath,
     ScenarioSpecification, TestPositivity, OptimalThresholdCharacteristics
+
+include("dynamics-constants.jl")
+export POPULATION_N, LATENT_PER_DAYS, DUR_INF_DAYS, R0, SIGMA, GAMMA,
+    LIFE_EXPECTANCY_YEARS, ANNUAL_BIRTHS_PER_K, VACCINATION_COVERAGE,
+    MU, BETA_MEAN, BETA_FORCE, EPSILON
+
+include("test-constants.jl")
+export CLINICAL_CASE_TEST_SPEC, EPI_LINKED_CASE_TEST_SPEC, CLINICAL_TEST_SPECS
+
 
 include("SEIR-model.jl")
 export seir_mod, seir_mod!, seir_mod_loop!,
