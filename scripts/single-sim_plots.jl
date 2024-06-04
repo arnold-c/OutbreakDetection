@@ -6,7 +6,8 @@ using JLD2
 using DataFrames
 using DataFramesMeta
 
-using OutbreakDetection
+using OutbreakDetectionUtils
+using ODPlots
 
 include(srcdir("makie-plotting-setup.jl"))
 
@@ -22,9 +23,9 @@ include(srcdir("makie-plotting-setup.jl"))
 #%%
 singlesim_timeseries_plot = draw_sir_plot(
     seir_df;
-    annual = true,
-    colors = seircolors,
-    labels = ["S", "E", "I", "R", "N"],
+    annual=true,
+    colors=seircolors,
+    labels=["S", "E", "I", "R", "N"],
 )
 
 mkpath(plotsdir("singlesim"))
@@ -36,7 +37,7 @@ singlesim_si_state_space_plot = @chain DataFrame(Tables.table(seir_array)) begin
     hcat(trange, _)
     rename!(["time", ["S", "E", "I", "R", "N"]...])
     data(_) *
-    mapping(:I, :S; color = :time) *
+    mapping(:I, :S; color=:time) *
     visual(Lines)
     draw
 end
@@ -49,10 +50,10 @@ save(
 #%%
 singlesim_beta_plot = Figure()
 beta_ax = Axis(
-    singlesim_beta_plot[1, 1]; xlabel = "Time (years)", ylabel = "Beta"
+    singlesim_beta_plot[1, 1]; xlabel="Time (years)", ylabel="Beta"
 )
 
-lines!(beta_ax, trange / 365, beta_vec; linewidth = 1)
+lines!(beta_ax, trange / 365, beta_vec; linewidth=1)
 
 xlims!(beta_ax, (0, 3))
 
