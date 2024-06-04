@@ -3,6 +3,7 @@ using StructArrays: StructArrays
 using DataFrames: DataFrames
 using DataFramesMeta: DataFramesMeta
 using Chain: Chain
+using UnPack: UnPack
 using Match: Match
 using XLSX: XLSX
 using RCall: RCall
@@ -66,7 +67,7 @@ function calculate_optimal_threshold(
     individual_test_specification,
     base_parameters,
 )
-    @unpack alertthreshold_vec,
+    UnPack.@unpack alertthreshold_vec,
     ensemble_specification,
     noise_specification,
     outbreak_specification,
@@ -427,14 +428,14 @@ function create_wide_optimal_thresholds_df(df, characteristic_sym)
     maindf = Chain.@chain df begin
         DataFrames.select(
             _,
-            Cols(
+            DataFrames.Cols(
                 x -> startswith(x, "s"),
                 :test_lag,
                 x -> contains(x, "tested"),
                 characteristic_sym,
             ),
         )
-        unstack(
+        DataFrames.unstack(
             _,
             [:sensitivity, :specificity, :test_lag],
             :percent_clinic_tested,
@@ -442,7 +443,7 @@ function create_wide_optimal_thresholds_df(df, characteristic_sym)
         )
         DataFrames.select(
             _,
-            Cols(
+            DataFrames.Cols(
                 x -> startswith(x, "s"),
                 "test_lag",
                 x -> startswith(x, "0"),
@@ -458,10 +459,10 @@ function create_wide_optimal_thresholds_df(df, characteristic_sym)
     )
 
     return Chain.@chain maindf begin
-        antijoin(
+        DataFrames.antijoin(
             _, clinical_case_df; on = [:test_lag, :sensitivity, :specificity]
         )
-        @orderby :specificity, :test_lag
+        DataFramesMeta.@orderby :specificity, :test_lag
         vcat(clinical_case_df, _)
     end
 end

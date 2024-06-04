@@ -27,7 +27,7 @@ function calculate_beta(
     end
 
     F = contact_mat .* pop_matrix
-    V = Diagonal(repeat([gamma + mu], size(contact_mat, 1)))
+    V = LinearAlgebra.Diagonal(repeat([gamma + mu], size(contact_mat, 1)))
 
     FV⁻¹ = F * inv(V)
     eigenvals = LinearAlgebra.eigen(FV⁻¹).values
@@ -53,7 +53,7 @@ Calculate the amplitude of the transmission rate beta as a function of time.
 `beta_mean` is the mean transmission rate, `beta_force` is the amplitude of the `seasonality` function.
 `seasonality` defaults to using the `cosine` function
 """
-function calculate_beta_amp(beta_mean, beta_force, t; seasonality=cos)
+function calculate_beta_amp(beta_mean, beta_force, t; seasonality = cos)
     return beta_mean * (1 + beta_force * seasonality(2pi * t / 365))
 end
 
@@ -90,7 +90,7 @@ function calculateR0(
     B = beta * contact_mat
 
     F = B .* pop_matrix
-    V = Diagonal(repeat([gamma + mu], size(contact_mat, 1)))
+    V = LinearAlgebra.Diagonal(repeat([gamma + mu], size(contact_mat, 1)))
 
     FV⁻¹ = F * inv(V)
     eigenvals = LinearAlgebra.eigen(FV⁻¹).values

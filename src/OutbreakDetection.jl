@@ -1,6 +1,5 @@
 module OutbreakDetection
 
-using OutbreakDetectionUtils
 using GLMakie
 using GLMakie
 using AlgebraOfGraphics
@@ -9,18 +8,12 @@ using UnPack
 using DataFrames
 using NaNMath: NaNMath
 
+using OutbreakDetectionUtils
 export POPULATION_N, LATENT_PER_DAYS, DUR_INF_DAYS, R0, SIGMA, GAMMA,
     LIFE_EXPECTANCY_YEARS, ANNUAL_BIRTHS_PER_K, VACCINATION_COVERAGE,
     MU, BETA_MEAN, BETA_FORCE, EPSILON
 
 export CLINICAL_CASE_TEST_SPEC, EPI_LINKED_CASE_TEST_SPEC, CLINICAL_TEST_SPECS
-
-include("bifurcation-functions.jl")
-export birth_rate_bifurcation_simulation!, bifurcation_summary,
-    beta_force_bifurcation_simulation!,
-    birth_rate_beta_force_bifurcation_simulation!,
-    birth_rate_beta_force_bifurcation_annual_summary,
-    birth_rate_beta_force_bifurcation_cycle_summary
 
 include("plotting-functions.jl")
 export seircolors,
