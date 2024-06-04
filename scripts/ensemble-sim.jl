@@ -5,10 +5,8 @@ using DrWatson
 using ProgressMeter
 using Chain
 
+using OutbreakDetectionUtils
 using OutbreakDetection
-
-# include("../src/OutbreakDetection.jl")
-# using .OutbreakDetection
 
 #%%
 model_types_vec = [("seasonal-infectivity-import", "tau-leaping")]
@@ -91,7 +89,7 @@ poisson_noise_mean_scaling_vec = [8.0]
 
 poisson_noise_spec_vec = create_combinations_vec(
     PoissonNoiseSpecification,
-    (["poisson"], poisson_noise_mean_scaling_vec)
+    (["poisson"], poisson_noise_mean_scaling_vec),
 )
 
 dynamical_noise_R0 = [5.0]

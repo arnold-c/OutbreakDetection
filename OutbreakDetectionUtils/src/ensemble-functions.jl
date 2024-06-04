@@ -98,7 +98,7 @@ function run_ensemble_jump_prob(dict_of_ensemble_params; force = false)
             loadfile = false,
             force = force
         )
-        next!(prog)
+        ProgressMeter.next!(prog)
     end
 end
 
@@ -151,7 +151,7 @@ function run_jump_prob(ensemble_param_dict)
 
     ensemble_seir_arr = convert_svec_to_array(ensemble_seir_vecs)
 
-    quantile_param_dict = dict_list(
+    quantile_param_dict = DrWatson.dict_list(
         DrWatson.@dict(
             ensemble_spec, ensemble_seir_arr, quantiles = quantile_vec
         )
@@ -289,7 +289,7 @@ function define_outbreaks(incidence_param_dict)
         non_clinical_case_ensemble_scenarios, clinical_case_ensemble_scenarios
     )
 
-    scenario_param_dict = dict_list(
+    scenario_param_dict = DrWatson.dict_list(
         DrWatson.@dict(
             scenario_spec = ensemble_scenarios,
             ensemble_inc_arr,
