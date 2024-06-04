@@ -1,6 +1,13 @@
 module OutbreakDetection
 
 using OutbreakDetectionUtils
+using GLMakie
+using GLMakie
+using AlgebraOfGraphics
+using ColorSchemes
+using UnPack
+using DataFrames
+using NaNMath: NaNMath
 
 export POPULATION_N, LATENT_PER_DAYS, DUR_INF_DAYS, R0, SIGMA, GAMMA,
     LIFE_EXPECTANCY_YEARS, ANNUAL_BIRTHS_PER_K, VACCINATION_COVERAGE,
