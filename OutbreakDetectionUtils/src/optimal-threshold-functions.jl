@@ -1,15 +1,20 @@
-using StructArrays
+using ProgressMeter: ProgressMeter
+using StructArrays: StructArrays
+using DataFrames: DataFrames
+using DataFramesMeta: DataFramesMeta
+using Chain: Chain
+using Match: Match
 using XLSX: XLSX
-using RCall
+using RCall: RCall
 
 function calculate_OptimalThresholdCharacteristics(
     percent_clinic_tested_vec,
     ind_test_spec_vec,
-    base_parameters
+    base_parameters,
 )
     non_clinical_case_test_spec_vec = filter(
         spec -> !(spec in CLINICAL_TEST_SPECS),
-        ind_test_spec_vec
+        ind_test_spec_vec,
     )
 
     non_clinical_case_optimal_thresholds_vec = Vector{
@@ -20,7 +25,9 @@ function calculate_OptimalThresholdCharacteristics(
         length(non_clinical_case_test_spec_vec),
     )
 
-    @showprogress for (i, (percent_clinic_tested, ind_test_spec)) in enumerate(
+    ProgressMeter.@showprogress for (
+        i, (percent_clinic_tested, ind_test_spec)
+    ) in enumerate(
         Iterators.product(
             percent_clinic_tested_vec, non_clinical_case_test_spec_vec
         ),
@@ -28,7 +35,7 @@ function calculate_OptimalThresholdCharacteristics(
         non_clinical_case_optimal_thresholds_vec[i] = calculate_optimal_threshold(
             percent_clinic_tested,
             ind_test_spec,
-            base_parameters
+            base_parameters,
         )
     end
 
@@ -42,11 +49,11 @@ function calculate_OptimalThresholdCharacteristics(
         clinical_case_optimal_thresholds_vec[i] = calculate_optimal_threshold(
             1.0,
             ind_test_spec,
-            base_parameters
+            base_parameters,
         )
     end
 
-    return StructArray(
+    return StructArrays.StructArray(
         vcat(
             non_clinical_case_optimal_thresholds_vec,
             clinical_case_optimal_thresholds_vec,
@@ -57,7 +64,7 @@ end
 function calculate_optimal_threshold(
     percent_clinic_tested,
     individual_test_specification,
-    base_parameters
+    base_parameters,
 )
     @unpack alertthreshold_vec,
     ensemble_specification,
@@ -145,9 +152,10 @@ function create_and_save_xlsx_optimal_threshold_summaries(
     base_filename = "$(filename)_$(characteristic)"
 
     if haskey(kwargs_dict, :scale_annual)
-        transform!(
+        DataFrames.transform!(
             long_df,
-            Not(base_columns) .=> x -> x .* kwargs_dict[:scale_annual];
+            DataFrames.Not(base_columns) .=>
+                x -> x .* kwargs_dict[:scale_annual];
             renamecols = false,
         )
 
@@ -160,9 +168,10 @@ function create_and_save_xlsx_optimal_threshold_summaries(
                 @error "Country $(country) has no scale_population. Please provide one"
             end
 
-            country_long_df = transform(
+            country_long_df = DataFrames.transform(
                 long_df,
-                Not(base_columns) .=> x -> x .* country.scale_population;
+                DataFrames.Not(base_columns) .=>
+                    x -> x .* country.scale_population;
                 renamecols = false,
             )
 
@@ -170,7 +179,9 @@ function create_and_save_xlsx_optimal_threshold_summaries(
                 country_long_df
             )
 
-            country_info_df = DataFrame(hcat(country...), [keys(country)...])
+            country_info_df = DataFrames.DataFrame(
+                hcat(country...), [keys(country)...]
+            )
 
             if !haskey(country, :code)
                 @error "Country $(country) has no code. Please provide one"
@@ -215,13 +226,15 @@ function create_and_save_xlsx_optimal_threshold_summaries(
 
             if haskey(country, :cfr) &&
                 occursin("case", String(characteristic))
-                cfr_long_df = transform(
+                cfr_long_df = DataFrames.transform(
                     country_long_df,
-                    Not(base_columns) .=> x -> x .* country.cfr;
+                    DataFrames.Not(base_columns) .=> x -> x .* country.cfr;
                     renamecols = false,
                 )
 
-                rename!(name -> replace(name, r"case" => "death"), cfr_long_df)
+                DataFrames.rename!(
+                    name -> replace(name, r"case" => "death"), cfr_long_df
+                )
 
                 cfr_wide_df_tuples = create_all_wide_optimal_threshold_summary_dfs(
                     cfr_long_df
@@ -367,7 +380,7 @@ function create_and_save_xlsx_optimal_threshold_summaries(
         if haskey(gt_kwargs, :accuracy_domain)
             accuracy_kwargs = (;
                 accuracy_kwargs...,
-                domain = gt_kwargs.accuracy_domain
+                domain = gt_kwargs.accuracy_domain,
             )
         end
 
@@ -380,7 +393,7 @@ function create_and_save_xlsx_optimal_threshold_summaries(
 end
 
 function create_optimal_thresholds_df(optimal_thresholds_vec)
-    @chain begin
+    Chain.@chain begin
         map(optimal_thresholds_vec) do opt
             percent_clinic_tested = opt.percent_clinic_tested
 
@@ -396,7 +409,7 @@ function create_optimal_thresholds_df(optimal_thresholds_vec)
             spec, test_lag, alertthreshold, accuracy
         end
         reduce(vcat, _)
-        DataFrame(
+        DataFrames.DataFrame(
             _,
             [
                 "percent_clinic_tested",
@@ -411,8 +424,8 @@ function create_optimal_thresholds_df(optimal_thresholds_vec)
 end
 
 function create_wide_optimal_thresholds_df(df, characteristic_sym)
-    maindf = @chain df begin
-        select(
+    maindf = Chain.@chain df begin
+        DataFrames.select(
             _,
             Cols(
                 x -> startswith(x, "s"),
@@ -427,7 +440,7 @@ function create_wide_optimal_thresholds_df(df, characteristic_sym)
             :percent_clinic_tested,
             characteristic_sym,
         )
-        select(
+        DataFrames.select(
             _,
             Cols(
                 x -> startswith(x, "s"),
@@ -444,7 +457,7 @@ function create_wide_optimal_thresholds_df(df, characteristic_sym)
         :specificity => spec -> spec .== 0 .|| spec .== 0.8,
     )
 
-    return @chain maindf begin
+    return Chain.@chain maindf begin
         antijoin(
             _, clinical_case_df; on = [:test_lag, :sensitivity, :specificity]
         )
@@ -456,7 +469,7 @@ end
 function create_optimal_threshold_summary_df(
     optimal_thresholds_vec,
     characteristic;
-    percentiles = [0.25, 0.5, 0.75]
+    percentiles = [0.25, 0.5, 0.75],
 )
     percentile_labels = map(perc -> "$(Int64(perc*100))th", percentiles)
     char_percentile_labels = map(
@@ -464,7 +477,7 @@ function create_optimal_threshold_summary_df(
     )
     char_mean_label = "$(characteristic)_mean"
 
-    @chain begin
+    Chain.@chain begin
         map(optimal_thresholds_vec) do opt
             percent_clinic_tested = opt.percent_clinic_tested
 
@@ -486,7 +499,7 @@ function create_optimal_threshold_summary_df(
             char_mean, chars_percentiles...
         end
         reduce(vcat, _)
-        DataFrame(
+        DataFrames.DataFrame(
             _,
             [
                 "percent_clinic_tested",
@@ -543,7 +556,7 @@ function save_xlsx_optimal_threshold_summaries(
 end
 
 function _rename_test_scenario(x)
-    @match x begin
+    Match.@match x begin
         0.85 => "RDT Equivalent (0.85)"
         0.9 => "RDT Equivalent (0.9)"
         _ => "ELISA Equivalent"
@@ -552,7 +565,7 @@ end
 
 function gt_table(
     df;
-    testing_rates = Between("0.1", "0.6"),
+    testing_rates = DataFrames.Between("0.1", "0.6"),
     colorschemes = ["ggsci::green_material"],
     save = "no",
     show = "yes",
@@ -566,11 +579,13 @@ function gt_table(
 )
     kwarg_dict = Dict(kwargs...)
 
-    filtered = @chain df begin
-        @rsubset(:specificity > 0.8)
-        @rtransform(:test_scenario = _rename_test_scenario(:sensitivity))
-        select(:test_scenario, :test_lag, testing_rates)
-        rename(:test_scenario => "Test Scenario", :test_lag => "Lag")
+    filtered = Chain.@chain df begin
+        DataFramesMeta.@rsubset(:specificity > 0.8)
+        DataFramesMeta.@rtransform(
+            :test_scenario = _rename_test_scenario(:sensitivity)
+        )
+        DataFrames.select(:test_scenario, :test_lag, testing_rates)
+        DataFrames.rename(:test_scenario => "Test Scenario", :test_lag => "Lag")
     end
 
     matrix = Matrix(filtered[:, testing_rates])
@@ -594,9 +609,9 @@ function gt_table(
 
     mkpath(filepath)
 
-    @rput filtered save show filepath filename domain colorschemes decimals container_width_px container_height_px table_width_pct
+    RCall.@rput filtered save show filepath filename domain colorschemes decimals container_width_px container_height_px table_width_pct
 
-    R"""
+    RCall.R"""
     library(gt)
     library(tidyverse)
 
