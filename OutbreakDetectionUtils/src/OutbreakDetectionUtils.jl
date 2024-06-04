@@ -3,9 +3,9 @@ module OutbreakDetectionUtils
 include("DrWatson-helpers.jl")
 export outdir
 
-
 include("transmission-functions.jl")
-export calculate_beta, calculate_beta_amp, calculateR0, calculate_import_rate, calculate_mu
+export calculate_beta,
+    calculate_beta_amp, calculateR0, calculate_import_rate, calculate_mu
 
 include("structs.jl")
 export SimTimeParameters, EnsembleSpecification, DynamicsParameters,
@@ -23,13 +23,17 @@ export POPULATION_N, LATENT_PER_DAYS, DUR_INF_DAYS, R0, SIGMA, GAMMA,
 include("test-constants.jl")
 export CLINICAL_CASE_TEST_SPEC, EPI_LINKED_CASE_TEST_SPEC, CLINICAL_TEST_SPECS
 
-
 include("SEIR-model.jl")
 export seir_mod, seir_mod!, seir_mod_loop!,
     convert_svec_to_matrix, convert_svec_to_matrix!, convert_svec_to_array
 
+include("cleaning-functions.jl")
+export create_sir_df, create_sir_beta_dfs, create_sir_sim_array!,
+    create_sir_all_sim_quantiles, create_sir_all_sim_quantiles!
+
 include("detection-thresholds.jl")
-export create_inc_infec_arr, create_inc_infec_arr!, calculate_outbreak_thresholds
+export create_inc_infec_arr,
+    create_inc_infec_arr!, calculate_outbreak_thresholds
 
 include("diag-testing-functions.jl")
 export create_testing_arrs, create_testing_arrs!, calculate_tested!,

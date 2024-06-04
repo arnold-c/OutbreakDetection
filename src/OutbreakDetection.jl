@@ -1,4 +1,5 @@
 module OutbreakDetection
+
 using OutbreakDetectionUtils
 
 export POPULATION_N, LATENT_PER_DAYS, DUR_INF_DAYS, R0, SIGMA, GAMMA,
@@ -6,10 +7,6 @@ export POPULATION_N, LATENT_PER_DAYS, DUR_INF_DAYS, R0, SIGMA, GAMMA,
     MU, BETA_MEAN, BETA_FORCE, EPSILON
 
 export CLINICAL_CASE_TEST_SPEC, EPI_LINKED_CASE_TEST_SPEC, CLINICAL_TEST_SPECS
-
-include("cleaning-functions.jl")
-export create_sir_df, create_sir_beta_dfs, create_sir_sim_array!,
-    create_sir_all_sim_quantiles, create_sir_all_sim_quantiles!
 
 include("bifurcation-functions.jl")
 export birth_rate_bifurcation_simulation!, bifurcation_summary,
