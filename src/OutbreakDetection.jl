@@ -10,6 +10,8 @@ using FLoops
 
 include("makie-plotting-setup.jl")
 
+include("plotting-helpers.jl")
+
 include("single-sim_plots.jl")
 export single_seir_plot, single_seir_statespace_plot
 
