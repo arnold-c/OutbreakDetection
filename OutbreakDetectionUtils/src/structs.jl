@@ -1,13 +1,12 @@
-using StaticArrays
-using LabelledArrays
-using StructArrays
-using Match
+using LabelledArrays: SLVector, SLArray
+using StructArrays: StructVector
+using Match: Match
 
 struct SimTimeParameters{
     T1<:AbstractFloat,
     T2<:StepRangeLen,
     T3<:Tuple{T1,T1},
-    T4<:Int
+    T4<:Int,
 }
     tmin::T1
     tmax::T1
@@ -17,7 +16,7 @@ struct SimTimeParameters{
     tlength::T4
 end
 
-function SimTimeParameters(; tmin=0.0, tmax=365.0 * 100.0, tstep=1.0)
+function SimTimeParameters(; tmin = 0.0, tmax = 365.0 * 100.0, tstep = 1.0)
     return SimTimeParameters(
         tmin, tmax, tstep, tmin:tstep:tmax, (tmin, tmax),
         length(tmin:tstep:tmax),
@@ -43,7 +42,7 @@ function DynamicsParameters(
     sigma::Float64,
     gamma::Float64,
     R_0::Float64;
-    vaccination_coverage::Float64=0.8,
+    vaccination_coverage::Float64 = 0.8,
 )
     return DynamicsParameters(
         BETA_MEAN,
@@ -67,7 +66,7 @@ function DynamicsParameters(
     gamma::Float64,
     R_0::Float64,
     vaccination_coverage::Float64;
-    seasonality::Function=cos,
+    seasonality::Function = cos,
 )
     mu = calculate_mu(annual_births_per_k)
     beta_mean = calculate_beta(R_0, gamma, mu, 1, N)
@@ -89,7 +88,7 @@ end
 
 function DynamicsParameters(
     N::Int64, annual_births_per_k::Int64, beta_force::Float64;
-    vaccination_coverage::Float64=0.8,
+    vaccination_coverage::Float64 = 0.8,
 )
     mu = calculate_mu(annual_births_per_k)
     beta_mean = calculate_beta(R0, GAMMA, mu, 1, N)
@@ -116,30 +115,30 @@ end
 
 function StateParameters(N::Int64, init_state_props::Dict)
     return StateParameters(;
-        N=N,
-        s_prop=init_state_props[:s_prop],
-        e_prop=init_state_props[:e_prop],
-        i_prop=init_state_props[:i_prop],
+        N = N,
+        s_prop = init_state_props[:s_prop],
+        e_prop = init_state_props[:e_prop],
+        i_prop = init_state_props[:i_prop],
     )
 end
 
 function StateParameters(;
-    N=500_00, s_prop=0.1, e_prop=0.01, i_prop=0.01
+    N = 500_00, s_prop = 0.1, e_prop = 0.01, i_prop = 0.01
 )
     r_prop = 1 - (s_prop + e_prop + i_prop)
 
     states = SLVector(;
-        S=Int64(round(s_prop * N)),
-        E=Int64(round(e_prop * N)),
-        I=Int64(round(i_prop * N)),
-        R=Int64(round(r_prop * N)),
-        N=N,
+        S = Int64(round(s_prop * N)),
+        E = Int64(round(e_prop * N)),
+        I = Int64(round(i_prop * N)),
+        R = Int64(round(r_prop * N)),
+        N = N,
     )
     state_props = SLVector(;
-        s_prop=s_prop,
-        e_prop=e_prop,
-        i_prop=i_prop,
-        r_prop=r_prop
+        s_prop = s_prop,
+        e_prop = e_prop,
+        i_prop = i_prop,
+        r_prop = r_prop,
     )
 
     return StateParameters(
@@ -271,7 +270,7 @@ struct AlertMethod{T1<:AbstractString}
         ]
         if !in(method_name, available_test_methods)
             error(
-                "$(method_name) is not a valid test method. It must be one of $(available_test_methods)",
+                "$(method_name) is not a valid test method. It must be one of $(available_test_methods)"
             )
         end
         return new{T1}(method_name)
@@ -305,7 +304,7 @@ function OutbreakDetectionSpecification(
         "perc_clinic_tested_$(percent_clinic_tested)",
     )
 
-    dirpath = @match alert_method begin
+    dirpath = Match.@match alert_method begin
         "dailythreshold" => joinpath(
             alertdirpath,
             testingdirpath,
@@ -313,7 +312,7 @@ function OutbreakDetectionSpecification(
         _ => joinpath(
             alertdirpath,
             "moveavglag_$(moving_average_lag)",
-            testingdirpath
+            testingdirpath,
         )
     end
 
@@ -363,7 +362,7 @@ function getdirpath(spec::NoiseSpecification)
         map(
             p -> "$(p)_$(getproperty(spec, p))",
             propertynames(spec),
-        )
+        ),
     )
 end
 
