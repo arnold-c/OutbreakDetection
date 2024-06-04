@@ -1,7 +1,6 @@
 module ODPlots
 
 using GLMakie
-using AlgebraOfGraphics
 using ColorSchemes
 using UnPack
 using DataFrames

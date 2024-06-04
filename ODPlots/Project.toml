@@ -4,7 +4,6 @@ authors = ["Callum Arnold <24391445+arnold-c@users.noreply.github.com> and contr
 version = "1.0.0-DEV"
 
 [deps]
-AlgebraOfGraphics = "cbdf2221-f076-402e-a563-3d30da359d67"
 Chain = "8be319e6-bccf-4806-a6f7-6fae938471bc"
 ColorSchemes = "35d6a980-a343-548e-a6ea-1d62b119f2f4"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
