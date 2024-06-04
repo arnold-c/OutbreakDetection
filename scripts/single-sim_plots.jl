@@ -9,6 +9,7 @@ using DataFramesMeta
 
 using OutbreakDetectionUtils
 using OutbreakDetection
+include(srcdir("makie-plotting-setup.jl"))
 
 #%%
 @unpack singlesim_time_p = load(
@@ -39,15 +40,6 @@ save(
 )
 
 #%%
-singlesim_beta_plot = Figure()
-beta_ax = Axis(
-    singlesim_beta_plot[1, 1]; xlabel = "Time (years)", ylabel = "Beta"
-)
-
-lines!(beta_ax, trange / 365, beta_vec; linewidth = 1)
-
-xlims!(beta_ax, (0, 3))
-
-singlesim_beta_plot
+singlesim_beta_plot = single_seir_beta_plot(beta_vec, annual = false)
 
 save(plotsdir("singlesim/single-sim_beta.png"), singlesim_beta_plot)

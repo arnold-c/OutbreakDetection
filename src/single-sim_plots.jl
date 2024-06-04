@@ -62,3 +62,23 @@ function single_seir_statespace_plot(
     return fig
 end
 
+function single_seir_beta_plot(
+    beta_vec;
+    annual=true,
+    kwargs...
+)
+    vals = @view(beta_vec[1:(365*2)])
+    times = time_function.(eachindex(vals); annual=annual)
+    time_label = annual_label(; annual)
+
+    fig = Figure()
+    ax = Axis(
+        fig[1, 1]; xlabel = time_label, ylabel = "Beta"
+    )
+
+    lines!(ax, times, vals; linewidth = 1)
+
+    lims_check(ax, kwargs)
+
+    fig
+end
