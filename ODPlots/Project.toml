@@ -1,0 +1,7 @@
+name = "ODPlots"
+uuid = "366d0f92-5d4c-4dee-934a-9b380f38f15b"
+authors = ["Callum Arnold <24391445+arnold-c@users.noreply.github.com> and contributors"]
+version = "1.0.0-DEV"
+
+[compat]
+julia = "1.6.7"

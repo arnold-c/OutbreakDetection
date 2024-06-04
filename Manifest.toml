@@ -2,7 +2,7 @@
 
 julia_version = "1.10.3"
 manifest_format = "2.0"
-project_hash = "8de73073589e5432b823a1545c71d0b9ea277a6e"
+project_hash = "531146eb9c0336d80e8c7d117a6ce2d47848f441"
 
 [[deps.ATK_jll]]
 deps = ["Artifacts", "Glib_jll", "JLLWrappers", "Libdl"]
@@ -1347,6 +1347,11 @@ version = "1.1.1"
 [[deps.NetworkOptions]]
 uuid = "ca575930-c2e3-43a9-ace4-1e988b2c1908"
 version = "1.2.0"
+
+[[deps.ODPlots]]
+path = "ODPlots"
+uuid = "366d0f92-5d4c-4dee-934a-9b380f38f15b"
+version = "1.0.0-DEV"
 
 [[deps.Observables]]
 git-tree-sha1 = "7438a59546cf62428fc9d1bc94729146d37a7225"
