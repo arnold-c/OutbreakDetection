@@ -1,11 +1,4 @@
-# module DetectionThresholds
-#
-# export create_inc_infec_arr, create_inc_infec_arr!, calculate_outbreak_thresholds
-
-using ProgressMeter
-using FLoops
-using StatsBase
-using UnPack
+using StatsBase: StatsBase
 
 function create_inc_infec_arr(
     ensemble_inc_vecs, outbreak_specification::OutbreakSpecification
@@ -44,7 +37,7 @@ function create_inc_infec_arr!(
         ensemble_inc_arr[:, 2, sim] .=
             @view(ensemble_inc_arr[:, 1, sim]) .>= outbreakthreshold
 
-        abovethresholdrle = rle(@view(ensemble_inc_arr[:, 2, sim]))
+        abovethresholdrle = StatsBase.rle(@view(ensemble_inc_arr[:, 2, sim]))
 
         outbreak_thresholds = calculate_outbreak_thresholds(
             abovethresholdrle; ncols = 4
@@ -127,7 +120,7 @@ function classify_outbreak(
     upper_time,
     lower_time,
     minoutbreakdur,
-    minoutbreaksize
+    minoutbreaksize,
 )
     if upper_time - lower_time >= minoutbreakdur &&
         periodsumvec >= minoutbreaksize
@@ -135,4 +128,3 @@ function classify_outbreak(
     end
     return 0
 end
-# end

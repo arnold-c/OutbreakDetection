@@ -1,22 +1,12 @@
-# module ODStructs
-#
-# export SimTimeParameters, EnsembleSpecification, DynamicsParameters,
-#     StateParameters, OutbreakThresholdChars, OutbreakDetectionSpecification,
-#     OutbreakSpecification, IndividualTestSpecification, NoiseSpecification
-
-using StaticArrays
-using LabelledArrays
-using StructArrays
-using Match
-
-# include("transmission-functions.jl")
-# using .TransmissionFunctions
+using LabelledArrays: SLVector, SLArray
+using StructArrays: StructVector
+using Match: Match
 
 struct SimTimeParameters{
     T1<:AbstractFloat,
     T2<:StepRangeLen,
     T3<:Tuple{T1,T1},
-    T4<:Int
+    T4<:Int,
 }
     tmin::T1
     tmax::T1
@@ -148,7 +138,7 @@ function StateParameters(;
         s_prop = s_prop,
         e_prop = e_prop,
         i_prop = i_prop,
-        r_prop = r_prop
+        r_prop = r_prop,
     )
 
     return StateParameters(
@@ -280,7 +270,7 @@ struct AlertMethod{T1<:AbstractString}
         ]
         if !in(method_name, available_test_methods)
             error(
-                "$(method_name) is not a valid test method. It must be one of $(available_test_methods)",
+                "$(method_name) is not a valid test method. It must be one of $(available_test_methods)"
             )
         end
         return new{T1}(method_name)
@@ -314,7 +304,7 @@ function OutbreakDetectionSpecification(
         "perc_clinic_tested_$(percent_clinic_tested)",
     )
 
-    dirpath = @match alert_method begin
+    dirpath = Match.@match alert_method begin
         "dailythreshold" => joinpath(
             alertdirpath,
             testingdirpath,
@@ -322,7 +312,7 @@ function OutbreakDetectionSpecification(
         _ => joinpath(
             alertdirpath,
             "moveavglag_$(moving_average_lag)",
-            testingdirpath
+            testingdirpath,
         )
     end
 
@@ -372,7 +362,7 @@ function getdirpath(spec::NoiseSpecification)
         map(
             p -> "$(p)_$(getproperty(spec, p))",
             propertynames(spec),
-        )
+        ),
     )
 end
 
@@ -457,4 +447,3 @@ struct OptimalThresholdCharacteristics{
     alert_threshold::T5
     accuracy::T4
 end
-# end

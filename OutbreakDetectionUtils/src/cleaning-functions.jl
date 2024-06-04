@@ -1,30 +1,28 @@
-# module CleaningFunctions
-#
-# export create_sir_df, create_sir_beta_dfs, create_sir_sim_array!,
-#     create_sir_all_sims_array, create_sir_all_sims_array!,
-#     create_sir_all_sim_quantiles, create_sir_all_sim_quantiles!
-
-using DataFrames
-using DataFramesMeta
-using FLoops
+using DataFrames: DataFrames
+using DataFramesMeta: DataFramesMeta
+using Chain: Chain
+using Statistics: Statistics
+using Tables: Tables
 
 function create_sir_df(sir_array::Matrix, trange, states = [:S, :I, :R, :N])
     if size(sir_array, 1) == length(states)
         sir_array = sir_array'
     end
     return create_sir_df_inner(
-        hcat(trange, DataFrame(Tables.table(sir_array))), states
+        hcat(trange, DataFrames.DataFrame(Tables.table(sir_array))), states
     )
 end
 
-function create_sir_df_inner(sir_df::DataFrame, states)
-    @chain sir_df begin
-        rename!([:time, states...])
+function create_sir_df_inner(sir_df::DataFrames.DataFrame, states)
+    Chain.@chain sir_df begin
+        DataFrames.rename!([:time, states...])
         if :N in states
-            stack(_, [states...]; variable_name = :State, value_name = :Number)
+            DataFrames.stack(
+                _, [states...]; variable_name = :State, value_name = :Number
+            )
         else
-            transform!(_, states => (+) => :N)
-            stack(
+            DataFrames.transform!(_, states => (+) => :N)
+            DataFrames.stack(
                 _, [states..., :N]; variable_name = :State, value_name = :Number
             )
         end
@@ -32,16 +30,16 @@ function create_sir_df_inner(sir_df::DataFrame, states)
 end
 
 function create_sir_df(sol, states)
-    return create_sir_df_inner(DataFrame(sol), states)
+    return create_sir_df_inner(DataFrames.DataFrame(sol), states)
 end
 
 function create_sir_beta_dfs(sol, states = [:S, :I, :R])
     state_df = create_sir_df(sol, states)
 
-    beta_df = select(state_df, [:time, :beta])
+    beta_df = DataFrames.select(state_df, [:time, :beta])
     unique!(beta_df)
 
-    select!(state_df, Not(:beta))
+    DataFrames.select!(state_df, DataFrames.Not(:beta))
 
     return state_df, beta_df
 end
@@ -55,7 +53,7 @@ end
 
 function create_sir_all_sim_quantiles!(all_sims_array, sim_quantiles; quantiles)
     for state in axes(all_sims_array, 2), time in axes(all_sims_array, 1)
-        sim_quantiles[:, time, state] = quantile(
+        sim_quantiles[:, time, state] = Statistics.quantile(
             skipmissing(
                 replace(@view(all_sims_array[time, state, :]), NaN => missing)
             ),
@@ -75,5 +73,3 @@ function create_sir_all_sim_quantiles(all_sims_array; quantiles)
 
     return quantile_array
 end
-
-# end

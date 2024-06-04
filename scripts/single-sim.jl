@@ -5,7 +5,7 @@ using DrWatson
 using UnPack
 using JLD2
 
-using OutbreakDetection
+using OutbreakDetectionUtils
 
 #%%
 @unpack singlesim_states_p, singlesim_time_p, singlesim_dynamics_p = load(

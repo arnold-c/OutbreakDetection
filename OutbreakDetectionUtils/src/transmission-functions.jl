@@ -1,8 +1,4 @@
-# module TransmissionFunctions
-
-using LinearAlgebra
-
-# export calculate_beta, calculateR0, calculate_import_rate
+using LinearAlgebra: LinearAlgebra
 
 """
     calculate_beta(R_0, gamma, mu, contact_mat, pop_matrix)
@@ -31,10 +27,10 @@ function calculate_beta(
     end
 
     F = contact_mat .* pop_matrix
-    V = Diagonal(repeat([gamma + mu], size(contact_mat, 1)))
+    V = LinearAlgebra.Diagonal(repeat([gamma + mu], size(contact_mat, 1)))
 
     FV⁻¹ = F * inv(V)
-    eigenvals = eigen(FV⁻¹).values
+    eigenvals = LinearAlgebra.eigen(FV⁻¹).values
     beta = R_0 / maximum(real(eigenvals))
 
     return beta
@@ -94,10 +90,10 @@ function calculateR0(
     B = beta * contact_mat
 
     F = B .* pop_matrix
-    V = Diagonal(repeat([gamma + mu], size(contact_mat, 1)))
+    V = LinearAlgebra.Diagonal(repeat([gamma + mu], size(contact_mat, 1)))
 
     FV⁻¹ = F * inv(V)
-    eigenvals = eigen(FV⁻¹).values
+    eigenvals = LinearAlgebra.eigen(FV⁻¹).values
 
     R_0 = maximum(real(eigenvals))
 
@@ -127,4 +123,3 @@ Calulate the rate of new infectious individuals imported into the simulation usi
 function calculate_import_rate(mu, R_0, N)
     return (1.06 * mu * (R_0 - 1)) / sqrt(N)
 end
-# end

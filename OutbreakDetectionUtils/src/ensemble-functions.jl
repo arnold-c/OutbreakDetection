@@ -1,24 +1,8 @@
-# module EnsembleFunctions
-#
-# export run_ensemble_jump_prob, run_jump_prob, summarize_ensemble_jump_prob,
-#     jump_prob_summary, get_ensemble_file
-
-using DrWatson
-using UnPack
-using FLoops
-using ProgressMeter
-
-# include("transmission-functions.jl")
-# # using .TransmissionFunctions
-#
-# include("cleaning-functions.jl")
-# # using .CleaningFunctions
-#
-# include("SEIR-model.jl")
-# # using .SEIRModel
-#
-# include("structs.jl")
-# using .ODStructs
+using DrWatson: DrWatson
+using UnPack: UnPack
+using FLoops: FLoops
+using ProgressMeter: ProgressMeter
+using StaticArrays: StaticArrays
 
 function create_combinations_vec(custom_function, combinations)
     combs = Iterators.product(combinations...)
@@ -104,9 +88,9 @@ function create_ensemble_spec_combinations(
 end
 
 function run_ensemble_jump_prob(dict_of_ensemble_params; force = false)
-    prog = Progress(length(dict_of_ensemble_params))
+    prog = ProgressMeter.Progress(length(dict_of_ensemble_params))
     for ensemble_params in dict_of_ensemble_params
-        @produce_or_load(
+        DrWatson.@produce_or_load(
             run_jump_prob,
             ensemble_params,
             "$(ensemble_params[:ensemble_spec].dirpath)";
@@ -114,7 +98,7 @@ function run_ensemble_jump_prob(dict_of_ensemble_params; force = false)
             loadfile = false,
             force = force
         )
-        next!(prog)
+        ProgressMeter.next!(prog)
     end
 end
 
@@ -122,7 +106,7 @@ end
     run_jump_prob(ensemble_param_dict)
 """
 function run_jump_prob(ensemble_param_dict)
-    @unpack ensemble_spec,
+    UnPack.@unpack ensemble_spec,
     seed,
     quantile_vec,
     outbreak_spec_dict,
@@ -130,18 +114,20 @@ function run_jump_prob(ensemble_param_dict)
     outbreak_detection_spec_vec,
     test_spec_vec = ensemble_param_dict
 
-    @unpack state_parameters, dynamics_parameters, time_parameters, nsims =
+    UnPack.@unpack state_parameters,
+    dynamics_parameters, time_parameters,
+    nsims =
         ensemble_spec
 
-    @unpack tstep, tlength, trange = time_parameters
+    UnPack.@unpack tstep, tlength, trange = time_parameters
 
     ensemble_seir_vecs = Array{typeof(state_parameters.init_states),2}(
         undef,
         tlength,
-        nsims
+        nsims,
     )
 
-    ensemble_inc_vecs = Array{typeof(SVector(0)),2}(
+    ensemble_inc_vecs = Array{typeof(StaticArrays.SVector(0)),2}(
         undef,
         tlength,
         nsims,
@@ -165,8 +151,10 @@ function run_jump_prob(ensemble_param_dict)
 
     ensemble_seir_arr = convert_svec_to_array(ensemble_seir_vecs)
 
-    quantile_param_dict = dict_list(
-        @dict(ensemble_spec, ensemble_seir_arr, quantiles = quantile_vec)
+    quantile_param_dict = DrWatson.dict_list(
+        DrWatson.@dict(
+            ensemble_spec, ensemble_seir_arr, quantiles = quantile_vec
+        )
     )
 
     summarize_ensemble_jump_prob(quantile_param_dict)
@@ -185,12 +173,12 @@ function run_jump_prob(ensemble_param_dict)
 
     run_define_outbreaks(outbreak_spec_dict)
 
-    return @strdict ensemble_seir_arr ensemble_spec
+    return DrWatson.@strdict ensemble_seir_arr ensemble_spec
 end
 
 function summarize_ensemble_jump_prob(dict_of_ensemble_params)
-    @floop for ensemble_params in dict_of_ensemble_params
-        @produce_or_load(
+    FLoops.@floop for ensemble_params in dict_of_ensemble_params
+        DrWatson.@produce_or_load(
             jump_prob_summary,
             ensemble_params,
             "$(ensemble_params[:ensemble_spec].dirpath)";
@@ -204,13 +192,16 @@ end
     jump_prob_summary(param_dict)
 """
 function jump_prob_summary(ensemble_param_dict)
-    @unpack ensemble_spec, ensemble_seir_arr, quantiles = ensemble_param_dict
-    @unpack state_parameters, dynamics_parameters, time_parameters, nsims =
+    UnPack.@unpack ensemble_spec, ensemble_seir_arr, quantiles =
+        ensemble_param_dict
+    UnPack.@unpack state_parameters,
+    dynamics_parameters, time_parameters,
+    nsims =
         ensemble_spec
 
-    @unpack beta_force, annual_births_per_k = dynamics_parameters
-    @unpack tstep, tlength, trange = time_parameters
-    @unpack init_states, init_state_props = state_parameters
+    UnPack.@unpack beta_force, annual_births_per_k = dynamics_parameters
+    UnPack.@unpack tstep, tlength, trange = time_parameters
+    UnPack.@unpack init_states, init_state_props = state_parameters
 
     N = init_states[:N]
     S_init = init_states[:S]
@@ -228,12 +219,12 @@ function jump_prob_summary(ensemble_param_dict)
 
     caption = "nsims = $nsims, N = $N, S = $S_init, I = $I_init, R = $R_init, beta_force = $beta_force,\nbirths per k/annum = $annual_births_per_k, tstep = $(time_parameters.tstep), quantile int = $quantiles"
 
-    return @strdict ensemble_seir_summary caption quantiles
+    return DrWatson.@strdict ensemble_seir_summary caption quantiles
 end
 
 function run_define_outbreaks(dict_of_outbreak_spec_params)
-    @floop for outbreak_spec_params in dict_of_outbreak_spec_params
-        @produce_or_load(
+    FLoops.@floop for outbreak_spec_params in dict_of_outbreak_spec_params
+        DrWatson.@produce_or_load(
             define_outbreaks,
             outbreak_spec_params,
             "$(outbreak_spec_params[:dirpath])";
@@ -245,7 +236,7 @@ function run_define_outbreaks(dict_of_outbreak_spec_params)
 end
 
 function define_outbreaks(incidence_param_dict)
-    @unpack ensemble_spec,
+    UnPack.@unpack ensemble_spec,
     ensemble_inc_vecs,
     outbreak_spec,
     noise_spec_vec,
@@ -259,12 +250,12 @@ function define_outbreaks(incidence_param_dict)
 
     non_clinical_case_test_spec_vec = filter(
         spec -> !(spec in CLINICAL_TEST_SPECS),
-        test_spec_vec
+        test_spec_vec,
     )
 
     non_clinical_case_outbreak_detection_spec_vec = filter(
         spec -> spec.percent_clinic_tested !== 1.0,
-        outbreak_detection_spec_vec
+        outbreak_detection_spec_vec,
     )
 
     non_clinical_case_ensemble_scenarios = create_combinations_vec(
@@ -280,7 +271,7 @@ function define_outbreaks(incidence_param_dict)
 
     clinical_case_outbreak_detection_spec_vec = filter(
         spec -> spec.percent_clinic_tested == 1.0,
-        outbreak_detection_spec_vec
+        outbreak_detection_spec_vec,
     )
 
     clinical_case_ensemble_scenarios = create_combinations_vec(
@@ -298,8 +289,8 @@ function define_outbreaks(incidence_param_dict)
         non_clinical_case_ensemble_scenarios, clinical_case_ensemble_scenarios
     )
 
-    scenario_param_dict = dict_list(
-        @dict(
+    scenario_param_dict = DrWatson.dict_list(
+        DrWatson.@dict(
             scenario_spec = ensemble_scenarios,
             ensemble_inc_arr,
             thresholds_vec = [ensemble_thresholds_vec],
@@ -309,14 +300,14 @@ function define_outbreaks(incidence_param_dict)
 
     run_OutbreakThresholdChars_creation(scenario_param_dict)
 
-    return @strdict ensemble_inc_arr ensemble_thresholds_vec
+    return DrWatson.@strdict ensemble_inc_arr ensemble_thresholds_vec
 end
 
 function run_OutbreakThresholdChars_creation(
     dict_of_OTchars_params
 )
-    @floop for OTChars_params in dict_of_OTchars_params
-        @produce_or_load(
+    FLoops.@floop for OTChars_params in dict_of_OTchars_params
+        DrWatson.@produce_or_load(
             OutbreakThresholdChars_creation,
             OTChars_params,
             "$(OTChars_params[:scenario_spec].dirpath)";
@@ -327,9 +318,9 @@ function run_OutbreakThresholdChars_creation(
 end
 
 function OutbreakThresholdChars_creation(OT_chars_param_dict)
-    @unpack scenario_spec, ensemble_inc_arr, thresholds_vec, seed =
+    UnPack.@unpack scenario_spec, ensemble_inc_arr, thresholds_vec, seed =
         OT_chars_param_dict
-    @unpack noise_specification,
+    UnPack.@unpack noise_specification,
     outbreak_specification,
     outbreak_detection_specification,
     individual_test_specification = scenario_spec
@@ -352,7 +343,7 @@ function OutbreakThresholdChars_creation(OT_chars_param_dict)
         testarr, ensemble_inc_arr, thresholds_vec, noise_rubella_prop
     )
 
-    return @strdict OT_chars
+    return DrWatson.@strdict OT_chars
 end
 
 function get_ensemble_file() end
@@ -393,5 +384,3 @@ function match_ensemble_file!(criteria, dirpath, container, file)
         push!(container, joinpath(dirpath, file))
     end
 end
-
-# end
