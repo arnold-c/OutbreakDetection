@@ -1,26 +1,31 @@
-using UnPack
-using Match
+using UnPack: UnPack
+using Match: Match
+using StaticArrays: StaticArrays
+using Random: Random
+using Distributions: Distributions
 
 function create_noise_arr(
     noise_specification::DynamicalNoiseSpecification,
     incarr;
     ensemble_specification::EnsembleSpecification,
-    seed=1234,
+    seed = 1234,
     kwargs...,
 )
     seed *= 10
 
-    @unpack state_parameters, dynamics_parameters, time_parameters, nsims =
+    UnPack.@unpack state_parameters,
+    dynamics_parameters, time_parameters,
+    nsims =
         ensemble_specification
-    @unpack tlength = time_parameters
+    UnPack.@unpack tlength = time_parameters
 
-    noise_beta_force = @match noise_specification.correlation begin
+    noise_beta_force = Match.@match noise_specification.correlation begin
         "none" => 0.0
         _ => dynamics_parameters.beta_force
     end
 
-    noise_seasonality = @match noise_specification.correlation begin
-        "out-of-phase" => @match dynamics_parameters.seasonality begin
+    noise_seasonality = Match.@match noise_specification.correlation begin
+        "out-of-phase" => Match.@match dynamics_parameters.seasonality begin
             $cos => sin
             $sin => cos
         end
@@ -47,10 +52,10 @@ function create_noise_arr(
     ensemble_seir_vecs = Array{typeof(state_parameters.init_states),2}(
         undef,
         tlength,
-        nsims
+        nsims,
     )
 
-    ensemble_inc_vecs = Array{typeof(SVector(0)),2}(
+    ensemble_inc_vecs = Array{typeof(StaticArrays.SVector(0)),2}(
         undef,
         tlength,
         nsims,
@@ -68,7 +73,7 @@ function create_noise_arr(
             state_parameters.init_states,
             noise_dynamics_parameters,
             time_parameters;
-            seed=run_seed,
+            seed = run_seed,
         )
     end
 
@@ -87,7 +92,7 @@ function create_noise_arr(
 
     add_poisson_noise_arr!(
         poisson_noise, incarr, noise_specification.noise_mean_scaling;
-        seed=seed,
+        seed = seed,
     )
 
     ensemble_inc_arr .+= poisson_noise
@@ -100,13 +105,13 @@ end
 function create_noise_arr(
     noise_specification::PoissonNoiseSpecification,
     incarr;
-    seed=1234,
+    seed = 1234,
     kwargs...,
 )
     noise_arr = zeros(Int64, size(incarr, 1), size(incarr, 3))
 
     add_poisson_noise_arr!(
-        noise_arr, incarr, noise_specification.noise_mean_scaling; seed=seed
+        noise_arr, incarr, noise_specification.noise_mean_scaling; seed = seed
     )
 
     noise_rubella_prop = ones(Float64, size(incarr, 1), size(incarr, 3))
@@ -114,14 +119,14 @@ function create_noise_arr(
 end
 
 function add_poisson_noise_arr!(
-    noise_arr, incarr, noise_mean_scaling; seed=1234
+    noise_arr, incarr, noise_mean_scaling; seed = 1234
 )
     Random.seed!(seed)
 
     @assert size(incarr, 3) == size(noise_arr, 2)
     @inbounds for sim in axes(incarr, 3)
-        @views noise_arr[:, sim] += rand(
-            Poisson(noise_mean_scaling * mean(incarr[:, 1, sim])),
+        @views noise_arr[:, sim] += Random.rand(
+            Distributions.Poisson(noise_mean_scaling * mean(incarr[:, 1, sim])),
             size(incarr, 1),
         )
     end
