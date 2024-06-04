@@ -2,6 +2,7 @@
 using DrWatson
 @quickactivate "OutbreakDetection"
 
+using UnPack
 using JLD2
 using DataFrames
 using DataFramesMeta
@@ -9,8 +10,9 @@ using DataFramesMeta
 using OutbreakDetectionUtils
 using ODPlots
 
-include(srcdir("makie-plotting-setup.jl"))
+# include(srcdir("makie-plotting-setup.jl"))
 
+#%%
 @unpack singlesim_time_p = load(
     joinpath(outdir("singlesim"), "single-sim_setup.jld2")
 )
@@ -21,11 +23,9 @@ include(srcdir("makie-plotting-setup.jl"))
 )
 
 #%%
-singlesim_timeseries_plot = draw_sir_plot(
+singlesim_timeseries_plot = single_seir_plot(
     seir_df;
     annual=true,
-    colors=seircolors,
-    labels=["S", "E", "I", "R", "N"],
 )
 
 mkpath(plotsdir("singlesim"))
@@ -33,14 +33,7 @@ mkpath(plotsdir("singlesim"))
 save(plotsdir("singlesim/single-sim_timeseries.png"), singlesim_timeseries_plot)
 
 #%%
-singlesim_si_state_space_plot = @chain DataFrame(Tables.table(seir_array)) begin
-    hcat(trange, _)
-    rename!(["time", ["S", "E", "I", "R", "N"]...])
-    data(_) *
-    mapping(:I, :S; color=:time) *
-    visual(Lines)
-    draw
-end
+singlesim_si_state_space_plot = single_seir_statespace_plot(seir_array)
 
 save(
     plotsdir("singlesim/single-sim_SI-state-space.png"),

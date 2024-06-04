@@ -8,6 +8,11 @@ using Chain
 using NaNMath: NaNMath
 using FLoops
 
+include("makie-plotting-setup.jl")
+
+include("single-sim_plots.jl")
+export single_seir_plot, single_seir_statespace_plot
+
 include("plotting-functions.jl")
 export seircolors,
     seir_state_labels, create_sir_plot, draw_sir_plot,
