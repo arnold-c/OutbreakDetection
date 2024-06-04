@@ -2,7 +2,7 @@
 
 julia_version = "1.10.3"
 manifest_format = "2.0"
-project_hash = "c7e585985746c20380f1e34fcb012269736be4e0"
+project_hash = "e3e09b3bd80eeaef4645d1f278dcb0efa8c0e611"
 
 [[deps.ATK_jll]]
 deps = ["Artifacts", "Glib_jll", "JLLWrappers", "Libdl"]
@@ -1477,6 +1477,12 @@ version = "1.3.2+0"
 git-tree-sha1 = "dfdf5519f235516220579f949664f1bf44e741c5"
 uuid = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
 version = "1.6.3"
+
+[[deps.OutbreakDetectionUtils]]
+deps = ["DrWatson", "FromFile", "LinearAlgebra", "Reexport"]
+path = "OutbreakDetectionUtils"
+uuid = "f998a708-2341-46f4-85c5-02aab2fba5ed"
+version = "1.0.0-DEV"
 
 [[deps.PCRE2_jll]]
 deps = ["Artifacts", "Libdl"]
