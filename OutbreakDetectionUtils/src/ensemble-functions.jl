@@ -1,7 +1,8 @@
-using DrWatson
-using UnPack
-using FLoops
-using ProgressMeter
+using DrWatson: DrWatson
+using UnPack: UnPack
+using FLoops: FLoops
+using ProgressMeter: ProgressMeter
+using StaticArrays: StaticArrays
 
 function create_combinations_vec(custom_function, combinations)
     combs = Iterators.product(combinations...)
@@ -86,16 +87,16 @@ function create_ensemble_spec_combinations(
     return ensemble_spec_vec
 end
 
-function run_ensemble_jump_prob(dict_of_ensemble_params; force=false)
-    prog = Progress(length(dict_of_ensemble_params))
+function run_ensemble_jump_prob(dict_of_ensemble_params; force = false)
+    prog = ProgressMeter.Progress(length(dict_of_ensemble_params))
     for ensemble_params in dict_of_ensemble_params
-        @produce_or_load(
+        DrWatson.@produce_or_load(
             run_jump_prob,
             ensemble_params,
             "$(ensemble_params[:ensemble_spec].dirpath)";
-            filename="ensemble-solution",
-            loadfile=false,
-            force=force
+            filename = "ensemble-solution",
+            loadfile = false,
+            force = force
         )
         next!(prog)
     end
@@ -105,7 +106,7 @@ end
     run_jump_prob(ensemble_param_dict)
 """
 function run_jump_prob(ensemble_param_dict)
-    @unpack ensemble_spec,
+    UnPack.@unpack ensemble_spec,
     seed,
     quantile_vec,
     outbreak_spec_dict,
@@ -113,18 +114,20 @@ function run_jump_prob(ensemble_param_dict)
     outbreak_detection_spec_vec,
     test_spec_vec = ensemble_param_dict
 
-    @unpack state_parameters, dynamics_parameters, time_parameters, nsims =
+    UnPack.@unpack state_parameters,
+    dynamics_parameters, time_parameters,
+    nsims =
         ensemble_spec
 
-    @unpack tstep, tlength, trange = time_parameters
+    UnPack.@unpack tstep, tlength, trange = time_parameters
 
     ensemble_seir_vecs = Array{typeof(state_parameters.init_states),2}(
         undef,
         tlength,
-        nsims
+        nsims,
     )
 
-    ensemble_inc_vecs = Array{typeof(SVector(0)),2}(
+    ensemble_inc_vecs = Array{typeof(StaticArrays.SVector(0)),2}(
         undef,
         tlength,
         nsims,
@@ -142,14 +145,16 @@ function run_jump_prob(ensemble_param_dict)
             state_parameters.init_states,
             dynamics_parameters,
             time_parameters;
-            seed=run_seed,
+            seed = run_seed,
         )
     end
 
     ensemble_seir_arr = convert_svec_to_array(ensemble_seir_vecs)
 
     quantile_param_dict = dict_list(
-        @dict(ensemble_spec, ensemble_seir_arr, quantiles = quantile_vec)
+        DrWatson.@dict(
+            ensemble_spec, ensemble_seir_arr, quantiles = quantile_vec
+        )
     )
 
     summarize_ensemble_jump_prob(quantile_param_dict)
@@ -168,17 +173,17 @@ function run_jump_prob(ensemble_param_dict)
 
     run_define_outbreaks(outbreak_spec_dict)
 
-    return @strdict ensemble_seir_arr ensemble_spec
+    return DrWatson.@strdict ensemble_seir_arr ensemble_spec
 end
 
 function summarize_ensemble_jump_prob(dict_of_ensemble_params)
-    @floop for ensemble_params in dict_of_ensemble_params
-        @produce_or_load(
+    FLoops.@floop for ensemble_params in dict_of_ensemble_params
+        DrWatson.@produce_or_load(
             jump_prob_summary,
             ensemble_params,
             "$(ensemble_params[:ensemble_spec].dirpath)";
-            filename="ensemble-quantiles_$(ensemble_params[:quantiles])",
-            loadfile=false
+            filename = "ensemble-quantiles_$(ensemble_params[:quantiles])",
+            loadfile = false
         )
     end
 end
@@ -187,48 +192,51 @@ end
     jump_prob_summary(param_dict)
 """
 function jump_prob_summary(ensemble_param_dict)
-    @unpack ensemble_spec, ensemble_seir_arr, quantiles = ensemble_param_dict
-    @unpack state_parameters, dynamics_parameters, time_parameters, nsims =
+    UnPack.@unpack ensemble_spec, ensemble_seir_arr, quantiles =
+        ensemble_param_dict
+    UnPack.@unpack state_parameters,
+    dynamics_parameters, time_parameters,
+    nsims =
         ensemble_spec
 
-    @unpack beta_force, annual_births_per_k = dynamics_parameters
-    @unpack tstep, tlength, trange = time_parameters
-    @unpack init_states, init_state_props = state_parameters
+    UnPack.@unpack beta_force, annual_births_per_k = dynamics_parameters
+    UnPack.@unpack tstep, tlength, trange = time_parameters
+    UnPack.@unpack init_states, init_state_props = state_parameters
 
     N = init_states[:N]
     S_init = init_states[:S]
     I_init = init_states[:I]
     R_init = init_states[:R]
 
-    qlow = round(0.5 - quantiles / 200; digits=3)
-    qhigh = round(0.5 + quantiles / 200; digits=3)
+    qlow = round(0.5 - quantiles / 200; digits = 3)
+    qhigh = round(0.5 + quantiles / 200; digits = 3)
 
     qs = [qlow, 0.5, qhigh]
 
     ensemble_seir_summary = create_sir_all_sim_quantiles(
-        ensemble_seir_arr; quantiles=qs
+        ensemble_seir_arr; quantiles = qs
     )
 
     caption = "nsims = $nsims, N = $N, S = $S_init, I = $I_init, R = $R_init, beta_force = $beta_force,\nbirths per k/annum = $annual_births_per_k, tstep = $(time_parameters.tstep), quantile int = $quantiles"
 
-    return @strdict ensemble_seir_summary caption quantiles
+    return DrWatson.@strdict ensemble_seir_summary caption quantiles
 end
 
 function run_define_outbreaks(dict_of_outbreak_spec_params)
-    @floop for outbreak_spec_params in dict_of_outbreak_spec_params
-        @produce_or_load(
+    FLoops.@floop for outbreak_spec_params in dict_of_outbreak_spec_params
+        DrWatson.@produce_or_load(
             define_outbreaks,
             outbreak_spec_params,
             "$(outbreak_spec_params[:dirpath])";
-            filename="ensemble-incidence-array",
-            loadfile=false,
-            force=true
+            filename = "ensemble-incidence-array",
+            loadfile = false,
+            force = true
         )
     end
 end
 
 function define_outbreaks(incidence_param_dict)
-    @unpack ensemble_spec,
+    UnPack.@unpack ensemble_spec,
     ensemble_inc_vecs,
     outbreak_spec,
     noise_spec_vec,
@@ -242,12 +250,12 @@ function define_outbreaks(incidence_param_dict)
 
     non_clinical_case_test_spec_vec = filter(
         spec -> !(spec in CLINICAL_TEST_SPECS),
-        test_spec_vec
+        test_spec_vec,
     )
 
     non_clinical_case_outbreak_detection_spec_vec = filter(
         spec -> spec.percent_clinic_tested !== 1.0,
-        outbreak_detection_spec_vec
+        outbreak_detection_spec_vec,
     )
 
     non_clinical_case_ensemble_scenarios = create_combinations_vec(
@@ -263,7 +271,7 @@ function define_outbreaks(incidence_param_dict)
 
     clinical_case_outbreak_detection_spec_vec = filter(
         spec -> spec.percent_clinic_tested == 1.0,
-        outbreak_detection_spec_vec
+        outbreak_detection_spec_vec,
     )
 
     clinical_case_ensemble_scenarios = create_combinations_vec(
@@ -282,7 +290,7 @@ function define_outbreaks(incidence_param_dict)
     )
 
     scenario_param_dict = dict_list(
-        @dict(
+        DrWatson.@dict(
             scenario_spec = ensemble_scenarios,
             ensemble_inc_arr,
             thresholds_vec = [ensemble_thresholds_vec],
@@ -292,27 +300,27 @@ function define_outbreaks(incidence_param_dict)
 
     run_OutbreakThresholdChars_creation(scenario_param_dict)
 
-    return @strdict ensemble_inc_arr ensemble_thresholds_vec
+    return DrWatson.@strdict ensemble_inc_arr ensemble_thresholds_vec
 end
 
 function run_OutbreakThresholdChars_creation(
     dict_of_OTchars_params
 )
-    @floop for OTChars_params in dict_of_OTchars_params
-        @produce_or_load(
+    FLoops.@floop for OTChars_params in dict_of_OTchars_params
+        DrWatson.@produce_or_load(
             OutbreakThresholdChars_creation,
             OTChars_params,
             "$(OTChars_params[:scenario_spec].dirpath)";
-            filename="ensemble-scenario",
-            loadfile=false
+            filename = "ensemble-scenario",
+            loadfile = false
         )
     end
 end
 
 function OutbreakThresholdChars_creation(OT_chars_param_dict)
-    @unpack scenario_spec, ensemble_inc_arr, thresholds_vec, seed =
+    UnPack.@unpack scenario_spec, ensemble_inc_arr, thresholds_vec, seed =
         OT_chars_param_dict
-    @unpack noise_specification,
+    UnPack.@unpack noise_specification,
     outbreak_specification,
     outbreak_detection_specification,
     individual_test_specification = scenario_spec
@@ -320,8 +328,8 @@ function OutbreakThresholdChars_creation(OT_chars_param_dict)
     noise_array, noise_rubella_prop = create_noise_arr(
         noise_specification,
         ensemble_inc_arr;
-        ensemble_specification=scenario_spec.ensemble_specification,
-        seed=seed,
+        ensemble_specification = scenario_spec.ensemble_specification,
+        seed = seed,
     )
 
     testarr, test_movingvg_arr = create_testing_arrs(
@@ -335,7 +343,7 @@ function OutbreakThresholdChars_creation(OT_chars_param_dict)
         testarr, ensemble_inc_arr, thresholds_vec, noise_rubella_prop
     )
 
-    return @strdict OT_chars
+    return DrWatson.@strdict OT_chars
 end
 
 function get_ensemble_file() end
