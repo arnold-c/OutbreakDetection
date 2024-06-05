@@ -591,12 +591,6 @@ git-tree-sha1 = "1ed150b39aebcc805c26b93a8d0122c940f64ce2"
 uuid = "559328eb-81f9-559d-9380-de523a88c83c"
 version = "1.0.14+0"
 
-[[deps.FromFile]]
-deps = ["Downloads", "Requires"]
-git-tree-sha1 = "5df4ca248bed8c35164d6a7ae006073bbf8289ff"
-uuid = "ff7dd447-1dcb-4ce3-b8ac-22a812192de7"
-version = "0.1.5"
-
 [[deps.Future]]
 deps = ["Random"]
 uuid = "9fa8497b-333b-5362-9e8d-4d0656e87820"
@@ -1183,7 +1177,7 @@ uuid = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
 version = "1.6.3"
 
 [[deps.OutbreakDetectionUtils]]
-deps = ["Chain", "DataFrames", "DataFramesMeta", "Distributions", "DrWatson", "FLoops", "FreqTables", "FromFile", "LabelledArrays", "LinearAlgebra", "Match", "NaNMath", "ProgressMeter", "RCall", "Random", "Reexport", "StaticArrays", "Statistics", "StatsBase", "StructArrays", "Tables", "TestItemRunner", "TestItems", "UnPack", "XLSX"]
+deps = ["Chain", "DataFrames", "DataFramesMeta", "Distributions", "DrWatson", "FLoops", "FreqTables", "LabelledArrays", "LinearAlgebra", "Match", "NaNMath", "ProgressMeter", "RCall", "Random", "Reexport", "StaticArrays", "Statistics", "StatsBase", "StructArrays", "Tables", "UnPack", "XLSX"]
 path = "OutbreakDetectionUtils"
 uuid = "f998a708-2341-46f4-85c5-02aab2fba5ed"
 version = "1.0.0-DEV"
@@ -1645,17 +1639,6 @@ version = "0.1.1"
 [[deps.Test]]
 deps = ["InteractiveUtils", "Logging", "Random", "Serialization"]
 uuid = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
-
-[[deps.TestItemRunner]]
-deps = ["Pkg", "TOML", "Test", "TestItems", "UUIDs"]
-git-tree-sha1 = "cb2b53fd36a8fe20c0b9f55da6244eb4818779f5"
-uuid = "f8b46487-2199-4994-9208-9a1283c18c0a"
-version = "0.2.3"
-
-[[deps.TestItems]]
-git-tree-sha1 = "8621ba2637b49748e2dc43ba3d84340be2938022"
-uuid = "1c621080-faea-4a02-84b6-bbd5e436b8fe"
-version = "0.1.1"
 
 [[deps.TiffImages]]
 deps = ["ColorTypes", "DataStructures", "DocStringExtensions", "FileIO", "FixedPointNumbers", "IndirectArrays", "Inflate", "Mmap", "OffsetArrays", "PkgVersion", "ProgressMeter", "SIMD", "UUIDs"]
