@@ -13,5 +13,12 @@ using JET
     @testset "Code linting (JET.jl)" begin
         JET.test_package(OutbreakDetectionUtils; target_defined_modules = true)
     end
+    include("SEIR-model.jl")
+    include("cleaning-functions.jl")
     include("diag-testing-functions.jl")
+    include("detection-thresholds.jl")
+    include("ensemble-functions.jl")
+    include("noise-functions.jl")
+    include("collect-thresholds-vec_functions.jl")
+    include("optimal-threshold-functions.jl")
 end
