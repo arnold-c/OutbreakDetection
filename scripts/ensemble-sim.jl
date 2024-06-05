@@ -43,7 +43,8 @@ seed = 1234
 #%%
 latent_per_days_vec = [LATENT_PER_DAYS]
 dur_inf_days_vec = [DUR_INF_DAYS]
-R_0_vec = collect(8.0:4.0:20.0)
+# R_0_vec = collect(8.0:4.0:20.0)
+R_0_vec = [16.0]
 sigma_vec = 1 ./ latent_per_days_vec
 gamma_vec = 1 ./ dur_inf_days_vec
 vaccination_coverage_vec = [0.8]
@@ -97,6 +98,7 @@ dynamical_noise_latent_period = [7]
 dynamical_noise_duration_infection = [14]
 dynamical_noise_correlation = ["in-phase", "out-of-phase", "none"]
 dynamical_noise_mean_scaling_vec = [1.0]
+dynamical_noise_vaccination_coverage_vec = collect(0.0:0.4:0.8)
 dynamical_noise_spec_vec = create_combinations_vec(
     DynamicalNoiseSpecification,
     (
@@ -106,6 +108,7 @@ dynamical_noise_spec_vec = create_combinations_vec(
         dynamical_noise_duration_infection,
         dynamical_noise_correlation,
         dynamical_noise_mean_scaling_vec,
+        dynamical_noise_vaccination_coverage_vec,
     ),
 )
 
@@ -131,12 +134,12 @@ outbreak_detection_spec_vec = create_combinations_vec(
 
 #%%
 test_spec_vec = [
-    IndividualTestSpecification(0.5, 0.5, 0),
-    IndividualTestSpecification(0.7, 0.7, 0),
-    IndividualTestSpecification(0.8, 0.8, 0),
+    # IndividualTestSpecification(0.5, 0.5, 0),
+    # IndividualTestSpecification(0.7, 0.7, 0),
+    # IndividualTestSpecification(0.8, 0.8, 0),
     IndividualTestSpecification(0.85, 0.85, 0),
     IndividualTestSpecification(0.9, 0.9, 0),
-    CLINICAL_TEST_SPECS...,
+    # CLINICAL_TEST_SPECS...,
     IndividualTestSpecification(1.0, 1.0, 0),
     IndividualTestSpecification(1.0, 1.0, 3),
     IndividualTestSpecification(1.0, 1.0, 7),

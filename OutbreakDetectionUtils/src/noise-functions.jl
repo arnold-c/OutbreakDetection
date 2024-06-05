@@ -3,6 +3,7 @@ using Match: Match
 using StaticArrays: StaticArrays
 using Random: Random
 using Distributions: Distributions
+using StatsBase: StatsBase
 
 function create_noise_arr(
     noise_specification::DynamicalNoiseSpecification,
@@ -46,7 +47,7 @@ function create_noise_arr(
             state_parameters.init_states.N,
         ),
         noise_specification.R_0,
-        0.0,
+        noise_specification.vaccination_coverage,
     )
 
     ensemble_seir_vecs = Array{typeof(state_parameters.init_states),2}(
@@ -126,7 +127,9 @@ function add_poisson_noise_arr!(
     @assert size(incarr, 3) == size(noise_arr, 2)
     @inbounds for sim in axes(incarr, 3)
         @views noise_arr[:, sim] += Random.rand(
-            Distributions.Poisson(noise_mean_scaling * mean(incarr[:, 1, sim])),
+            Distributions.Poisson(
+                noise_mean_scaling * StatsBase.mean(incarr[:, 1, sim])
+            ),
             size(incarr, 1),
         )
     end

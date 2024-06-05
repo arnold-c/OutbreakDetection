@@ -351,6 +351,7 @@ struct DynamicalNoiseSpecification{
     duration_infection::T3
     correlation::T1
     noise_mean_scaling::T2
+    vaccination_coverage::T2
 end
 
 function DynamicalNoiseSpecification()

@@ -169,16 +169,16 @@ TestItems.@testitem "Moving average" begin
     @test isequal(
         movingavg_testpositives,
         [
-            mean([1]),
-            mean([1, 2]),
-            mean([1, 2, 3]),
-            mean([1, 2, 3, 4]),
-            mean([1, 2, 3, 4, 5]),
-            mean([2, 3, 4, 5, 6]),
-            mean([3, 4, 5, 6, 7]),
-            mean([4, 5, 6, 7, 8]),
-            mean([5, 6, 7, 8, 9]),
-            mean([6, 7, 8, 9, 10]),
+            StatsBase.mean([1]),
+            StatsBase.mean([1, 2]),
+            StatsBase.mean([1, 2, 3]),
+            StatsBase.mean([1, 2, 3, 4]),
+            StatsBase.mean([1, 2, 3, 4, 5]),
+            StatsBase.mean([2, 3, 4, 5, 6]),
+            StatsBase.mean([3, 4, 5, 6, 7]),
+            StatsBase.mean([4, 5, 6, 7, 8]),
+            StatsBase.mean([5, 6, 7, 8, 9]),
+            StatsBase.mean([6, 7, 8, 9, 10]),
         ],
     )
 
@@ -198,16 +198,16 @@ TestItems.@testitem "Moving average" begin
             daily_testpositives[:, 2],
             Int64.(
                 round.([
-                    mean([1]),
-                    mean([1, 2]),
-                    mean([1, 2, 3]),
-                    mean([1, 2, 3, 4]),
-                    mean([1, 2, 3, 4, 5]),
-                    mean([2, 3, 4, 5, 6]),
-                    mean([3, 4, 5, 6, 7]),
-                    mean([4, 5, 6, 7, 8]),
-                    mean([5, 6, 7, 8, 9]),
-                    mean([6, 7, 8, 9, 10]),
+                    StatsBase.mean([1]),
+                    StatsBase.mean([1, 2]),
+                    StatsBase.mean([1, 2, 3]),
+                    StatsBase.mean([1, 2, 3, 4]),
+                    StatsBase.mean([1, 2, 3, 4, 5]),
+                    StatsBase.mean([2, 3, 4, 5, 6]),
+                    StatsBase.mean([3, 4, 5, 6, 7]),
+                    StatsBase.mean([4, 5, 6, 7, 8]),
+                    StatsBase.mean([5, 6, 7, 8, 9]),
+                    StatsBase.mean([6, 7, 8, 9, 10]),
                 ])
             ),
         )
@@ -260,12 +260,12 @@ end
 
 function calculate_float_daily_movingavg(invec, day, avglag)
     @inline moveavg_daystart = calculate_daily_movingavg_startday(day, avglag)
-    return mean(@view(invec[moveavg_daystart:day]))
+    return StatsBase.mean(@view(invec[moveavg_daystart:day]))
 end
 
 function calculate_int_daily_movingavg(invec, day, avglag)
     @inline moveavg_daystart = calculate_daily_movingavg_startday(day, avglag)
-    return Int64(round(mean(@view(invec[moveavg_daystart:day]))))
+    return Int64(round(StatsBase.mean(@view(invec[moveavg_daystart:day]))))
 end
 
 function calculate_daily_movingavg_startday(day, avglag)
