@@ -44,13 +44,6 @@ function create_sir_beta_dfs(sol, states = [:S, :I, :R])
     return state_df, beta_df
 end
 
-function create_sir_sim_array!(; jump_sol)
-    sir_array[1:3, :] = Array(jump_sol)
-    sir_array[4, :] = sum(sir_array[1:3, :]; dims = 1)
-
-    return nothing
-end
-
 function create_sir_all_sim_quantiles!(all_sims_array, sim_quantiles; quantiles)
     for state in axes(all_sims_array, 2), time in axes(all_sims_array, 1)
         sim_quantiles[:, time, state] = Statistics.quantile(

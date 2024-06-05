@@ -2,7 +2,7 @@
 
 julia_version = "1.10.3"
 manifest_format = "2.0"
-project_hash = "c12b61902af071264d534169a6e84ef435b30e12"
+project_hash = "5419c6c35aea64a56727eca6957bcbd394a39a27"
 
 [[deps.Accessors]]
 deps = ["CompositionsBase", "ConstructionBase", "Dates", "InverseFunctions", "LinearAlgebra", "MacroTools", "Markdown", "Test"]
@@ -371,12 +371,6 @@ deps = ["CategoricalArrays", "Missings", "NamedArrays", "Tables"]
 git-tree-sha1 = "4693424929b4ec7ad703d68912a6ad6eff103cfe"
 uuid = "da1fdf0e-e0ff-5433-a45f-9bb5ff651cb1"
 version = "0.4.6"
-
-[[deps.FromFile]]
-deps = ["Downloads", "Requires"]
-git-tree-sha1 = "5df4ca248bed8c35164d6a7ae006073bbf8289ff"
-uuid = "ff7dd447-1dcb-4ce3-b8ac-22a812192de7"
-version = "0.1.5"
 
 [[deps.Future]]
 deps = ["Random"]
@@ -940,17 +934,6 @@ version = "1.10.0"
 [[deps.Test]]
 deps = ["InteractiveUtils", "Logging", "Random", "Serialization"]
 uuid = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
-
-[[deps.TestItemRunner]]
-deps = ["Pkg", "TOML", "Test", "TestItems", "UUIDs"]
-git-tree-sha1 = "cb2b53fd36a8fe20c0b9f55da6244eb4818779f5"
-uuid = "f8b46487-2199-4994-9208-9a1283c18c0a"
-version = "0.2.3"
-
-[[deps.TestItems]]
-git-tree-sha1 = "8621ba2637b49748e2dc43ba3d84340be2938022"
-uuid = "1c621080-faea-4a02-84b6-bbd5e436b8fe"
-version = "0.1.1"
 
 [[deps.TranscodingStreams]]
 git-tree-sha1 = "a947ea21087caba0a798c5e494d0bb78e3a1a3a0"
