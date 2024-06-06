@@ -538,7 +538,7 @@ function calculate_optimal_threshold_summaries(
     end
 
     char_percentiles = map(
-        percentile -> quantile(all_chars, percentile), percentiles
+        percentile -> StatsBase.quantile(all_chars, percentile), percentiles
     )
     char_mean = StatsBase.mean(all_chars)
 
