@@ -224,7 +224,7 @@ function jump_prob_summary(ensemble_param_dict)
 end
 
 function run_define_outbreaks(dict_of_outbreak_spec_params)
-    FLoops.@floop for outbreak_spec_params in dict_of_outbreak_spec_params
+    for outbreak_spec_params in dict_of_outbreak_spec_params
         DrWatson.@produce_or_load(
             define_outbreaks,
             outbreak_spec_params,
