@@ -1,57 +1,89 @@
 using DataFrames
+using DrWatson: DrWatson
 
 function line_accuracy_plot(
     noise_spec_vec,
     ensemble_percent_clinic_tested_vec,
     optimal_threshold_test_spec_vec,
-    optimal_threshold_core_params,
+    optimal_threshold_core_params;
+    plotdirpath = DrWatson.plotsdir(),
+    plotname = "line_accuracy_plot",
+    plotformat = "png",
+    size = (2200, 1200),
+    colors = Makie.wong_colors(),
+    force = false,
 )
-    fig = Figure()
+    mkpath(plotdirpath)
+    plotpath = joinpath(plotdirpath, "$plotname.$plotformat")
 
-    noise_descriptions = get_noise_description.(noise_spec_vec)
-    unique_noise_descriptions = unique(noise_descriptions)
+    if !isfile(plotpath) || force
+        fig = Figure()
 
-    for (j, noise_description) in pairs(unique_noise_descriptions)
-        shape_noise_specification = filter(
-            noise_spec ->
-                noise_description == get_noise_description(noise_spec),
-            noise_spec_vec,
-        )
+        noise_descriptions = get_noise_description.(noise_spec_vec)
+        unique_noise_descriptions = unique(noise_descriptions)
+        unique_tests = unique(optimal_threshold_test_spec_vec)
 
-        @show j
-        @show noise_description
-        # @show shape_noise_specification
-
-        for (i, noise_spec) in pairs(shape_noise_specification)
-            @show i, noise_spec
-            optimal_threshold_comparison_params = (
-                noise_specification = noise_spec,
-                optimal_threshold_core_params...,
+        for (i, noise_description) in pairs(unique_noise_descriptions)
+            shape_noise_specification = filter(
+                noise_spec ->
+                    noise_description == get_noise_description(noise_spec),
+                noise_spec_vec,
             )
 
-            optimal_thresholds_vec = calculate_OptimalThresholdCharacteristics(
-                ensemble_percent_clinic_tested_vec,
-                optimal_threshold_test_spec_vec,
-                optimal_threshold_comparison_params,
-            )
+            if contains(noise_description, "dynamical")
+                shape_noise_specification = reverse(shape_noise_specification)
+            end
 
-            _line_accuracy_plot!(
-                optimal_thresholds_vec,
-                fig,
-                j,
-                i,
-            )
+            for (j, noise_spec) in pairs(shape_noise_specification)
+                optimal_threshold_comparison_params = (
+                    noise_specification = noise_spec,
+                    optimal_threshold_core_params...,
+                )
+
+                optimal_thresholds_vec = calculate_OptimalThresholdCharacteristics(
+                    ensemble_percent_clinic_tested_vec,
+                    optimal_threshold_test_spec_vec,
+                    optimal_threshold_comparison_params,
+                )
+
+                _line_accuracy_plot!(
+                    fig,
+                    noise_spec,
+                    optimal_thresholds_vec,
+                    i,
+                    j,
+                )
+            end
         end
+
+        Legend(
+            fig[0, :],
+            map(
+                i -> PolyElement(; color = colors[i]),
+                eachindex(unique_tests),
+            ),
+            map(
+                test -> "$(test.sensitivity), $(test.test_result_lag)",
+                unique_tests,
+            ),
+            "Test Type";
+            orientation = :horizontal,
+        )
+        rowsize!(fig.layout, 0, Relative(0.03))
+
+        Makie.save(plotpath, fig; size = size)
+        return fig
     end
 
-    return fig
+    return nothing
 end
 
 function _line_accuracy_plot!(
-    optimal_thresholds_vec,
     fig,
-    j,
-    i;
+    noise_spec,
+    optimal_thresholds_vec,
+    i,
+    j;
     colors = Makie.wong_colors(),
 )
     long_df = create_optimal_threshold_summary_df(
@@ -71,13 +103,7 @@ function _line_accuracy_plot!(
         ),
     )
 
-    unique_tests = select(
-        unique(long_df, [:sensitivity, :test_lag]), [:sensitivity, :test_lag]
-    )
-
-    noise_spec = optimal_thresholds_vec[1].noise_specification
-
-    gl = fig[j, i] = GridLayout(3, 2)
+    gl = fig[i, j] = GridLayout()
 
     _line_accuracy_facet!(
         gl,
@@ -85,21 +111,6 @@ function _line_accuracy_plot!(
         long_df;
         colors = colors,
     )
-
-    Legend(
-        gl[1, :],
-        [
-            PolyElement(; color = colors[i]) for
-            i in eachindex(unique_tests.sensitivity)
-        ],
-        map(
-            test -> "$(test.sensitivity), $(test.test_lag)",
-            eachrow(unique_tests),
-        ),
-        "Test Type";
-        orientation = :horizontal,
-    )
-    rowsize!(gl, 1, Relative(0.1))
 
     return nothing
 end
@@ -111,7 +122,7 @@ function _line_accuracy_facet!(
     colors = Makie.wong_colors(),
 )
     ax = Axis(
-        gl[3, 2];
+        gl[2, 2];
         xlabel = "Testing Rate",
         ylabel = "Accuracy",
     )
@@ -143,30 +154,30 @@ function _line_accuracy_facet!(
         ylims!(ax, (0.6, 1))
     end
 
-    Box(gl[2, 2]; color = :lightgray, strokevisible = false)
+    Box(gl[1, 2]; color = :lightgray, strokevisible = false)
     Label(
-        gl[2, 2],
+        gl[1, 2],
         "Noise type: $(noise_spec.noise_type)";
-        fontsize = 20,
-        padding = (0, 0, 5, 5),
+        fontsize = 16,
+        padding = (0, 0, 0, 0),
         valign = :bottom,
     )
 
     Box(
-        gl[3, 1];
+        gl[2, 1];
         color = :lightgray,
         strokevisible = false,
     )
     Label(
-        gl[3, 1],
-        "Noise scaling: $(noise_spec.noise_mean_scaling)";
-        fontsize = 20,
+        gl[2, 1],
+        get_noise_magnitude(noise_spec);
+        fontsize = 16,
         rotation = pi / 2,
-        padding = (5, 5, 0, 0),
+        padding = (0, 0, 0, 0),
         valign = :center,
     )
 
-    rowsize!(gl, 3, Relative(0.85))
-    colsize!(gl, 2, Relative(0.97))
+    rowsize!(gl, 2, Relative(0.9))
+    colsize!(gl, 2, Relative(0.92))
     return nothing
 end
