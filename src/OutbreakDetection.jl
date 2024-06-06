@@ -52,6 +52,9 @@ export plot_all_threshold_comparisons
 include("isocline_plots.jl")
 export isocline_accuracy_plot
 
+include("line_plots.jl")
+export line_accuracy_plot
+
 @static if false
     include("../scripts/single-sim_plots.jl")
     include("../scripts/ensemble-diag-testing_scenarios_plots.jl")
