@@ -13,16 +13,16 @@ using Statistics
 using OutbreakDetection
 
 includet(srcdir("makie-plotting-setup.jl"))
-includet(srcdir("ensemble-parameters.jl"))
+include(srcdir("ensemble-parameters.jl"))
 
 #%%
 optimal_threshold_test_spec_vec = [
-    IndividualTestSpecification(0.5, 0.5, 0),
-    IndividualTestSpecification(0.7, 0.7, 0),
-    IndividualTestSpecification(0.8, 0.8, 0),
+    # IndividualTestSpecification(0.5, 0.5, 0),
+    # IndividualTestSpecification(0.7, 0.7, 0),
+    # IndividualTestSpecification(0.8, 0.8, 0),
     IndividualTestSpecification(0.85, 0.85, 0),
     IndividualTestSpecification(0.9, 0.9, 0),
-    CLINICAL_TEST_SPECS...,
+    # CLINICAL_TEST_SPECS...,
     IndividualTestSpecification(1.0, 1.0, 0),
     IndividualTestSpecification(1.0, 1.0, 3),
     IndividualTestSpecification(1.0, 1.0, 7),
@@ -64,7 +64,7 @@ alert_method_vec = ["movingavg"]
 #%%
 for (ensemble_noise_specification, ensemble_specification, alertmethod) in
     Iterators.product(
-    ensemble_noise_specification_vec[1:2], ensemble_spec_vec, alert_method_vec
+    ensemble_noise_specification_vec[2:end], ensemble_spec_vec, alert_method_vec
 )
     @info "Creating plots and tables for R0: $(ensemble_specification.dynamics_parameters.R_0), $(getdirpath(ensemble_noise_specification)), $(alertmethod)"
     println("==============================================")
