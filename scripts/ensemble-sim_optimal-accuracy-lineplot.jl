@@ -61,24 +61,17 @@ alert_method_vec = ["movingavg"]
 #     @info "Creating plots and tables for R0: $(ensemble_specification.dynamics_parameters.R_0), $(getdirpath(ensemble_noise_specification)), $(alertmethod)"
 #     println("==============================================")
 
-ensemble_noise_specification = ensemble_noise_specification_vec[1]
+ensemble_noise_specification = ensemble_noise_specification_vec
 ensemble_specification = ensemble_spec_vec[1]
 alertmethod = alert_method_vec[1]
 
-optimal_threshold_comparison_params = (
+optimal_threshold_core_params = (
     alertthreshold_vec = optimal_threshold_alertthreshold_vec,
     ensemble_specification = ensemble_specification,
-    noise_specification = ensemble_noise_specification,
     outbreak_specification = ensemble_outbreak_specification,
     moving_avg_detection_lag = ensemble_moving_avg_detection_lag,
     percent_visit_clinic = ensemble_percent_visit_clinic,
     alertmethod = alertmethod,
-)
-
-optimal_thresholds_vec = calculate_OptimalThresholdCharacteristics(
-    ensemble_percent_clinic_tested_vec,
-    optimal_threshold_test_spec_vec,
-    optimal_threshold_comparison_params,
 )
 
 # noise_specification_path = getdirpath(ensemble_noise_specification)
@@ -108,5 +101,8 @@ baseplotdirpath = joinpath(
 
 #%%
 line_accuracy_plot(
-    optimal_thresholds_vec
+    ensemble_noise_specification,
+    ensemble_percent_clinic_tested_vec,
+    optimal_threshold_test_spec_vec,
+    optimal_threshold_core_params,
 )

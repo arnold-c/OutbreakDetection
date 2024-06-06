@@ -1,33 +1,46 @@
 using DataFrames
 
-function line_accuracy_plot(optimal_thresholds_vec)
-    unique_noise_specs = unique(optimal_thresholds_vec.noise_specification)
-
-    unique_noise_descriptions = get_noise_description.(unique_noise_specs)
-
+function line_accuracy_plot(
+    noise_spec_vec,
+    ensemble_percent_clinic_tested_vec,
+    optimal_threshold_test_spec_vec,
+    optimal_threshold_core_params,
+)
     fig = Figure()
 
+    noise_descriptions = get_noise_description.(noise_spec_vec)
+    unique_noise_descriptions = unique(noise_descriptions)
+
     for (j, noise_description) in pairs(unique_noise_descriptions)
-        @show j
-        @show noise_description
-        filtered_noise_threshold_vecs = filter(
-            optimal_threshold ->
-                noise_description ==
-                get_noise_description(optimal_threshold.noise_specification),
-            optimal_thresholds_vec,
+        shape_noise_specification = filter(
+            noise_spec ->
+                noise_description == get_noise_description(noise_spec),
+            noise_spec_vec,
         )
 
-        unique_noise_scaling_levels = unique(
-            filtered_noise_threshold_vecs.noise_specification
-        )
-        for (i, noise_spec) in pairs(unique_noise_scaling_levels)
+        @show j
+        @show noise_description
+        # @show shape_noise_specification
+
+        for (i, noise_spec) in pairs(shape_noise_specification)
             @show i, noise_spec
-            filtered_specs = filter(
-                optimal_threshold ->
-                    noise_spec == optimal_threshold.noise_specification,
-                filtered_noise_threshold_vecs,
+            optimal_threshold_comparison_params = (
+                noise_specification = noise_spec,
+                optimal_threshold_core_params...,
             )
-            _line_accuracy_plot!(filtered_specs, fig, j, i)
+
+            optimal_thresholds_vec = calculate_OptimalThresholdCharacteristics(
+                ensemble_percent_clinic_tested_vec,
+                optimal_threshold_test_spec_vec,
+                optimal_threshold_comparison_params,
+            )
+
+            _line_accuracy_plot!(
+                optimal_thresholds_vec,
+                fig,
+                j,
+                i,
+            )
         end
     end
 
