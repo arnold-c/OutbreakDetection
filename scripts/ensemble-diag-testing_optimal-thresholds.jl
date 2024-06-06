@@ -62,9 +62,44 @@ ensemble_spec_vec = create_combinations_vec(
 alert_method_vec = ["movingavg"]
 
 #%%
+cfr_df = CSV.read(
+    datadir("CFR_2022.csv"),
+    DataFrame; delim = ',',
+    header = true,
+    types = [String, Int64, Float64],
+    silencewarnings = true,
+)
+dropmissing!(cfr_df)
+
+gha_cfr = only(cfr_df[cfr_df.country .== "GHA", :CFR])
+
+population_df = CSV.read(
+    datadir("input-populations.csv"),
+    DataFrame; delim = ',',
+    header = true,
+)
+
+gha_2022_pop = only(
+    population_df[population_df.ISO3_code .== "GHA", "2022"]
+)
+gha_2022_scale_population =
+    gha_2022_pop / ensemble_state_specification.init_states.N
+
+countries = [
+    (;
+        name = "Ghana",
+        code = "GHA",
+        cfr = gha_cfr,
+        year = "2022",
+        population_size = gha_2022_pop,
+        scale_population = gha_2022_scale_population,
+    ),
+]
+
+#%%
 for (ensemble_noise_specification, ensemble_specification, alertmethod) in
     Iterators.product(
-    ensemble_noise_specification_vec[2:end], ensemble_spec_vec, alert_method_vec
+    ensemble_noise_specification_vec, ensemble_spec_vec, alert_method_vec
 )
     @info "Creating plots and tables for R0: $(ensemble_specification.dynamics_parameters.R_0), $(getdirpath(ensemble_noise_specification)), $(alertmethod)"
     println("==============================================")
@@ -144,6 +179,7 @@ for (ensemble_noise_specification, ensemble_specification, alertmethod) in
     # )
 
     test_plotdirpath = joinpath(baseplotdirpath, "tests")
+    mkpath(test_plotdirpath)
 
     # compare_optimal_thresholds_test_chars_plot(
     #     optimal_thresholds_vec,
@@ -176,44 +212,11 @@ for (ensemble_noise_specification, ensemble_specification, alertmethod) in
     #     plotdirpath = test_plotdirpath,
     # )
 
-    cfr_df = CSV.read(
-        datadir("CFR_2022.csv"),
-        DataFrame; delim = ',',
-        header = true,
-        types = [String, Int64, Float64],
-        silencewarnings = true,
-    )
-    dropmissing!(cfr_df)
-
-    gha_cfr = only(cfr_df[cfr_df.country .== "GHA", :CFR])
-
-    population_df = CSV.read(
-        datadir("input-populations.csv"),
-        DataFrame; delim = ',',
-        header = true,
-    )
-
-    gha_2022_pop = only(
-        population_df[population_df.ISO3_code .== "GHA", "2022"]
-    )
-    gha_2022_scale_population =
-        gha_2022_pop / ensemble_state_specification.init_states.N
-
-    countries = [
-        (;
-            name = "Ghana",
-            code = "GHA",
-            cfr = gha_cfr,
-            year = "2022",
-            population_size = gha_2022_pop,
-            scale_population = gha_2022_scale_population,
-        ),
-    ]
-
     tabledirpath = joinpath(
         outdir("ensemble/optimal-threshold-results"),
         basedirpath,
     )
+    mkpath(tabledirpath)
 
     tablefilename = "optimal-threshold_$(noisespec_alertmethod_filename)_thresholds"
 
