@@ -92,7 +92,7 @@ function create_noise_arr(
     poisson_noise = zeros(Float64, size(incarr, 1), size(incarr, 3))
 
     add_poisson_noise_arr!(
-        poisson_noise, incarr, noise_specification.noise_mean_scaling;
+        poisson_noise, ensemble_inc_arr, noise_specification.noise_mean_scaling;
         seed = seed,
     )
 
