@@ -120,7 +120,7 @@ function create_noise_arr(
     seed = 1234,
     kwargs...,
 )
-    noise_arr = zeros(Int64, size(incarr, 1), size(incarr, 2))
+    noise_arr = zeros(Int64, size(incarr, 1), size(incarr, 3))
 
     add_poisson_noise_arr!(
         noise_arr, incarr, noise_specification.noise_mean_scaling; seed = seed
@@ -141,7 +141,7 @@ function add_poisson_noise_arr!(
 )
     Random.seed!(seed)
 
-    @assert size(incarr, 2) == size(noise_arr, 2)
+    @assert size(incarr, 3) == size(noise_arr, 2)
     @inbounds for sim in axes(incarr, 2)
         @views noise_arr[:, sim] .+= Random.rand(
             Distributions.Poisson(
