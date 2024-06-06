@@ -237,6 +237,20 @@ for (ensemble_noise_specification, ensemble_specification, alertmethod) in
     )
 
     create_and_save_xlsx_optimal_threshold_summaries(
+        optimal_thresholds_vec, :mean_poisson_noise;
+        tabledirpath = tabledirpath,
+        filename = tablefilename,
+        gt_kwargs = (;
+            testing_rates = Between("0.1", "0.6"),
+            colorschemes = ["ggsci::grey_material"],
+            summary_stats = ["mean"],
+            save = "yes",
+            show = "no",
+            decimals = 2,
+        ),
+    )
+
+    create_and_save_xlsx_optimal_threshold_summaries(
         optimal_thresholds_vec, :detectiondelays;
         tabledirpath = tabledirpath,
         filename = tablefilename,
