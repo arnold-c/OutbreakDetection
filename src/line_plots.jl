@@ -1,5 +1,6 @@
 using DataFrames
 
+using ColorSchemes: grayyellow
 function line_accuracy_plot(
     optimal_thresholds_vec;
     colors = Makie.wong_colors(),
@@ -21,18 +22,17 @@ function line_accuracy_plot(
         ),
     )
 
-    println(long_df)
-
     unique_tests = select(
         unique(long_df, [:sensitivity, :test_lag]), [:sensitivity, :test_lag]
     )
 
-    println(unique_tests)
+    noise_spec = optimal_thresholds_vec[1].noise_specification
 
     fig = Figure()
 
     _line_accuracy_facet!(
         fig,
+        noise_spec,
         long_df;
         colors = colors,
     )
@@ -58,6 +58,7 @@ end
 
 function _line_accuracy_facet!(
     fig,
+    noise_spec,
     long_df;
     colors = Makie.wong_colors(),
 )
@@ -95,6 +96,15 @@ function _line_accuracy_facet!(
 
         ylims!(ax, (0.6, 1))
     end
+
+    Box(gl[1, 1, Top()]; color = :lightgray, strokevisible = false)
+    Label(
+        gl[1, 1, Top()],
+        "Noise type: $(noise_spec.noise_type)";
+        fontsize = 20,
+        padding = (0, 0, 0, 0),
+        valign = :bottom,
+    )
 
     return nothing
 end
