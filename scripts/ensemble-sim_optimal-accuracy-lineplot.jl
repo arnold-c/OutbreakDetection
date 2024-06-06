@@ -61,7 +61,7 @@ alert_method_vec = ["movingavg"]
 #     @info "Creating plots and tables for R0: $(ensemble_specification.dynamics_parameters.R_0), $(getdirpath(ensemble_noise_specification)), $(alertmethod)"
 #     println("==============================================")
 
-ensemble_noise_specification = ensemble_noise_specification_vec[2]
+ensemble_noise_specification = ensemble_noise_specification_vec[1]
 ensemble_specification = ensemble_spec_vec[1]
 alertmethod = alert_method_vec[1]
 
@@ -97,7 +97,7 @@ optimal_thresholds_vec = calculate_OptimalThresholdCharacteristics(
 # )
 
 basedirpath = joinpath(
-    "R0_$(ensemble_specification.dynamics_parameters.R_0)",
+    "R0_$(ensemble_specification.dynamics_parameters.R_0)"
     # noisespec_alertmethod_path,
 )
 
