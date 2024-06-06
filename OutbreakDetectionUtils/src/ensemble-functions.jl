@@ -307,8 +307,7 @@ end
 function run_OutbreakThresholdChars_creation(
     dict_of_OTchars_params
 )
-    # FLoops.@floop
-    for OTChars_params in dict_of_OTchars_params
+    FLoops.@floop for OTChars_params in dict_of_OTchars_params
         DrWatson.@produce_or_load(
             OutbreakThresholdChars_creation,
             OTChars_params,
