@@ -278,7 +278,7 @@ function calculate_test_positivity(
 end
 
 function calculate_OutbreakThresholdChars(
-    testarr, infecarr, thresholds_vec, noise_rubella_prop
+    testarr, infecarr, thresholds_vec, noise_means
 )
     OT_chars = map(axes(infecarr, 3)) do sim
         dailychars = calculate_daily_detection_characteristics(
@@ -328,7 +328,8 @@ function calculate_OutbreakThresholdChars(
             avoidable_cases,
             n_outbreak_cases,
             n_tests,
-            NaNMath.mean(noise_rubella_prop),
+            noise_means.mean_poisson_noise,
+            noise_means.poisson_noise_prop,
         )
     end
 

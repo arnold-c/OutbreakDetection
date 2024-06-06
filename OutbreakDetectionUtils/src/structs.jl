@@ -235,7 +235,8 @@ struct OutbreakThresholdChars{
     avoidable_cases::T2
     n_outbreak_cases::T2
     n_tests::T2
-    noise_rubella_prop::T1
+    mean_poisson_noise::T1
+    poisson_noise_prop::T1
 end
 
 struct OutbreakSpecification{T1<:Integer,T2<:AbstractString}
