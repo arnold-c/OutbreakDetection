@@ -1,8 +1,44 @@
 using DataFrames
 
-using ColorSchemes: grayyellow
-function line_accuracy_plot(
-    optimal_thresholds_vec;
+function line_accuracy_plot(optimal_thresholds_vec)
+    unique_noise_specs = unique(optimal_thresholds_vec.noise_specification)
+
+    unique_noise_descriptions = get_noise_description.(unique_noise_specs)
+
+    fig = Figure()
+
+    for (j, noise_description) in pairs(unique_noise_descriptions)
+        @show j
+        @show noise_description
+        filtered_noise_threshold_vecs = filter(
+            optimal_threshold ->
+                noise_description ==
+                get_noise_description(optimal_threshold.noise_specification),
+            optimal_thresholds_vec,
+        )
+
+        unique_noise_scaling_levels = unique(
+            filtered_noise_threshold_vecs.noise_specification
+        )
+        for (i, noise_spec) in pairs(unique_noise_scaling_levels)
+            @show i, noise_spec
+            filtered_specs = filter(
+                optimal_threshold ->
+                    noise_spec == optimal_threshold.noise_specification,
+                filtered_noise_threshold_vecs,
+            )
+            _line_accuracy_plot!(filtered_specs, fig, j, i)
+        end
+    end
+
+    return fig
+end
+
+function _line_accuracy_plot!(
+    optimal_thresholds_vec,
+    fig,
+    j,
+    i;
     colors = Makie.wong_colors(),
 )
     long_df = create_optimal_threshold_summary_df(
@@ -28,17 +64,17 @@ function line_accuracy_plot(
 
     noise_spec = optimal_thresholds_vec[1].noise_specification
 
-    fig = Figure()
+    gl = fig[j, i] = GridLayout(3, 2)
 
     _line_accuracy_facet!(
-        fig,
+        gl,
         noise_spec,
         long_df;
         colors = colors,
     )
 
     Legend(
-        fig[0, :],
+        gl[1, :],
         [
             PolyElement(; color = colors[i]) for
             i in eachindex(unique_tests.sensitivity)
@@ -50,22 +86,19 @@ function line_accuracy_plot(
         "Test Type";
         orientation = :horizontal,
     )
-    rowsize!(fig.layout, 0, Relative(0.1))
-    # colsize!(fig.layout, 1, Relative(0.95))
+    rowsize!(gl, 1, Relative(0.1))
 
-    return fig
+    return nothing
 end
 
 function _line_accuracy_facet!(
-    fig,
+    gl,
     noise_spec,
     long_df;
     colors = Makie.wong_colors(),
 )
-    # gl = fig[y + 2, x + 1] = GridLayout()
-    gl = fig[1, 1] = GridLayout()
     ax = Axis(
-        gl[2, 2];
+        gl[3, 2];
         xlabel = "Testing Rate",
         ylabel = "Accuracy",
     )
@@ -97,9 +130,9 @@ function _line_accuracy_facet!(
         ylims!(ax, (0.6, 1))
     end
 
-    Box(gl[1, 2, Top()]; color = :lightgray, strokevisible = false)
+    Box(gl[2, 2]; color = :lightgray, strokevisible = false)
     Label(
-        gl[1, 2, Top()],
+        gl[2, 2],
         "Noise type: $(noise_spec.noise_type)";
         fontsize = 20,
         padding = (0, 0, 5, 5),
@@ -107,12 +140,12 @@ function _line_accuracy_facet!(
     )
 
     Box(
-        gl[2, 1, Left()];
+        gl[3, 1];
         color = :lightgray,
         strokevisible = false,
     )
     Label(
-        gl[2, 1, Left()],
+        gl[3, 1],
         "Noise scaling: $(noise_spec.noise_mean_scaling)";
         fontsize = 20,
         rotation = pi / 2,
@@ -120,7 +153,7 @@ function _line_accuracy_facet!(
         valign = :center,
     )
 
-    rowsize!(gl, 2, Relative(0.99))
-    colsize!(gl, 2, Relative(0.995))
+    rowsize!(gl, 3, Relative(0.85))
+    colsize!(gl, 2, Relative(0.97))
     return nothing
 end

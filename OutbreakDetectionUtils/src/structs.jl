@@ -358,6 +358,18 @@ end
 function DynamicalNoiseSpecification()
 end
 
+function get_noise_description(
+    noise_specification::T
+) where {T<:NoiseSpecification}
+    return noise_specification.noise_type
+end
+
+function get_noise_description(noise_specification::DynamicalNoiseSpecification)
+    return string(
+        noise_specification.noise_type, ", ", noise_specification.correlation
+    )
+end
+
 function getdirpath(spec::NoiseSpecification)
     return reduce(
         joinpath,

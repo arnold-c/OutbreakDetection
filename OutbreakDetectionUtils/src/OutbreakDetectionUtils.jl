@@ -12,7 +12,7 @@ export SimTimeParameters, EnsembleSpecification, DynamicsParameters,
     StateParameters, OutbreakThresholdChars, OutbreakDetectionSpecification,
     OutbreakSpecification, IndividualTestSpecification,
     PoissonNoiseSpecification, DynamicalNoiseSpecification, NoiseSpecification,
-    getdirpath,
+    get_noise_description, getdirpath,
     ScenarioSpecification, TestPositivity, OptimalThresholdCharacteristics
 
 include("dynamics-constants.jl")
