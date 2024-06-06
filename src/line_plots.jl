@@ -51,7 +51,7 @@ function line_accuracy_plot(
         orientation = :horizontal,
     )
     rowsize!(fig.layout, 0, Relative(0.1))
-    colsize!(fig.layout, 1, Relative(1))
+    # colsize!(fig.layout, 1, Relative(0.95))
 
     return fig
 end
@@ -65,7 +65,7 @@ function _line_accuracy_facet!(
     # gl = fig[y + 2, x + 1] = GridLayout()
     gl = fig[1, 1] = GridLayout()
     ax = Axis(
-        gl[1, 1];
+        gl[2, 2];
         xlabel = "Testing Rate",
         ylabel = "Accuracy",
     )
@@ -97,14 +97,30 @@ function _line_accuracy_facet!(
         ylims!(ax, (0.6, 1))
     end
 
-    Box(gl[1, 1, Top()]; color = :lightgray, strokevisible = false)
+    Box(gl[1, 2, Top()]; color = :lightgray, strokevisible = false)
     Label(
-        gl[1, 1, Top()],
+        gl[1, 2, Top()],
         "Noise type: $(noise_spec.noise_type)";
         fontsize = 20,
-        padding = (0, 0, 0, 0),
+        padding = (0, 0, 5, 5),
         valign = :bottom,
     )
 
+    Box(
+        gl[2, 1, Left()];
+        color = :lightgray,
+        strokevisible = false,
+    )
+    Label(
+        gl[2, 1, Left()],
+        "Noise scaling: $(noise_spec.noise_mean_scaling)";
+        fontsize = 20,
+        rotation = pi / 2,
+        padding = (5, 5, 0, 0),
+        valign = :center,
+    )
+
+    rowsize!(gl, 2, Relative(0.99))
+    colsize!(gl, 2, Relative(0.995))
     return nothing
 end
