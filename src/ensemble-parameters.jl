@@ -32,7 +32,7 @@ ensemble_specification = EnsembleSpecification(
     ensemble_nsims,
 )
 
-poisson_noise_mean_scaling_vec = collect(1.0:2.0:8.0)
+poisson_noise_mean_scaling_vec = [1.0, collect(2.0:2.0:8.0)]
 
 poisson_noise_spec_vec = create_combinations_vec(
     PoissonNoiseSpecification,
