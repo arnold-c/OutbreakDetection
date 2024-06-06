@@ -28,7 +28,7 @@ export seir_mod, seir_mod!, seir_mod_loop!,
     convert_svec_to_matrix, convert_svec_to_matrix!, convert_svec_to_array
 
 include("cleaning-functions.jl")
-export create_sir_df, create_sir_beta_dfs, create_sir_sim_array!,
+export create_sir_df, create_sir_beta_dfs,
     create_sir_all_sim_quantiles, create_sir_all_sim_quantiles!
 
 include("detection-thresholds.jl")

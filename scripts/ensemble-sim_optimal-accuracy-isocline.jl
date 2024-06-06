@@ -1,9 +1,10 @@
-using Base: available_text_colors_docstring
 #%%
 using DrWatson
 @quickactivate "OutbreakDetection"
 
+using OutbreakDetectionUtils
 using OutbreakDetection
+using Revise
 
 includet(srcdir("makie-plotting-setup.jl"))
 includet(srcdir("ensemble-parameters.jl"))
@@ -56,7 +57,7 @@ alert_method_vec = ["movingavg"]
 #     @info "Creating plots and tables for R0: $(ensemble_specification.dynamics_parameters.R_0), $(getdirpath(ensemble_noise_specification)), $(alertmethod)"
 #     println("==============================================")
 
-ensemble_noise_specification = ensemble_noise_specification_vec[1]
+ensemble_noise_specification = ensemble_noise_specification_vec[2]
 ensemble_specification = ensemble_spec_vec[1]
 alertmethod = alert_method_vec[1]
 
@@ -102,9 +103,25 @@ baseplotdirpath = joinpath(
 )
 
 #%%
-isocline_accuracy_plot(
+line_isocline_accuracy_plot = isocline_accuracy_plot(
     optimal_thresholds_vec,
     Val(Scatter),
+    0.9;
+    # text_color_threshold = 0.92,
+    digits = 3,
+)
+
+mkpath(baseplotdirpath)
+
+save(
+    joinpath(baseplotdirpath, "isocline_accuracy.png"),
+    line_isocline_accuracy_plot; size = (2200, 1600),
+)
+
+#%%
+isocline_accuracy_plot(
+    optimal_thresholds_vec,
+    Val(Heatmap),
     0.9;
     # text_color_threshold = 0.92,
     digits = 3,

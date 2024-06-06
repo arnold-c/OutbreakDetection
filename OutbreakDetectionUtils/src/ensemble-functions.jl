@@ -1,4 +1,5 @@
 using DrWatson: DrWatson
+using JLD2: JLD2
 using UnPack: UnPack
 using FLoops: FLoops
 using ProgressMeter: ProgressMeter
@@ -353,19 +354,21 @@ function get_ensemble_file(
 )
     dirpath = joinpath(ensemble_spec.dirpath, outbreak_spec.dirpath)
 
-    return load(collect_ensemble_file("incidence-array", dirpath)...)
+    return JLD2.load(collect_ensemble_file("incidence-array", dirpath)...)
 end
 
 function get_ensemble_file(spec::EnsembleSpecification)
-    return load(collect_ensemble_file("solution", spec.dirpath)...)
+    return JLD2.load(collect_ensemble_file("solution", spec.dirpath)...)
 end
 
 function get_ensemble_file(spec::EnsembleSpecification, quantile::Int64)
-    return load(collect_ensemble_file("quantiles_$(quantile)", spec.dirpath)...)
+    return JLD2.load(
+        collect_ensemble_file("quantiles_$(quantile)", spec.dirpath)...
+    )
 end
 
 function get_ensemble_file(spec::ScenarioSpecification)
-    return load(collect_ensemble_file("scenario", spec.dirpath)...)
+    return JLD2.load(collect_ensemble_file("scenario", spec.dirpath)...)
 end
 
 function collect_ensemble_file(type, dirpath)

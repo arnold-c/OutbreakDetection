@@ -1,5 +1,6 @@
 module OutbreakDetection
 
+using DrWatson
 using GLMakie
 using ColorSchemes
 using UnPack
@@ -7,6 +8,7 @@ using DataFrames
 using Chain
 using NaNMath: NaNMath
 using FLoops
+using OutbreakDetectionUtils
 
 include("plotting-helpers.jl")
 export ACCURACY_COLOR, DAILY_SENSITIVITY_COLOR, DAILY_SPECIFICITY_COLOR,
@@ -46,6 +48,9 @@ export singlescenario_test_positivity_plot,
 
 include("threshold_comparison_plots.jl")
 export plot_all_threshold_comparisons
+
+include("isocline_plots.jl")
+export isocline_accuracy_plot
 
 @static if false
     include("../scripts/single-sim_plots.jl")

@@ -47,7 +47,9 @@ function calculate_OptimalThresholdCharacteristics(
     )
 
     if length(clinical_case_test_spec_vec) == 0
-        return StructArray(non_clinical_case_optimal_thresholds_vec)
+        return StructArrays.StructArray(
+            non_clinical_case_optimal_thresholds_vec
+        )
     end
 
     clinical_case_optimal_thresholds_vec = Vector{
@@ -110,7 +112,7 @@ function calculate_optimal_threshold(
     for (i, ensemble_scenario_spec) in pairs(ensemble_scenario_spec_vec)
         scenario_chars_file = get_ensemble_file(ensemble_scenario_spec)
         OT_chars = scenario_chars_file["OT_chars"]
-        accuracy = median(OT_chars.accuracy)
+        accuracy = StatsBase.median(OT_chars.accuracy)
         alert_threshold =
             ensemble_scenario_spec.outbreak_detection_specification.alert_threshold
 
@@ -457,14 +459,12 @@ function create_wide_optimal_thresholds_df(df, characteristic_sym)
             DataFrames.Cols(
                 x -> startswith(x, "s"),
                 "test_lag",
-                x -> startswith(x, "0"),
-                "1.0",
+                :,
             ),
         )
     end
 
-    # return maindf
-    clinical_case_df = subset(
+    clinical_case_df = DataFrames.subset(
         maindf,
         :sensitivity => sens -> sens .== 1.0,
         :specificity => spec -> spec .== 0 .|| spec .== 0.8,
