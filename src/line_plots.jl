@@ -63,8 +63,7 @@ function line_accuracy_plot(
                 i -> PolyElement(; color = colors[i]),
                 eachindex(unique_test_descriptions),
             ),
-            unique_test_descriptions,
-            "Test Type";
+            unique_test_descriptions;
             orientation = :horizontal,
         )
         rowsize!(fig.layout, 0, Relative(0.03))
