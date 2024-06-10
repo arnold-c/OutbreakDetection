@@ -21,7 +21,8 @@ function line_accuracy_plot(
 
         noise_descriptions = get_noise_description.(noise_spec_vec)
         unique_noise_descriptions = unique(noise_descriptions)
-        unique_tests = unique(optimal_threshold_test_spec_vec)
+        unique_test_descriptions =
+            get_test_description.(unique(optimal_threshold_test_spec_vec))
 
         for (i, noise_description) in pairs(unique_noise_descriptions)
             shape_noise_specification = filter(
@@ -60,12 +61,9 @@ function line_accuracy_plot(
             fig[0, :],
             map(
                 i -> PolyElement(; color = colors[i]),
-                eachindex(unique_tests),
+                eachindex(unique_test_descriptions),
             ),
-            map(
-                test -> "$(test.sensitivity), $(test.test_result_lag)",
-                unique_tests,
-            ),
+            unique_test_descriptions,
             "Test Type";
             orientation = :horizontal,
         )

@@ -334,6 +334,18 @@ struct IndividualTestSpecification{T1<:AbstractFloat,T2<:Integer}
     test_result_lag::T2
 end
 
+function get_test_description(test_specification::IndividualTestSpecification)
+    description =
+        if test_specification.sensitivity == 1.0 &&
+            test_specification.specificity == 1.0
+            "ELISA-like ($(test_specification.test_result_lag) day lag)"
+        else
+            "RDT-like ($(test_specification.sensitivity * 100)% sens/spec)"
+        end
+
+    return description
+end
+
 abstract type NoiseSpecification end
 
 struct PoissonNoiseSpecification{
