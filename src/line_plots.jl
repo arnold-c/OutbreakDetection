@@ -22,8 +22,7 @@ function line_accuracy_plot(
         noise_descriptions = get_noise_description.(noise_spec_vec)
         unique_noise_descriptions = unique(noise_descriptions)
         num_noise_descriptions = length(unique_noise_descriptions)
-        unique_test_descriptions =
-            get_test_description.(unique(optimal_threshold_test_spec_vec))
+        unique_test_specifications = unique(optimal_threshold_test_spec_vec)
 
         for (i, noise_description) in pairs(unique_noise_descriptions)
             shape_noise_specification = filter(
@@ -51,6 +50,7 @@ function line_accuracy_plot(
                 _line_accuracy_plot!(
                     fig,
                     noise_spec,
+                    unique_test_specifications,
                     optimal_thresholds_vec,
                     i,
                     j;
@@ -63,9 +63,9 @@ function line_accuracy_plot(
             fig[0, :],
             map(
                 i -> PolyElement(; color = colors[i]),
-                eachindex(unique_test_descriptions),
+                eachindex(unique_test_specifications),
             ),
-            unique_test_descriptions;
+            get_test_description.(unique_test_specifications);
             orientation = :horizontal,
         )
         rowsize!(fig.layout, 0, Relative(0.03))
@@ -80,6 +80,7 @@ end
 function _line_accuracy_plot!(
     fig,
     noise_spec,
+    unique_test_specifications,
     optimal_thresholds_vec,
     i,
     j;
@@ -97,6 +98,7 @@ function _line_accuracy_plot!(
         Cols(
             :percent_clinic_tested,
             :sensitivity,
+            :specificity,
             :test_lag,
             :accuracy_mean,
             x -> endswith(x, "th"),
@@ -119,6 +121,7 @@ function _line_accuracy_plot!(
     _line_accuracy_facet!(
         gl,
         noise_spec,
+        unique_test_specifications,
         long_df;
         colors = colors,
         xlabel = xlabel,
@@ -131,6 +134,7 @@ end
 function _line_accuracy_facet!(
     gl,
     noise_spec,
+    unique_test_specifications,
     long_df;
     colors = Makie.wong_colors(),
     xlabel = "Testing Rate",
@@ -142,11 +146,17 @@ function _line_accuracy_facet!(
         ylabel = ylabel,
     )
 
-    for (i, test) in pairs(unique(long_df.sensitivity))
+    for (i, test) in pairs(unique_test_specifications)
         subsetted_df = DataFrames.subset(
-            long_df, :sensitivity => x -> x .== test
+            long_df,
+            :sensitivity =>
+                x -> x .== test.sensitivity,
+            :specificity =>
+                x -> x .== test.specificity,
+            :test_lag => x -> x .== test.test_result_lag,
         )
-        test_label = string(
+
+        string(
             subsetted_df.sensitivity[1], ", ", subsetted_df.test_lag[1]
         )
         lines!(
@@ -163,7 +173,6 @@ function _line_accuracy_facet!(
             subsetted_df.accuracy_90th;
             color = colors[i],
             alpha = 0.3,
-            label = test_label,
         )
 
         ylims!(ax, (0.6, 1))
