@@ -370,6 +370,18 @@ function get_noise_description(noise_specification::DynamicalNoiseSpecification)
     )
 end
 
+function get_noise_magnitude(
+    noise_specification::T
+) where {T<:NoiseSpecification}
+    return string("Poisson scaling: ", noise_specification.noise_mean_scaling)
+end
+
+function get_noise_magnitude(
+    noise_specification::DynamicalNoiseSpecification
+)
+    return string("Rubella vax: ", noise_specification.vaccination_coverage)
+end
+
 function getdirpath(spec::NoiseSpecification)
     return reduce(
         joinpath,
