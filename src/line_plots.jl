@@ -21,6 +21,7 @@ function line_accuracy_plot(
 
         noise_descriptions = get_noise_description.(noise_spec_vec)
         unique_noise_descriptions = unique(noise_descriptions)
+        num_noise_descriptions = length(unique_noise_descriptions)
         unique_test_descriptions =
             get_test_description.(unique(optimal_threshold_test_spec_vec))
 
@@ -52,7 +53,8 @@ function line_accuracy_plot(
                     noise_spec,
                     optimal_thresholds_vec,
                     i,
-                    j,
+                    j;
+                    num_noise_descriptions = num_noise_descriptions,
                 )
             end
         end
@@ -82,6 +84,7 @@ function _line_accuracy_plot!(
     i,
     j;
     colors = Makie.wong_colors(),
+    num_noise_descriptions = 1,
 )
     long_df = create_optimal_threshold_summary_df(
         optimal_thresholds_vec,
@@ -102,11 +105,24 @@ function _line_accuracy_plot!(
 
     gl = fig[i, j] = GridLayout()
 
+    xlabel = "Testing Rate"
+    ylabel = "Accuracy"
+
+    if i != num_noise_descriptions
+        xlabel = ""
+    end
+
+    if j != 1
+        ylabel = ""
+    end
+
     _line_accuracy_facet!(
         gl,
         noise_spec,
         long_df;
         colors = colors,
+        xlabel = xlabel,
+        ylabel = ylabel,
     )
 
     return nothing
@@ -117,11 +133,13 @@ function _line_accuracy_facet!(
     noise_spec,
     long_df;
     colors = Makie.wong_colors(),
+    xlabel = "Testing Rate",
+    ylabel = "Accuracy",
 )
     ax = Axis(
         gl[2, 2];
-        xlabel = "Testing Rate",
-        ylabel = "Accuracy",
+        xlabel = xlabel,
+        ylabel = ylabel,
     )
 
     for (i, test) in pairs(unique(long_df.sensitivity))
