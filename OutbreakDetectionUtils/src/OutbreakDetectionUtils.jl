@@ -10,9 +10,9 @@ export calculate_beta,
 include("structs.jl")
 export SimTimeParameters, EnsembleSpecification, DynamicsParameters,
     StateParameters, OutbreakThresholdChars, OutbreakDetectionSpecification,
-    OutbreakSpecification, IndividualTestSpecification,
+    OutbreakSpecification, IndividualTestSpecification, get_test_description,
     PoissonNoiseSpecification, DynamicalNoiseSpecification, NoiseSpecification,
-    getdirpath,
+    get_noise_description, get_noise_magnitude, getdirpath,
     ScenarioSpecification, TestPositivity, OptimalThresholdCharacteristics
 
 include("dynamics-constants.jl")
@@ -28,7 +28,7 @@ export seir_mod, seir_mod!, seir_mod_loop!,
     convert_svec_to_matrix, convert_svec_to_matrix!, convert_svec_to_array
 
 include("cleaning-functions.jl")
-export create_sir_df, create_sir_beta_dfs, create_sir_sim_array!,
+export create_sir_df, create_sir_beta_dfs,
     create_sir_all_sim_quantiles, create_sir_all_sim_quantiles!
 
 include("detection-thresholds.jl")

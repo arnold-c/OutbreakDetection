@@ -41,13 +41,25 @@ function calculate_OptimalThresholdCharacteristics(
         )
     end
 
+    clinical_case_test_spec_vec = filter(
+        spec -> spec in CLINICAL_TEST_SPECS,
+        ind_test_spec_vec,
+    )
+
+    if length(clinical_case_test_spec_vec) == 0
+        return StructArrays.StructArray(
+            non_clinical_case_optimal_thresholds_vec
+        )
+    end
+
     clinical_case_optimal_thresholds_vec = Vector{
         OptimalThresholdCharacteristics
     }(
-        undef, length(CLINICAL_TEST_SPECS)
+        undef,
+        length(clinical_case_test_spec_vec),
     )
 
-    for (i, ind_test_spec) in enumerate(CLINICAL_TEST_SPECS)
+    for (i, ind_test_spec) in enumerate(clinical_case_test_spec_vec)
         clinical_case_optimal_thresholds_vec[i] = calculate_optimal_threshold(
             1.0,
             ind_test_spec,
@@ -100,7 +112,7 @@ function calculate_optimal_threshold(
     for (i, ensemble_scenario_spec) in pairs(ensemble_scenario_spec_vec)
         scenario_chars_file = get_ensemble_file(ensemble_scenario_spec)
         OT_chars = scenario_chars_file["OT_chars"]
-        accuracy = median(OT_chars.accuracy)
+        accuracy = StatsBase.median(OT_chars.accuracy)
         alert_threshold =
             ensemble_scenario_spec.outbreak_detection_specification.alert_threshold
 
@@ -447,13 +459,12 @@ function create_wide_optimal_thresholds_df(df, characteristic_sym)
             DataFrames.Cols(
                 x -> startswith(x, "s"),
                 "test_lag",
-                x -> startswith(x, "0"),
-                "1.0",
+                :,
             ),
         )
     end
 
-    clinical_case_df = subset(
+    clinical_case_df = DataFrames.subset(
         maindf,
         :sensitivity => sens -> sens .== 1.0,
         :specificity => spec -> spec .== 0 .|| spec .== 0.8,
@@ -527,7 +538,7 @@ function calculate_optimal_threshold_summaries(
     end
 
     char_percentiles = map(
-        percentile -> quantile(all_chars, percentile), percentiles
+        percentile -> StatsBase.quantile(all_chars, percentile), percentiles
     )
     char_mean = StatsBase.mean(all_chars)
 

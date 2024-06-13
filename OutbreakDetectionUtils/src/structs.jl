@@ -235,7 +235,8 @@ struct OutbreakThresholdChars{
     avoidable_cases::T2
     n_outbreak_cases::T2
     n_tests::T2
-    noise_rubella_prop::T1
+    mean_poisson_noise::T1
+    poisson_noise_prop::T1
 end
 
 struct OutbreakSpecification{T1<:Integer,T2<:AbstractString}
@@ -333,6 +334,18 @@ struct IndividualTestSpecification{T1<:AbstractFloat,T2<:Integer}
     test_result_lag::T2
 end
 
+function get_test_description(test_specification::IndividualTestSpecification)
+    description =
+        if test_specification.sensitivity == 1.0 &&
+            test_specification.specificity == 1.0
+            "ELISA-like ($(test_specification.test_result_lag) day lag)"
+        else
+            "RDT-like ($(test_specification.sensitivity * 100)% sens/spec)"
+        end
+
+    return description
+end
+
 abstract type NoiseSpecification end
 
 struct PoissonNoiseSpecification{
@@ -355,6 +368,30 @@ struct DynamicalNoiseSpecification{
 end
 
 function DynamicalNoiseSpecification()
+end
+
+function get_noise_description(
+    noise_specification::T
+) where {T<:NoiseSpecification}
+    return noise_specification.noise_type
+end
+
+function get_noise_description(noise_specification::DynamicalNoiseSpecification)
+    return string(
+        noise_specification.noise_type, ", ", noise_specification.correlation
+    )
+end
+
+function get_noise_magnitude(
+    noise_specification::T
+) where {T<:NoiseSpecification}
+    return string("Poisson scaling: ", noise_specification.noise_mean_scaling)
+end
+
+function get_noise_magnitude(
+    noise_specification::DynamicalNoiseSpecification
+)
+    return string("Rubella vax: ", noise_specification.vaccination_coverage)
 end
 
 function getdirpath(spec::NoiseSpecification)

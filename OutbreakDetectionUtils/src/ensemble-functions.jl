@@ -1,4 +1,5 @@
 using DrWatson: DrWatson
+using JLD2: JLD2
 using UnPack: UnPack
 using FLoops: FLoops
 using ProgressMeter: ProgressMeter
@@ -223,7 +224,7 @@ function jump_prob_summary(ensemble_param_dict)
 end
 
 function run_define_outbreaks(dict_of_outbreak_spec_params)
-    FLoops.@floop for outbreak_spec_params in dict_of_outbreak_spec_params
+    for outbreak_spec_params in dict_of_outbreak_spec_params
         DrWatson.@produce_or_load(
             define_outbreaks,
             outbreak_spec_params,
@@ -325,7 +326,7 @@ function OutbreakThresholdChars_creation(OT_chars_param_dict)
     outbreak_detection_specification,
     individual_test_specification = scenario_spec
 
-    noise_array, noise_rubella_prop = create_noise_arr(
+    noise_array, noise_means = create_noise_arr(
         noise_specification,
         ensemble_inc_arr;
         ensemble_specification = scenario_spec.ensemble_specification,
@@ -340,7 +341,7 @@ function OutbreakThresholdChars_creation(OT_chars_param_dict)
     )
 
     OT_chars = calculate_OutbreakThresholdChars(
-        testarr, ensemble_inc_arr, thresholds_vec, noise_rubella_prop
+        testarr, ensemble_inc_arr, thresholds_vec, noise_means
     )
 
     return DrWatson.@strdict OT_chars
@@ -353,19 +354,21 @@ function get_ensemble_file(
 )
     dirpath = joinpath(ensemble_spec.dirpath, outbreak_spec.dirpath)
 
-    return load(collect_ensemble_file("incidence-array", dirpath)...)
+    return JLD2.load(collect_ensemble_file("incidence-array", dirpath)...)
 end
 
 function get_ensemble_file(spec::EnsembleSpecification)
-    return load(collect_ensemble_file("solution", spec.dirpath)...)
+    return JLD2.load(collect_ensemble_file("solution", spec.dirpath)...)
 end
 
 function get_ensemble_file(spec::EnsembleSpecification, quantile::Int64)
-    return load(collect_ensemble_file("quantiles_$(quantile)", spec.dirpath)...)
+    return JLD2.load(
+        collect_ensemble_file("quantiles_$(quantile)", spec.dirpath)...
+    )
 end
 
 function get_ensemble_file(spec::ScenarioSpecification)
-    return load(collect_ensemble_file("scenario", spec.dirpath)...)
+    return JLD2.load(collect_ensemble_file("scenario", spec.dirpath)...)
 end
 
 function collect_ensemble_file(type, dirpath)

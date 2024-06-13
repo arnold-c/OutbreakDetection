@@ -4,6 +4,7 @@ using StaticArrays: StaticArrays
 using Random: Random
 using Distributions: Distributions
 using StatsBase: StatsBase
+using NaNMath: NaNMath
 
 function create_noise_arr(
     noise_specification::DynamicalNoiseSpecification,
@@ -89,18 +90,28 @@ function create_noise_arr(
         )
     end
 
-    poisson_noise = zeros(Float64, size(incarr, 1), size(incarr, 3))
+    poisson_noise = zeros(
+        Float64, size(ensemble_inc_arr, 1), size(ensemble_inc_arr, 2)
+    )
 
     add_poisson_noise_arr!(
-        poisson_noise, incarr, noise_specification.noise_mean_scaling;
+        poisson_noise, ensemble_inc_arr, noise_specification.noise_mean_scaling;
         seed = seed,
     )
 
+    mean_poisson_noise = NaNMath.mean(poisson_noise)
+    mean_rubella_noise = StatsBase.mean(ensemble_inc_arr)
+
+    poisson_noise_prop = mean_poisson_noise / mean_rubella_noise
+
     ensemble_inc_arr .+= poisson_noise
 
-    noise_rubella_prop = poisson_noise ./ ensemble_inc_arr
-
-    return ensemble_inc_arr, noise_rubella_prop
+    return ensemble_inc_arr,
+    (;
+        mean_poisson_noise = mean_poisson_noise,
+        mean_rubella_noise = mean_rubella_noise,
+        poisson_noise_prop = poisson_noise_prop,
+    )
 end
 
 function create_noise_arr(
@@ -112,11 +123,18 @@ function create_noise_arr(
     noise_arr = zeros(Int64, size(incarr, 1), size(incarr, 3))
 
     add_poisson_noise_arr!(
-        noise_arr, incarr, noise_specification.noise_mean_scaling; seed = seed
+        noise_arr, @view(incarr[:, 1, :]),
+        noise_specification.noise_mean_scaling; seed = seed,
     )
 
-    noise_rubella_prop = ones(Float64, size(incarr, 1), size(incarr, 3))
-    return noise_arr, noise_rubella_prop
+    poisson_noise_prop = 1.0
+    mean_poisson_noise = StatsBase.mean(noise_arr)
+
+    return noise_arr,
+    (;
+        mean_poisson_noise = mean_poisson_noise,
+        poisson_noise_prop = poisson_noise_prop,
+    )
 end
 
 function add_poisson_noise_arr!(
@@ -124,11 +142,11 @@ function add_poisson_noise_arr!(
 )
     Random.seed!(seed)
 
-    @assert size(incarr, 3) == size(noise_arr, 2)
-    @inbounds for sim in axes(incarr, 3)
-        @views noise_arr[:, sim] += Random.rand(
+    @assert size(incarr, 2) == size(noise_arr, 2)
+    @inbounds for sim in axes(incarr, 2)
+        @views noise_arr[:, sim] .+= Random.rand(
             Distributions.Poisson(
-                noise_mean_scaling * StatsBase.mean(incarr[:, 1, sim])
+                noise_mean_scaling * StatsBase.mean(incarr[:, sim])
             ),
             size(incarr, 1),
         )
