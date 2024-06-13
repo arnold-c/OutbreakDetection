@@ -10,7 +10,11 @@ function line_accuracy_plot(
     plotname = "line_accuracy_plot",
     plotformat = "png",
     size = (2200, 1200),
-    colors = Makie.wong_colors(),
+    colors = [
+        Makie.wong_colors()[1],
+        Makie.wong_colors()[3],
+        repeat([Makie.wong_colors()[2]], 2)...,
+    ],
     force = false,
 )
     mkpath(plotdirpath)
@@ -55,16 +59,20 @@ function line_accuracy_plot(
                     i,
                     j;
                     num_noise_descriptions = num_noise_descriptions,
+                    colors = colors,
                 )
             end
         end
 
         Legend(
             fig[0, :],
-            map(
-                i -> PolyElement(; color = colors[i]),
-                eachindex(unique_test_specifications),
-            ),
+            map(enumerate(unique_test_specifications)) do (i, test_spec)
+                linestyle = test_spec.test_result_lag == 0 ? :solid : :dot
+                return [
+                    PolyElement(; color = (colors[i], 0.3)),
+                    LineElement(; color = colors[i], linestyle = linestyle),
+                ]
+            end,
             get_test_description.(unique_test_specifications);
             orientation = :horizontal,
         )
@@ -84,7 +92,11 @@ function _line_accuracy_plot!(
     optimal_thresholds_vec,
     i,
     j;
-    colors = Makie.wong_colors(),
+    colors = [
+        Makie.wong_colors()[1],
+        Makie.wong_colors()[3],
+        repeat([Makie.wong_colors()[2]], 2)...,
+    ],
     num_noise_descriptions = 1,
 )
     long_df = create_optimal_threshold_summary_df(
@@ -136,7 +148,11 @@ function _line_accuracy_facet!(
     noise_spec,
     unique_test_specifications,
     long_df;
-    colors = Makie.wong_colors(),
+    colors = [
+        Makie.wong_colors()[1],
+        Makie.wong_colors()[3],
+        repeat([Makie.wong_colors()[2]], 2)...,
+    ],
     xlabel = "Testing Rate",
     ylabel = "Accuracy",
 )
@@ -156,6 +172,8 @@ function _line_accuracy_facet!(
             :test_lag => x -> x .== test.test_result_lag,
         )
 
+        linestyle = test.test_result_lag == 0 ? :solid : :dash
+
         string(
             subsetted_df.sensitivity[1], ", ", subsetted_df.test_lag[1]
         )
@@ -164,6 +182,7 @@ function _line_accuracy_facet!(
             subsetted_df.percent_clinic_tested,
             subsetted_df.accuracy_mean;
             color = colors[i],
+            linestyle = linestyle,
         )
 
         band!(
