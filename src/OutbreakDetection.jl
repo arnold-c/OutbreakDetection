@@ -58,6 +58,7 @@ export line_accuracy_plot
 @static if false
     include("../scripts/single-sim_plots.jl")
     include("../scripts/ensemble-diag-testing_scenarios_plots.jl")
+    include("../scripts/ensemble-sim_optimal-accuracy-lineplot.jl")
 end
 
 end
