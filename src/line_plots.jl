@@ -19,6 +19,7 @@ function line_accuracy_plot(
     colors = lineplot_colors,
     xlabel = "Proportion Tested",
     ylabel = "Accuracy",
+    labelsize = 24,
     facet_labels = (true, true),
     force = false,
 )
@@ -81,6 +82,7 @@ function line_accuracy_plot(
                 ]
             end,
             get_test_description.(unique_test_specifications);
+            labelsize = labelsize,
             orientation = :horizontal,
         )
         rowsize!(fig.layout, 0, Relative(0.03))
