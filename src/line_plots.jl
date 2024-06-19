@@ -20,7 +20,8 @@ function line_accuracy_plot(
     xlabel = "Proportion Tested",
     ylabel = "Accuracy",
     labelsize = 24,
-    facet_labels = (true, true),
+    x_facet_label = true,
+    y_facet_label = true,
     force = false,
 )
     mkpath(plotdirpath)
@@ -68,7 +69,8 @@ function line_accuracy_plot(
                     colors = colors,
                     xlabel = xlabel,
                     ylabel = ylabel,
-                    facet_labels = facet_labels,
+                    x_facet_label = x_facet_label,
+                    y_facet_label = y_facet_label,
                 )
             end
         end
@@ -105,7 +107,8 @@ function _line_accuracy_plot!(
     colors = lineplot_colors,
     xlabel = "Proportion Tested",
     ylabel = "Accuracy",
-    facet_labels = (true, true),
+    x_facet_label = true,
+    y_facet_label = true,
     num_noise_descriptions = 1,
 )
     long_df = create_optimal_threshold_summary_df(
@@ -144,7 +147,8 @@ function _line_accuracy_plot!(
         colors = colors,
         xlabel = xlabel,
         ylabel = ylabel,
-        facet_labels = facet_labels,
+        x_facet_label = x_facet_label,
+        y_facet_label = y_facet_label,
     )
 
     return nothing
@@ -158,13 +162,14 @@ function _line_accuracy_facet!(
     colors = lineplot_colors,
     xlabel = "Proportion Tested",
     ylabel = "Accuracy",
-    facet_labels = (true, true),
+    x_facet_label = true,
+    y_facet_label = true,
 )
-    xpos = facet_labels[1] ? 2 : 1
-    ypos = facet_labels[2] ? 2 : 1
+    ypos = x_facet_label ? 2 : 1
+    xpos = y_facet_label ? 2 : 1
 
     ax = Axis(
-        gl[xpos, ypos];
+        gl[ypos, xpos];
         xlabel = xlabel,
         ylabel = ylabel,
     )
@@ -204,33 +209,33 @@ function _line_accuracy_facet!(
         ylims!(ax, (0.6, 1))
     end
 
-    if facet_labels[1]
-        Box(gl[1, 2]; color = :lightgray, strokevisible = false)
+    if x_facet_label
+        Box(gl[1, xpos]; color = :lightgray, strokevisible = false)
         Label(
-            gl[1, 2],
+            gl[1, xpos],
             get_noise_magnitude(noise_spec);
             fontsize = 16,
             padding = (0, 0, 0, 0),
             valign = :bottom,
         )
-        colsize!(gl, 2, Relative(0.92))
+        rowsize!(gl, 2, Relative(0.9))
     end
 
-    if facet_labels[2]
+    if y_facet_label
         Box(
-            gl[2, 1];
+            gl[ypos, 1];
             color = :lightgray,
             strokevisible = false,
         )
         Label(
-            gl[2, 1],
+            gl[ypos, 1],
             "Noise type: $(noise_spec.noise_type)";
             fontsize = 16,
             rotation = pi / 2,
             padding = (0, 0, 0, 0),
             valign = :center,
         )
-        rowsize!(gl, 2, Relative(0.9))
+        colsize!(gl, 2, Relative(0.92))
     end
 
     return nothing

@@ -106,6 +106,7 @@ line_accuracy_plot(
     optimal_threshold_test_spec_vec,
     optimal_threshold_core_params;
     plotdirpath = baseplotdirpath,
-    facet_labels = (false, false),
+    x_facet_label = true,
+    y_facet_label = false,
     force = true,
 )
