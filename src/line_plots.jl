@@ -1,5 +1,12 @@
 using DataFrames
 using DrWatson: DrWatson
+using StatsBase: StatsBase
+
+lineplot_colors = [
+    "#56B4E9"
+    "#E69F00"
+    repeat(["#000000"], 2)...
+]
 
 function line_accuracy_plot(
     noise_spec_vec,
@@ -10,12 +17,14 @@ function line_accuracy_plot(
     plotname = "line_accuracy_plot",
     plotformat = "png",
     size = (2200, 1200),
-    colors = [
-        Makie.wong_colors()[1],
-        Makie.wong_colors()[3],
-        repeat([Makie.wong_colors()[2]], 2)...,
-    ],
+    colors = lineplot_colors,
+    xlabel = "Proportion Tested",
+    ylabel = "Accuracy",
+    labelsize = 24,
+    show_x_facet_label = true,
+    show_y_facet_label = true,
     force = false,
+    kwargs...,
 )
     mkpath(plotdirpath)
     plotpath = joinpath(plotdirpath, "$plotname.$plotformat")
@@ -60,8 +69,28 @@ function line_accuracy_plot(
                     j;
                     num_noise_descriptions = num_noise_descriptions,
                     colors = colors,
+                    xlabel = xlabel,
+                    ylabel = ylabel,
+                    show_x_facet_label = show_x_facet_label,
+                    kwargs...,
                 )
             end
+        end
+
+        if show_y_facet_label
+            map(enumerate(unique_noise_descriptions)) do (i, noise_description)
+                Box(fig[i, 0]; color = :lightgray, strokevisible = false)
+                Label(
+                    fig[i, 0],
+                    titlecase(noise_description);
+                    fontsize = 16,
+                    rotation = pi / 2,
+                    padding = (0, 0, 0, 0),
+                    valign = :center,
+                    tellheight = false,
+                )
+            end
+            colsize!(fig.layout, 0, Relative(0.03))
         end
 
         Legend(
@@ -74,6 +103,7 @@ function line_accuracy_plot(
                 ]
             end,
             get_test_description.(unique_test_specifications);
+            labelsize = labelsize,
             orientation = :horizontal,
         )
         rowsize!(fig.layout, 0, Relative(0.03))
@@ -92,18 +122,30 @@ function _line_accuracy_plot!(
     optimal_thresholds_vec,
     i,
     j;
-    colors = [
-        Makie.wong_colors()[1],
-        Makie.wong_colors()[3],
-        repeat([Makie.wong_colors()[2]], 2)...,
-    ],
+    colors = lineplot_colors,
+    xlabel = "Proportion Tested",
+    ylabel = "Accuracy",
+    show_x_facet_label = true,
     num_noise_descriptions = 1,
+    kwargs...,
 )
+    kwargs_dict = Dict{Symbol,Any}(kwargs)
+
     long_df = create_optimal_threshold_summary_df(
         optimal_thresholds_vec,
         :accuracy;
         percentiles = [0.1, 0.9],
     )
+
+    if show_x_facet_label
+        x_facet_label = "Mean daily noise: $(round(
+            StatsBase.mean(optimal_thresholds_vec[1].outbreak_threshold_chars.mean_poisson_noise) /
+            StatsBase.mean(optimal_thresholds_vec[1].outbreak_threshold_chars.poisson_noise_prop);
+            digits = 2,
+        ))"
+
+        kwargs_dict[:x_facet_label] = x_facet_label
+    end
 
     select!(
         long_df,
@@ -118,9 +160,6 @@ function _line_accuracy_plot!(
     )
 
     gl = fig[i, j] = GridLayout()
-
-    xlabel = "Testing Rate"
-    ylabel = "Accuracy"
 
     if i != num_noise_descriptions
         xlabel = ""
@@ -138,6 +177,7 @@ function _line_accuracy_plot!(
         colors = colors,
         xlabel = xlabel,
         ylabel = ylabel,
+        kwargs_dict...,
     )
 
     return nothing
@@ -148,16 +188,18 @@ function _line_accuracy_facet!(
     noise_spec,
     unique_test_specifications,
     long_df;
-    colors = [
-        Makie.wong_colors()[1],
-        Makie.wong_colors()[3],
-        repeat([Makie.wong_colors()[2]], 2)...,
-    ],
-    xlabel = "Testing Rate",
+    colors = lineplot_colors,
+    xlabel = "Proportion Tested",
     ylabel = "Accuracy",
+    kwargs...,
 )
+    kwargs_dict = Dict(kwargs)
+
+    ypos = haskey(kwargs_dict, :x_facet_label) ? 2 : 1
+    xpos = 1
+
     ax = Axis(
-        gl[2, 2];
+        gl[ypos, xpos];
         xlabel = xlabel,
         ylabel = ylabel,
     )
@@ -197,30 +239,18 @@ function _line_accuracy_facet!(
         ylims!(ax, (0.6, 1))
     end
 
-    Box(gl[1, 2]; color = :lightgray, strokevisible = false)
-    Label(
-        gl[1, 2],
-        "Noise type: $(noise_spec.noise_type)";
-        fontsize = 16,
-        padding = (0, 0, 0, 0),
-        valign = :bottom,
-    )
+    if haskey(kwargs_dict, :x_facet_label)
+        Box(gl[1, xpos]; color = :lightgray, strokevisible = false)
+        Label(
+            gl[1, xpos],
+            kwargs_dict[:x_facet_label];
+            fontsize = 16,
+            padding = (0, 0, 0, 0),
+            valign = :bottom,
+            tellwidth = false,
+        )
+        rowsize!(gl, 2, Relative(0.9))
+    end
 
-    Box(
-        gl[2, 1];
-        color = :lightgray,
-        strokevisible = false,
-    )
-    Label(
-        gl[2, 1],
-        get_noise_magnitude(noise_spec);
-        fontsize = 16,
-        rotation = pi / 2,
-        padding = (0, 0, 0, 0),
-        valign = :center,
-    )
-
-    rowsize!(gl, 2, Relative(0.9))
-    colsize!(gl, 2, Relative(0.92))
     return nothing
 end
