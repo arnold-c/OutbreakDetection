@@ -1,6 +1,12 @@
 using DataFrames
 using DrWatson: DrWatson
 
+lineplot_colors = [
+    "#56B4E9"
+    "#E69F00"
+    repeat(["#000000"], 2)...
+]
+
 function line_accuracy_plot(
     noise_spec_vec,
     ensemble_percent_clinic_tested_vec,
@@ -10,11 +16,7 @@ function line_accuracy_plot(
     plotname = "line_accuracy_plot",
     plotformat = "png",
     size = (2200, 1200),
-    colors = [
-        Makie.wong_colors()[1],
-        Makie.wong_colors()[3],
-        repeat([Makie.wong_colors()[2]], 2)...,
-    ],
+    colors = lineplot_colors,
     force = false,
 )
     mkpath(plotdirpath)
@@ -92,11 +94,7 @@ function _line_accuracy_plot!(
     optimal_thresholds_vec,
     i,
     j;
-    colors = [
-        Makie.wong_colors()[1],
-        Makie.wong_colors()[3],
-        repeat([Makie.wong_colors()[2]], 2)...,
-    ],
+    colors = lineplot_colors,
     num_noise_descriptions = 1,
 )
     long_df = create_optimal_threshold_summary_df(
@@ -148,11 +146,7 @@ function _line_accuracy_facet!(
     noise_spec,
     unique_test_specifications,
     long_df;
-    colors = [
-        Makie.wong_colors()[1],
-        Makie.wong_colors()[3],
-        repeat([Makie.wong_colors()[2]], 2)...,
-    ],
+    colors = lineplot_colors,
     xlabel = "Testing Rate",
     ylabel = "Accuracy",
 )
