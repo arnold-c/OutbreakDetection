@@ -107,6 +107,6 @@ line_accuracy_plot(
     optimal_threshold_core_params;
     plotdirpath = baseplotdirpath,
     show_x_facet_label = true,
-    show_y_facet_label = true,
+    show_y_facet_label = false,
     force = true,
 )
