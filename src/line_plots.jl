@@ -1,5 +1,6 @@
 using DataFrames
 using DrWatson: DrWatson
+using StatsBase: StatsBase
 
 lineplot_colors = [
     "#56B4E9"
@@ -20,9 +21,10 @@ function line_accuracy_plot(
     xlabel = "Proportion Tested",
     ylabel = "Accuracy",
     labelsize = 24,
-    x_facet_label = true,
-    y_facet_label = true,
+    show_x_facet_label = true,
+    show_y_facet_label = true,
     force = false,
+    kwargs...,
 )
     mkpath(plotdirpath)
     plotpath = joinpath(plotdirpath, "$plotname.$plotformat")
@@ -69,10 +71,26 @@ function line_accuracy_plot(
                     colors = colors,
                     xlabel = xlabel,
                     ylabel = ylabel,
-                    x_facet_label = x_facet_label,
-                    y_facet_label = y_facet_label,
+                    show_x_facet_label = show_x_facet_label,
+                    kwargs...,
                 )
             end
+        end
+
+        if show_y_facet_label
+            map(enumerate(unique_noise_descriptions)) do (i, noise_description)
+                Box(fig[i, 0]; color = :lightgray, strokevisible = false)
+                Label(
+                    fig[i, 0],
+                    titlecase(noise_description);
+                    fontsize = 16,
+                    rotation = pi / 2,
+                    padding = (0, 0, 0, 0),
+                    valign = :center,
+                    tellheight = false,
+                )
+            end
+            colsize!(fig.layout, 0, Relative(0.03))
         end
 
         Legend(
@@ -107,15 +125,27 @@ function _line_accuracy_plot!(
     colors = lineplot_colors,
     xlabel = "Proportion Tested",
     ylabel = "Accuracy",
-    x_facet_label = true,
-    y_facet_label = true,
+    show_x_facet_label = true,
     num_noise_descriptions = 1,
+    kwargs...,
 )
+    kwargs_dict = Dict{Symbol,Any}(kwargs)
+
     long_df = create_optimal_threshold_summary_df(
         optimal_thresholds_vec,
         :accuracy;
         percentiles = [0.1, 0.9],
     )
+
+    if show_x_facet_label
+        x_facet_label = "Mean daily noise: $(round(
+            StatsBase.mean(optimal_thresholds_vec[1].outbreak_threshold_chars.mean_poisson_noise) /
+            StatsBase.mean(optimal_thresholds_vec[1].outbreak_threshold_chars.poisson_noise_prop);
+            digits = 2,
+        ))"
+
+        kwargs_dict[:x_facet_label] = x_facet_label
+    end
 
     select!(
         long_df,
@@ -147,8 +177,7 @@ function _line_accuracy_plot!(
         colors = colors,
         xlabel = xlabel,
         ylabel = ylabel,
-        x_facet_label = x_facet_label,
-        y_facet_label = y_facet_label,
+        kwargs_dict...,
     )
 
     return nothing
@@ -162,11 +191,12 @@ function _line_accuracy_facet!(
     colors = lineplot_colors,
     xlabel = "Proportion Tested",
     ylabel = "Accuracy",
-    x_facet_label = true,
-    y_facet_label = true,
+    kwargs...,
 )
-    ypos = x_facet_label ? 2 : 1
-    xpos = y_facet_label ? 2 : 1
+    kwargs_dict = Dict(kwargs)
+
+    ypos = haskey(kwargs_dict, :x_facet_label) ? 2 : 1
+    xpos = 1
 
     ax = Axis(
         gl[ypos, xpos];
@@ -209,33 +239,17 @@ function _line_accuracy_facet!(
         ylims!(ax, (0.6, 1))
     end
 
-    if x_facet_label
+    if haskey(kwargs_dict, :x_facet_label)
         Box(gl[1, xpos]; color = :lightgray, strokevisible = false)
         Label(
             gl[1, xpos],
-            get_noise_magnitude(noise_spec);
+            kwargs_dict[:x_facet_label];
             fontsize = 16,
             padding = (0, 0, 0, 0),
             valign = :bottom,
+            tellwidth = false,
         )
         rowsize!(gl, 2, Relative(0.9))
-    end
-
-    if y_facet_label
-        Box(
-            gl[ypos, 1];
-            color = :lightgray,
-            strokevisible = false,
-        )
-        Label(
-            gl[ypos, 1],
-            "Noise type: $(noise_spec.noise_type)";
-            fontsize = 16,
-            rotation = pi / 2,
-            padding = (0, 0, 0, 0),
-            valign = :center,
-        )
-        colsize!(gl, 2, Relative(0.92))
     end
 
     return nothing
