@@ -208,7 +208,7 @@ function _line_accuracy_facet!(
         Box(gl[1, 2]; color = :lightgray, strokevisible = false)
         Label(
             gl[1, 2],
-            "Noise type: $(noise_spec.noise_type)";
+            get_noise_magnitude(noise_spec);
             fontsize = 16,
             padding = (0, 0, 0, 0),
             valign = :bottom,
@@ -224,7 +224,7 @@ function _line_accuracy_facet!(
         )
         Label(
             gl[2, 1],
-            get_noise_magnitude(noise_spec);
+            "Noise type: $(noise_spec.noise_type)";
             fontsize = 16,
             rotation = pi / 2,
             padding = (0, 0, 0, 0),
