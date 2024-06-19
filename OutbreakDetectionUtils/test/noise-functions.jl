@@ -32,9 +32,9 @@
         0.8,
     )
     time_parameters = SimTimeParameters(;
-        tmin=0.0,
-        tmax=365.0 * 100.0,
-        tstep=1.0,
+        tmin = 0.0,
+        tmax = 365.0 * 100.0,
+        tstep = 1.0,
     )
     nsims = 100
     seed = 1234
@@ -70,7 +70,7 @@
             state_parameters.init_states,
             dynamics_parameters,
             time_parameters;
-            seed=run_seed,
+            seed = run_seed,
         )
     end
 
@@ -88,13 +88,28 @@
     dynamical_noise_array, dynamical_noise_means = create_noise_arr(
         dynamical_noise_spec,
         ensemble_inc_arr;
-        ensemble_specification=ensemble_spec,
-        seed=seed,
+        ensemble_specification = ensemble_spec,
+        seed = seed,
     )
 
-    @test isapprox(dynamical_noise_means.mean_poisson_noise + dynamical_noise_means.mean_rubella_noise, mean(dynamical_noise_array), atol=1e-2)
+    @test isapprox(
+        dynamical_noise_means.mean_poisson_noise +
+        dynamical_noise_means.mean_rubella_noise,
+        mean(dynamical_noise_array),
+        atol = 1e-2,
+    )
 
-    @test isapprox(dynamical_noise_means.poisson_noise_prop, dynamical_noise_spec.noise_mean_scaling, atol=1e-2)
+    @test isequal(
+        dynamical_noise_means.mean_poisson_noise +
+        dynamical_noise_means.mean_rubella_noise,
+        dynamical_noise_means.mean_noise,
+    )
+
+    @test isapprox(
+        dynamical_noise_means.poisson_noise_prop,
+        dynamical_noise_spec.noise_mean_scaling,
+        atol = 1e-2,
+    )
 
     poisson_noise_spec = PoissonNoiseSpecification(
         "poisson",
@@ -104,9 +119,14 @@
     poisson_noise_array, poisson_noise_means = create_noise_arr(
         poisson_noise_spec,
         ensemble_inc_arr;
-        seed=seed,
+        seed = seed,
     )
 
-    @test isapprox(poisson_noise_means.mean_poisson_noise, mean(ensemble_inc_arr * poisson_noise_spec.noise_mean_scaling), atol=1e-2)
+    @test isapprox(
+        poisson_noise_means.mean_poisson_noise,
+        mean(ensemble_inc_arr * poisson_noise_spec.noise_mean_scaling),
+        atol = 1e-2,
+    )
 
+    @test isequal(poisson_noise_means.mean_noise, mean(poisson_noise_array))
 end
