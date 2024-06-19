@@ -17,6 +17,9 @@ function line_accuracy_plot(
     plotformat = "png",
     size = (2200, 1200),
     colors = lineplot_colors,
+    xlabel = "Proportion Tested",
+    ylabel = "Accuracy",
+    facet_labels = (true, true),
     force = false,
 )
     mkpath(plotdirpath)
@@ -62,6 +65,8 @@ function line_accuracy_plot(
                     j;
                     num_noise_descriptions = num_noise_descriptions,
                     colors = colors,
+                    xlabel = xlabel,
+                    ylabel = ylabel,
                 )
             end
         end
@@ -94,6 +99,8 @@ function _line_accuracy_plot!(
     optimal_thresholds_vec,
     i,
     j;
+    xlabel = "Proportion Tested",
+    ylabel = "Accuracy",
     colors = lineplot_colors,
     num_noise_descriptions = 1,
 )
@@ -116,9 +123,6 @@ function _line_accuracy_plot!(
     )
 
     gl = fig[i, j] = GridLayout()
-
-    xlabel = "Testing Rate"
-    ylabel = "Accuracy"
 
     if i != num_noise_descriptions
         xlabel = ""
@@ -147,7 +151,7 @@ function _line_accuracy_facet!(
     unique_test_specifications,
     long_df;
     colors = lineplot_colors,
-    xlabel = "Testing Rate",
+    xlabel = "Proportion Tested",
     ylabel = "Accuracy",
 )
     ax = Axis(
