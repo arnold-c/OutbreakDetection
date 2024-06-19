@@ -316,6 +316,9 @@ function calculate_OutbreakThresholdChars(
             @view(testarr[:, 1, sim]), @view(testarr[:, 2, sim])
         )
 
+        mean_noise_incidence_ratio =
+            noise_means.mean_noise / StatsBase.mean(@view(infecarr[:, 1, sim]))
+
         OutbreakThresholdChars(
             dailychars...,
             detectionchars...,
@@ -328,6 +331,7 @@ function calculate_OutbreakThresholdChars(
             avoidable_cases,
             n_outbreak_cases,
             n_tests,
+            mean_noise_incidence_ratio,
             noise_means.mean_poisson_noise,
             noise_means.poisson_noise_prop,
         )

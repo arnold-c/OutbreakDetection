@@ -108,6 +108,7 @@ function create_noise_arr(
 
     return ensemble_inc_arr,
     (;
+        mean_noise = mean_rubella_noise + mean_poisson_noise,
         mean_poisson_noise = mean_poisson_noise,
         mean_rubella_noise = mean_rubella_noise,
         poisson_noise_prop = poisson_noise_prop,
@@ -132,6 +133,7 @@ function create_noise_arr(
 
     return noise_arr,
     (;
+        mean_noise = mean_poisson_noise,
         mean_poisson_noise = mean_poisson_noise,
         poisson_noise_prop = poisson_noise_prop,
     )
