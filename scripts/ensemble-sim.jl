@@ -96,9 +96,12 @@ poisson_noise_spec_vec = create_combinations_vec(
 dynamical_noise_R0 = [5.0]
 dynamical_noise_latent_period = [7]
 dynamical_noise_duration_infection = [14]
-dynamical_noise_correlation = ["in-phase", "out-of-phase", "none"]
+# dynamical_noise_correlation = ["in-phase", "out-of-phase", "none"]
+dynamical_noise_correlation = ["in-phase"]
 dynamical_noise_mean_scaling_vec = [0.15]
-dynamical_noise_vaccination_coverage_vec = [collect(0.0:0.2:0.8)..., 0.9]
+dynamical_noise_vaccination_coverage_vec = [
+    collect(0.0:0.2:0.8)..., 0.9, 0.854, 0.738, 0.508, 0.279, 0.050
+]
 dynamical_noise_spec_vec = create_combinations_vec(
     DynamicalNoiseSpecification,
     (
@@ -119,7 +122,8 @@ alertthreshold_vec = collect(1:1:15)
 moveavglag_vec = [7]
 perc_clinic_vec = [0.6]
 perc_clinic_test_vec = [collect(0.1:0.1:0.6)..., 1.0]
-alert_method_vec = ["movingavg", "dailythreshold_movingavg"]
+# alert_method_vec = ["movingavg", "dailythreshold_movingavg"]
+alert_method_vec = ["movingavg"]
 
 outbreak_detection_spec_vec = create_combinations_vec(
     OutbreakDetectionSpecification,
@@ -141,8 +145,8 @@ test_spec_vec = [
     IndividualTestSpecification(0.9, 0.9, 0),
     # CLINICAL_TEST_SPECS...,
     IndividualTestSpecification(1.0, 1.0, 0),
-    IndividualTestSpecification(1.0, 1.0, 3),
-    IndividualTestSpecification(1.0, 1.0, 7),
+    # IndividualTestSpecification(1.0, 1.0, 3),
+    # IndividualTestSpecification(1.0, 1.0, 7),
     IndividualTestSpecification(1.0, 1.0, 14),
 ]
 
