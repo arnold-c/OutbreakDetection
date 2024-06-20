@@ -19,7 +19,7 @@ function line_accuracy_plot(
     size = (2200, 1200),
     colors = lineplot_colors,
     xlabel = "Proportion Tested",
-    ylabel = "Accuracy",
+    ylabel = "Outbreak Detection\nAccuracy",
     labelsize = 24,
     show_x_facet_label = true,
     show_y_facet_label = true,
@@ -44,9 +44,9 @@ function line_accuracy_plot(
                 noise_spec_vec,
             )
 
-            if contains(noise_description, "dynamical")
-                shape_noise_specification = reverse(shape_noise_specification)
-            end
+            # if contains(noise_description, "dynamical")
+            #     shape_noise_specification = reverse(shape_noise_specification)
+            # end
 
             for (j, noise_spec) in pairs(shape_noise_specification)
                 optimal_threshold_comparison_params = (
@@ -137,11 +137,13 @@ function _line_accuracy_plot!(
         percentiles = [0.1, 0.9],
     )
 
-    if show_x_facet_label
-        x_facet_label = "Mean daily noise: $(round(
-            optimal_thresholds_vec[1].outbreak_threshold_chars.mean_noise_incidence_ratio;
+    if show_x_facet_label && i == 1
+        x_facet_label = "Mean Daily Noise - Incidence\n$(round(
+            StatsBase.mean(
+                optimal_thresholds_vec[1].outbreak_threshold_chars.mean_noise_incidence_ratio
+            );
             digits = 2,
-        ))"
+        )) - 1.0"
 
         kwargs_dict[:x_facet_label] = x_facet_label
     end
