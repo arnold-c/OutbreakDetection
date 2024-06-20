@@ -138,12 +138,12 @@ function _line_accuracy_plot!(
     )
 
     if show_x_facet_label && i == 1
-        x_facet_label = "Mean Daily Noise - Incidence\n$(round(
+        x_facet_label = "$(Int64(round(
             StatsBase.mean(
                 optimal_thresholds_vec[1].outbreak_threshold_chars.mean_noise_incidence_ratio
             );
-            digits = 2,
-        )) - 1.0"
+            digits = 0,
+        ))):1 Noise:Signal Ratio"
 
         kwargs_dict[:x_facet_label] = x_facet_label
     end
@@ -245,7 +245,7 @@ function _line_accuracy_facet!(
         Label(
             gl[1, xpos],
             kwargs_dict[:x_facet_label];
-            fontsize = 16,
+            fontsize = 22,
             padding = (0, 0, 0, 0),
             valign = :bottom,
             tellwidth = false,
