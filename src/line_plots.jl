@@ -139,8 +139,7 @@ function _line_accuracy_plot!(
 
     if show_x_facet_label
         x_facet_label = "Mean daily noise: $(round(
-            StatsBase.mean(optimal_thresholds_vec[1].outbreak_threshold_chars.mean_poisson_noise) /
-            StatsBase.mean(optimal_thresholds_vec[1].outbreak_threshold_chars.poisson_noise_prop);
+            optimal_thresholds_vec[1].outbreak_threshold_chars.mean_noise_incidence_ratio;
             digits = 2,
         ))"
 
