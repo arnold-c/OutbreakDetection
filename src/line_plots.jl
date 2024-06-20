@@ -20,7 +20,7 @@ function line_accuracy_plot(
     colors = lineplot_colors,
     xlabel = "Proportion Tested",
     ylabel = "Outbreak Detection\nAccuracy",
-    labelsize = 24,
+    labelsize = 30,
     show_x_facet_label = true,
     show_y_facet_label = true,
     force = false,
@@ -245,7 +245,7 @@ function _line_accuracy_facet!(
         Label(
             gl[1, xpos],
             kwargs_dict[:x_facet_label];
-            fontsize = 22,
+            fontsize = 24,
             padding = (0, 0, 0, 0),
             valign = :bottom,
             tellwidth = false,
