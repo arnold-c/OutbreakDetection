@@ -198,8 +198,8 @@ The overlap with true outbreak status, or lack thereof, is used to classify the 
 + The number of unavoidable and avoidable outbreak cases and deaths. Avoidable cases are defined as those that occur within an outbreak after a correct alert is first triggered i.e., cases that could theoretically be prevented with a perfectly effective and timely response. Unavoidable cases are the inverse: those that occur before a correct alert, or those that occur in an undetected outbreak. Using a fitted age distribution of measles cases in Ghana @mintaProgressMeaslesElimination2023 and the age-specific case fatality ratio for Ghana in 2022 @sbarraEstimatingNationallevelMeasles2023, we scaled the values for each one-year age cohort, per annum. In practice, not all cases deemed avoidable are (due to imperfect and delays in responses), but to minimize the sensitivity of the results to the response implementation and operational constraints we are counting them as such.
 
 #figure(
-	image("./schematic.png", width: 85%),
-	caption: "A schematic of the outbreak definition and alert detection system"
+	image("./schematic-simulation_with-shade.png", width: 100%),
+	caption: "A schematic of the outbreak definition and alert detection system. A) Noise time series. B) Measles incidence time series. C) Observed time series resulting from testing noise & measles cases that visit the healthcare facility. The orange bands/vertical lines represent regions of the measles time series that meet the outbreak definition criteria. The green bands/vertical lines represent regions of the observed (measles + noise) time series that breach the alert threshold (the horizontal dashed line), and constitute an alert."
 )<figure_outbreak-schematic>
 
 For each combination of diagnostic test and testing rate, the optimal alert threshold is calculated by selecting the threshold that produces the highest accuracy.
