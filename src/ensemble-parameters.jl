@@ -1,5 +1,7 @@
 using OutbreakDetectionUtils
 
+seed = 1234
+
 ensemble_model_type = ("seasonal-infectivity-import", "tau-leaping")
 
 nyears = 100
