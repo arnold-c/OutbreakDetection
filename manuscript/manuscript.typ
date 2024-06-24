@@ -225,6 +225,11 @@ However, with Poisson noise, once testing reaches 20% of clinic visits, equivale
 #figure(
 	table(
 		columns: 10,
+		  fill: (x, y) => {
+		    if y == 0 {gray}
+		    if y == 1 {gray}
+		  },
+		[], table.cell(colspan: 2, align: center, "Test Characteristic"), table.cell(colspan: 7, align: center, "Testing Rate"),
 		..optimal_thresholds.flatten()
 	),
 	caption: "Optimal threshold for each testing scenario. A) the noise structure is dynamical, and the seasonality is in-phase with the measles incidence. B) the noise structure is Poisson only"
