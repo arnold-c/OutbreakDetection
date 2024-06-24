@@ -220,20 +220,15 @@ For dynamical noise, RDTs never perform as well as an ELISA, even scenarios that
 However, with Poisson noise, once testing reaches 20% of clinic visits, equivalence can be observed at approximately 91% accuracy (Table 3).
 
 
-//#let optimal_thresholds = csv("optimal-thresholds.csv")
-//
-//#table(
-//	columns: 10,
-//	..optimal_thresholds.flatten()
-//)
+#let optimal_thresholds = csv("optimal-thresholds.csv")
 
-#table(
-	columns: 2,
-	[Test], [Second columns],
-	[], []
-)
-
-_Table 2) Optimal threshold for each testing scenario. A) the noise structure is dynamical, and the seasonality is in-phase with the measles incidence. B) the noise structure is Poisson only_
+#figure(
+	table(
+		columns: 10,
+		..optimal_thresholds.flatten()
+	),
+	caption: "Optimal threshold for each testing scenario. A) the noise structure is dynamical, and the seasonality is in-phase with the measles incidence. B) the noise structure is Poisson only"
+)<table_optimal-thresholds>
 
 Moving across a single row of Table 2, as the testing rate increases, so does the optimal threshold, because more individuals are testing positive.
 However, the changes in accuracy are not monotonically increasing, as one might anticipate.
