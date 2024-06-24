@@ -124,7 +124,7 @@ Using these metrics we overcome issues encountered by early warning systems that
 = Methods
 == Model Structure
 
-We constructed a stochastic compartmental non-age structured SEIR model of measles (@figure_simulation-structure) and simulated using a modified Tau-leaping algorithm with a time step of 1 day, utilizing binomial draws to ensure compartment sizes remained positive valued @chatterjeeBinomialDistributionBased2005 @gillespieApproximateAcceleratedStochastic2001.
+We constructed a stochastic compartmental non-age structured SEIR model of measles and simulated using a modified Tau-leaping algorithm with a time step of 1 day, utilizing binomial draws to ensure compartment sizes remained positive valued @chatterjeeBinomialDistributionBased2005 @gillespieApproximateAcceleratedStochastic2001.
 To stochastically reintroduce infections and cause recurring epidemics, commuter-style imports were added that are proportional to the size of the population and $R#sub[0]$ @keelingModelingInfectiousDiseases2008, and the transmission parameter (#sym.beta#sub[t]) is sinusoidal with a period of one year.
 $R#sub[0]$ was set to 16, with a latent period of 10 days and infectious period of 8 days. The population was initialized with 500_000 individuals with Ghana-like birth and vaccination rates, and the final results were scaled up to the 2022 population size of Ghana (33 million). The full table of parameters can be found in Table 1. All simulations and analysis was completed in Julia version 1.10.3 @bezansonJuliaFreshApproach2017, with all code stored at _ https://github.com/arnold-c/OutbreakDetection _.
 
