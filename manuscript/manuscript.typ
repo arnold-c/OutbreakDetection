@@ -207,35 +207,6 @@ Each of the 100 simulations produces an accuracy (the mean of the percentages of
 Each testing scenario (the combination of the diagnostic test, testing rate, and alert threshold), is then compared (using the metrics above) at the optimal threshold that is specific for the scenario.
 This allows for conclusions to be made about the surveillance system as a whole, instead of just single components.
 
-== Cost-Benefit Analysis
-
-To quantify the relative benefit of each testing scenario at their optimal threshold, we calculated the Incremental Cost-Effectiveness Ratios (ICERs) using 1) the number of diagnostic tests used in each scenario, 2) the estimated cost of a single diagnostic test (accounting for transport and other logistical costs), and 3) the cost of responding to all alerts within a year.
-If a testing scenario produced clinical benefits e.g., fewer unavoidable cases and smaller alert delay, and cost less than \$2,203.56 per DALY averted (the 2022 GDP per capita for Ghana @worldbankGhana), it was deemed to be cost effective.
-
-$ "ICER" = (("Total cost of alternative") - ("Total cost of reference")) / (("Unavoidable DALYs for reference") - ("Unavoidable DALYs for alternative")) $<icer>
-
-Disability-Adjusted Life Years (DALYs) are calculated by summing the discounted Years of Life Lost (YLLs) to premature mortality (Equation 2) with the Years Lost due to Disability (YLDs) (Equation 3).
-YLLs included a discounting factor of 3% per year, and used Ghana’s 2019 life table from the WHO @worldhealthorganizationLifeTablesLife
-Disability weights of 0.051 and 0.133 were used for moderate and severe measles cases, respectively, with a duration of illness of 10 days, assuming 50% of cases were severe and the remaining moderate @vosGlobalBurden3692020.
-
-$ "YLL"#sub[p] = sum_(n=0)^("LE"#sub[p]) (1/1.003^n) $
-
-#align(center, [
-YLL#sub[p] = total discounted years of life lost for an individual who dies at age p \
-LE#sub[p] = expected years of remaining life for an individual who dies at age p  \
-n = the nth year of additional life an individual was expected to live
-])
-
-#linebreak()
-
-$ "YLD" = sum_(s) "I"#sub[s] * "DW"#sub[s] * "d"#sub[s] $
-
-#align(center, [
-	I#sub[s] = number of incident cases for disease severity s \
-	DW#sub[s] = disability weighing for disease severity s \
-	d#sub[s] = duration of illness for disease severity s
-])
-
 = Results
 == Optimal Thresholds, Accuracy, and Unavoidable Cases
 
@@ -310,10 +281,6 @@ Poisson Noise	Clinical Case Definition	0							-2095.63
 	ELISA Equivalent	7	-0.46	27.85	36.51	42.09	22.67	28.23
 	ELISA Equivalent	14	3.69	33.64	42.38	48.18	28.21	34.07
 
-
-== Cost-Benefit Analysis
-
-…
 
 = Discussion
 
