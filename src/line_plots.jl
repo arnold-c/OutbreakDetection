@@ -23,6 +23,7 @@ function line_accuracy_plot(
     labelsize = 30,
     show_x_facet_label = true,
     show_y_facet_label = true,
+    clinical_hline = true,
     force = false,
     kwargs...,
 )
@@ -30,6 +31,12 @@ function line_accuracy_plot(
     plotpath = joinpath(plotdirpath, "$plotname.$plotformat")
 
     if !isfile(plotpath) || force
+        if clinical_hline
+            optimal_threshold_test_spec_vec = vcat(
+                optimal_threshold_test_spec_vec, CLINICAL_CASE_TEST_SPEC
+            )
+        end
+
         fig = Figure()
 
         noise_descriptions = get_noise_description.(noise_spec_vec)
@@ -43,10 +50,6 @@ function line_accuracy_plot(
                     noise_description == get_noise_description(noise_spec),
                 noise_spec_vec,
             )
-
-            # if contains(noise_description, "dynamical")
-            #     shape_noise_specification = reverse(shape_noise_specification)
-            # end
 
             for (j, noise_spec) in pairs(shape_noise_specification)
                 optimal_threshold_comparison_params = (
@@ -92,7 +95,7 @@ function line_accuracy_plot(
             end
             colsize!(fig.layout, 0, Relative(0.03))
         end
-
+        unique_test_specifications = unique_test_specifications[1:(end - 1)]
         Legend(
             fig[0, :],
             map(enumerate(unique_test_specifications)) do (i, test_spec)
@@ -137,17 +140,6 @@ function _line_accuracy_plot!(
         percentiles = [0.1, 0.9],
     )
 
-    if show_x_facet_label && i == 1
-        x_facet_label = "$(Int64(round(
-            StatsBase.mean(
-                optimal_thresholds_vec[1].outbreak_threshold_chars.mean_noise_incidence_ratio
-            );
-            digits = 0,
-        ))):1 Noise:Signal Ratio"
-
-        kwargs_dict[:x_facet_label] = x_facet_label
-    end
-
     select!(
         long_df,
         Cols(
@@ -159,6 +151,17 @@ function _line_accuracy_plot!(
             x -> endswith(x, "th"),
         ),
     )
+
+    if show_x_facet_label && i == 1
+        x_facet_label = "$(Int64(round(
+            StatsBase.mean(
+                optimal_thresholds_vec[1].outbreak_threshold_chars.mean_noise_incidence_ratio
+            );
+            digits = 0,
+        ))):1 Noise:Signal Ratio"
+
+        kwargs_dict[:x_facet_label] = x_facet_label
+    end
 
     gl = fig[i, j] = GridLayout()
 
@@ -214,6 +217,17 @@ function _line_accuracy_facet!(
                 x -> x .== test.specificity,
             :test_lag => x -> x .== test.test_result_lag,
         )
+
+        if test == CLINICAL_CASE_TEST_SPEC
+            hlines!(ax, subsetted_df.accuracy_mean[1]; color = :green)
+            # hspan!(
+            #     ax,
+            #     subsetted_df.accuracy_10th[1],
+            #     subsetted_df.accuracy_90th[1];
+            #     color = (:green, 0.3),
+            # )
+            continue
+        end
 
         linestyle = test.test_result_lag == 0 ? :solid : :dash
 
