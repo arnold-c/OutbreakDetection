@@ -208,6 +208,19 @@ function _line_accuracy_facet!(
         ylabel = ylabel,
     )
 
+    if haskey(kwargs_dict, :x_facet_label)
+        Box(gl[1, xpos]; color = :lightgray, strokevisible = false)
+        Label(
+            gl[1, xpos],
+            kwargs_dict[:x_facet_label];
+            fontsize = 24,
+            padding = (0, 0, 0, 0),
+            valign = :bottom,
+            tellwidth = false,
+        )
+        rowsize!(gl, 2, Relative(0.9))
+    end
+
     for (i, test) in pairs(unique_test_specifications)
         subsetted_df = DataFrames.subset(
             long_df,
@@ -252,19 +265,6 @@ function _line_accuracy_facet!(
         )
 
         ylims!(ax, (0.6, 1))
-    end
-
-    if haskey(kwargs_dict, :x_facet_label)
-        Box(gl[1, xpos]; color = :lightgray, strokevisible = false)
-        Label(
-            gl[1, xpos],
-            kwargs_dict[:x_facet_label];
-            fontsize = 24,
-            padding = (0, 0, 0, 0),
-            valign = :bottom,
-            tellwidth = false,
-        )
-        rowsize!(gl, 2, Relative(0.9))
     end
 
     return nothing
