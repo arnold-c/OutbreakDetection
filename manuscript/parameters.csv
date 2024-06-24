@@ -1,4 +1,4 @@
-﻿Parameters,Measles,Non-measles noise
+﻿Parameters,Measles,Dynamical noise
 R0,16,5
 Latent period (s),10 days,7 days
 Infectious period (g),8 days,14 days
