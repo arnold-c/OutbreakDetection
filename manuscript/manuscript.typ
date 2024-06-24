@@ -126,34 +126,27 @@ Using these metrics we overcome issues encountered by early warning systems that
 
 We constructed a stochastic compartmental non-age structured SEIR model of measles and simulated using a modified Tau-leaping algorithm with a time step of 1 day, utilizing binomial draws to ensure compartment sizes remained positive valued @chatterjeeBinomialDistributionBased2005 @gillespieApproximateAcceleratedStochastic2001.
 To stochastically reintroduce infections and cause recurring epidemics, commuter-style imports were added that are proportional to the size of the population and $R#sub[0]$ @keelingModelingInfectiousDiseases2008, and the transmission parameter (#sym.beta#sub[t]) is sinusoidal with a period of one year.
-$R#sub[0]$ was set to 16, with a latent period of 10 days and infectious period of 8 days. The population was initialized with 500_000 individuals with Ghana-like birth and vaccination rates, and the final results were scaled up to the 2022 population size of Ghana (33 million). The full table of parameters can be found in Table 1. All simulations and analysis was completed in Julia version 1.10.3 @bezansonJuliaFreshApproach2017, with all code stored at _ https://github.com/arnold-c/OutbreakDetection _.
+$R#sub[0]$ was set to 16, with a latent period of 10 days and infectious period of 8 days. The population was initialized with 500_000 individuals with Ghana-like birth and vaccination rates, and the final results were scaled up to the 2022 population size of Ghana (33 million). The full table of parameters can be found in @table_model-parameters. All simulations and analysis was completed in Julia version 1.10.3 @bezansonJuliaFreshApproach2017, with all code stored at _ https://github.com/arnold-c/OutbreakDetection _.
+
+#let parameters = csv("parameters.csv")
+#let import_rate = $(1.06*μ*R_0)/(√(N))$
+#let parameter_labels = ( "Parameters", $R#sub[0]$, $"Latent period ("#sym.sigma")"$, $"Infectious period ("#sym.gamma")"$, "Seasonal amplitude", $"Birth rate ("#sym.mu")"$, $"Vaccination rate at birth ("#sym.rho")"$)
 
 #figure(
-	image("simulation-structure.png", width: 70%),
-	caption: "Simulation model structure with associated transition rates"
-)<figure_simulation-structure>
-
-//_Table 1) Table of compartmental model parameters_
-
-//#let parameters = csv("parameters.csv")
-//#let import_rate = $(1.06*μ*R_0)/(√(N))$
-//#let parameter_labels = ( "Parameters", $R#sub[0]$, $"Latent period ("#sym.sigma")"$, $"Infectious period ("#sym.gamma")"$, "Seasonal amplitude", $"Birth rate ("#sym.mu")"$, $"Vaccination rate at birth ("#sym.rho")"$)
-//
-//#figure(
-//	table(
-//		columns: 3,
-//		..for ((label), (.., measles, nonmeasles)) in parameter_labels.zip(parameters) {
-//			(label, measles, nonmeasles)
-//		},
-//		[Importation rate], table.cell(colspan: 2, align: center, $(1.06*μ*R_0)/(√(N))$),
-//		[Population size (N)], table.cell(colspan: 2, align: center, "500_000, scaled to 33M"),
-//		[Initial proportion susceptible], table.cell(colspan: 2, align: center, "0.05"),
-//		[Initial proportion exposed], table.cell(colspan: 2, align: center, "0.0"),
-//		[Initial proportion infected], table.cell(colspan: 2, align: center, "0.0"),
-//		[Initial proportion recovered], table.cell(colspan: 2, align: center, "0.95"),
-//	),
-//	caption: "Table of compartmental model parameters"
-//)
+	table(
+		columns: 3,
+		..for ((label), (.., measles, nonmeasles)) in parameter_labels.zip(parameters) {
+			(label, measles, nonmeasles)
+		},
+		[Importation rate], table.cell(colspan: 2, align: center, $(1.06*μ*R_0)/(√(N))$),
+		[Population size (N)], table.cell(colspan: 2, align: center, "500_000, scaled to 33M"),
+		[Initial proportion susceptible], table.cell(colspan: 2, align: center, "0.05"),
+		[Initial proportion exposed], table.cell(colspan: 2, align: center, "0.0"),
+		[Initial proportion infected], table.cell(colspan: 2, align: center, "0.0"),
+		[Initial proportion recovered], table.cell(colspan: 2, align: center, "0.95"),
+	),
+	caption: "Compartmental model parameters"
+)<table_model-parameters>
 
 To examine the sensitivity of the detection system to background noise, we layered the measles incidence timeseries with one of four noise time series: Poisson-only noise, or dynamical noise with rubella-like parameters that could be in- or out-of-phase or with independent seasonality to the measles dynamics.
 The total annual incidence of noise in each system was approximately 8 times the average annual measles incidence, with the dynamical noise systems also containing low levels of Poisson noise, reflecting Ghana-like dynamics.
