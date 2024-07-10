@@ -10,7 +10,7 @@ using DataFrames
 using DataFramesMeta
 using Statistics
 
-using OutbreakDetection
+using OutbreakDetectionUtils
 
 includet(srcdir("makie-plotting-setup.jl"))
 include(srcdir("ensemble-parameters.jl"))
@@ -24,8 +24,8 @@ optimal_threshold_test_spec_vec = [
     IndividualTestSpecification(0.9, 0.9, 0),
     # CLINICAL_TEST_SPECS...,
     IndividualTestSpecification(1.0, 1.0, 0),
-    IndividualTestSpecification(1.0, 1.0, 3),
-    IndividualTestSpecification(1.0, 1.0, 7),
+    # IndividualTestSpecification(1.0, 1.0, 3),
+    # IndividualTestSpecification(1.0, 1.0, 7),
     IndividualTestSpecification(1.0, 1.0, 14),
 ]
 
@@ -64,37 +64,42 @@ alert_method_vec = ["movingavg"]
 #%%
 cfr_df = CSV.read(
     datadir("CFR_2022.csv"),
-    DataFrame; delim = ',',
-    header = true,
-    types = [String, Int64, Float64],
-    silencewarnings = true,
+    DataFrame; delim=',',
+    header=true,
+    types=[String, Int64, Float64],
+    silencewarnings=true,
 )
 dropmissing!(cfr_df)
 
-gha_cfr = only(cfr_df[cfr_df.country .== "GHA", :CFR])
+gha_cfr = only(cfr_df[cfr_df.country.=="GHA", :CFR])
 
 population_df = CSV.read(
     datadir("input-populations.csv"),
-    DataFrame; delim = ',',
-    header = true,
+    DataFrame; delim=',',
+    header=true,
 )
 
 gha_2022_pop = only(
-    population_df[population_df.ISO3_code .== "GHA", "2022"]
+    population_df[population_df.ISO3_code.=="GHA", "2022"]
 )
 gha_2022_scale_population =
     gha_2022_pop / ensemble_state_specification.init_states.N
 
 countries = [
     (;
-        name = "Ghana",
-        code = "GHA",
-        cfr = gha_cfr,
-        year = "2022",
-        population_size = gha_2022_pop,
-        scale_population = gha_2022_scale_population,
+        name="Ghana",
+        code="GHA",
+        cfr=gha_cfr,
+        year="2022",
+        population_size=gha_2022_pop,
+        scale_population=gha_2022_scale_population,
     ),
 ]
+
+#%%
+ensemble_noise_specification = ensemble_noise_specification_vec[1]
+ensemble_specification = ensemble_spec_vec[1]
+alertmethod = alert_method_vec[1]
 
 #%%
 for (ensemble_noise_specification, ensemble_specification, alertmethod) in
@@ -105,13 +110,13 @@ for (ensemble_noise_specification, ensemble_specification, alertmethod) in
     println("==============================================")
 
     optimal_threshold_comparison_params = (
-        alertthreshold_vec = optimal_threshold_alertthreshold_vec,
-        ensemble_specification = ensemble_specification,
-        noise_specification = ensemble_noise_specification,
-        outbreak_specification = ensemble_outbreak_specification,
-        moving_avg_detection_lag = ensemble_moving_avg_detection_lag,
-        percent_visit_clinic = ensemble_percent_visit_clinic,
-        alertmethod = alertmethod,
+        alertthreshold_vec=optimal_threshold_alertthreshold_vec,
+        ensemble_specification=ensemble_specification,
+        noise_specification=ensemble_noise_specification,
+        outbreak_specification=ensemble_outbreak_specification,
+        moving_avg_detection_lag=ensemble_moving_avg_detection_lag,
+        percent_visit_clinic=ensemble_percent_visit_clinic,
+        alertmethod=alertmethod,
     )
 
     optimal_thresholds_vec = calculate_OptimalThresholdCharacteristics(
@@ -222,102 +227,94 @@ for (ensemble_noise_specification, ensemble_specification, alertmethod) in
 
     create_and_save_xlsx_optimal_threshold_summaries(
         optimal_thresholds_vec;
-        tabledirpath = tabledirpath,
-        filename = tablefilename,
-        gt_kwargs = (;
-            testing_rates = Between("0.1", "0.6"),
-            alert_threshold_colorscheme = ["ggsci::blue_material"],
-            accuracy_colorscheme = ["ggsci::green_material"],
-            alert_threshold_domain = (0.0, 8.0),
-            accuracy_domain = (0.55, 1.0),
-            save = "yes",
-            show = "no",
-            decimals = 2,
+        tabledirpath=tabledirpath,
+        filename=tablefilename,
+        gt_kwargs=(;
+            testing_rates=Between("0.1", "0.6"),
+            alert_threshold_colorscheme=["ggsci::blue_material"],
+            accuracy_colorscheme=["ggsci::green_material"],
+            alert_threshold_domain=(0.0, 8.0),
+            accuracy_domain=(0.55, 1.0),
+            save="yes",
+            show="yes",
+            decimals=2,
         ),
     )
 
     create_and_save_xlsx_optimal_threshold_summaries(
-        optimal_thresholds_vec, :mean_poisson_noise;
-        tabledirpath = tabledirpath,
-        filename = tablefilename,
-        gt_kwargs = (;
-            testing_rates = Between("0.1", "0.6"),
-            colorschemes = ["ggsci::grey_material"],
-            summary_stats = ["mean"],
-            save = "yes",
-            show = "no",
-            decimals = 2,
-        ),
+        optimal_thresholds_vec, :accuracy;
+        tabledirpath=tabledirpath,
+        filename=tablefilename,
     )
 
     create_and_save_xlsx_optimal_threshold_summaries(
         optimal_thresholds_vec, :detectiondelays;
-        tabledirpath = tabledirpath,
-        filename = tablefilename,
-        gt_kwargs = (;
-            testing_rates = Between("0.1", "0.6"),
-            colorschemes = ["RColorBrewer::Oranges", "RColorBrewer::Purples"],
-            domain = ((-30.0, 0.0), (0.0, 50.0)),
-            summary_stats = ["mean"],
-            save = "yes",
-            show = "no",
-            decimals = 2,
+        tabledirpath=tabledirpath,
+        filename=tablefilename,
+        gt_kwargs=(;
+            testing_rates=Between("0.1", "0.6"),
+            colorschemes=["RColorBrewer::Oranges", "RColorBrewer::Purples"],
+            domain=((-30.0, 0.0), (0.0, 50.0)),
+            summary_stats=["mean"],
+            save="yes",
+            show="no",
+            decimals=2,
         ),
     )
 
     create_and_save_xlsx_optimal_threshold_summaries(
         optimal_thresholds_vec,
         :unavoidable_cases;
-        scale_annual = 1 / nyears,
-        countries = countries,
-        tabledirpath = tabledirpath,
-        filename = tablefilename,
-        gt_kwargs = (;
-            testing_rates = Between("0.1", "0.6"),
-            colorschemes = ["ggsci::grey_material"],
-            summary_stats = ["mean"],
-            save = "yes",
-            show = "no",
-            decimals = 0,
+        scale_annual=1 / nyears,
+        countries=countries,
+        tabledirpath=tabledirpath,
+        filename=tablefilename,
+        gt_kwargs=(;
+            testing_rates=Between("0.1", "0.6"),
+            colorschemes=["ggsci::grey_material"],
+            summary_stats=["mean"],
+            save="yes",
+            show="no",
+            decimals=0,
         ),
     )
 
     create_and_save_xlsx_optimal_threshold_summaries(
         optimal_thresholds_vec, :avoidable_cases;
-        scale_annual = 1 / nyears,
-        countries = countries,
-        tabledirpath = tabledirpath,
-        filename = tablefilename,
+        scale_annual=1 / nyears,
+        countries=countries,
+        tabledirpath=tabledirpath,
+        filename=tablefilename,
     )
 
     create_and_save_xlsx_optimal_threshold_summaries(
         optimal_thresholds_vec, :n_outbreak_cases;
-        scale_annual = 1 / nyears,
-        countries = countries,
-        tabledirpath = tabledirpath,
-        filename = tablefilename,
+        scale_annual=1 / nyears,
+        countries=countries,
+        tabledirpath=tabledirpath,
+        filename=tablefilename,
     )
 
     create_and_save_xlsx_optimal_threshold_summaries(
         optimal_thresholds_vec, :n_tests;
-        scale_annual = 1 / nyears,
-        countries = countries,
-        tabledirpath = tabledirpath,
-        filename = tablefilename,
+        scale_annual=1 / nyears,
+        countries=countries,
+        tabledirpath=tabledirpath,
+        filename=tablefilename,
     )
 
     create_and_save_xlsx_optimal_threshold_summaries(
         optimal_thresholds_vec, :noutbreaks;
-        scale_annual = 1 / nyears,
-        tabledirpath = tabledirpath,
-        filename = tablefilename,
+        scale_annual=1 / nyears,
+        tabledirpath=tabledirpath,
+        filename=tablefilename,
     )
 
     create_and_save_xlsx_optimal_threshold_summaries(
         optimal_thresholds_vec, :nalerts;
-        scale_annual = 1 / nyears,
-        tabledirpath = tabledirpath,
-        filename = tablefilename,
+        scale_annual=1 / nyears,
+        tabledirpath=tabledirpath,
+        filename=tablefilename,
     )
 
     GC.gc(true)

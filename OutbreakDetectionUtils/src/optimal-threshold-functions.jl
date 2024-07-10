@@ -5,6 +5,7 @@ using DataFramesMeta: DataFramesMeta
 using Chain: Chain
 using UnPack: UnPack
 using StatsBase: StatsBase
+using Bootstrap: Bootstrap
 using Match: Match
 using XLSX: XLSX
 using RCall: RCall
@@ -143,6 +144,8 @@ function create_and_save_xlsx_optimal_threshold_summaries(
     optimal_thresholds_vec,
     characteristic;
     percentiles = [0.25, 0.5, 0.75],
+    nboots = 10000,
+    ci = 0.95,
     tabledirpath = outdir("ensemble/optimal-threshold-results"),
     filename = "",
     kwargs...,
@@ -150,7 +153,11 @@ function create_and_save_xlsx_optimal_threshold_summaries(
     kwargs_dict = Dict(kwargs)
 
     long_df = create_optimal_threshold_summary_df(
-        optimal_thresholds_vec, characteristic; percentiles = percentiles
+        optimal_thresholds_vec,
+        characteristic;
+        percentiles = percentiles,
+        nboots = nboots,
+        ci = ci,
     )
 
     base_columns = [
@@ -160,6 +167,15 @@ function create_and_save_xlsx_optimal_threshold_summaries(
         "test_lag",
         "alert_threshold",
         "accuracy",
+    ]
+
+    summary_stats = [
+        "mean",
+        "lower_CI_$(Int64(ci*100))",
+        "upper_CI_$(Int64(ci*100))",
+        0.25,
+        0.50,
+        0.75,
     ]
 
     mkpath(tabledirpath)
@@ -190,7 +206,8 @@ function create_and_save_xlsx_optimal_threshold_summaries(
             )
 
             country_wide_df_tuples = create_all_wide_optimal_threshold_summary_dfs(
-                country_long_df
+                country_long_df;
+                summary_stats = summary_stats,
             )
 
             country_info_df = DataFrames.DataFrame(
@@ -251,7 +268,8 @@ function create_and_save_xlsx_optimal_threshold_summaries(
                 )
 
                 cfr_wide_df_tuples = create_all_wide_optimal_threshold_summary_dfs(
-                    cfr_long_df
+                    cfr_long_df;
+                    summary_stats = summary_stats,
                 )
 
                 round_cfr = round(country.cfr; digits = 3)
@@ -265,7 +283,10 @@ function create_and_save_xlsx_optimal_threshold_summaries(
             end
         end
     else
-        wide_df_tuples = create_all_wide_optimal_threshold_summary_dfs(long_df)
+        wide_df_tuples = create_all_wide_optimal_threshold_summary_dfs(
+            long_df;
+            summary_stats = summary_stats,
+        )
 
         if haskey(kwargs_dict, :gt_kwargs)
             gt_kwargs = kwargs_dict[:gt_kwargs]
@@ -303,13 +324,13 @@ function create_and_save_xlsx_optimal_threshold_summaries(
 end
 
 function create_all_wide_optimal_threshold_summary_dfs(
-    df; summary_stats = ["mean", 0.25, 0.50, 0.75]
+    df; summary_stats = ["mean", "lower_CI_95", "upper_CI_95", 0.25, 0.50, 0.75]
 )
     summary_stats_labels = summary_stats
     summary_stats_symbols = copy(summary_stats)
 
     for (i, stat) in pairs(summary_stats_labels)
-        if stat == "mean"
+        if typeof(stat) <: AbstractString
             summary_stats_symbols[i] = Symbol(stat)
             continue
         end
@@ -483,12 +504,27 @@ function create_optimal_threshold_summary_df(
     optimal_thresholds_vec,
     characteristic;
     percentiles = [0.25, 0.5, 0.75],
+    nboots = 10000,
+    ci = 0.95,
 )
-    percentile_labels = map(perc -> "$(Int64(perc*100))th", percentiles)
+    # percentile_labels = map(perc -> "$(Int64(perc*100))th", percentiles)
+    percentile_labels = map(percentiles) do perc
+        perc = perc * 100
+        try
+            return "$(Int64(perc))th"
+        catch p
+            return replace("$(perc)th", "." => "_")
+        end
+    end
+
     char_percentile_labels = map(
         perc -> "$(characteristic)_$perc", percentile_labels
     )
     char_mean_label = "$(characteristic)_mean"
+
+    ci_label = "CI_$(Int64(ci*100))"
+    char_mean_lower_label = "$(characteristic)_lower_$(ci_label)"
+    char_mean_upper_label = "$(characteristic)_upper_$(ci_label)"
 
     Chain.@chain begin
         map(optimal_thresholds_vec) do opt
@@ -502,14 +538,16 @@ function create_optimal_threshold_summary_df(
             alertthreshold = opt.alert_threshold
             accuracy = opt.accuracy
 
-            char_mean, chars_percentiles = calculate_optimal_threshold_summaries(
+            char_lower, char_mean, char_upper, chars_percentiles = calculate_optimal_threshold_summaries(
                 getfield.(opt.outbreak_threshold_chars, characteristic);
                 percentiles = percentiles,
+                nboots = nboots,
+                ci = ci,
             )
 
             return percent_clinic_tested, sens,
             spec, test_lag, alertthreshold, accuracy,
-            char_mean, chars_percentiles...
+            char_lower, char_mean, char_upper, chars_percentiles...
         end
         reduce(vcat, _)
         DataFrames.DataFrame(
@@ -521,7 +559,9 @@ function create_optimal_threshold_summary_df(
                 "test_lag",
                 "alert_threshold",
                 "accuracy",
+                char_mean_lower_label,
                 char_mean_label,
+                char_mean_upper_label,
                 char_percentile_labels...,
             ],
         )
@@ -529,7 +569,7 @@ function create_optimal_threshold_summary_df(
 end
 
 function calculate_optimal_threshold_summaries(
-    char_vecs; percentiles = [0.25, 0.5, 0.75]
+    char_vecs; percentiles = [0.25, 0.5, 0.75], nboots = 10000, ci = 0.95
 )
     all_chars = reduce(vcat, char_vecs)
 
@@ -540,9 +580,14 @@ function calculate_optimal_threshold_summaries(
     char_percentiles = map(
         percentile -> StatsBase.quantile(all_chars, percentile), percentiles
     )
-    char_mean = StatsBase.mean(all_chars)
+    char_mean, char_lower, char_upper = Bootstrap.confint(
+        Bootstrap.bootstrap(
+            StatsBase.mean, all_chars, Bootstrap.BasicSampling(nboots)
+        ),
+        Bootstrap.BCaConfInt(ci),
+    )[1]
 
-    return char_mean, char_percentiles
+    return char_lower, char_mean, char_upper, char_percentiles
 end
 
 function save_xlsx_optimal_threshold_summaries(
