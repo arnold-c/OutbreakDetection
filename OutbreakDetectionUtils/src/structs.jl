@@ -336,14 +336,11 @@ struct IndividualTestSpecification{T1<:AbstractFloat,T2<:Integer}
 end
 
 function get_test_description(test_specification::IndividualTestSpecification)
-    description =
-        if test_specification.sensitivity == 1.0 &&
-            test_specification.specificity == 1.0
-            "ELISA-like ($(test_specification.test_result_lag) day lag)"
-        else
-            "RDT-like ($(test_specification.sensitivity * 100)% sens/spec)"
-        end
-
+    description = Match.@match test_specification begin
+        IndividualTestSpecification(1.0, 0.0, 0) => "Clinical case definition"
+        IndividualTestSpecification(x::AbstractFloat, x::AbstractFloat, 0) where {x<1.0} => "RDT-like ($(test_specification.sensitivity * 100)% sens/spec)"
+        IndividualTestSpecification(1.0, 1.0, x::Int) => "ELISA-like ($(x) day lag)"
+    end
     return description
 end
 

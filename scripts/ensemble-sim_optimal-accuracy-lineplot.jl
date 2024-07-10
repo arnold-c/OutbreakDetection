@@ -54,14 +54,12 @@ ensemble_spec_vec = create_combinations_vec(
 alert_method_vec = ["movingavg"]
 
 #%%
-# for (ensemble_noise_specification, ensemble_specification, alertmethod) in
-#     Iterators.product(
-#     ensemble_noise_specification_vec[1], ensemble_spec_vec, alert_method_vec
-# )
-#     @info "Creating plots and tables for R0: $(ensemble_specification.dynamics_parameters.R_0), $(getdirpath(ensemble_noise_specification)), $(alertmethod)"
-#     println("==============================================")
+ensemble_noise_specification =
+    filter(ensemble_noise_specification_vec) do noise_spec
+        noise_spec.noise_type == "poisson" ||
+            noise_spec.correlation == "in-phase"
+    end
 
-ensemble_noise_specification = ensemble_noise_specification_vec
 ensemble_specification = ensemble_spec_vec[1]
 alertmethod = alert_method_vec[1]
 
@@ -73,21 +71,6 @@ optimal_threshold_core_params = (
     percent_visit_clinic = ensemble_percent_visit_clinic,
     alertmethod = alertmethod,
 )
-
-# noise_specification_path = getdirpath(ensemble_noise_specification)
-# noisespec_alertmethod_path = joinpath(noise_specification_path, alertmethod)
-#
-# if alertmethod != "dailythreshold"
-#     noisespec_alertmethod_path = joinpath(
-#         noisespec_alertmethod_path,
-#         "moveavglag_$(ensemble_moving_avg_detection_lag)",
-#     )
-# end
-#
-# noisespec_alertmethod_filename = replace(
-#     noisespec_alertmethod_path,
-#     "/" => "_",
-# )
 
 basedirpath = joinpath(
     "R0_$(ensemble_specification.dynamics_parameters.R_0)"
@@ -108,5 +91,6 @@ line_accuracy_plot(
     plotdirpath = baseplotdirpath,
     show_x_facet_label = true,
     show_y_facet_label = false,
+    clinical_hline = true,
     force = true,
 )
