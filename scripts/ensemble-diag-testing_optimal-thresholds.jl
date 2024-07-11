@@ -24,8 +24,8 @@ optimal_threshold_test_spec_vec = [
     IndividualTestSpecification(0.9, 0.9, 0),
     # CLINICAL_TEST_SPECS...,
     IndividualTestSpecification(1.0, 1.0, 0),
-    # IndividualTestSpecification(1.0, 1.0, 3),
-    # IndividualTestSpecification(1.0, 1.0, 7),
+    IndividualTestSpecification(1.0, 1.0, 3),
+    IndividualTestSpecification(1.0, 1.0, 7),
     IndividualTestSpecification(1.0, 1.0, 14),
 ]
 
