@@ -31,7 +31,7 @@ time_p_vec = vec(
     map(
         Iterators.product(tmin_vec, tstep_vec, tmax_vec)
     ) do (tmin, tstep, tmax)
-        SimTimeParameters(; tmin = tmin, tmax = tmax, tstep = tstep)
+        SimTimeParameters(; tmin=tmin, tmax=tmax, tstep=tstep)
     end,
 )
 
@@ -144,8 +144,8 @@ test_spec_vec = [
     IndividualTestSpecification(0.9, 0.9, 0),
     CLINICAL_TEST_SPECS...,
     IndividualTestSpecification(1.0, 1.0, 0),
-    # IndividualTestSpecification(1.0, 1.0, 3),
-    # IndividualTestSpecification(1.0, 1.0, 7),
+    IndividualTestSpecification(1.0, 1.0, 3),
+    IndividualTestSpecification(1.0, 1.0, 7),
     IndividualTestSpecification(1.0, 1.0, 14),
 ]
 
@@ -168,4 +168,4 @@ for dict in sol_param_dict
 end
 
 #%%
-run_ensemble_jump_prob(sol_param_dict; force = true)
+run_ensemble_jump_prob(sol_param_dict; force=true)
