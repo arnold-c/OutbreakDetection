@@ -196,5 +196,41 @@
                 ),
             )
         end
+
+        @test begin
+            infectious_tested_vec = [
+                repeat([1], 9)...,
+                repeat([12], 51)..., # Outbreak here
+                repeat([1], 39)...,
+                repeat([8], 81)..., # Outbreak here
+                repeat([1], 199)...,
+                repeat([30], 31)..., # Outbreak here
+                repeat([1], 89)...,
+                repeat([25], 41)..., # Outbreak here
+            ]
+
+            noise_tested_vec = [
+                repeat([5], 9)...,
+                repeat([4], 51)..., # Outbreak here
+                repeat([6], 39)...,
+                repeat([5], 81)..., # Outbreak here
+                repeat([4], 199)...,
+                repeat([6], 31)..., # Outbreak here
+                repeat([5], 89)...,
+                repeat([4], 41)..., # Outbreak here
+            ]
+
+            outbreakbounds = [
+                10 60 612
+                100 180 648
+                380 410 930
+                500 540 1025
+            ]
+
+            isequal(
+                calculate_n_outbreak_tests(infectious_tested_vec, noise_tested_vec, outbreakbounds),
+                (12*51 + 8*81 + 30*31 + 25*41) + (4*51 + 5*81 + 6*31 + 4*41),
+            )
+        end
     end
 end
