@@ -108,14 +108,14 @@
         using OutbreakDetectionUtils
         @test begin
             incarr = [
-                repeat([1], 9)...,
-                repeat([12], 51)...,
-                repeat([1], 39)...,
-                repeat([8], 81)...,
+                repeat([1], 9)..., # First alert triggered here
+                repeat([12], 51)..., # Outbreak here
+                repeat([1], 39)..., # Second alert triggered here
+                repeat([8], 81)..., # Outbreak here
                 repeat([1], 199)...,
-                repeat([30], 31)...,
-                repeat([1], 89)...,
-                repeat([25], 41)...,
+                repeat([30], 31)..., # Outbreak here; third alert triggered here
+                repeat([1], 89)...,  # Fourth alert triggered here
+                repeat([25], 41)..., # Outbreak here
             ]
 
             matched_bounds = [
@@ -131,6 +131,8 @@
                     incarr, matched_bounds, delay_vec
                 ),
                 (
+                    [0, 0, 300, 0],
+                    [0.0, 0.0, 300 / 930, 0.0],
                     [612, 648, 630, 1025],
                     [1.0, 1.0, 630 / 930, 1.0],
                 ),
@@ -142,12 +144,12 @@
         using OutbreakDetectionUtils
         @test begin
             outbreakbounds = [
-                2 4 500 100
-                10 60 600 10
-                100 180 700 2000
-                300 340 800 20
-                380 410 900 400
-                500 540 1000 5000
+                2 4 500
+                10 60 600
+                100 180 700
+                300 340 800
+                380 410 900
+                500 540 1000
             ]
             detectionbounds = [
                 5 15
@@ -165,6 +167,7 @@
                     outbreakbounds, detectionbounds
                 ),
                 (
+                    accuracy = mean([4 / 6, 7 / 8]),
                     matched_bounds = [
                         10 60 5 15 600
                         10 60 17 40 600
@@ -192,7 +195,6 @@
                     outbreaksmissed_alerts_prop = 2 / 8,
                     perc_alerts_false = 1 / 8,
                     perc_alerts_correct = 7 / 8,
-                    # detectiondelays = [-5, -10, 10, -5],
                 ),
             )
         end
