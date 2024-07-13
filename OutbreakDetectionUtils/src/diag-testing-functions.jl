@@ -12,12 +12,10 @@ function create_testing_arrs(
 )
     testarr = zeros(Int64, size(incarr, 1), 7, size(incarr, 3))
     test_movingavg_arr = zeros(Int64, size(incarr, 1), size(incarr, 3))
-    ntested_worker_vec = Vector{Int64}(undef, size(incarr, 1))
 
     create_testing_arrs!(
         testarr,
         test_movingavg_arr,
-        ntested_worker_vec,
         incarr,
         noisearr,
         outbreak_detect_spec.alert_method.method_name,
@@ -35,7 +33,6 @@ end
 function create_testing_arrs!(
     testarr,
     test_movingavg_arr,
-    ntested_worker_vec,
     incarr,
     noisearr,
     alert_method,
@@ -58,10 +55,6 @@ function create_testing_arrs!(
         calculate_tested!(
             @view(testarr[:, 2, sim]), @view(noisearr[:, sim]), perc_tested
         )
-
-        # Number of TOTAL individuals tested
-        @. @views ntested_worker_vec .=
-            testarr[:, 1, sim] + testarr[:, 2, sim]
 
         # Number of test positive INFECTED individuals
         calculate_true_positives!(
