@@ -294,7 +294,7 @@ for (ensemble_noise_specification, ensemble_specification, alertmethod) in
     )
 
     create_and_save_xlsx_optimal_threshold_summaries(
-        optimal_thresholds_vec, :n_tests;
+        optimal_thresholds_vec, :n_outbreak_tests;
         scale_annual=1 / nyears,
         countries=countries,
         tabledirpath=tabledirpath,
