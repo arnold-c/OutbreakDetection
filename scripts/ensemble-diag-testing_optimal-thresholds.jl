@@ -17,7 +17,7 @@ include(srcdir("ensemble-parameters.jl"))
 
 #%%
 optimal_threshold_test_spec_vec = [
-    PROTOTYPE_RDT_TEST_SPECS,
+    PROTOTYPE_RDT_TEST_SPECS...,
     IndividualTestSpecification(0.85, 0.85, 0),
     IndividualTestSpecification(0.9, 0.9, 0),
     # CLINICAL_TEST_SPECS...,
