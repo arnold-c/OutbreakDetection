@@ -31,7 +31,7 @@ time_p_vec = vec(
     map(
         Iterators.product(tmin_vec, tstep_vec, tmax_vec)
     ) do (tmin, tstep, tmax)
-        SimTimeParameters(; tmin=tmin, tmax=tmax, tstep=tstep)
+        SimTimeParameters(; tmin = tmin, tmax = tmax, tstep = tstep)
     end,
 )
 
@@ -166,4 +166,4 @@ for dict in sol_param_dict
 end
 
 #%%
-run_ensemble_jump_prob(sol_param_dict; force=true)
+run_ensemble_jump_prob(sol_param_dict; force = true)
