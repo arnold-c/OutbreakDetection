@@ -17,7 +17,7 @@ include(srcdir("ensemble-parameters.jl"))
 
 #%%
 optimal_threshold_test_spec_vec = [
-    PROTOTYPE_RDT_TEST_SPECS,
+    PROTOTYPE_RDT_TEST_SPECS...,
     IndividualTestSpecification(0.85, 0.85, 0),
     IndividualTestSpecification(0.9, 0.9, 0),
     # CLINICAL_TEST_SPECS...,
@@ -294,7 +294,7 @@ for (ensemble_noise_specification, ensemble_specification, alertmethod) in
     )
 
     create_and_save_xlsx_optimal_threshold_summaries(
-        optimal_thresholds_vec, :n_tests;
+        optimal_thresholds_vec, :n_outbreak_tests;
         scale_annual=1 / nyears,
         countries=countries,
         tabledirpath=tabledirpath,

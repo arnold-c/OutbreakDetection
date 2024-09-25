@@ -12,12 +12,10 @@ function create_testing_arrs(
 )
     testarr = zeros(Int64, size(incarr, 1), 7, size(incarr, 3))
     test_movingavg_arr = zeros(Int64, size(incarr, 1), size(incarr, 3))
-    ntested_worker_vec = Vector{Int64}(undef, size(incarr, 1))
 
     create_testing_arrs!(
         testarr,
         test_movingavg_arr,
-        ntested_worker_vec,
         incarr,
         noisearr,
         outbreak_detect_spec.alert_method.method_name,
@@ -35,7 +33,6 @@ end
 function create_testing_arrs!(
     testarr,
     test_movingavg_arr,
-    ntested_worker_vec,
     incarr,
     noisearr,
     alert_method,
@@ -58,10 +55,6 @@ function create_testing_arrs!(
         calculate_tested!(
             @view(testarr[:, 2, sim]), @view(noisearr[:, sim]), perc_tested
         )
-
-        # Number of TOTAL individuals tested
-        @. @views ntested_worker_vec .=
-            testarr[:, 1, sim] + testarr[:, 2, sim]
 
         # Number of test positive INFECTED individuals
         calculate_true_positives!(
@@ -316,6 +309,10 @@ function calculate_OutbreakThresholdChars(
             @view(testarr[:, 1, sim]), @view(testarr[:, 2, sim])
         )
 
+        n_outbreak_tests = calculate_n_outbreak_tests(
+            @view(testarr[:, 1, sim]), @view(testarr[:, 2, sim]), outbreakbounds
+        )
+
         mean_noise_incidence_ratio =
             noise_means.mean_noise / StatsBase.mean(@view(infecarr[:, 1, sim]))
 
@@ -331,6 +328,7 @@ function calculate_OutbreakThresholdChars(
             avoidable_cases,
             n_outbreak_cases,
             n_tests,
+            n_outbreak_tests,
             mean_noise_incidence_ratio,
             noise_means.mean_poisson_noise,
             noise_means.poisson_noise_prop,
@@ -342,6 +340,15 @@ end
 
 function calculate_n_tests(infectious_tested_vec, noise_tested_vec)
     return sum(infectious_tested_vec) + sum(noise_tested_vec)
+end
+
+function calculate_n_outbreak_tests(infectious_tested_vec, noise_tested_vec, outbreakbounds)
+    tested = 0
+    for (lower, upper) in eachrow(@view(outbreakbounds[:, 1:2]))
+        @views tested += sum(infectious_tested_vec[lower:upper])
+        @views tested += sum(noise_tested_vec[lower:upper])
+    end
+    return tested
 end
 
 function calculate_unavoidable_cases(

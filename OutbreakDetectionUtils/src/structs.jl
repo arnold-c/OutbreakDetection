@@ -235,6 +235,7 @@ struct OutbreakThresholdChars{
     avoidable_cases::T2
     n_outbreak_cases::T2
     n_tests::T2
+    n_outbreak_tests::T2
     mean_noise_incidence_ratio::T1
     mean_poisson_noise::T1
     poisson_noise_prop::T1
