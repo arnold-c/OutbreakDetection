@@ -1,0 +1,11 @@
+﻿,Test Type,Test lag,10%,20%,30%,40%,50%,60%,100%
+Dynamical noise: in-phase,Clinical Case Definition,0,,,,,,,-4674.81
+,RDT Equivalent 0.85,0,-28.07,-15.53,-11.84,-5.76,-18.47,-13.11,
+,RDT Equivalent 0.90,0,-19.85,-7.56,-3.55,0.37,-13.1,-5.74,
+Poisson Noise,Clinical Case Definition,0,,,,,,,-2095.63
+,RDT Equivalent 0.85,0,-3.75,24.49,31.45,31.85,38.17,37.87,
+,RDT Equivalent 0.90,0,-3.69,12.94,32.92,40.14,20.26,28.74,
+Common,ELISA Equivalent,0,-3.69,22.61,30.64,36.08,17.92,23.05,
+,ELISA Equivalent,3,-2.64,24.55,33.04,38.83,19.55,24.94,
+,ELISA Equivalent,7,-0.46,27.85,36.51,42.09,22.67,28.23,
+,ELISA Equivalent,14,3.69,33.64,42.38,48.18,28.21,34.07,

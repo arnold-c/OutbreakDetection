@@ -1,0 +1,55 @@
+---
+title: "The Need to Develop a Holistic Infectious Disease Surveillance System"
+header-title: true
+authors:
+  - name: "Callum R.K. Arnold"
+    affiliations:
+      - ref: "PSU-Bio"
+      - ref: "CIDD"
+    corresponding: true
+    email: "cfa5228@psu.edu"
+  - name: "Alex C. Kong"
+    affiliations:
+      - ref: "Hopkins-IH"
+  - name: "Amy K. Winter"
+    affiliations:
+      - ref: "UGA"
+  - name: "William J. Moss"
+    affiliations:
+      - ref: "Hopkins-IH"
+      - ref: "Hopkins-Epi"
+  - name: "Bryan N. Patenaude"
+    affiliations:
+      - ref: "Hopkins-IH"
+  - name: "Matthew J. Ferrari"
+    affiliations:
+      - ref: "PSU-Bio"
+      - ref: "CIDD"
+affiliations:
+  - id: "PSU-Bio"
+    address: "Department of Biology, Pennsylvania State University, University Park, PA, USA 16802"
+  - id: "CIDD"
+    address: "Center for Infectious Disease Dynamics, Pennsylvania State University, University Park, PA, USA 16802"
+  - id: "Hopkins-IH"
+    address: "Department of International Health, Johns Hopkins Bloomberg School of Public Health, Baltimore, MD, USA 21205"
+  - id: "UGA"
+    address: "Department of Epidemiology, College of Public Health, University of Georgia, Athens, GA, USA 30602"
+  - id: "Hopkins-Epi"
+    address: "Department of Epidemiology, Johns Hopkins Bloomberg School of Public Health, Baltimore, MD, USA 21205"
+execute:
+  echo: false
+  warning: false
+  message: false
+# bibliography: /Users/cfa5228/Documents/Repos/OutbreakDetection/manuscript/OD.bib
+bibliography: OD.bib
+bibliographystyle: springer-vancouver
+toc: false
+format:
+  generic-manuscript-typst:
+    keep-typ: true
+---
+
+# Results
+
+
+
