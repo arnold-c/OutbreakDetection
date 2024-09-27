@@ -4,4 +4,4 @@ Latent period (s),10 days,7 days
 Infectious period (g),8 days,14 days
 Seasonal amplitude,0.2,0.2
 Birth rate (m),27 per 1000 per annum,27 per 1000 per annum
-Vaccination rate at birth (r),80%,(5-85)%
+Vaccination rate at birth (r),80%,(0.5-85)%
