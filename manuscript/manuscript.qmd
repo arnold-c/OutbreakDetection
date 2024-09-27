@@ -86,6 +86,7 @@ tbl-cap-location: bottom
 format:
   generic-manuscript-typst:
     keep-typ: true
+jupyter: julia-1.10
 ---
 
 # Background
@@ -209,7 +210,11 @@ The overlap with true outbreak status, or lack thereof, is used to classify the 
 - The detection delay. Note that if an alert precedes the start of the outbreak, as long as it successfully “captures” the outbreak within its bounds, it is considered to be correct, resulting in a negative detection delay i.e., an early warning triggered by false positives.
 - The number of unavoidable and avoidable outbreak cases and deaths. Avoidable cases are defined as those that occur within an outbreak after a correct alert is first triggered i.e., cases that could theoretically be prevented with a perfectly effective and timely response. Unavoidable cases are the inverse: those that occur before a correct alert, or those that occur in an undetected outbreak. Using a fitted age distribution of measles cases in Ghana [@mintaProgressMeaslesElimination2023] and the age-specific case fatality ratio for Ghana in 2022 [@sbarraEstimatingNationallevelMeasles2023], we scaled the values for each one-year age cohort, per annum. In practice, not all cases deemed avoidable are (due to imperfect and delays in responses), but to minimize the sensitivity of the results to the response implementation and operational constraints we are counting them as such.
 
-![A schematic of the outbreak definition and alert detection system. A) Noise time series. B) Measles incidence time series. C) Observed time series resulting from testing noise & measles cases that visit the healthcare facility. The orange bands/vertical lines represent regions of the measles time series that meet the outbreak definition criteria. The green bands/vertical lines represent regions of the observed (measles - noise) time series that breach the alert threshold (the horizontal dashed line), and constitute an alert.](./schematic-simulation_with-shade.png){#fig-outbreak-schematic}
+```{julia}
+#| fig-cap: "A schematic of the outbreak definition and alert detection system. A) Noise time series. B) Measles incidence time series. C) Observed time series resulting from testing noise & measles cases that visit the healthcare facility. The orange bands/vertical lines represent regions of the measles time series that meet the outbreak definition criteria. The green bands/vertical lines represent regions of the observed (measles - noise) time series that breach the alert threshold (the horizontal dashed line), and constitute an alert."
+#| label: fig-outbreak-schematic
+include("schematic-plot.jl")
+```
 
 For each combination of diagnostic test and testing rate, the optimal alert threshold is calculated by selecting the threshold that produces the highest accuracy.
 Each of the 100 simulations produces an accuracy (the mean of the percentages of alerts that are correct and the percentage of the outbreaks that are detected), and the median accuracy of this distribution is used to determine the optimal alert threshold.
@@ -325,6 +330,13 @@ Unavoidable cases per annum of each testing scenario at their specific optimal t
 Outbreak alert delay (days) of each testing scenario at their specific optimal thresholds. A) the noise structure is dynamical, and the seasonality is in-phase with the measles incidence. B) the noise structure is Poisson only.
 
 :::
+
+
+```{julia}
+#| fig-cap: "The accuracy of outbreak detection systems under different testing rates and noise structures. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate."
+#| label: fig-accuracy
+include("line-plot.jl")
+```
 
 # Discussion
 

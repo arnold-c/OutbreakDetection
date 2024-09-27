@@ -21,7 +21,8 @@ export POPULATION_N, LATENT_PER_DAYS, DUR_INF_DAYS, R0, SIGMA, GAMMA,
     MU, BETA_MEAN, BETA_FORCE, EPSILON
 
 include("test-constants.jl")
-export CLINICAL_CASE_TEST_SPEC, EPI_LINKED_CASE_TEST_SPEC, CLINICAL_TEST_SPECS, PROTOTYPE_RDT_TEST_SPECS
+export CLINICAL_CASE_TEST_SPEC,
+    EPI_LINKED_CASE_TEST_SPEC, CLINICAL_TEST_SPECS, PROTOTYPE_RDT_TEST_SPECS
 
 include("SEIR-model.jl")
 export seir_mod, seir_mod!, seir_mod_loop!,
@@ -33,7 +34,9 @@ export create_sir_df, create_sir_beta_dfs,
 
 include("detection-thresholds.jl")
 export create_inc_infec_arr,
-    create_inc_infec_arr!, calculate_outbreak_thresholds
+    create_inc_infec_arr!, calculate_outbreak_thresholds,
+    classify_all_outbreaks!, filter_only_outbreaks, calculate_positives,
+    calculate_true_positives!
 
 include("diag-testing-functions.jl")
 export create_testing_arrs, create_testing_arrs!, calculate_tested!,

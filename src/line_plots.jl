@@ -20,11 +20,13 @@ function line_accuracy_plot(
     colors = lineplot_colors,
     xlabel = "Proportion Tested",
     ylabel = "Outbreak Detection\nAccuracy",
+    facet_fontsize = 24,
     labelsize = 30,
     show_x_facet_label = true,
     show_y_facet_label = true,
     clinical_hline = true,
     force = false,
+    save_plot = true,
     kwargs...,
 )
     mkpath(plotdirpath)
@@ -74,6 +76,7 @@ function line_accuracy_plot(
                     colors = colors,
                     xlabel = xlabel,
                     ylabel = ylabel,
+                    facet_fontsize = facet_fontsize,
                     show_x_facet_label = show_x_facet_label,
                     kwargs...,
                 )
@@ -111,7 +114,9 @@ function line_accuracy_plot(
         )
         rowsize!(fig.layout, 0, Relative(0.03))
 
-        Makie.save(plotpath, fig; size = size)
+        if save_plot
+            Makie.save(plotpath, fig; size = size)
+        end
         return fig
     end
 
@@ -129,6 +134,7 @@ function _line_accuracy_plot!(
     xlabel = "Proportion Tested",
     ylabel = "Accuracy",
     show_x_facet_label = true,
+    facet_fontsize = 24,
     num_noise_descriptions = 1,
     kwargs...,
 )
@@ -181,6 +187,7 @@ function _line_accuracy_plot!(
         colors = colors,
         xlabel = xlabel,
         ylabel = ylabel,
+        facet_fontsize = facet_fontsize,
         kwargs_dict...,
     )
 
@@ -195,6 +202,7 @@ function _line_accuracy_facet!(
     colors = lineplot_colors,
     xlabel = "Proportion Tested",
     ylabel = "Accuracy",
+    facet_fontsize = 24,
     kwargs...,
 )
     kwargs_dict = Dict(kwargs)
@@ -213,7 +221,7 @@ function _line_accuracy_facet!(
         Label(
             gl[1, xpos],
             kwargs_dict[:x_facet_label];
-            fontsize = 24,
+            fontsize = facet_fontsize,
             padding = (0, 0, 0, 0),
             valign = :bottom,
             tellwidth = false,
