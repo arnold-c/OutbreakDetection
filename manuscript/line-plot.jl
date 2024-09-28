@@ -80,18 +80,57 @@ baseplotdirpath = joinpath(
     basedirpath,
 )
 
+
 #%%
-line_accuracy_plot(
+accuracy_line_plot = line_accuracy_plot(
     ensemble_noise_specification,
     ensemble_percent_clinic_tested_vec,
     optimal_threshold_test_spec_vec,
     optimal_threshold_core_params;
+    outcome = :accuracy,
+    ylabel = "Outbreak Detection\nAccuracy",
     plotdirpath = baseplotdirpath,
     facet_fontsize = 20,
     labelsize = 20,
     show_x_facet_label = true,
     show_y_facet_label = false,
-    clinical_hline = true,
+    ylims = (0.6, 1.0),
     force = true,
     save_plot = false,
 )
+
+#%%
+unavoidable_line_plot = line_accuracy_plot(
+    ensemble_noise_specification,
+    ensemble_percent_clinic_tested_vec,
+    optimal_threshold_test_spec_vec,
+    optimal_threshold_core_params;
+    outcome = :unavoidable_cases,
+    ylabel = "Unavoidable Cases",
+    plotdirpath = baseplotdirpath,
+    facet_fontsize = 20,
+    labelsize = 20,
+    show_x_facet_label = true,
+    show_y_facet_label = false,
+    force = true,
+    save_plot = false,
+)
+
+#%%
+delay_line_plot = line_accuracy_plot(
+    ensemble_noise_specification,
+    ensemble_percent_clinic_tested_vec,
+    optimal_threshold_test_spec_vec,
+    optimal_threshold_core_params;
+    outcome = :detectiondelays,
+    ylabel = "Detection Delays",
+    plotdirpath = baseplotdirpath,
+    clinical_hline = false,
+    facet_fontsize = 20,
+    labelsize = 20,
+    show_x_facet_label = true,
+    show_y_facet_label = false,
+    force = true,
+    save_plot = false,
+)
+

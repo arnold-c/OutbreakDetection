@@ -13,6 +13,7 @@ function line_accuracy_plot(
     ensemble_percent_clinic_tested_vec,
     optimal_threshold_test_spec_vec,
     optimal_threshold_core_params;
+    outcome = :accuracy,
     plotdirpath = DrWatson.plotsdir(),
     plotname = "line_accuracy_plot",
     plotformat = "png",
@@ -24,6 +25,7 @@ function line_accuracy_plot(
     labelsize = 30,
     show_x_facet_label = true,
     show_y_facet_label = true,
+    ylims = (nothing, nothing),
     clinical_hline = true,
     force = false,
     save_plot = true,
@@ -72,10 +74,12 @@ function line_accuracy_plot(
                     optimal_thresholds_vec,
                     i,
                     j;
+                    outcome = outcome,
                     num_noise_descriptions = num_noise_descriptions,
                     colors = colors,
                     xlabel = xlabel,
                     ylabel = ylabel,
+                    ylims = ylims,
                     facet_fontsize = facet_fontsize,
                     show_x_facet_label = show_x_facet_label,
                     kwargs...,
@@ -98,7 +102,9 @@ function line_accuracy_plot(
             end
             colsize!(fig.layout, 0, Relative(0.03))
         end
-        unique_test_specifications = unique_test_specifications[1:(end - 1)]
+        if clinical_hline
+            push!(colors, "green")
+        end
         Legend(
             fig[0, :],
             map(enumerate(unique_test_specifications)) do (i, test_spec)
@@ -130,19 +136,21 @@ function _line_accuracy_plot!(
     optimal_thresholds_vec,
     i,
     j;
+    outcome = :accuracy,
     colors = lineplot_colors,
     xlabel = "Proportion Tested",
     ylabel = "Accuracy",
     show_x_facet_label = true,
     facet_fontsize = 24,
     num_noise_descriptions = 1,
+    ylims = (nothing, nothing),
     kwargs...,
 )
     kwargs_dict = Dict{Symbol,Any}(kwargs)
 
     long_df = create_optimal_threshold_summary_df(
         optimal_thresholds_vec,
-        :accuracy;
+        outcome;
         percentiles = [0.1, 0.9],
     )
 
@@ -153,7 +161,7 @@ function _line_accuracy_plot!(
             :sensitivity,
             :specificity,
             :test_lag,
-            :accuracy_mean,
+            string(outcome)*"_mean",
             x -> endswith(x, "th"),
         ),
     )
@@ -184,10 +192,12 @@ function _line_accuracy_plot!(
         noise_spec,
         unique_test_specifications,
         long_df;
+        outcome = outcome,
         colors = colors,
         xlabel = xlabel,
         ylabel = ylabel,
         facet_fontsize = facet_fontsize,
+        ylims = ylims,
         kwargs_dict...,
     )
 
@@ -199,16 +209,22 @@ function _line_accuracy_facet!(
     noise_spec,
     unique_test_specifications,
     long_df;
+    outcome = :accuracy,
     colors = lineplot_colors,
     xlabel = "Proportion Tested",
     ylabel = "Accuracy",
     facet_fontsize = 24,
+    ylims = (nothing, nothing),
     kwargs...,
 )
     kwargs_dict = Dict(kwargs)
 
     ypos = haskey(kwargs_dict, :x_facet_label) ? 2 : 1
     xpos = 1
+
+    outcome_mean = string(outcome)*"_mean"
+    outcome_10th = string(outcome)*"_10th"
+    outcome_90th = string(outcome)*"_90th"
 
     ax = Axis(
         gl[ypos, xpos];
@@ -240,13 +256,7 @@ function _line_accuracy_facet!(
         )
 
         if test == CLINICAL_CASE_TEST_SPEC
-            hlines!(ax, subsetted_df.accuracy_mean[1]; color = :green)
-            # hspan!(
-            #     ax,
-            #     subsetted_df.accuracy_10th[1],
-            #     subsetted_df.accuracy_90th[1];
-            #     color = (:green, 0.3),
-            # )
+            hlines!(ax, subsetted_df[!, outcome_mean][1]; color = colors[end])
             continue
         end
 
@@ -258,7 +268,7 @@ function _line_accuracy_facet!(
         lines!(
             ax,
             subsetted_df.percent_clinic_tested,
-            subsetted_df.accuracy_mean;
+            subsetted_df[!, outcome_mean];
             color = colors[i],
             linestyle = linestyle,
         )
@@ -266,13 +276,13 @@ function _line_accuracy_facet!(
         band!(
             ax,
             subsetted_df.percent_clinic_tested,
-            subsetted_df.accuracy_10th,
-            subsetted_df.accuracy_90th;
+            subsetted_df[!, outcome_10th],
+            subsetted_df[!, outcome_90th];
             color = colors[i],
             alpha = 0.3,
         )
 
-        ylims!(ax, (0.6, 1))
+        ylims!(ax, ylims)
     end
 
     return nothing

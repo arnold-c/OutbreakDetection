@@ -354,6 +354,10 @@ struct PoissonNoiseSpecification{
     noise_mean_scaling::T2
 end
 
+function PoissonNoiseSpecification(noise_mean_scaling)
+    return PoissonNoiseSpecification("Poisson", noise_mean_scaling)
+end
+
 struct DynamicalNoiseSpecification{
     T1<:AbstractString,T2<:AbstractFloat,T3<:Integer
 } <: NoiseSpecification
