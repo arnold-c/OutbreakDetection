@@ -94,7 +94,7 @@ accuracy_line_plot = line_accuracy_plot(
     labelsize = 20,
     show_x_facet_label = true,
     show_y_facet_label = false,
-    ylims = (0.6, 1.0),
+    ylims = (0.5, 1.0),
     force = true,
     save_plot = false,
 )
@@ -123,7 +123,7 @@ delay_line_plot = line_accuracy_plot(
     optimal_threshold_test_spec_vec,
     optimal_threshold_core_params;
     outcome = :detectiondelays,
-    ylabel = "Detection Delays",
+    ylabel = "Detection Delays\n(Days)",
     plotdirpath = baseplotdirpath,
     clinical_hline = false,
     facet_fontsize = 20,

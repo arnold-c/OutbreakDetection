@@ -1,6 +1,7 @@
 using DataFrames
 using DrWatson: DrWatson
 using StatsBase: StatsBase
+using Match: Match
 
 lineplot_colors = [
     "#56B4E9"
@@ -49,6 +50,14 @@ function line_accuracy_plot(
         unique_test_specifications = unique(optimal_threshold_test_spec_vec)
 
         for (i, noise_description) in pairs(unique_noise_descriptions)
+
+
+
+            label_noise_description = Match.@match noise_description begin
+                "poisson" => "Poisson Noise"
+                "dynamical, in-phase" => "Dynamical Noise: In-Phase"
+            end
+
             shape_noise_specification = filter(
                 noise_spec ->
                     noise_description == get_noise_description(noise_spec),
@@ -78,7 +87,7 @@ function line_accuracy_plot(
                     num_noise_descriptions = num_noise_descriptions,
                     colors = colors,
                     xlabel = xlabel,
-                    ylabel = ylabel,
+                    ylabel = "$label_noise_description\n" * ylabel,
                     ylims = ylims,
                     facet_fontsize = facet_fontsize,
                     show_x_facet_label = show_x_facet_label,
@@ -105,6 +114,7 @@ function line_accuracy_plot(
         if clinical_hline
             push!(colors, "green")
         end
+        rg = r"\((.*)(\% .*\))"
         Legend(
             fig[0, :],
             map(enumerate(unique_test_specifications)) do (i, test_spec)
@@ -114,7 +124,13 @@ function line_accuracy_plot(
                     LineElement(; color = colors[i], linestyle = linestyle),
                 ]
             end,
-            get_test_description.(unique_test_specifications);
+            map(
+                test_description -> replace.(
+                    test_description,
+                    rg => s -> parse(Float64, match(rg, s).captures[1]) / 100
+                ),
+                get_test_description.(unique_test_specifications),
+            );
             labelsize = labelsize,
             orientation = :horizontal,
         )
