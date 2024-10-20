@@ -737,6 +737,45 @@ supplement: "Figure",
 <fig-delay>
 
 
+#figure([
+#box(image("manuscript_files/figure-typst/fig-outbreak-proportion-output-1.png"))
+], caption: figure.caption(
+position: bottom, 
+[
+The difference in the proportion of the time series in alert - proportion in an outbreak,of outbreak detection systems under different testing rates and noise structures. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate.
+]), 
+kind: "quarto-float-fig", 
+supplement: "Figure", 
+)
+<fig-outbreak-proportion>
+
+
+#figure([
+#box(image("manuscript_files/figure-typst/fig-alert-proportion-output-1.png"))
+], caption: figure.caption(
+position: bottom, 
+[
+The difference in the proportion of the time series in alert - proportion in an outbreak,of outbreak detection systems under different testing rates and noise structures. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate.
+]), 
+kind: "quarto-float-fig", 
+supplement: "Figure", 
+)
+<fig-alert-proportion>
+
+
+#figure([
+#box(image("manuscript_files/figure-typst/fig-alert-outbreak-proportion-output-1.png"))
+], caption: figure.caption(
+position: bottom, 
+[
+The difference in the proportion of the time series in alert - proportion in an outbreak,of outbreak detection systems under different testing rates and noise structures. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate.
+]), 
+kind: "quarto-float-fig", 
+supplement: "Figure", 
+)
+<fig-alert-outbreak-proportion>
+
+
 = Discussion
 <discussion>
 The performance of an outbreak detection system is highly sensitive to the structure and level of background noise in the simulation. Despite the mean daily noise incidence set to equivalent values between the dynamical and Poisson-only simulations, drastically different results are observed.

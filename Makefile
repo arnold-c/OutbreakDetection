@@ -64,7 +64,7 @@ MANUSCRIPT_TARGETS = manuscript
 $(MANUSCRIPT_TARGETS): %: tmp/%
 manuscript-targets: $(MANUSCRIPT_TARGETS)
 
-tmp/manuscript: manuscript/manuscript.qmd tmp/ensemble-sim
+tmp/manuscript: manuscript/manuscript.qmd manuscript/line-plot.jl tmp/ensemble-sim
 	quarto render manuscript/manuscript.qmd
 	@touch $@
 
