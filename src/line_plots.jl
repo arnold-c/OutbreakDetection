@@ -104,7 +104,7 @@ function line_plot(
 
         unique_noise_descriptions = unique(
             map(
-                char -> char[1].noise_specification,
+                char -> get_noise_description(char[1].noise_specification),
                 optimal_thresholds_chars_array,
             ),
         )
