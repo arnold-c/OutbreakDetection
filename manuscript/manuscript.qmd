@@ -354,6 +354,13 @@ unavoidable_line_plot
 delay_line_plot
 ```
 
+
+```{julia}
+#| fig-cap: "The difference in the proportion of the time series in alert - proportion in an outbreak,of outbreak detection systems under different testing rates and noise structures. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate."
+#| label: fig-delay
+alert_outbreak_proportion_line_plot
+```
+
 # Discussion
 
 The performance of an outbreak detection system is highly sensitive to the structure and level of background noise in the simulation.

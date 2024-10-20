@@ -80,7 +80,6 @@ baseplotdirpath = joinpath(
     basedirpath,
 )
 
-
 #%%
 accuracy_line_plot = line_accuracy_plot(
     ensemble_noise_specification,
@@ -90,7 +89,7 @@ accuracy_line_plot = line_accuracy_plot(
     outcome = :accuracy,
     ylabel = "Outbreak Detection\nAccuracy",
     plotdirpath = baseplotdirpath,
-    facet_fontsize = 20,
+    facet_fontsize = 18,
     labelsize = 20,
     show_x_facet_label = true,
     show_y_facet_label = false,
@@ -108,10 +107,12 @@ unavoidable_line_plot = line_accuracy_plot(
     outcome = :unavoidable_cases,
     ylabel = "Unavoidable Cases",
     plotdirpath = baseplotdirpath,
-    facet_fontsize = 20,
+    clinical_hline = false,
+    facet_fontsize = 18,
     labelsize = 20,
     show_x_facet_label = true,
     show_y_facet_label = false,
+    ylims = (0, 3.5e4),
     force = true,
     save_plot = false,
 )
@@ -126,11 +127,30 @@ delay_line_plot = line_accuracy_plot(
     ylabel = "Detection Delays\n(Days)",
     plotdirpath = baseplotdirpath,
     clinical_hline = false,
-    facet_fontsize = 20,
+    facet_fontsize = 18,
     labelsize = 20,
     show_x_facet_label = true,
     show_y_facet_label = false,
+    ylims = (-100, 100),
     force = true,
     save_plot = false,
 )
 
+#%%
+alert_outbreak_proportion_line_plot = line_accuracy_plot(
+    ensemble_noise_specification,
+    ensemble_percent_clinic_tested_vec,
+    optimal_threshold_test_spec_vec,
+    optimal_threshold_core_params;
+    outcome = :alert_outbreak_timeseries_prop_diff,
+    ylabel = "Proportion of Time Series\nIn Alert - Outbreak",
+    plotdirpath = baseplotdirpath,
+    clinical_hline = false,
+    facet_fontsize = 18,
+    labelsize = 20,
+    show_x_facet_label = true,
+    show_y_facet_label = false,
+    ylims = (-100, 100),
+    force = true,
+    save_plot = false,
+)

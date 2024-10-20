@@ -27,6 +27,7 @@ function line_accuracy_plot(
     show_x_facet_label = true,
     show_y_facet_label = true,
     ylims = (nothing, nothing),
+    hidedecorations = (true, true),
     clinical_hline = true,
     force = false,
     save_plot = true,
@@ -51,11 +52,10 @@ function line_accuracy_plot(
 
         for (i, noise_description) in pairs(unique_noise_descriptions)
 
-
-
             label_noise_description = Match.@match noise_description begin
                 "poisson" => "Poisson Noise"
                 "dynamical, in-phase" => "Dynamical Noise: In-Phase"
+                _ => "Other Noise"
             end
 
             shape_noise_specification = filter(
@@ -89,6 +89,7 @@ function line_accuracy_plot(
                     xlabel = xlabel,
                     ylabel = "$label_noise_description\n" * ylabel,
                     ylims = ylims,
+                    hidedecorations = hidedecorations,
                     facet_fontsize = facet_fontsize,
                     show_x_facet_label = show_x_facet_label,
                     kwargs...,
@@ -160,6 +161,7 @@ function _line_accuracy_plot!(
     facet_fontsize = 24,
     num_noise_descriptions = 1,
     ylims = (nothing, nothing),
+    hidedecorations = (true, true),
     kwargs...,
 )
     kwargs_dict = Dict{Symbol,Any}(kwargs)
@@ -203,6 +205,7 @@ function _line_accuracy_plot!(
         ylabel = ""
     end
 
+
     _line_accuracy_facet!(
         gl,
         noise_spec,
@@ -216,6 +219,14 @@ function _line_accuracy_plot!(
         ylims = ylims,
         kwargs_dict...,
     )
+
+    if ylims != (nothing, nothing) && hidedecorations[2] && j != 1
+        hideydecorations!(contents(gl)[1])
+    end
+
+    if hidedecorations[1] && i < num_noise_descriptions
+        hidexdecorations!(contents(gl)[1])
+    end
 
     return nothing
 end
