@@ -89,106 +89,8 @@ optimal_threshold_characteristics = collect_OptimalThresholdCharacteristics(
 )
 
 #%%
-line_plot(
-    optimal_threshold_characteristics;
-    outcome = :accuracy,
-    ylabel = "Outbreak Detection\nAccuracy",
-    plotdirpath = baseplotdirpath,
-    facet_fontsize = 18,
-    labelsize = 20,
-    show_x_facet_label = true,
-    show_y_facet_label = false,
-    ylims = (0.5, 1.0),
-    force = true,
-    save_plot = false,
-)
-
-#%%
-line_plot(
-    optimal_threshold_characteristics;
-    outcome = :unavoidable_cases,
-    ylabel = "Unavoidable Cases",
-    plotdirpath = baseplotdirpath,
-    clinical_hline = false,
-    facet_fontsize = 18,
-    labelsize = 20,
-    show_x_facet_label = true,
-    show_y_facet_label = false,
-    ylims = (0, 3.5e4),
-    force = true,
-    save_plot = false,
-)
-
-#%%
-line_plot(
-    optimal_threshold_characteristics;
-    outcome = :detectiondelays,
-    ylabel = "Detection Delays\n(Days)",
-    plotdirpath = baseplotdirpath,
-    clinical_hline = false,
-    facet_fontsize = 18,
-    labelsize = 20,
-    show_x_facet_label = true,
-    show_y_facet_label = false,
-    ylims = (-100, 100),
-    force = true,
-    save_plot = false,
-)
-
-#%%
-line_plot(
-    optimal_threshold_characteristics;
-    outcome = :proportion_timeseries_in_outbreak,
-    ylabel = "Proportion of Time Series\nIn Outbreak",
-    plotdirpath = baseplotdirpath,
-    clinical_hline = false,
-    facet_fontsize = 18,
-    labelsize = 20,
-    show_x_facet_label = true,
-    show_y_facet_label = false,
-    ylims = (0.0, 0.25),
-    force = true,
-    save_plot = false,
-)
-
-#%%
-line_plot(
-    optimal_threshold_characteristics;
-    outcome = :proportion_timeseries_in_alert,
-    ylabel = "Proportion of Time Series\nIn Alert",
-    plotdirpath = baseplotdirpath,
-    clinical_hline = false,
-    facet_fontsize = 18,
-    labelsize = 20,
-    show_x_facet_label = true,
-    show_y_facet_label = false,
-    ylims = (0.0, 0.35),
-    force = true,
-    save_plot = false,
-)
-
-#%%
-line_plot(
-    optimal_threshold_characteristics;
-    outcome = :alert_outbreak_timeseries_prop_diff,
-    ylabel = "Proportion of Time Series\nIn Alert - Outbreak",
-    plotdirpath = baseplotdirpath,
-    clinical_hline = false,
-    facet_fontsize = 18,
-    labelsize = 20,
-    show_x_facet_label = true,
-    show_y_facet_label = false,
-    ylims = (-0.15, 0.20),
-    force = true,
-    save_plot = false,
-)
-
-#%%
 accuracy_line_plot = line_plot(
-    ensemble_noise_specification,
-    ensemble_percent_clinic_tested_vec,
-    optimal_threshold_test_spec_vec,
-    optimal_threshold_core_params;
+    optimal_threshold_characteristics;
     outcome = :accuracy,
     ylabel = "Outbreak Detection\nAccuracy",
     plotdirpath = baseplotdirpath,
@@ -203,10 +105,7 @@ accuracy_line_plot = line_plot(
 
 #%%
 unavoidable_line_plot = line_plot(
-    ensemble_noise_specification,
-    ensemble_percent_clinic_tested_vec,
-    optimal_threshold_test_spec_vec,
-    optimal_threshold_core_params;
+    optimal_threshold_characteristics;
     outcome = :unavoidable_cases,
     ylabel = "Unavoidable Cases",
     plotdirpath = baseplotdirpath,
@@ -222,10 +121,7 @@ unavoidable_line_plot = line_plot(
 
 #%%
 delay_line_plot = line_plot(
-    ensemble_noise_specification,
-    ensemble_percent_clinic_tested_vec,
-    optimal_threshold_test_spec_vec,
-    optimal_threshold_core_params;
+    optimal_threshold_characteristics;
     outcome = :detectiondelays,
     ylabel = "Detection Delays\n(Days)",
     plotdirpath = baseplotdirpath,
@@ -241,10 +137,7 @@ delay_line_plot = line_plot(
 
 #%%
 outbreak_proportion_line_plot = line_plot(
-    ensemble_noise_specification,
-    ensemble_percent_clinic_tested_vec,
-    optimal_threshold_test_spec_vec,
-    optimal_threshold_core_params;
+    optimal_threshold_characteristics;
     outcome = :proportion_timeseries_in_outbreak,
     ylabel = "Proportion of Time Series\nIn Outbreak",
     plotdirpath = baseplotdirpath,
@@ -253,17 +146,14 @@ outbreak_proportion_line_plot = line_plot(
     labelsize = 20,
     show_x_facet_label = true,
     show_y_facet_label = false,
-    ylims = (-1, 1),
+    ylims = (0.0, 0.25),
     force = true,
     save_plot = false,
 )
 
 #%%
 alert_proportion_line_plot = line_plot(
-    ensemble_noise_specification,
-    ensemble_percent_clinic_tested_vec,
-    optimal_threshold_test_spec_vec,
-    optimal_threshold_core_params;
+    optimal_threshold_characteristics;
     outcome = :proportion_timeseries_in_alert,
     ylabel = "Proportion of Time Series\nIn Alert",
     plotdirpath = baseplotdirpath,
@@ -272,17 +162,14 @@ alert_proportion_line_plot = line_plot(
     labelsize = 20,
     show_x_facet_label = true,
     show_y_facet_label = false,
-    ylims = (-1, 1),
+    ylims = (0.0, 0.35),
     force = true,
     save_plot = false,
 )
 
 #%%
 alert_outbreak_proportion_line_plot = line_plot(
-    ensemble_noise_specification,
-    ensemble_percent_clinic_tested_vec,
-    optimal_threshold_test_spec_vec,
-    optimal_threshold_core_params;
+    optimal_threshold_characteristics;
     outcome = :alert_outbreak_timeseries_prop_diff,
     ylabel = "Proportion of Time Series\nIn Alert - Outbreak",
     plotdirpath = baseplotdirpath,
@@ -291,7 +178,7 @@ alert_outbreak_proportion_line_plot = line_plot(
     labelsize = 20,
     show_x_facet_label = true,
     show_y_facet_label = false,
-    ylims = (-1, 1),
+    ylims = (-0.15, 0.20),
     force = true,
     save_plot = false,
 )
