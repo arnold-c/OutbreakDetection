@@ -30,6 +30,7 @@ function line_plot(
     ylims = (nothing, nothing),
     hidedecorations = (true, true),
     clinical_hline = true,
+    hlines = nothing,
     force = false,
     save_plot = true,
     kwargs...,
@@ -46,27 +47,27 @@ function line_plot(
             clinical_hline = clinical_hline
         )
 
-        return  line_plot(
+        return line_plot(
             optimal_threshold_characteristics;
             outcome = outcome,
-            ylabel = ylabel,
             plotdirpath = plotdirpath,
-            plotname =plotname,
-            plotformat =plotformat,
-            size =size,
-            colors =colors,
-            xlabel =xlabel,
-            ylabel =ylabel,
-            facet_fontsize =facet_fontsize,
-            labelsize =labelsize,
-            show_x_facet_label =show_x_facet_label,
-            show_y_facet_label =show_y_facet_label,
-            ylims =ylims,
-            hidedecorations =hidedecorations,
-            clinical_hline =clinical_hline,
-            force =force,
-            save_plot =save_plot,
-            kwargs...,
+            plotname = plotname,
+            plotformat = plotformat,
+            size = size,
+            colors = colors,
+            xlabel = xlabel,
+            ylabel = ylabel,
+            facet_fontsize = facet_fontsize,
+            labelsize = labelsize,
+            show_x_facet_label = show_x_facet_label,
+            show_y_facet_label = show_y_facet_label,
+            ylims = ylims,
+            hidedecorations = hidedecorations,
+            clinical_hline = clinical_hline,
+            hlines = hlines,
+            force = force,
+            save_plot = save_plot,
+            kwargs...
         )
     end
 
@@ -90,6 +91,7 @@ function line_plot(
     ylims = (nothing, nothing),
     hidedecorations = (true, true),
     clinical_hline = true,
+    hlines = nothing,
     force = false,
     save_plot = true,
     kwargs...,
@@ -140,6 +142,7 @@ function line_plot(
                     hidedecorations = hidedecorations,
                     facet_fontsize = facet_fontsize,
                     show_x_facet_label = show_x_facet_label,
+                    hlines = hlines,
                     kwargs...,
                 )
             end
@@ -272,6 +275,7 @@ function _line_plot(
     num_noise_descriptions = 1,
     ylims = (nothing, nothing),
     hidedecorations = (true, true),
+    hlines = nothing,
     kwargs...,
 )
     kwargs_dict = Dict{Symbol,Any}(kwargs)
@@ -326,6 +330,7 @@ function _line_plot(
         ylabel = ylabel,
         facet_fontsize = facet_fontsize,
         ylims = ylims,
+        hlines = hlines,
         kwargs_dict...,
     )
 
@@ -351,6 +356,7 @@ function _line_plot_facet(
     ylabel = "Accuracy",
     facet_fontsize = 24,
     ylims = (nothing, nothing),
+    hlines = nothing,
     kwargs...,
 )
     kwargs_dict = Dict(kwargs)
@@ -419,6 +425,10 @@ function _line_plot_facet(
         )
 
         ylims!(ax, ylims)
+    end
+
+    if !isnothing(hlines)
+        hlines!(ax, hlines; color = :black, linewidth = 1)
     end
 
     return nothing

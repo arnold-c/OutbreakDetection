@@ -174,6 +174,7 @@ alert_outbreak_proportion_line_plot = line_plot(
     ylabel = "Proportion of Time Series\nIn Alert - Outbreak",
     plotdirpath = baseplotdirpath,
     clinical_hline = false,
+    hlines = (0.0),
     facet_fontsize = 18,
     labelsize = 20,
     show_x_facet_label = true,
