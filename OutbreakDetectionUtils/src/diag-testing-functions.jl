@@ -310,11 +310,23 @@ function calculate_OutbreakThresholdChars(
         )
 
         n_outbreak_tests = calculate_n_outbreak_tests(
-            @view(testarr[:, 1, sim]), @view(testarr[:, 2, sim]), outbreakbounds
+            @view(testarr[:, 1, sim]), @view(testarr[:, 2, sim]),
+            outbreakbounds,
         )
 
         mean_noise_incidence_ratio =
             noise_means.mean_noise / StatsBase.mean(@view(infecarr[:, 1, sim]))
+
+        proportion_timeseries_in_outbreak = calculate_proportion_timeseries_in_outbreak(
+            @view(infecarr[:, 3, sim])
+        )
+
+        proportion_timeseries_in_alert = calculate_proportion_timeseries_in_outbreak(
+            @view(testarr[:, 6, sim])
+        )
+
+        alert_outbreak_timeseries_prop_diff =
+            proportion_timeseries_in_alert - proportion_timeseries_in_outbreak
 
         OutbreakThresholdChars(
             dailychars...,
@@ -332,17 +344,32 @@ function calculate_OutbreakThresholdChars(
             mean_noise_incidence_ratio,
             noise_means.mean_poisson_noise,
             noise_means.poisson_noise_prop,
+            proportion_timeseries_in_outbreak,
+            proportion_timeseries_in_alert,
+            alert_outbreak_timeseries_prop_diff,
         )
     end
 
     return StructArrays.StructArray(OT_chars)
 end
 
+function calculate_proportion_timeseries_in_outbreak(outbreak_status_vec)
+    return sum(outbreak_status_vec) / length(outbreak_status_vec)
+end
+
+function calculate_proportion_timeseries_in_outbreak(
+    outbreak_bounds_periodsum_vec, time_parameters
+)
+    return sum(outbreak_bounds_periodsum_vec) / time_parameters.tlength
+end
+
 function calculate_n_tests(infectious_tested_vec, noise_tested_vec)
     return sum(infectious_tested_vec) + sum(noise_tested_vec)
 end
 
-function calculate_n_outbreak_tests(infectious_tested_vec, noise_tested_vec, outbreakbounds)
+function calculate_n_outbreak_tests(
+    infectious_tested_vec, noise_tested_vec, outbreakbounds
+)
     tested = 0
     for (lower, upper) in eachrow(@view(outbreakbounds[:, 1:2]))
         @views tested += sum(infectious_tested_vec[lower:upper])

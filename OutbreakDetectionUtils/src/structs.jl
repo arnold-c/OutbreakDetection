@@ -239,6 +239,9 @@ struct OutbreakThresholdChars{
     mean_noise_incidence_ratio::T1
     mean_poisson_noise::T1
     poisson_noise_prop::T1
+    proportion_timeseries_in_outbreak::T1
+    proportion_timeseries_in_alert::T1
+    alert_outbreak_timeseries_prop_diff::T1
 end
 
 struct OutbreakSpecification{T1<:Integer,T2<:AbstractString}
