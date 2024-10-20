@@ -2,6 +2,7 @@ using DataFrames
 using DrWatson: DrWatson
 using StatsBase: StatsBase
 using Match: Match
+using StructArrays
 
 lineplot_colors = [
     "#56B4E9"
@@ -9,7 +10,7 @@ lineplot_colors = [
     repeat(["#000000"], 2)...
 ]
 
-function line_accuracy_plot(
+function line_plot(
     noise_spec_vec,
     ensemble_percent_clinic_tested_vec,
     optimal_threshold_test_spec_vec,
@@ -51,7 +52,6 @@ function line_accuracy_plot(
         unique_test_specifications = unique(optimal_threshold_test_spec_vec)
 
         for (i, noise_description) in pairs(unique_noise_descriptions)
-
             label_noise_description = Match.@match noise_description begin
                 "poisson" => "Poisson Noise"
                 "dynamical, in-phase" => "Dynamical Noise: In-Phase"
@@ -76,7 +76,7 @@ function line_accuracy_plot(
                     optimal_threshold_comparison_params,
                 )
 
-                _line_accuracy_plot!(
+                _line_plot(
                     fig,
                     noise_spec,
                     unique_test_specifications,
@@ -126,10 +126,12 @@ function line_accuracy_plot(
                 ]
             end,
             map(
-                test_description -> replace.(
-                    test_description,
-                    rg => s -> parse(Float64, match(rg, s).captures[1]) / 100
-                ),
+                test_description ->
+                    replace.(
+                        test_description,
+                        rg =>
+                            s -> parse(Float64, match(rg, s).captures[1]) / 100,
+                    ),
                 get_test_description.(unique_test_specifications),
             );
             labelsize = labelsize,
@@ -146,7 +148,190 @@ function line_accuracy_plot(
     return nothing
 end
 
-function _line_accuracy_plot!(
+function line_plot(
+    optimal_thresholds_chars_array;
+    outcome = :accuracy,
+    plotdirpath = DrWatson.plotsdir(),
+    plotname = "line_accuracy_plot",
+    plotformat = "png",
+    size = (2200, 1200),
+    colors = lineplot_colors,
+    xlabel = "Proportion Tested",
+    ylabel = "Outbreak Detection\nAccuracy",
+    facet_fontsize = 24,
+    labelsize = 30,
+    show_x_facet_label = true,
+    show_y_facet_label = true,
+    ylims = (nothing, nothing),
+    hidedecorations = (true, true),
+    clinical_hline = true,
+    force = false,
+    save_plot = true,
+    kwargs...,
+)
+    mkpath(plotdirpath)
+    plotpath = joinpath(plotdirpath, "$plotname.$plotformat")
+
+    if !isfile(plotpath) || force
+        fig = Figure()
+
+        unique_noise_descriptions = unique(
+            map(
+                char -> char[1].noise_specification,
+                optimal_thresholds_chars_array,
+            ),
+        )
+        num_noise_descriptions = length(unique_noise_descriptions)
+        unique_test_specifications = unique(
+            optimal_thresholds_chars_array[1, 1].individual_test_specification
+        )
+
+        for i in axes(optimal_thresholds_chars_array, 1)
+            noise_description = get_noise_description(
+                optimal_thresholds_chars_array[i, 1].noise_specification[1]
+            )
+            label_noise_description = Match.@match noise_description begin
+                "poisson" => "Poisson Noise"
+                "dynamical, in-phase" => "Dynamical Noise: In-Phase"
+                _ => "Other Noise"
+            end
+
+            for j in axes(optimal_thresholds_chars_array, 2)
+                noise_spec = optimal_thresholds_chars_array[i, j].noise_specification[1]
+
+                _line_plot(
+                    fig,
+                    noise_spec,
+                    unique_test_specifications,
+                    optimal_thresholds_chars_array[i, j],
+                    i,
+                    j;
+                    outcome = outcome,
+                    num_noise_descriptions = num_noise_descriptions,
+                    colors = colors,
+                    xlabel = xlabel,
+                    ylabel = "$label_noise_description\n" * ylabel,
+                    ylims = ylims,
+                    hidedecorations = hidedecorations,
+                    facet_fontsize = facet_fontsize,
+                    show_x_facet_label = show_x_facet_label,
+                    kwargs...,
+                )
+            end
+        end
+
+        if show_y_facet_label
+            map(enumerate(unique_noise_descriptions)) do (i, noise_description)
+                Box(fig[i, 0]; color = :lightgray, strokevisible = false)
+                Label(
+                    fig[i, 0],
+                    titlecase(noise_description);
+                    fontsize = 16,
+                    rotation = pi / 2,
+                    padding = (0, 0, 0, 0),
+                    valign = :center,
+                    tellheight = false,
+                )
+            end
+            colsize!(fig.layout, 0, Relative(0.03))
+        end
+        if clinical_hline
+            push!(colors, "green")
+        end
+        rg = r"\((.*)(\% .*\))"
+        Legend(
+            fig[0, :],
+            map(enumerate(unique_test_specifications)) do (i, test_spec)
+                linestyle = test_spec.test_result_lag == 0 ? :solid : :dot
+                return [
+                    PolyElement(; color = (colors[i], 0.3)),
+                    LineElement(; color = colors[i], linestyle = linestyle),
+                ]
+            end,
+            map(
+                test_description ->
+                    replace.(
+                        test_description,
+                        rg =>
+                            s -> parse(Float64, match(rg, s).captures[1]) / 100,
+                    ),
+                get_test_description.(unique_test_specifications),
+            );
+            labelsize = labelsize,
+            orientation = :horizontal,
+        )
+        rowsize!(fig.layout, 0, Relative(0.03))
+
+        if save_plot
+            Makie.save(plotpath, fig; size = size)
+        end
+        return fig
+    end
+
+    return nothing
+end
+
+function collect_OptimalThresholdCharacteristics(
+    noise_spec_vec,
+    ensemble_percent_clinic_tested_vec,
+    optimal_threshold_test_spec_vec,
+    optimal_threshold_core_params;
+    clinical_hline = false,
+)
+    noise_descriptions = get_noise_description.(noise_spec_vec)
+    unique_noise_descriptions = unique(noise_descriptions)
+
+    shape_noise_specifications =
+        map(unique_noise_descriptions) do noise_description
+            filter(
+                noise_spec ->
+                    noise_description == get_noise_description(noise_spec),
+                noise_spec_vec,
+            )
+        end
+
+    @assert length(vcat(shape_noise_specifications...)) ==
+        length(unique_noise_descriptions) *
+            length(shape_noise_specifications[1])
+
+    if clinical_hline
+        optimal_threshold_test_spec_vec = vcat(
+            optimal_threshold_test_spec_vec, CLINICAL_CASE_TEST_SPEC
+        )
+    end
+
+    optimal_thresholds_vecs = Array{
+        StructArray{OptimalThresholdCharacteristics}
+    }(
+        undef,
+        length(unique_noise_descriptions),
+        length(shape_noise_specifications[1]),
+    )
+
+    for (i, noise_description) in pairs(unique_noise_descriptions)
+        label_noise_description = Match.@match noise_description begin
+            "poisson" => "Poisson Noise"
+            "dynamical, in-phase" => "Dynamical Noise: In-Phase"
+            _ => "Other Noise"
+        end
+
+        for (j, noise_spec) in pairs(shape_noise_specifications[i])
+            optimal_threshold_comparison_params = (
+                noise_specification = noise_spec,
+                optimal_threshold_core_params...,
+            )
+
+            optimal_thresholds_vecs[i, j] = calculate_OptimalThresholdCharacteristics(
+                ensemble_percent_clinic_tested_vec,
+                optimal_threshold_test_spec_vec,
+                optimal_threshold_comparison_params,
+            )
+        end
+    end
+    return optimal_thresholds_vecs
+end
+
+function _line_plot(
     fig,
     noise_spec,
     unique_test_specifications,
@@ -179,7 +364,7 @@ function _line_accuracy_plot!(
             :sensitivity,
             :specificity,
             :test_lag,
-            string(outcome)*"_mean",
+            string(outcome) * "_mean",
             x -> endswith(x, "th"),
         ),
     )
@@ -205,8 +390,7 @@ function _line_accuracy_plot!(
         ylabel = ""
     end
 
-
-    _line_accuracy_facet!(
+    _line_plot_facet(
         gl,
         noise_spec,
         unique_test_specifications,
@@ -231,7 +415,7 @@ function _line_accuracy_plot!(
     return nothing
 end
 
-function _line_accuracy_facet!(
+function _line_plot_facet(
     gl,
     noise_spec,
     unique_test_specifications,
@@ -249,9 +433,9 @@ function _line_accuracy_facet!(
     ypos = haskey(kwargs_dict, :x_facet_label) ? 2 : 1
     xpos = 1
 
-    outcome_mean = string(outcome)*"_mean"
-    outcome_10th = string(outcome)*"_10th"
-    outcome_90th = string(outcome)*"_90th"
+    outcome_mean = string(outcome) * "_mean"
+    outcome_10th = string(outcome) * "_10th"
+    outcome_90th = string(outcome) * "_90th"
 
     ax = Axis(
         gl[ypos, xpos];

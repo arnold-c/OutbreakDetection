@@ -53,7 +53,7 @@ include("isocline_plots.jl")
 export isocline_accuracy_plot
 
 include("line_plots.jl")
-export line_accuracy_plot
+export line_plot, collect_OptimalThresholdCharacteristics
 
 @static if false
     include("../scripts/single-sim_plots.jl")

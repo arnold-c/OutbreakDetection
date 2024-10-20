@@ -83,7 +83,7 @@ baseplotdirpath = joinpath(
 )
 
 #%%
-line_accuracy_plot(
+line_plot(
     ensemble_noise_specification,
     ensemble_percent_clinic_tested_vec,
     optimal_threshold_test_spec_vec,
