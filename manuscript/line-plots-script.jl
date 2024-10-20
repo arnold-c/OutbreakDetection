@@ -136,36 +136,36 @@ delay_line_plot = line_plot(
 )
 
 #%%
-outbreak_proportion_line_plot = line_plot(
-    optimal_threshold_characteristics;
-    outcome = :proportion_timeseries_in_outbreak,
-    ylabel = "Proportion of Time Series\nIn Outbreak",
-    plotdirpath = baseplotdirpath,
-    clinical_hline = false,
-    facet_fontsize = 18,
-    labelsize = 20,
-    show_x_facet_label = true,
-    show_y_facet_label = false,
-    ylims = (0.0, 0.25),
-    force = true,
-    save_plot = false,
-)
-
-#%%
-alert_proportion_line_plot = line_plot(
-    optimal_threshold_characteristics;
-    outcome = :proportion_timeseries_in_alert,
-    ylabel = "Proportion of Time Series\nIn Alert",
-    plotdirpath = baseplotdirpath,
-    clinical_hline = false,
-    facet_fontsize = 18,
-    labelsize = 20,
-    show_x_facet_label = true,
-    show_y_facet_label = false,
-    ylims = (0.0, 0.35),
-    force = true,
-    save_plot = false,
-)
+# outbreak_proportion_line_plot = line_plot(
+#     optimal_threshold_characteristics;
+#     outcome = :proportion_timeseries_in_outbreak,
+#     ylabel = "Proportion of Time Series\nIn Outbreak",
+#     plotdirpath = baseplotdirpath,
+#     clinical_hline = false,
+#     facet_fontsize = 18,
+#     labelsize = 20,
+#     show_x_facet_label = true,
+#     show_y_facet_label = false,
+#     ylims = (0.0, 0.25),
+#     force = true,
+#     save_plot = false,
+# )
+#
+# #%%
+# alert_proportion_line_plot = line_plot(
+#     optimal_threshold_characteristics;
+#     outcome = :proportion_timeseries_in_alert,
+#     ylabel = "Proportion of Time Series\nIn Alert",
+#     plotdirpath = baseplotdirpath,
+#     clinical_hline = false,
+#     facet_fontsize = 18,
+#     labelsize = 20,
+#     show_x_facet_label = true,
+#     show_y_facet_label = false,
+#     ylims = (0.0, 0.35),
+#     force = true,
+#     save_plot = false,
+# )
 
 #%%
 alert_outbreak_proportion_line_plot = line_plot(
