@@ -58,6 +58,15 @@ tmp/ensemble-diag-testing_optimal-thresholds_single-timeseries: scripts/ensemble
 	@touch $@
 
 
+# Manuscript targets
+MANUSCRIPT_TARGETS = manuscript
+.PHONY: $(MANUSCRIPT_TARGETS) manuscript-targets
+$(MANUSCRIPT_TARGETS): %: tmp/%
+manuscript-targets: $(MANUSCRIPT_TARGETS)
+
+tmp/manuscript: manuscript/manuscript.qmd tmp/ensemble-sim
+	quarto render manuscript/manuscript.qmd
+	@touch $@
 
 # Test targets
 TEST_TARGETS = runtests
