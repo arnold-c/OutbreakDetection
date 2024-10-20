@@ -107,25 +107,25 @@ clean-plots:
 
 clean-all-ensemble: clean-ensemble-sims clean-ensemble-quantiles clean-ensemble-scenarios clean-ensemble-optimal-thresholds
 	@echo "cleaning all ensemble output files"
-	$(shell fd . 'data' -td --exclude 'singlesim' -HI | xargs rm -r)
+	$(shell fd . 'out' -td --exclude 'singlesim' -HI | xargs rm -r)
 	@echo "cleaning all ensemble tmp files"
 	$(shell fd 'ensemble' 'tmp/' | xargs rm -r)
 
 clean-ensemble-sims:
 	@echo "cleaning ensemble simulation output files"
-	$(shell fd -g 'ensemble-solution*.jld2' 'data/' -HI | xargs rm -r)
+	$(shell fd -g 'ensemble-solution*.jld2' 'out/' -HI | xargs rm -r)
 	@echo "cleaning ensemble simulation tmp files"
 	$(shell fd -g 'ensemble-sim' 'tmp/' | xargs rm)
 
 clean-ensemble-quantiles:
 	@echo "cleaning ensemble quantiles"
-	$(shell fd -g 'ensemble-quantiles*.jld2' 'data/' -HI | xargs rm -r)
+	$(shell fd -g 'ensemble-quantiles*.jld2' 'out/' -HI | xargs rm -r)
 	@echo "cleaning ensemble simulation tmp files"
 	$(shell fd -g 'ensemble-sim' 'tmp/' | xargs rm)
 
 clean-ensemble-scenarios:
 	@echo "cleaning ensemble scenario files"
-	$(shell fd -g 'ensemble-scenario*.jld2' 'data/' -HI | xargs rm -r)
+	$(shell fd -g 'ensemble-scenario*.jld2' 'out/' -HI | xargs rm -r)
 	@echo "cleaning ensemble scenario tmp files"
 	$(shell fd -g 'ensemble*scenario' 'tmp/' | xargs rm)
 	@echo "cleaning ensemble scenario plot files"
@@ -133,7 +133,7 @@ clean-ensemble-scenarios:
 
 clean-ensemble-optimal-thresholds:
 	@echo "cleaning ensemble optimal threshold results"
-	$(shell fd -g 'optimal-threshold-results' 'data/' | xargs rm -r)
+	$(shell fd -g 'optimal-threshold-results' 'out/' | xargs rm -r)
 	@echo "cleaning ensemble optimal threshold plots"
 	$(shell fd -g 'optimal-thresholds' 'plots/' | xargs rm -r)
 	@echo "cleaning ensemble optimal thresholds tmp files"
