@@ -86,6 +86,13 @@ clean-tmp:
 	@echo "cleaning all tmp files"
 	$(shell rm -rf tmp)
 
+clean-manuscript:
+	@echo "cleaning manuscript"
+	$(shell fd '.*pdf' './manuscript/' -d 1 -t f -I | xargs rm)
+	$(shell fd '.*_files' './manuscript/' -d 2 -t d | xargs rm -r)
+	@echo "cleaning manuscript tmp files"
+	$(shell fd 'manuscript.*' 'tmp/' | xargs rm)
+
 clean-single-sim:
 	@echo "cleaning single-sim output files"
 	$(shell fd -g 'single-sim*.jld2' 'data/' -HI | xargs rm -r)
