@@ -38,111 +38,36 @@ function line_plot(
     plotpath = joinpath(plotdirpath, "$plotname.$plotformat")
 
     if !isfile(plotpath) || force
-        if clinical_hline
-            optimal_threshold_test_spec_vec = vcat(
-                optimal_threshold_test_spec_vec, CLINICAL_CASE_TEST_SPEC
-            )
-        end
-
-        fig = Figure()
-
-        noise_descriptions = get_noise_description.(noise_spec_vec)
-        unique_noise_descriptions = unique(noise_descriptions)
-        num_noise_descriptions = length(unique_noise_descriptions)
-        unique_test_specifications = unique(optimal_threshold_test_spec_vec)
-
-        for (i, noise_description) in pairs(unique_noise_descriptions)
-            label_noise_description = Match.@match noise_description begin
-                "poisson" => "Poisson Noise"
-                "dynamical, in-phase" => "Dynamical Noise: In-Phase"
-                _ => "Other Noise"
-            end
-
-            shape_noise_specification = filter(
-                noise_spec ->
-                    noise_description == get_noise_description(noise_spec),
-                noise_spec_vec,
-            )
-
-            for (j, noise_spec) in pairs(shape_noise_specification)
-                optimal_threshold_comparison_params = (
-                    noise_specification = noise_spec,
-                    optimal_threshold_core_params...,
-                )
-
-                optimal_thresholds_vec = calculate_OptimalThresholdCharacteristics(
-                    ensemble_percent_clinic_tested_vec,
-                    optimal_threshold_test_spec_vec,
-                    optimal_threshold_comparison_params,
-                )
-
-                _line_plot(
-                    fig,
-                    noise_spec,
-                    unique_test_specifications,
-                    optimal_thresholds_vec,
-                    i,
-                    j;
-                    outcome = outcome,
-                    num_noise_descriptions = num_noise_descriptions,
-                    colors = colors,
-                    xlabel = xlabel,
-                    ylabel = "$label_noise_description\n" * ylabel,
-                    ylims = ylims,
-                    hidedecorations = hidedecorations,
-                    facet_fontsize = facet_fontsize,
-                    show_x_facet_label = show_x_facet_label,
-                    kwargs...,
-                )
-            end
-        end
-
-        if show_y_facet_label
-            map(enumerate(unique_noise_descriptions)) do (i, noise_description)
-                Box(fig[i, 0]; color = :lightgray, strokevisible = false)
-                Label(
-                    fig[i, 0],
-                    titlecase(noise_description);
-                    fontsize = 16,
-                    rotation = pi / 2,
-                    padding = (0, 0, 0, 0),
-                    valign = :center,
-                    tellheight = false,
-                )
-            end
-            colsize!(fig.layout, 0, Relative(0.03))
-        end
-        if clinical_hline
-            push!(colors, "green")
-        end
-        rg = r"\((.*)(\% .*\))"
-        Legend(
-            fig[0, :],
-            map(enumerate(unique_test_specifications)) do (i, test_spec)
-                linestyle = test_spec.test_result_lag == 0 ? :solid : :dot
-                return [
-                    PolyElement(; color = (colors[i], 0.3)),
-                    LineElement(; color = colors[i], linestyle = linestyle),
-                ]
-            end,
-            map(
-                test_description ->
-                    replace.(
-                        test_description,
-                        rg =>
-                            s -> parse(Float64, match(rg, s).captures[1]) / 100,
-                    ),
-                get_test_description.(unique_test_specifications),
-            );
-            labelsize = labelsize,
-            orientation = :horizontal,
+        optimal_threshold_characteristics = collect_OptimalThresholdCharacteristics(
+            noise_spec_vec,
+            ensemble_percent_clinic_tested_vec,
+            optimal_threshold_test_spec_vec,
+            optimal_threshold_core_params;
+            clinical_hline = clinical_hline
         )
-        rowsize!(fig.layout, 0, Relative(0.03))
 
-        if save_plot
-            Makie.save(plotpath, fig; size = size)
-        end
-        return fig
+        return  line_plot(
+            optimal_threshold_characteristics;
+            outcome = outcome,
+            ylabel = ylabel,
+            plotdirpath = plotdirpath,
+            plotname =plotname,
+            plotformat =plotformat,
+            size =size,
+            colors =colors,
+            xlabel =xlabel,
+            ylabel =ylabel,
+            facet_fontsize =facet_fontsize,
+            labelsize =labelsize,
+            show_x_facet_label =show_x_facet_label,
+            show_y_facet_label =show_y_facet_label,
+            ylims =ylims,
+            hidedecorations =hidedecorations,
+            clinical_hline =clinical_hline,
+            force =force,
+            save_plot =save_plot,
+            kwargs...,
+        )
     end
 
     return nothing
