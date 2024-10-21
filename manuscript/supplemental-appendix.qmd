@@ -51,5 +51,97 @@ format:
 
 # Results
 
+## Tables
+
+::: {#tbl-optimal-thresholds-accuracy}
+
+```{=typst}
+#let accuracy = csv("optimal-thresholds_accuracy.csv")
+
+#table(
+  columns: 10,
+    fill: (x, y) => {
+      if y == 0 {gray}
+      if y == 1 {gray}
+    },
+  [], table.cell(colspan: 2, align: center, "Test Characteristic"), table.cell(colspan: 7, align: center, "Testing Rate"),
+  ..accuracy.flatten()
+)
+```
+
+The outbreak detection accuracy for each testing scenario, at the optimal thresholds.
+
+:::
+
+::: {#tbl-optimal-thresholds-unavoidable}
+
+```{=typst}
+#let optimal_thresholds = csv("optimal-thresholds-unavoidable.csv")
+
+#table(
+  columns: 10,
+    fill: (x, y) => {
+      if y == 0 {gray}
+      if y == 1 {gray}
+    },
+  [], table.cell(colspan: 2, align: center, "Test Characteristic"), table.cell(colspan: 7, align: center, "Testing Rate"),
+  ..optimal_thresholds.flatten()
+)
+```
+
+Unavoidable cases per annum of each testing scenario at their specific optimal thresholds, scaled up to Ghana’s 2022 population. A) the noise structure is dynamical, and the seasonality is in-phase with the measles incidence. B) the noise structure is Poisson only.
+
+:::
+
+::: {#tbl-optimal-thresholds-delays}
+
+```{=typst}
+#let optimal_thresholds = csv("optimal-thresholds-delays.csv")
+
+#table(
+  columns: 10,
+    fill: (x, y) => {
+      if y == 0 {gray}
+      if y == 1 {gray}
+    },
+  [], table.cell(colspan: 2, align: center, "Test Characteristic"), table.cell(colspan: 7, align: center, "Testing Rate"),
+  ..optimal_thresholds.flatten()
+)
+```
+
+Outbreak alert delay (days) of each testing scenario at their specific optimal thresholds. A) the noise structure is dynamical, and the seasonality is in-phase with the measles incidence. B) the noise structure is Poisson only.
+
+:::
+
+## Figures
+
+```{julia}
+#| echo: false
+include("line-plots-script.jl");
+```
+
+```{julia}
+#| fig-cap: "The accuracy of outbreak detection systems under different testing rates and noise structures. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate."
+#| label: fig-accuracy
+accuracy_line_plot
+```
+
+```{julia}
+#| fig-cap: "The number of unavoidable cases of outbreak detection systems under different testing rates and noise structures. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate."
+#| label: fig-unavoidable
+unavoidable_line_plot
+```
+
+```{julia}
+#| fig-cap: "The detection delay of outbreak detection systems under different testing rates and noise structures. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate."
+#| label: fig-delay
+delay_line_plot
+```
+
+```{julia}
+#| fig-cap: "The difference between proportion of the time series in alert for outbreak detection systems under different testing rates and noise structures. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate."
+#| label: fig-alert-proportion
+alert_proportion_line_plot
+```
 
 
