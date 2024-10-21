@@ -123,6 +123,10 @@ function classify_all_outbreaks!(
     return nothing
 end
 
+function calculate_outbreak_size(incidence_vec, lower_time, upper_time)
+    return sum(@view(incidence_vec[lower_time:upper_time]))
+end
+
 function filter_only_outbreaks(all_thresholds_arr)
     return @view(
         all_thresholds_arr[(all_thresholds_arr[:, 4] .!= 0), :]
