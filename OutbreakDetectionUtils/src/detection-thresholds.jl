@@ -77,6 +77,24 @@ function calculate_outbreak_thresholds(outbreakrle; ncols = 4)
     return outbreak_thresholds
 end
 
+function calculate_outbreak_duration!(outbreak_thresholds)
+    outbreak_thresholds[:, 3] .=
+        calculate_outbreak_duration.(
+            outbreak_thresholds[:, 1], outbreak_thresholds[:, 2]
+        )
+    return nothing
+end
+
+function calculate_outbreak_duration(outbreak_thresholds_row)
+    return calculate_outbreak_duration(
+        outbreak_thresholds_row[1], outbreak_thresholds_row[2]
+    )
+end
+
+function calculate_outbreak_duration(lower_time, upper_time)
+    return upper_time - lower_time + 1
+end
+
 function classify_all_outbreaks!(
     outbreakstatus_vec,
     all_thresholds_arr,
