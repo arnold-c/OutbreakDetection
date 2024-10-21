@@ -58,7 +58,9 @@ function create_inc_infec_arr!(
     return nothing
 end
 
-function calculate_outbreak_thresholds(outbreakrle; ncols = 4)
+function calculate_outbreak_thresholds(outbreakrle; ncols = 5)
+    @assert ncols >= 5
+
     # Calculate upper and lower indices of consecutive days of infection
     outbreakaccum = accumulate(+, outbreakrle[2])
     upperbound_indices = findall(isequal(1), outbreakrle[1])
@@ -102,21 +104,23 @@ function classify_all_outbreaks!(
     minoutbreakdur,
     minoutbreaksize,
 )
-    for (row, (lower, upper)) in pairs(eachrow(all_thresholds_arr[:, 1:2]))
-        all_thresholds_arr[row, 3] = sum(
-            @view(incidence_vec[lower:upper])
+    for (row, (lower, upper, outbreakdur)) in
+        pairs(eachrow(all_thresholds_arr[:, 1:3]))
+        all_thresholds_arr[row, 3] = calculate_outbreak_duration(lower, upper)
+
+        all_thresholds_arr[row, 4] = calculate_outbreak_size(
+            incidence_vec, lower, upper
         )
 
-        all_thresholds_arr[row, 4] = classify_outbreak(
-            all_thresholds_arr[row, 3],
-            upper,
-            lower,
+        all_thresholds_arr[row, 5] = classify_outbreak(
+            outbreakdur,
             minoutbreakdur,
+            all_thresholds_arr[row, 4],
             minoutbreaksize,
         )
 
-        @view(alertstatus_vec[lower:upper]) .= @view(
-            all_thresholds_arr[row, 4]
+        @view(outbreakstatus_vec[lower:upper]) .= @view(
+            all_thresholds_arr[row, 5]
         )
     end
 
@@ -129,7 +133,7 @@ end
 
 function filter_only_outbreaks(all_thresholds_arr)
     return @view(
-        all_thresholds_arr[(all_thresholds_arr[:, 4] .!= 0), :]
+        all_thresholds_arr[(all_thresholds_arr[:, 5] .== 1), :]
     )
 end
 
@@ -138,14 +142,24 @@ function calculate_period_sum(incvec)
 end
 
 function classify_outbreak(
-    periodsumvec,
-    upper_time,
     lower_time,
+    upper_time,
     minoutbreakdur,
+    periodsumvec,
     minoutbreaksize,
 )
-    if upper_time - lower_time >= minoutbreakdur &&
-        periodsumvec >= minoutbreaksize
+    return classify_outbreak(
+        calculate_outbreak_duration(lower_time, upper_time),
+        minoutbreakdur,
+        periodsumvec,
+        minoutbreaksize,
+    )
+end
+
+function classify_outbreak(
+    outbreakdur, minoutbreakdur, periodsumvec, minoutbreaksize
+)
+    if outbreakdur >= minoutbreakdur && periodsumvec >= minoutbreaksize
         return 1
     end
     return 0
