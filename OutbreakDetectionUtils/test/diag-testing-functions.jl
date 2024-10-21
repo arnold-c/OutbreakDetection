@@ -83,25 +83,67 @@
     @testset "Matched bounds" begin
         using OutbreakDetectionUtils
 
-        matched_bounds = [
-            10 60 5 15 600
-            10 60 17 40 600
-            10 60 50 80 600
-            100 180 90 105 700
-            100 180 110 160 700
-            380 410 390 420 900
-            500 540 495 550 1000
-        ]
-        filtered_bounds = [
-            10 60 5 15 600
-            100 180 90 105 700
-            380 410 390 420 900
-            500 540 495 550 1000
-        ]
+        @test begin
+            outbreakbounds = [
+                2 4 500
+                10 60 600
+                100 180 700
+                300 340 800
+                380 410 900
+                500 540 1000
+            ]
+            detectionbounds = [
+                5 15
+                17 40
+                50 80
+                90 105
+                110 160
+                390 420
+                495 550
+                590 595
+            ]
 
-        @test isequal(
-            filter_first_matched_bounds(matched_bounds), filtered_bounds
-        )
+            isequal(
+                OutbreakDetectionUtils.match_outbreak_detection_bounds(
+                    outbreakbounds, detectionbounds
+                ),
+                (
+                    [
+                        10 60 5 15 600
+                        10 60 17 40 600
+                        10 60 50 80 600
+                        100 180 90 105 700
+                        100 180 110 160 700
+                        380 410 390 420 900
+                        500 540 495 550 1000
+                    ],
+                    [500, 600, 700, 800, 900, 1000],
+                    [0, 3, 2, 0, 1, 1],
+                ),
+            )
+        end
+
+        @test begin
+            matched_bounds = [
+                10 60 5 15 600
+                10 60 17 40 600
+                10 60 50 80 600
+                100 180 90 105 700
+                100 180 110 160 700
+                380 410 390 420 900
+                500 540 495 550 1000
+            ]
+            filtered_bounds = [
+                10 60 5 15 600
+                100 180 90 105 700
+                380 410 390 420 900
+                500 540 495 550 1000
+            ]
+
+            isequal(
+                filter_first_matched_bounds(matched_bounds), filtered_bounds
+            )
+        end
     end
 
     @testset "Cases before and after alert" begin
