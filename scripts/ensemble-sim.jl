@@ -96,7 +96,11 @@ poisson_noise_spec_vec = create_combinations_vec(
 dynamical_noise_R0 = [5.0]
 dynamical_noise_latent_period = [7]
 dynamical_noise_duration_infection = [14]
-dynamical_noise_correlation = ["in-phase", "out-of-phase", "none"]
+dynamical_noise_correlation = [
+    "in-phase"
+    # "out-of-phase",
+    # "none",
+]
 dynamical_noise_mean_scaling_vec = [0.15]
 dynamical_noise_vaccination_coverage_vec = [
     0.854, 0.738, 0.508, 0.279, 0.050
@@ -142,8 +146,8 @@ test_spec_vec = [
     IndividualTestSpecification(0.9, 0.9, 0),
     CLINICAL_TEST_SPECS...,
     IndividualTestSpecification(1.0, 1.0, 0),
-    IndividualTestSpecification(1.0, 1.0, 3),
-    IndividualTestSpecification(1.0, 1.0, 7),
+    # IndividualTestSpecification(1.0, 1.0, 3),
+    # IndividualTestSpecification(1.0, 1.0, 7),
     IndividualTestSpecification(1.0, 1.0, 14),
 ]
 
