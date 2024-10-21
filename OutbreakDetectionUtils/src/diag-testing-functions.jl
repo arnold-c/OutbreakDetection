@@ -279,7 +279,8 @@ function calculate_OutbreakThresholdChars(
         )
         alertrle = StatsBase.rle(@view(testarr[:, 6, sim]))
         outbreakbounds = thresholds_vec[sim]
-        alertbounds = calculate_outbreak_thresholds(alertrle; ncols = 2)
+        alertbounds = calculate_outbreak_thresholds(alertrle; ncols = 3)
+        calculate_outbreak_duration!(alertbounds)
 
         detectionchars = calculate_outbreak_detection_characteristics(
             outbreakbounds, alertbounds
@@ -489,14 +490,14 @@ function match_outbreak_detection_bounds(outbreakbounds, alertbounds)
     alerts_per_outbreak_vec = zeros(Int64, size(outbreakbounds, 1))
     periodssum_vec = outbreakbounds[:, 4]
     outbreak_dur_vec = outbreakbounds[:, 3]
-    alert_dur_vec = zeros(Int64, size(alertbounds, 1))
+    alert_dur_vec = alertbounds[:, 3]
 
     outbreak_number = 1
     alert_rownumber = 1
     for (outbreak_number, (outbreaklower, outbreakupper, periodsum)) in
         pairs(eachrow(@view(outbreakbounds[:, [1, 2, 4]])))
         for (alertlower, alertupper) in
-            eachrow(@view(alertbounds[alert_rownumber:end, :]))
+            eachrow(@view(alertbounds[alert_rownumber:end, 1:2]))
             if alertlower > outbreakupper
                 break
             end

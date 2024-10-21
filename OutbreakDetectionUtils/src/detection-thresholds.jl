@@ -59,7 +59,7 @@ function create_inc_infec_arr!(
 end
 
 function calculate_outbreak_thresholds(outbreakrle; ncols = 5)
-    @assert ncols >= 5
+    @assert ncols >= 3
 
     # Calculate upper and lower indices of consecutive days of infection
     outbreakaccum = accumulate(+, outbreakrle[2])
