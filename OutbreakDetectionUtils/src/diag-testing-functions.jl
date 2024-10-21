@@ -278,9 +278,7 @@ function calculate_OutbreakThresholdChars(
             @view(testarr[:, 6, sim]), @view(infecarr[:, 3, sim])
         )
         alertrle = StatsBase.rle(@view(testarr[:, 6, sim]))
-        outbreakbounds = thresholds_vec[sim][
-            (@view(thresholds_vec[sim][:, 4]) .== 1), 1:3
-        ]
+        outbreakbounds = thresholds_vec[sim]
         alertbounds = calculate_outbreak_thresholds(alertrle; ncols = 2)
 
         detectionchars = calculate_outbreak_detection_characteristics(
@@ -426,7 +424,7 @@ end
 function calculate_outbreak_detection_characteristics(
     outbreakbounds, alertbounds
 )
-    filtered_matched_bounds, periodssum_vec, alerts_per_outbreak_vec = match_outbreak_detection_bounds(
+    filtered_matched_bounds, outbreak_dur_vec, alert_dur_vec, periodssum_vec, alerts_per_outbreak_vec = match_outbreak_detection_bounds(
         outbreakbounds, alertbounds
     )
 
@@ -463,6 +461,8 @@ function calculate_outbreak_detection_characteristics(
         matched_bounds = filtered_matched_bounds,
         noutbreaks = noutbreaks,
         nalerts = nalerts,
+        outbreak_duration_vec = outbreak_dur_vec,
+        alert_duration_vec = alert_dur_vec,
         detected_outbreak_size = detected_outbreak_size,
         missed_outbreak_size = missed_outbreak_size,
         n_true_outbreaks_detected = n_true_outbreaks_detected,
@@ -487,13 +487,14 @@ function match_outbreak_detection_bounds(outbreakbounds, alertbounds)
         Int64, size(outbreakbounds, 1) + size(alertbounds, 1), 5
     )
     alerts_per_outbreak_vec = zeros(Int64, size(outbreakbounds, 1))
-    periodssum_vec = zeros(Int64, size(outbreakbounds, 1))
+    periodssum_vec = outbreakbounds[:, 4]
+    outbreak_dur_vec = outbreakbounds[:, 3]
+    alert_dur_vec = zeros(Int64, size(alertbounds, 1))
 
     outbreak_number = 1
     alert_rownumber = 1
     for (outbreak_number, (outbreaklower, outbreakupper, periodsum)) in
-        pairs(eachrow(outbreakbounds))
-        periodssum_vec[outbreak_number] = periodsum
+        pairs(eachrow(@view(outbreakbounds[:, [1, 2, 4]])))
         for (alertlower, alertupper) in
             eachrow(@view(alertbounds[alert_rownumber:end, :]))
             if alertlower > outbreakupper
@@ -525,7 +526,9 @@ function match_outbreak_detection_bounds(outbreakbounds, alertbounds)
     filtered_matched_bounds = @view(
         all_matched_bounds[(all_matched_bounds[:, 2] .> 0), :]
     )
-    return filtered_matched_bounds, periodssum_vec, alerts_per_outbreak_vec
+    return filtered_matched_bounds,
+    outbreak_dur_vec, alert_dur_vec, periodssum_vec,
+    alerts_per_outbreak_vec
 end
 
 function calculate_delay_vec(first_matchedbounds)

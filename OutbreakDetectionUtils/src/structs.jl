@@ -210,6 +210,8 @@ struct OutbreakThresholdChars{
     matchedoutbreakbounds::T5
     noutbreaks::T2
     nalerts::T2
+    outbreak_duration_vec::T4
+    alert_duration_vec::T4
     detected_outbreak_size::T4
     missed_outbreak_size::T4
     n_true_outbreaks_detected::T2
