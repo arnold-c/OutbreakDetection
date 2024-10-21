@@ -44,9 +44,9 @@ function create_inc_infec_arr!(
         )
 
         classify_all_outbreaks!(
-            @view(ensemble_inc_arr[:, 1, sim]),
             @view(ensemble_inc_arr[:, 3, sim]),
             outbreak_thresholds,
+            @view(ensemble_inc_arr[:, 1, sim]),
             minoutbreakdur,
             minoutbreaksize,
         )
@@ -78,9 +78,9 @@ function calculate_outbreak_thresholds(outbreakrle; ncols = 4)
 end
 
 function classify_all_outbreaks!(
-    incidence_vec,
-    alertstatus_vec,
+    outbreakstatus_vec,
     all_thresholds_arr,
+    incidence_vec,
     minoutbreakdur,
     minoutbreaksize,
 )

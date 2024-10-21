@@ -13,7 +13,7 @@ includet(srcdir("makie-plotting-setup.jl"))
 
 #%%
 states_p = StateParameters(;
-    N=500_000, s_prop=0.05, e_prop=0.00, i_prop=0.00
+    N = 500_000, s_prop = 0.05, e_prop = 0.00, i_prop = 0.00
 )
 
 dynamics_p = DynamicsParameters(
@@ -30,7 +30,7 @@ dynamics_p = DynamicsParameters(
 )
 
 noise_states_p = StateParameters(;
-    N=500_000, s_prop=0.15, e_prop=0.00, i_prop=0.00
+    N = 500_000, s_prop = 0.15, e_prop = 0.00, i_prop = 0.00
 )
 
 noise_dynamics_p = DynamicsParameters(
@@ -41,12 +41,12 @@ noise_dynamics_p = DynamicsParameters(
     1 / 14,
     5.0,
     0.65;
-    seasonality=sin
+    seasonality = sin,
 )
 
 test_specification = IndividualTestSpecification(0.85, 0.85, 0)
 
-time_p = SimTimeParameters(; tmin=0.0, tmax=365.0 * 20, tstep=1.0)
+time_p = SimTimeParameters(; tmin = 0.0, tmax = 365.0 * 20, tstep = 1.0)
 
 outbreak_specification = OutbreakSpecification(5, 30, 500)
 
@@ -57,7 +57,7 @@ outbreak_detection_specification = OutbreakDetectionSpecification(
     movingavg_window,
     1.0,
     0.75,
-    "movingavg"
+    "movingavg",
 )
 
 function get_outbreak_status(
@@ -72,9 +72,9 @@ function get_outbreak_status(
     all_outbreak_bounds = calculate_outbreak_thresholds(abovethresholdrle)
 
     classify_all_outbreaks!(
-        inc_vec,
         abovethreshold_vec,
         all_outbreak_bounds,
+        inc_vec,
         outbreak_specification.minimum_outbreak_duration,
         outbreak_specification.minimum_outbreak_size,
     )
@@ -98,13 +98,13 @@ function shift_vec(invec, shift::T) where {T<:Integer}
     end
     outvec = zeros(eltype(invec), length(invec))
     if shift > 0
-        for i in (shift+1):lastindex(invec)
-            outvec[i] = invec[i-shift]
+        for i in (shift + 1):lastindex(invec)
+            outvec[i] = invec[i - shift]
         end
     end
     if shift < 0
-        for i in 1:(lastindex(invec)+shift)
-            outvec[i] = invec[i-shift]
+        for i in 1:(lastindex(invec) + shift)
+            outvec[i] = invec[i - shift]
         end
     end
     return outvec
@@ -112,26 +112,26 @@ end
 
 function create_schematic_simulation(
     states_p, dynamics_p, noise_states_p, noise_dynamics_p, test_specification,
-    time_p; seed=1234,
-    outbreak_specification=OutbreakSpecification(5, 30, 500),
-    outbreak_detection_specification=OutbreakDetectionSpecification(
+    time_p; seed = 1234,
+    outbreak_specification = OutbreakSpecification(5, 30, 500),
+    outbreak_detection_specification = OutbreakDetectionSpecification(
         5, 7, 1.0, 0.5, "movingavg"
     ),
-    noise_scaling=10,
-    shift_noise=0,
+    noise_scaling = 10,
+    shift_noise = 0,
 )
     inc_sv = seir_mod(
         states_p.init_states,
         dynamics_p,
         time_p;
-        seed=seed,
+        seed = seed,
     )[2]
 
     inc_vec =
         round.(
             calculate_movingavg(
                 vec(convert_svec_to_matrix(inc_sv)),
-                movingavg_window
+                movingavg_window,
             )
         )
 
@@ -143,7 +143,7 @@ function create_schematic_simulation(
         noise_states_p.init_states,
         noise_dynamics_p,
         time_p;
-        seed=seed
+        seed = seed,
     )[2]
 
     noise_vec_tmp = calculate_movingavg(
@@ -177,7 +177,7 @@ function create_schematic_simulation(
     # Calculate moving average of TOTAL test positives
     movingavg_testpositives = calculate_movingavg(
         test_positives,
-        outbreak_detection_specification.moving_average_lag
+        outbreak_detection_specification.moving_average_lag,
     )
 
     alertstatus_vec = detectoutbreak(
@@ -185,7 +185,7 @@ function create_schematic_simulation(
         outbreak_detection_specification.alert_threshold,
     )
     alert_bounds = calculate_outbreak_thresholds(
-        rle(alertstatus_vec .> 0); ncols=2
+        rle(alertstatus_vec .> 0); ncols = 2
     )
 
     return inc_vec,
@@ -204,11 +204,11 @@ inc_vec, outbreak_status, outbreak_bounds, noise_vec, movingavg_testpositives, a
     noise_dynamics_p,
     test_specification,
     time_p;
-    seed=12345,
-    outbreak_specification=outbreak_specification,
-    outbreak_detection_specification=outbreak_detection_specification,
-    noise_scaling=15,
-    shift_noise=-100,
+    seed = 12345,
+    outbreak_specification = outbreak_specification,
+    outbreak_detection_specification = outbreak_detection_specification,
+    noise_scaling = 15,
+    shift_noise = -100,
 );
 
 function plot_schematic(
@@ -221,14 +221,14 @@ function plot_schematic(
     alertstatus_vec,
     alert_bounds,
     alertthreshold;
-    time_p=SimTimeParameters(; tmin=0.0, tmax=365.0 * 10, tstep=1.0),
-    outbreakcolormap=[
+    time_p = SimTimeParameters(; tmin = 0.0, tmax = 365.0 * 10, tstep = 1.0),
+    outbreakcolormap = [
         N_MISSED_OUTBREAKS_COLOR, PERC_OUTBREAKS_DETECTED_COLOR
     ],
-    alertcolormap=[
+    alertcolormap = [
         N_MISSED_OUTBREAKS_COLOR, N_ALERTS_COLOR
     ],
-    shade_alert_outbreak_overlap=false,
+    shade_alert_outbreak_overlap = false,
     kwargs...,
 )
     kwargs_dict = Dict(kwargs)
@@ -246,62 +246,62 @@ function plot_schematic(
         alertstatus_vec = alertstatus_vec[lower:upper]
 
         outbreak_bounds = outbreak_bounds[
-            (outbreak_bounds[:, 1].>=lower).&(outbreak_bounds[:, 2].<=upper),
+            (outbreak_bounds[:, 1] .>= lower) .& (outbreak_bounds[:, 2] .<= upper),
             :,
         ]
         outbreak_bounds_vec = vec(outbreak_bounds)
 
         alert_bounds = alert_bounds[
-            (alert_bounds[:, 1].>=lower).&(alert_bounds[:, 2].<=upper), :,
+            (alert_bounds[:, 1] .>= lower) .& (alert_bounds[:, 2] .<= upper), :,
         ]
         alert_bounds_vec = vec(alert_bounds)
     end
 
     fig = Figure()
-    noiseax = Axis(fig[1, 1]; ylabel="Noise")
-    incax = Axis(fig[2, 1]; ylabel="Incidence")
-    testax = Axis(fig[3, 1]; xlabel="Time", ylabel="Test Positives")
+    noiseax = Axis(fig[1, 1]; ylabel = "Noise")
+    incax = Axis(fig[2, 1]; ylabel = "Incidence")
+    testax = Axis(fig[3, 1]; xlabel = "Time", ylabel = "Test Positives")
 
     lines!(
         noiseax,
         times,
         noise_vec;
-        color=:black,
-        linewidth=3,
+        color = :black,
+        linewidth = 3,
     )
 
     lines!(
         incax,
         times,
         inc_vec;
-        color=outbreakstatus_vec,
-        colormap=outbreakcolormap,
-        linewidth=3,
+        color = outbreakstatus_vec,
+        colormap = outbreakcolormap,
+        linewidth = 3,
     )
 
     hlines!(
         incax,
         outbreak_specification.outbreak_threshold;
-        color=:black,
-        linewidth=2,
-        linestyle=:dash,
+        color = :black,
+        linewidth = 2,
+        linestyle = :dash,
     )
 
     lines!(
         testax,
         times,
         testpositive_vec;
-        color=alertstatus_vec,
-        colormap=alertcolormap,
-        linewidth=3,
+        color = alertstatus_vec,
+        colormap = alertcolormap,
+        linewidth = 3,
     )
 
     hlines!(
         testax,
         alertthreshold;
-        color=:black,
-        linewidth=2,
-        linestyle=:dash
+        color = :black,
+        linewidth = 2,
+        linestyle = :dash,
     )
 
     if shade_alert_outbreak_overlap
@@ -310,13 +310,13 @@ function plot_schematic(
                 incax,
                 outbreak_bounds[:, 1],
                 outbreak_bounds[:, 2];
-                color=(outbreakcolormap[2], 0.2),
+                color = (outbreakcolormap[2], 0.2),
             )
 
             vlines!(testax,
                 outbreak_bounds_vec;
-                color=outbreakcolormap[2],
-                linewidth=3,
+                color = outbreakcolormap[2],
+                linewidth = 3,
             )
         end
 
@@ -325,14 +325,14 @@ function plot_schematic(
                 testax,
                 alert_bounds[:, 1],
                 alert_bounds[:, 2];
-                color=(alertcolormap[2], 0.2),
+                color = (alertcolormap[2], 0.2),
             )
 
             vlines!(
                 incax,
                 alert_bounds_vec;
-                color=alertcolormap[2],
-                linewidth=3
+                color = alertcolormap[2],
+                linewidth = 3,
             )
         end
     end
@@ -360,17 +360,17 @@ schematic_no_shade_fig = plot_schematic(
     movingavg_testpositives,
     alertstatus_vec,
     alert_bounds[
-        (@view(alert_bounds[:, 2]).-@view(alert_bounds[:, 1]).>30), :,
+        (@view(alert_bounds[:, 2]) .- @view(alert_bounds[:, 1]) .> 30), :,
     ],
-    outbreak_detection_specification.alert_threshold; time_p=time_p,
-    shade_alert_outbreak_overlap=false,
-    xlims=(5, 13),
+    outbreak_detection_specification.alert_threshold; time_p = time_p,
+    shade_alert_outbreak_overlap = false,
+    xlims = (5, 13),
 )
 
 save(
     joinpath(plotsdir(), "schematic-simulation_no-shade.png"),
     schematic_no_shade_fig;
-    size=(2200, 1600),
+    size = (2200, 1600),
 )
 
 schematic_with_shade_fig = plot_schematic(
@@ -382,15 +382,15 @@ schematic_with_shade_fig = plot_schematic(
     movingavg_testpositives,
     alertstatus_vec,
     alert_bounds[
-        (@view(alert_bounds[:, 2]).-@view(alert_bounds[:, 1]).>30), :,
+        (@view(alert_bounds[:, 2]) .- @view(alert_bounds[:, 1]) .> 30), :,
     ],
-    outbreak_detection_specification.alert_threshold; time_p=time_p,
-    shade_alert_outbreak_overlap=true,
-    xlims=(5, 13),
+    outbreak_detection_specification.alert_threshold; time_p = time_p,
+    shade_alert_outbreak_overlap = true,
+    xlims = (5, 13),
 )
 
 save(
     joinpath(plotsdir(), "schematic-simulation_with-shade.png"),
     schematic_with_shade_fig;
-    size=(2200, 1600),
+    size = (2200, 1600),
 )

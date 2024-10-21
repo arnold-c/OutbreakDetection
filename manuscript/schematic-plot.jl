@@ -75,9 +75,9 @@ function get_outbreak_status(
     )
 
     classify_all_outbreaks!(
-        inc_vec,
         abovethreshold_vec,
         all_outbreak_bounds,
+        inc_vec,
         outbreak_specification.minimum_outbreak_duration,
         outbreak_specification.minimum_outbreak_size,
     )
