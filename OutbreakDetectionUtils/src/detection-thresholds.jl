@@ -133,7 +133,7 @@ end
 
 function filter_only_outbreaks(all_thresholds_arr)
     return @view(
-        all_thresholds_arr[(all_thresholds_arr[:, 5] .== 1), :]
+        all_thresholds_arr[(all_thresholds_arr[:, 5] .== 1), 1:4]
     )
 end
 
