@@ -1,6 +1,6 @@
 @testset "diag-testing-functions.jl" begin
     @testset "Moving average" begin
-        using OutbreakDetectionUtils, Statistics
+        using OutbreakDetectionUtils, StatsBase
 
         daily_testpositives = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
@@ -230,8 +230,11 @@
             ]
 
             isequal(
-                calculate_n_outbreak_tests(infectious_tested_vec, noise_tested_vec, outbreakbounds),
-                (12*51 + 8*81 + 30*31 + 25*41) + (4*51 + 5*81 + 6*31 + 4*41),
+                calculate_n_outbreak_tests(
+                    infectious_tested_vec, noise_tested_vec, outbreakbounds
+                ),
+                (12 * 51 + 8 * 81 + 30 * 31 + 25 * 41) +
+                (4 * 51 + 5 * 81 + 6 * 31 + 4 * 41),
             )
         end
     end
