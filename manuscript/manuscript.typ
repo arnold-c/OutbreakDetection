@@ -518,7 +518,7 @@ By examining the combination of alert threshold and individual test characterist
 <methods>
 == Model Structure
 <model-structure>
-We constructed a stochastic compartmental non-age structured SEIR model of measles and simulated using a modified Tau-leaping algorithm with a time step of 1 day, utilizing binomial draws to ensure compartment sizes remained positive valued @chatterjeeBinomialDistributionBased2005@gillespieApproximateAcceleratedStochastic2001. To stochastically reintroduce infections and cause recurring epidemics, commuter-style imports were added that are proportional to the size of the population and $R_0$ @keelingModelingInfectiousDiseases2008, and the transmission parameter ($beta_t$) is sinusoidal with a period of one year and 20% seasonal amplitude. $R_0$ was set to 16, with a latent period of 10 days and infectious period of 8 days. The population was initialized with 500,000 individuals with Ghana-like birth and vaccination rates, and the final results were scaled up to the approximate 2022 population size of Ghana (33 million) @worldbankGhana. The full table of parameters can be found in @tbl-model-parameters. All simulations and analysis was completed in Julia version 1.10.3 @bezansonJuliaFreshApproach2017, with all code stored at #link("https://github.com/arnold-c/OutbreakDetection");.
+We constructed a stochastic compartmental non-age structured SEIR model of measles and simulated using a modified Tau-leaping algorithm with a time step of 1 day, utilizing binomial draws to ensure compartment sizes remained positive valued @chatterjeeBinomialDistributionBased2005@gillespieApproximateAcceleratedStochastic2001. To stochastically reintroduce infections and cause recurring epidemics, commuter-style imports were added that are proportional to the size of the population and $R_0$ @keelingModelingInfectiousDiseases2008, and the transmission parameter ($beta_t$) is sinusoidal with a period of one year and 20% seasonal amplitude. $R_0$ was set to 16, with a latent period of 10 days and infectious period of 8 days. The population was initialized with 500,000 individuals with Ghana-like birth and vaccination rates, and the final results were scaled up to the approximate 2022 population size of Ghana (33 million) @worldbankGhana. The full table of parameters can be found in @tbl-model-parameters. All simulations and analysis was completed in Julia version 1.10.5 @bezansonJuliaFreshApproach2017, with all code stored at #link("https://github.com/arnold-c/OutbreakDetection");.
 
 #figure([
 #let parameters = csv("parameters.csv")
@@ -599,9 +599,7 @@ For each combination of diagnostic test and testing rate, the optimal alert thre
 
 = Results
 <results>
-== Optimal Thresholds, Accuracy, and Unavoidable Cases
-<optimal-thresholds-accuracy-and-unavoidable-cases>
-The threshold that maximized outbreak detection accuracy given a testing scenario depends heavily on the noise structure. For example, when the ratio of average noise:measles incidence is 8, the optimal threshold for an RDT with 90% sensitivity/specificity and 40% testing of clinic visits was 4 cases per day with the dynamical in-phase noise, whereas it is 5 cases per day when Poisson-only noise was simulated (@tbl-optimal-thresholds). This corresponds to an accuracy of 72% and 93%, respectively (@tbl-optimal-thresholds-accuracy). Much higher accuracy can be achieved with imperfect tests under Poisson noise because large spikes of non-measles febrile rash do not occur that would lead to many false positives, triggering an erroneous alert. With dynamical noise, this possibility can and does occur, and when the ratio of measles to non-measles cases is sufficiently low, drastically impacts the accuracy of an alert system. This is why the values observed among ELISA tests are identical between the different noise structures: with a perfect test there are no false positive results. For dynamical noise, RDTs never perform as well as an ELISA, even scenarios that include a 14-day lag between test procurement and result receipt. However, with Poisson noise, once testing reaches 20% of clinic visits, equivalence can be observed at approximately 91% accuracy (@tbl-optimal-thresholds-accuracy).
+The threshold that maximized outbreak detection accuracy given a testing scenario depends heavily on the noise structure and magnitude. For example, when the ratio of average noise incidence was 8 times higher than the average measles incidence, the optimal threshold for an RDT with 90% sensitivity/specificity and 40% testing of clinic visits was 4 cases per day with the dynamical in-phase noise, whereas it is 5 cases per day when Poisson-only noise was simulated (@tbl-optimal-thresholds). This corresponds to an accuracy of 72% and 93%, respectively (@fig-accuracy). Much higher accuracy can be achieved with imperfect tests under Poisson noise because large spikes of non-measles febrile rash that would lead to many false positives and trigger erroneous alerts do not occur. With dynamical noise, this possibility can and does occur and, when the ratio of non-measles to measles cases is sufficiently high, drastically impacts the accuracy of an alert system. The results from ELISA tests are identical between the different noise structures: with a perfect test there are no false positive results. For dynamical noise, RDTs never perform as well as an ELISA, even under scenarios that include a 14-day lag between test procurement and result receipt. However, with Poisson noise, once testing reaches 20% of clinic visits, equivalence can be observed at approximately 91% accuracy (@fig-accuracy).
 
 #figure([
 #let optimal_thresholds = csv("thresholds.csv")
@@ -619,7 +617,7 @@ The threshold that maximized outbreak detection accuracy given a testing scenari
 ], caption: figure.caption(
 position: bottom, 
 [
-Optimal threshold for each testing scenario. A) the noise structure is dynamical, and the seasonality is in-phase with the measles incidence. B) the noise structure is Poisson only
+Optimal threshold for each testing scenario, when the average noise incidence is 8 times higher than the average measles incidence. A) the noise structure is dynamical, and the seasonality is in-phase with the measles incidence. B) the noise structure is Poisson only
 ]), 
 kind: "quarto-float-tbl", 
 supplement: "Table", 
@@ -627,76 +625,7 @@ supplement: "Table",
 <tbl-optimal-thresholds>
 
 
-Moving across a single row of @tbl-optimal-thresholds, as the testing rate increases, so does the optimal threshold, because more individuals are testing positive. However, the changes in accuracy are not monotonically increasing, as one might anticipate. Even with a perfect test, there are sequential cells that increase the testing rate, yet accuracy decreases. For example, the ELISA equivalent with a 0-day test result lag goes from an outbreak detection accuracy of 91% down to 87% when testing increases from 30% to 40% of clinic visits. The reason behind this unintuitive result stems from the use of integer valued thresholds. While computing the moving average incidence helps to smooth out the alert system, requiring the daily alert to be an integer value results in the optimal threshold for alert accuracy being stuck at a lower level than a truly optimal intermediate floating point number, because the increase in the alert system’s PPV from a higher threshold is outweighed by the larger decrease in alert sensitivity, or the threshold is forced to increase. Examining the number of unavoidable cases (@tbl-optimal-thresholds-unavoidable) and the detection delays (@tbl-optimal-thresholds-delays), we can see that the decrease in accuracy results from a decrease in the sensitivity of the alert system: the detection delay increases by 6 days, and the unavoidable cases by c.~2300. Although the testing rate increases, so does the optimal threshold, from 3 test positives to 4 test positives per day.
-
-#figure([
-#let accuracy = csv("optimal-thresholds_accuracy.csv")
-
-#table(
-  columns: 10,
-    fill: (x, y) => {
-      if y == 0 {gray}
-      if y == 1 {gray}
-    },
-  [], table.cell(colspan: 2, align: center, "Test Characteristic"), table.cell(colspan: 7, align: center, "Testing Rate"),
-  ..accuracy.flatten()
-)
-], caption: figure.caption(
-position: bottom, 
-[
-The outbreak detection accuracy for each testing scenario, at the optimal thresholds.
-]), 
-kind: "quarto-float-tbl", 
-supplement: "Table", 
-)
-<tbl-optimal-thresholds-accuracy>
-
-
-#figure([
-#let optimal_thresholds = csv("optimal-thresholds-unavoidable.csv")
-
-#table(
-  columns: 10,
-    fill: (x, y) => {
-      if y == 0 {gray}
-      if y == 1 {gray}
-    },
-  [], table.cell(colspan: 2, align: center, "Test Characteristic"), table.cell(colspan: 7, align: center, "Testing Rate"),
-  ..optimal_thresholds.flatten()
-)
-], caption: figure.caption(
-position: bottom, 
-[
-Unavoidable cases per annum of each testing scenario at their specific optimal thresholds, scaled up to Ghana’s 2022 population. A) the noise structure is dynamical, and the seasonality is in-phase with the measles incidence. B) the noise structure is Poisson only.
-]), 
-kind: "quarto-float-tbl", 
-supplement: "Table", 
-)
-<tbl-optimal-thresholds-unavoidable>
-
-
-#figure([
-#let optimal_thresholds = csv("optimal-thresholds-delays.csv")
-
-#table(
-  columns: 10,
-    fill: (x, y) => {
-      if y == 0 {gray}
-      if y == 1 {gray}
-    },
-  [], table.cell(colspan: 2, align: center, "Test Characteristic"), table.cell(colspan: 7, align: center, "Testing Rate"),
-  ..optimal_thresholds.flatten()
-)
-], caption: figure.caption(
-position: bottom, 
-[
-Outbreak alert delay (days) of each testing scenario at their specific optimal thresholds. A) the noise structure is dynamical, and the seasonality is in-phase with the measles incidence. B) the noise structure is Poisson only.
-]), 
-kind: "quarto-float-tbl", 
-supplement: "Table", 
-)
-<tbl-optimal-thresholds-delays>
-
+Moving across a single row of @tbl-optimal-thresholds, as the testing rate increases, so does the optimal threshold, because more individuals are testing positive. However, the changes in accuracy are not monotonically increasing, as one might anticipate. Even with a perfect test, there are sequential cells that increase the testing rate, yet accuracy decreases (@fig-accuracy). For example, the ELISA equivalent with a 0-day test result lag outbreak detection accuracy decreases from 91% to 87% when clinic testing rates increase from 30% to 40% of clinic visits. The reason behind this unintuitive result stems from the use of integer valued thresholds. While computing the moving average test positive incidence helps to smooth out the alert system, an integer valued threshold can result in step-changes of accuracy between two threshold values, and the expected increase in the alert system’s PPV from a higher threshold value is outweighed by the loss in the alert system’s sensitivity to detecting outbreaks. Even with a perfect test, the alert system needs to discriminate between endemic/imported cases and epidemic cases; increasing the testing rate will result in higher numbers of test positive individuals, and a lower threshold can result in an overly sensitive alert system, triggering for measles infections, but not those within an outbreak. A higher threshold will face the opposite issue; not triggering for smaller outbreaks, which is more likely to be an issue at lower testing rates. Examining the number of unavoidable cases (@fig-unavoidable) and the detection delays (@fig-delay), we can see that the decrease in accuracy results from a decrease in the sensitivity of the alert system: the detection delay increases by 6 days, and the unavoidable cases by c.~2300. Although the testing rate increases, so does the optimal threshold, from 3 test positives to 4 test positives per day. The subsequent change in testing rate (40 - 50%) is associated with no change in the optimal threshold for the ELISA, and as expected, the number of unavoidable cases and detection delay decrease, resulting in a more sensitive alert system, with an higher system accuracy indicating that the increase more than offset the decrease in the system’s PPV.
 
 #figure([
 #box(image("manuscript_files/figure-typst/fig-accuracy-output-1.png"))
@@ -737,43 +666,19 @@ supplement: "Figure",
 <fig-delay>
 
 
-#figure([
-#box(image("manuscript_files/figure-typst/fig-outbreak-proportion-output-1.png"))
-], caption: figure.caption(
-position: bottom, 
-[
-The difference in the proportion of the time series in alert - proportion in an outbreak,of outbreak detection systems under different testing rates and noise structures. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate.
-]), 
-kind: "quarto-float-fig", 
-supplement: "Figure", 
-)
-<fig-outbreak-proportion>
-
+For Poisson noise, similar detection delays are observed for all test and noise magnitudes, with variation by testing rate (mean of -3.7 to 36.1 days). Under dynamical noise, there are clearer differences in the performance of ELISA and RDTs, with the separation of outcomes occurring later than observed for detection accuracy (8 time noise magnitude vs.~2 times, respectively) (@fig-accuracy). With large amounts of dynamical noise (8 times the measles incidence), the mean detection delay of the 90% and 85% RDTs range from -17.5 days to 3.2 days, and from -25.2 days to -3.4 days, respectively. Negative delays indicate that alerts are being triggered before the start of the outbreak and is correlated with the proportion of the time series that is under alert, with larger negative delays associated with more and/or longer alert periods (@fig-alert-proportion).
 
 #figure([
 #box(image("manuscript_files/figure-typst/fig-alert-proportion-output-1.png"))
 ], caption: figure.caption(
 position: bottom, 
 [
-The difference in the proportion of the time series in alert - proportion in an outbreak,of outbreak detection systems under different testing rates and noise structures. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate.
+The difference between proportion of the time series in alert for outbreak detection systems under different testing rates and noise structures. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate.
 ]), 
 kind: "quarto-float-fig", 
 supplement: "Figure", 
 )
 <fig-alert-proportion>
-
-
-#figure([
-#box(image("manuscript_files/figure-typst/fig-alert-outbreak-proportion-output-1.png"))
-], caption: figure.caption(
-position: bottom, 
-[
-The difference in the proportion of the time series in alert - proportion in an outbreak,of outbreak detection systems under different testing rates and noise structures. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate.
-]), 
-kind: "quarto-float-fig", 
-supplement: "Figure", 
-)
-<fig-alert-outbreak-proportion>
 
 
 = Discussion
