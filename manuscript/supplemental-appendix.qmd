@@ -37,6 +37,7 @@ affiliations:
   - id: "Hopkins-Epi"
     address: "Department of Epidemiology, Johns Hopkins Bloomberg School of Public Health, Baltimore, MD, USA 21205"
 execute:
+  cache: true
   echo: false
   warning: false
   message: false
@@ -121,27 +122,39 @@ include("line-plots-script.jl");
 ```
 
 ```{julia}
-#| fig-cap: "The accuracy of outbreak detection systems under different testing rates and noise structures. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate."
-#| label: fig-accuracy
-accuracy_line_plot
+#| fig-cap: "The difference between proportion of the time series in outbreak for outbreak detection systems under different testing rates and noise structures. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate."
+#| label: fig-outbreak-proportion
+line_plot(
+    optimal_threshold_characteristics;
+    outcome = :proportion_timeseries_in_outbreak,
+    ylabel = "Proportion of Time\nSeries In Outbreak",
+    facet_fontsize = 18,
+    labelsize = 20,
+    show_x_facet_label = true,
+    show_y_facet_label = false,
+    ylims = (0.0, 0.35),
+    force = true,
+    save_plot = false,
+    clinical_hline = clinical_hline,
+)
 ```
 
 ```{julia}
-#| fig-cap: "The number of unavoidable cases of outbreak detection systems under different testing rates and noise structures. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate."
-#| label: fig-unavoidable
-unavoidable_line_plot
-```
-
-```{julia}
-#| fig-cap: "The detection delay of outbreak detection systems under different testing rates and noise structures. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate."
-#| label: fig-delay
-delay_line_plot
-```
-
-```{julia}
-#| fig-cap: "The difference between proportion of the time series in alert for outbreak detection systems under different testing rates and noise structures. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate."
-#| label: fig-alert-proportion
-alert_proportion_line_plot
+#| fig-cap: "The alert durations of outbreak detection systems under different testing rates and noise structures. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate."
+#| label: fig-alert-duration
+line_plot(
+    optimal_threshold_characteristics;
+    outcome = :alert_duration_vec,
+    ylabel = "Alert Duration\n(Days)",
+    facet_fontsize = 18,
+    labelsize = 20,
+    show_x_facet_label = true,
+    show_y_facet_label = false,
+    ylims = (0, 170),
+    force = true,
+    save_plot = false,
+    clinical_hline = clinical_hline,
+)
 ```
 
 
