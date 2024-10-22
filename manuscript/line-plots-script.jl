@@ -2,155 +2,19 @@
 using DrWatson
 @quickactivate "OutbreakDetection"
 
-using OutbreakDetectionUtils
-using OutbreakDetection
-using Revise
+using OutbreakDetectionUtils:
+    IndividualTestSpecification, DynamicalNoiseSpecification
+using StatsBase: mean
 
 include(srcdir("makie-plotting-setup.jl"))
-include(srcdir("ensemble-parameters.jl"))
+
+include(projectdir("manuscript", "optimal-thresholds-loading.jl"));
 
 if false
-    include("../src/ensemble-parameters.jl")
+    include("optimal-thresholds-loading.jl")
 end
 
 #%%
-optimal_threshold_test_spec_vec = [
-    IndividualTestSpecification(0.85, 0.85, 0),
-    IndividualTestSpecification(0.9, 0.9, 0),
-    IndividualTestSpecification(1.0, 1.0, 0),
-    IndividualTestSpecification(1.0, 1.0, 14),
-]
-
-optimal_threshold_alertthreshold_vec = collect(1:1:15)
-
-R_0_vec = [16.0]
-
-ensemble_dynamics_spec_vec = create_combinations_vec(
-    DynamicsParameters,
-    (
-        [ensemble_state_specification.init_states.N],
-        [27],
-        [0.2],
-        [SIGMA],
-        [GAMMA],
-        R_0_vec,
-        [0.8],
-    ),
-)
-
-ensemble_spec_vec = create_combinations_vec(
-    EnsembleSpecification,
-    (
-        [ensemble_model_type],
-        [ensemble_state_specification],
-        ensemble_dynamics_spec_vec,
-        [ensemble_time_specification],
-        [ensemble_nsims],
-    ),
-)
-
-alert_method_vec = ["movingavg"]
-
-#%%
-ensemble_noise_specification =
-    filter(ensemble_noise_specification_vec) do noise_spec
-        noise_spec.noise_type == "poisson" ||
-            noise_spec.correlation == "in-phase"
-    end
-
-ensemble_specification = ensemble_spec_vec[1]
-alertmethod = alert_method_vec[1]
-
-optimal_threshold_core_params = (
-    alertthreshold_vec = optimal_threshold_alertthreshold_vec,
-    ensemble_specification = ensemble_specification,
-    outbreak_specification = ensemble_outbreak_specification,
-    moving_avg_detection_lag = ensemble_moving_avg_detection_lag,
-    percent_visit_clinic = ensemble_percent_visit_clinic,
-    alertmethod = alertmethod,
-)
-
-basedirpath = joinpath(
-    "R0_$(ensemble_specification.dynamics_parameters.R_0)"
-    # noisespec_alertmethod_path,
-)
-
-baseplotdirpath = joinpath(
-    plotsdir("ensemble/optimal-thresholds/lineplot"),
-    basedirpath,
-)
-
-clinical_hline = false
-
-#%%
-optimal_threshold_characteristics = collect_OptimalThresholdCharacteristics(
-    ensemble_noise_specification,
-    ensemble_percent_clinic_tested_vec,
-    optimal_threshold_test_spec_vec,
-    optimal_threshold_core_params;
-    clinical_hline = clinical_hline,
-);
-
-#%%
-accuracy_line_plot = line_plot(
-    optimal_threshold_characteristics;
-    outcome = :accuracy,
-    ylabel = "Outbreak Detection\nAccuracy",
-    plotdirpath = baseplotdirpath,
-    facet_fontsize = 18,
-    labelsize = 20,
-    show_x_facet_label = true,
-    show_y_facet_label = false,
-    ylims = (0.5, 1.0),
-    force = true,
-    save_plot = false,
-    clinical_hline = clinical_hline,
-)
-
-#%%
-unavoidable_line_plot = line_plot(
-    optimal_threshold_characteristics;
-    outcome = :unavoidable_cases,
-    ylabel = "Unavoidable Cases",
-    plotdirpath = baseplotdirpath,
-    facet_fontsize = 18,
-    labelsize = 20,
-    show_x_facet_label = true,
-    show_y_facet_label = false,
-    ylims = (0, 3.5e4),
-    force = true,
-    save_plot = false,
-    clinical_hline = clinical_hline,
-)
-
-#%%
-delay_line_plot = line_plot(
-    optimal_threshold_characteristics;
-    outcome = :detectiondelays,
-    ylabel = "Detection Delays\n(Days)",
-    plotdirpath = baseplotdirpath,
-    hlines = (0.0),
-    facet_fontsize = 18,
-    labelsize = 20,
-    show_x_facet_label = true,
-    show_y_facet_label = false,
-    ylims = (-100, 100),
-    force = true,
-    save_plot = false,
-    clinical_hline = clinical_hline,
-)
-
-#%%
-dynamical_noise_optimal_solutions = filter(
-    chars ->
-        chars.noise_specification[1] == DynamicalNoiseSpecification(
-            "dynamical", 5.0, 7, 14, "in-phase", 0.15, 0.05
-        ),
-    vec(optimal_threshold_characteristics),
-);
-@assert length(dynamical_noise_optimal_solutions) == 1
-dynamical_noise_optimal_solutions = dynamical_noise_optimal_solutions[1];
-
 mean_elisa_0d_delays = map(
     test_chars -> mean(vcat(getproperty(test_chars, :detectiondelays)...)),
     filter(
@@ -193,6 +57,48 @@ mapreduce(
 end
 
 #%%
+mean_elisa_0d_alert_duration = map(
+    test_chars -> mean(vcat(getproperty(test_chars, :alert_duration_vec)...)),
+    filter(
+        chars ->
+            chars.individual_test_specification ==
+            IndividualTestSpecification(1.0, 1.0, 0),
+        dynamical_noise_optimal_solutions,
+    ).outbreak_threshold_chars,
+)
+
+mean_rdt_90_8x_dynamical_alert_duration = map(
+    test_chars -> mean(vcat(getproperty(test_chars, :alert_duration_vec)...)),
+    filter(
+        chars ->
+            chars.individual_test_specification ==
+            IndividualTestSpecification(0.9, 0.9, 0),
+        dynamical_noise_optimal_solutions,
+    ).outbreak_threshold_chars,
+)
+
+mean_rdt_85_8x_dynamical_alert_duration = map(
+    test_chars -> mean(vcat(getproperty(test_chars, :alert_duration_vec)...)),
+    filter(
+        chars ->
+            chars.individual_test_specification ==
+            IndividualTestSpecification(0.85, 0.85, 0),
+        dynamical_noise_optimal_solutions,
+    ).outbreak_threshold_chars,
+)
+
+mapreduce(
+    vcat,
+    (
+        ("ELISA", mean_elisa_0d_alert_duration),
+        ("90%", mean_rdt_90_8x_dynamical_alert_duration),
+        ("85%", mean_rdt_85_8x_dynamical_alert_duration),
+    ),
+) do (label, mean_alert_duration_vec)
+    Dict(label => round.(extrema(mean_alert_duration_vec); digits = 1))
+end
+
+#%%
 # outbreak_proportion_line_plot = line_plot(
 #     optimal_threshold_characteristics;
 #     outcome = :proportion_timeseries_in_outbreak,
@@ -209,20 +115,6 @@ end
 # )
 #
 # #%%
-alert_proportion_line_plot = line_plot(
-    optimal_threshold_characteristics;
-    outcome = :proportion_timeseries_in_alert,
-    ylabel = "Proportion of Time\nSeries In Alert",
-    plotdirpath = baseplotdirpath,
-    facet_fontsize = 18,
-    labelsize = 20,
-    show_x_facet_label = true,
-    show_y_facet_label = false,
-    ylims = (0.0, 0.35),
-    force = true,
-    save_plot = false,
-    clinical_hline = clinical_hline,
-)
 
 # #%%
 # nalerts_line_plot = line_plot(
