@@ -502,63 +502,63 @@ end
 
 function create_optimal_threshold_summary_df(
     optimal_thresholds_vec,
-    characteristic;
+    characteristic::Symbol;
     percentiles = [0.25, 0.5, 0.75],
     nboots = 10000,
     ci = 0.95,
 )
-    # percentile_labels = map(perc -> "$(Int64(perc*100))th", percentiles)
-    percentile_labels = map(percentiles) do perc
-        perc = perc * 100
-        try
-            return "$(Int64(perc))th"
-        catch p
-            return replace("$(perc)th", "." => "_")
+    create_optimal_threshold_summary_df(
+        optimal_thresholds_vec,
+        [characteristic];
+        percentiles = percentiles,
+        nboots = nboots,
+        ci = ci,
+    )
+end
+
+function create_optimal_threshold_summary_df(
+    optimal_thresholds_vec,
+    characteristics::T;
+    percentiles = [0.25, 0.5, 0.75],
+    nboots = 10000,
+    ci = 0.95,
+) where {T<:AbstractVector{<:Symbol}}
+    if !isnothing(percentiles)
+        percentile_labels = map(percentiles) do perc
+            perc = perc * 100
+            try
+                return "$(Int64(perc))th"
+            catch p
+                return replace("$(perc)th", "." => "_")
+            end
         end
+    else
+        percentile_labels = ["100th"]
     end
 
-    char_percentile_labels = map(
-        perc -> "$(characteristic)_$perc", percentile_labels
-    )
-    char_mean_label = "$(characteristic)_mean"
+    chars_df = mapreduce(hcat, characteristics) do characteristic
+        char_percentile_labels = map(
+            perc -> "$(characteristic)_$perc", percentile_labels
+        )
+        char_mean_label = "$(characteristic)_mean"
 
-    ci_label = "CI_$(Int64(ci*100))"
-    char_mean_lower_label = "$(characteristic)_lower_$(ci_label)"
-    char_mean_upper_label = "$(characteristic)_upper_$(ci_label)"
-
-    Chain.@chain begin
-        map(optimal_thresholds_vec) do opt
-            percent_clinic_tested = opt.percent_clinic_tested
-
-            ind_test = opt.individual_test_specification
-            sens = ind_test.sensitivity
-            spec = ind_test.specificity
-            test_lag = ind_test.test_result_lag
-
-            alertthreshold = opt.alert_threshold
-            accuracy = opt.accuracy
-
-            char_lower, char_mean, char_upper, chars_percentiles = calculate_optimal_threshold_summaries(
-                getfield.(opt.outbreak_threshold_chars, characteristic);
-                percentiles = percentiles,
-                nboots = nboots,
-                ci = ci,
-            )
-
-            return percent_clinic_tested, sens,
-            spec, test_lag, alertthreshold, accuracy,
-            char_lower, char_mean, char_upper, chars_percentiles...
-        end
-        reduce(vcat, _)
+        ci_label = "CI_$(Int64(ci*100))"
+        char_mean_lower_label = "$(characteristic)_lower_$(ci_label)"
+        char_mean_upper_label = "$(characteristic)_upper_$(ci_label)"
         DataFrames.DataFrame(
-            _,
+            mapreduce(vcat, optimal_thresholds_vec) do opt
+                char_lower, char_mean, char_upper, chars_percentiles = calculate_optimal_threshold_summaries(
+                    getfield.(opt.outbreak_threshold_chars, characteristic);
+                    percentiles = percentiles,
+                    nboots = nboots,
+                    ci = ci,
+                )
+
+                return char_lower,
+                char_mean, char_upper,
+                chars_percentiles...
+            end,
             [
-                "percent_clinic_tested",
-                "sensitivity",
-                "specificity",
-                "test_lag",
-                "alert_threshold",
-                "accuracy",
                 char_mean_lower_label,
                 char_mean_label,
                 char_mean_upper_label,
@@ -566,6 +566,53 @@ function create_optimal_threshold_summary_df(
             ],
         )
     end
+
+    if isnothing(nboots) || isnothing(ci)
+        DataFrames.select!(chars_df, DataFrames.Not(r"CI"))
+    end
+
+    if isnothing(percentiles)
+        DataFrames.select!(chars_df, DataFrames.Not(r".*_[0-9]+th"))
+    end
+
+    if isnothing(percentiles) && (isnothing(nboots) || isnothing(ci))
+        DataFrames.rename!(
+            x -> replace(x, "_mean" => ""),
+            chars_df,
+            cols = DataFrames.Cols(r".*_mean")
+        )
+    end
+
+    core_df = DataFrames.DataFrame(
+        "percent_clinic_tested" =>
+            getfield.(optimal_thresholds_vec, :percent_clinic_tested),
+        "sensitivity" =>
+            getfield.(
+                optimal_thresholds_vec.individual_test_specification,
+                :sensitivity,
+            ),
+        "specificity" =>
+            getfield.(
+                optimal_thresholds_vec.individual_test_specification,
+                :specificity,
+            ),
+        "test_lag" =>
+            getfield.(
+                optimal_thresholds_vec.individual_test_specification,
+                :test_result_lag,
+            ),
+        "alert_threshold" =>
+            getfield.(
+                optimal_thresholds_vec,
+                :alert_threshold,
+            ),
+        "accuracy" => getfield.(
+            optimal_thresholds_vec,
+            :accuracy,
+        ),
+    )
+
+    return hcat(core_df, chars_df)
 end
 
 function calculate_optimal_threshold_summaries(
@@ -577,15 +624,26 @@ function calculate_optimal_threshold_summaries(
         return missing, repeat([missing], length(percentiles))
     end
 
-    char_percentiles = map(
-        percentile -> StatsBase.quantile(all_chars, percentile), percentiles
-    )
-    char_mean, char_lower, char_upper = Bootstrap.confint(
-        Bootstrap.bootstrap(
-            StatsBase.mean, all_chars, Bootstrap.BasicSampling(nboots)
-        ),
-        Bootstrap.BCaConfInt(ci),
-    )[1]
+    if !isnothing(percentiles)
+        char_percentiles = map(
+            percentile -> StatsBase.quantile(all_chars, percentile), percentiles
+        )
+    else
+        char_percentiles = [missing]
+    end
+
+    if !isnothing(nboots) && !isnothing(ci)
+        char_mean, char_lower, char_upper = Bootstrap.confint(
+            Bootstrap.bootstrap(
+                StatsBase.mean, all_chars, Bootstrap.BasicSampling(nboots)
+            ),
+            Bootstrap.BCaConfInt(ci),
+        )[1]
+    else
+        char_mean = StatsBase.mean(all_chars)
+        char_lower = missing
+        char_upper = missing
+    end
 
     return char_lower, char_mean, char_upper, char_percentiles
 end
