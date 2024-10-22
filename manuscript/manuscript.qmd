@@ -234,25 +234,25 @@ For dynamical noise, RDTs never perform as well as an ELISA, even under scenario
 However, with Poisson noise, once testing reaches 20% of clinic visits, equivalence can be observed at approximately 91% accuracy (@fig-accuracy).
 
 
-```{julia}
+```{julia optimal-threshold-setup}
 #| echo: false
-include("optimal-thresholds.jl");
+include("optimal-thresholds-tables.jl");
 ```
 
 
 ::: {#tbl-optimal-thresholds}
 
 ```{=typst}
-#let optimal_thresholds = csv("thresholds.csv")
+#let optimal_thresholds = csv("optimal-thresholds.csv")
 
 #table(
-  columns: 10,
+  columns: 9,
   fill: (x, y) => {
     if y == 0 {gray}
     if y == 1 {gray}
   },
   align: center,
-  [], table.cell(colspan: 2, align: center, "Test Characteristic"), table.cell(colspan: 7, align: center, "Testing Rate"),
+  [], table.cell(colspan: 2, align: center, "Test Characteristic"), table.cell(colspan: 6, align: center, "Testing Rate"),
   ..optimal_thresholds.flatten()
 )
 ```
@@ -274,9 +274,10 @@ Although the testing rate increases, so does the optimal threshold, from 3 test 
 The subsequent change in testing rate (40 - 50%) is associated with no change in the optimal threshold for the ELISA, and as expected, the number of unavoidable cases and detection delay decrease, resulting in a more sensitive alert system, with an higher system accuracy indicating that the increase more than offset the decrease in the system's PPV.
 
 
-```{julia}
+```{julia plotting-setup}
 #| echo: false
-include("line-plots-script.jl");
+include(srcdir("makie-plotting-setup.jl"));
+using OutbreakDetection: line_plot
 ```
 
 ```{julia}
@@ -343,7 +344,20 @@ Negative delays indicate that alerts are being triggered before the start of the
 ```{julia}
 #| fig-cap: "The difference between proportion of the time series in alert for outbreak detection systems under different testing rates and noise structures. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate."
 #| label: fig-alert-proportion
-alert_proportion_line_plot
+line_plot(
+    optimal_threshold_characteristics;
+    outcome = :proportion_timeseries_in_alert,
+    ylabel = "Proportion of Time Series\nIn Alert",
+    hlines = (0.0),
+    facet_fontsize = 18,
+    labelsize = 20,
+    show_x_facet_label = true,
+    show_y_facet_label = false,
+    ylims = (0, 0.35),
+    force = true,
+    save_plot = false,
+    clinical_hline = clinical_hline,
+)
 ```
 
 # Discussion

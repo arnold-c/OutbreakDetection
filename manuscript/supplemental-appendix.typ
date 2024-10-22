@@ -490,12 +490,12 @@
 #let accuracy = csv("optimal-thresholds_accuracy.csv")
 
 #table(
-  columns: 10,
+  columns: 9,
     fill: (x, y) => {
       if y == 0 {gray}
       if y == 1 {gray}
     },
-  [], table.cell(colspan: 2, align: center, "Test Characteristic"), table.cell(colspan: 7, align: center, "Testing Rate"),
+  [], table.cell(colspan: 2, align: center, "Test Characteristic"), table.cell(colspan: 6, align: center, "Testing Rate"),
   ..accuracy.flatten()
 )
 ], caption: figure.caption(
@@ -510,15 +510,15 @@ supplement: "Table",
 
 
 #figure([
-#let optimal_thresholds = csv("optimal-thresholds-unavoidable.csv")
+#let optimal_thresholds = csv("optimal-thresholds_unavoidable-cases.csv")
 
 #table(
-  columns: 10,
+  columns: 9,
     fill: (x, y) => {
       if y == 0 {gray}
       if y == 1 {gray}
     },
-  [], table.cell(colspan: 2, align: center, "Test Characteristic"), table.cell(colspan: 7, align: center, "Testing Rate"),
+  [], table.cell(colspan: 2, align: center, "Test Characteristic"), table.cell(colspan: 6, align: center, "Testing Rate"),
   ..optimal_thresholds.flatten()
 )
 ], caption: figure.caption(
@@ -533,15 +533,15 @@ supplement: "Table",
 
 
 #figure([
-#let optimal_thresholds = csv("optimal-thresholds-delays.csv")
+#let optimal_thresholds = csv("optimal-thresholds_detection-delays.csv")
 
 #table(
-  columns: 10,
+  columns: 9,
     fill: (x, y) => {
       if y == 0 {gray}
       if y == 1 {gray}
     },
-  [], table.cell(colspan: 2, align: center, "Test Characteristic"), table.cell(colspan: 7, align: center, "Testing Rate"),
+  [], table.cell(colspan: 2, align: center, "Test Characteristic"), table.cell(colspan: 6, align: center, "Testing Rate"),
   ..optimal_thresholds.flatten()
 )
 ], caption: figure.caption(

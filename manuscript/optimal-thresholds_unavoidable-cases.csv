@@ -1,7 +1,7 @@
 Noise Type,Test Type,Test Lag,10%,20%,30%,40%,50%,60%
-Dynamical noise: in-phase,RDT Equivalent (85.0%),0,445.0,3056.0,4458.0,7727.0,3498.0,4413.0
-Dynamical noise: in-phase,RDT Equivalent (90.0%),0,502.0,3279.0,4635.0,6337.0,2599.0,4949.0
-Poisson noise,RDT Equivalent (85.0%),0,766.0,6592.0,9111.0,9107.0,11865.0,11765.0
-Poisson noise,RDT Equivalent (90.0%),0,770.0,3178.0,9736.0,12808.0,5205.0,8111.0
-Common,ELISA Equivalent,0,770.0,5980.0,8893.0,11172.0,4529.0,6144.0
-Common,ELISA Equivalent,14,2015.0,9277.0,12363.0,14643.0,7641.0,9495.0
+Dynamical noise: in-phase,RDT Equivalent (85.0%),0,445,3056,4458,7727,3498,4413
+Dynamical noise: in-phase,RDT Equivalent (90.0%),0,502,3279,4635,6337,2599,4949
+Poisson noise,RDT Equivalent (85.0%),0,766,6592,9111,9107,11865,11765
+Poisson noise,RDT Equivalent (90.0%),0,770,3178,9736,12808,5205,8111
+Common,ELISA Equivalent,0,770,5980,8893,11172,4529,6144
+Common,ELISA Equivalent,14,2015,9277,12363,14643,7641,9495

@@ -602,16 +602,16 @@ For each combination of diagnostic test and testing rate, the optimal alert thre
 The threshold that maximized outbreak detection accuracy given a testing scenario depends heavily on the noise structure and magnitude. For example, when the ratio of average noise incidence was 8 times higher than the average measles incidence, the optimal threshold for an RDT with 90% sensitivity/specificity and 40% testing of clinic visits was 4 cases per day with the dynamical in-phase noise, whereas it is 5 cases per day when Poisson-only noise was simulated (@tbl-optimal-thresholds). This corresponds to an accuracy of 72% and 93%, respectively (@fig-accuracy). Much higher accuracy can be achieved with imperfect tests under Poisson noise because large spikes of non-measles febrile rash that would lead to many false positives and trigger erroneous alerts do not occur. With dynamical noise, this possibility can and does occur and, when the ratio of non-measles to measles cases is sufficiently high, drastically impacts the accuracy of an alert system. The results from ELISA tests are identical between the different noise structures: with a perfect test there are no false positive results. For dynamical noise, RDTs never perform as well as an ELISA, even under scenarios that include a 14-day lag between test procurement and result receipt. However, with Poisson noise, once testing reaches 20% of clinic visits, equivalence can be observed at approximately 91% accuracy (@fig-accuracy).
 
 #figure([
-#let optimal_thresholds = csv("thresholds.csv")
+#let optimal_thresholds = csv("optimal-thresholds.csv")
 
 #table(
-  columns: 10,
+  columns: 9,
   fill: (x, y) => {
     if y == 0 {gray}
     if y == 1 {gray}
   },
   align: center,
-  [], table.cell(colspan: 2, align: center, "Test Characteristic"), table.cell(colspan: 7, align: center, "Testing Rate"),
+  [], table.cell(colspan: 2, align: center, "Test Characteristic"), table.cell(colspan: 6, align: center, "Testing Rate"),
   ..optimal_thresholds.flatten()
 )
 ], caption: figure.caption(

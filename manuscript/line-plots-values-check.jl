@@ -6,7 +6,6 @@ using OutbreakDetectionUtils:
     IndividualTestSpecification, DynamicalNoiseSpecification
 using StatsBase: mean
 
-include(srcdir("makie-plotting-setup.jl"))
 
 include(projectdir("manuscript", "optimal-thresholds-loading.jl"));
 
@@ -97,70 +96,3 @@ mapreduce(
 ) do (label, mean_alert_duration_vec)
     Dict(label => round.(extrema(mean_alert_duration_vec); digits = 1))
 end
-
-#%%
-# outbreak_proportion_line_plot = line_plot(
-#     optimal_threshold_characteristics;
-#     outcome = :proportion_timeseries_in_outbreak,
-#     ylabel = "Proportion of Time Series\nIn Outbreak",
-#     plotdirpath = baseplotdirpath,
-#     facet_fontsize = 18,
-#     labelsize = 20,
-#     show_x_facet_label = true,
-#     show_y_facet_label = false,
-#     ylims = (0.0, 0.25),
-#     force = true,
-#     save_plot = false,
-# clinical_hline = clinical_hline,
-# )
-#
-# #%%
-
-# #%%
-# nalerts_line_plot = line_plot(
-#     optimal_threshold_characteristics;
-#     outcome = :nalerts,
-#     ylabel = "Number of Alerts",
-#     plotdirpath = baseplotdirpath,
-#     facet_fontsize = 18,
-#     labelsize = 20,
-#     show_x_facet_label = true,
-#     show_y_facet_label = false,
-#     ylims = (0, 350),
-#     force = true,
-#     save_plot = false,
-# clinical_hline = clinical_hline,
-# )
-#
-# #%%
-# nalerts_per_outbreak_line_plot = line_plot(
-#     optimal_threshold_characteristics;
-#     outcome = :n_alerts_per_outbreak,
-#     ylabel = "Number of Alerts per Outbreak",
-#     plotdirpath = baseplotdirpath,
-#     facet_fontsize = 18,
-#     labelsize = 20,
-#     show_x_facet_label = true,
-#     show_y_facet_label = false,
-#     ylims = (0, 9),
-#     force = true,
-#     save_plot = false,
-# clinical_hline = clinical_hline,
-# )
-#
-# #%%
-# alert_outbreak_proportion_line_plot = line_plot(
-#     optimal_threshold_characteristics;
-#     outcome = :alert_outbreak_timeseries_prop_diff,
-#     ylabel = "Proportion of Time Series\nIn Alert - Outbreak",
-#     plotdirpath = baseplotdirpath,
-#     hlines = (0.0),
-#     facet_fontsize = 18,
-#     labelsize = 20,
-#     show_x_facet_label = true,
-#     show_y_facet_label = false,
-#     ylims = (-0.15, 0.20),
-#     force = true,
-#     save_plot = false,
-# clinical_hline = clinical_hline,
-# )
