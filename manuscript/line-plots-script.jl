@@ -142,8 +142,11 @@ delay_line_plot = line_plot(
 
 #%%
 dynamical_noise_optimal_solutions = filter(
-    chars -> chars.noise_specification[1] == DynamicalNoiseSpecification("dynamical", 5.0, 7, 14, "in-phase", 0.15, 0.05),
-    vec(optimal_threshold_characteristics)
+    chars ->
+        chars.noise_specification[1] == DynamicalNoiseSpecification(
+            "dynamical", 5.0, 7, 14, "in-phase", 0.15, 0.05
+        ),
+    vec(optimal_threshold_characteristics),
 );
 @assert length(dynamical_noise_optimal_solutions) == 1
 dynamical_noise_optimal_solutions = dynamical_noise_optimal_solutions[1];
@@ -151,32 +154,41 @@ dynamical_noise_optimal_solutions = dynamical_noise_optimal_solutions[1];
 mean_elisa_0d_delays = map(
     test_chars -> mean(vcat(getproperty(test_chars, :detectiondelays)...)),
     filter(
-        chars -> chars.individual_test_specification == IndividualTestSpecification(1.0, 1.0, 0),
-        dynamical_noise_optimal_solutions
-    ).outbreak_threshold_chars
+        chars ->
+            chars.individual_test_specification ==
+            IndividualTestSpecification(1.0, 1.0, 0),
+        dynamical_noise_optimal_solutions,
+    ).outbreak_threshold_chars,
 )
 
 mean_rdt_90_8x_dynamical_delays = map(
     test_chars -> mean(vcat(getproperty(test_chars, :detectiondelays)...)),
     filter(
-        chars -> chars.individual_test_specification == IndividualTestSpecification(0.9, 0.9, 0),
-        dynamical_noise_optimal_solutions
-    ).outbreak_threshold_chars
+        chars ->
+            chars.individual_test_specification ==
+            IndividualTestSpecification(0.9, 0.9, 0),
+        dynamical_noise_optimal_solutions,
+    ).outbreak_threshold_chars,
 )
 
 mean_rdt_85_8x_dynamical_delays = map(
     test_chars -> mean(vcat(getproperty(test_chars, :detectiondelays)...)),
     filter(
-        chars -> chars.individual_test_specification == IndividualTestSpecification(0.85, 0.85, 0),
-        dynamical_noise_optimal_solutions
-    ).outbreak_threshold_chars
+        chars ->
+            chars.individual_test_specification ==
+            IndividualTestSpecification(0.85, 0.85, 0),
+        dynamical_noise_optimal_solutions,
+    ).outbreak_threshold_chars,
 )
 
-mapreduce(vcat, (
-    ("ELISA", mean_elisa_0d_delays),
-    ("90%", mean_rdt_90_8x_dynamical_delays),
-    ("85%", mean_rdt_85_8x_dynamical_delays)
-)) do (label, mean_delays_vec)
+mapreduce(
+    vcat,
+    (
+        ("ELISA", mean_elisa_0d_delays),
+        ("90%", mean_rdt_90_8x_dynamical_delays),
+        ("85%", mean_rdt_85_8x_dynamical_delays),
+    ),
+) do (label, mean_delays_vec)
     Dict(label => round.(extrema(mean_delays_vec); digits = 1))
 end
 
@@ -225,7 +237,7 @@ alert_proportion_line_plot = line_plot(
 #     ylims = (0, 350),
 #     force = true,
 #     save_plot = false,
-    # clinical_hline = clinical_hline,
+# clinical_hline = clinical_hline,
 # )
 #
 # #%%
@@ -241,7 +253,7 @@ alert_proportion_line_plot = line_plot(
 #     ylims = (0, 9),
 #     force = true,
 #     save_plot = false,
-    # clinical_hline = clinical_hline,
+# clinical_hline = clinical_hline,
 # )
 #
 # #%%
@@ -258,5 +270,5 @@ alert_proportion_line_plot = line_plot(
 #     ylims = (-0.15, 0.20),
 #     force = true,
 #     save_plot = false,
-    # clinical_hline = clinical_hline,
+# clinical_hline = clinical_hline,
 # )
