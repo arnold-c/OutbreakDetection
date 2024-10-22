@@ -104,8 +104,8 @@ function classify_all_outbreaks!(
     minoutbreakdur,
     minoutbreaksize,
 )
-    for (row, (lower, upper, outbreakdur)) in
-        pairs(eachrow(all_thresholds_arr[:, 1:3]))
+    for (row, (lower, upper)) in
+        pairs(eachrow(@view(all_thresholds_arr[:, 1:2])))
         all_thresholds_arr[row, 3] = calculate_outbreak_duration(lower, upper)
 
         all_thresholds_arr[row, 4] = calculate_outbreak_size(
@@ -113,7 +113,7 @@ function classify_all_outbreaks!(
         )
 
         all_thresholds_arr[row, 5] = classify_outbreak(
-            outbreakdur,
+            all_thresholds_arr[row, 3],
             minoutbreakdur,
             all_thresholds_arr[row, 4],
             minoutbreaksize,
