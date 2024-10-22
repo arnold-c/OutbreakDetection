@@ -44,7 +44,7 @@ function line_plot(
             ensemble_percent_clinic_tested_vec,
             optimal_threshold_test_spec_vec,
             optimal_threshold_core_params;
-            clinical_hline = clinical_hline
+            clinical_hline = clinical_hline,
         )
 
         return line_plot(
@@ -67,7 +67,7 @@ function line_plot(
             hlines = hlines,
             force = force,
             save_plot = save_plot,
-            kwargs...
+            kwargs...,
         )
     end
 
@@ -100,6 +100,13 @@ function line_plot(
     plotpath = joinpath(plotdirpath, "$plotname.$plotformat")
 
     if !isfile(plotpath) || force
+        if in(outcome, [:avoidable_cases, :unavoidable_cases])
+            kwargs_dict = Dict{Symbol,Any}(kwargs)
+            if !haskey(kwargs_dict, :cases_scaling)
+                @error "Cases scaling not provided. Please provide kwarg `cases_scaling`"
+            end
+        end
+
         fig = Figure()
 
         unique_noise_descriptions = unique(
@@ -284,6 +291,7 @@ function _line_plot(
         optimal_thresholds_vec,
         outcome;
         percentiles = [0.1, 0.9],
+        nboots = nothing,
     )
 
     select!(
@@ -297,6 +305,23 @@ function _line_plot(
             x -> endswith(x, "th"),
         ),
     )
+
+    if in(outcome, [:avoidable_cases, :unavoidable_cases])
+        DataFrames.transform!(
+            long_df,
+            DataFrames.Cols(r".*_mean", r".*_[0-9]+th") .=>
+                (
+                    x ->
+                        Int64.(
+                            round.(
+                                x * kwargs_dict[:cases_scaling];
+                                digits = 0,
+                            ),
+                        )
+                );
+            renamecols = false,
+        )
+    end
 
     if show_x_facet_label && i == 1
         x_facet_label = "$(Int64(round(
