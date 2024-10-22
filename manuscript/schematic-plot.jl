@@ -1,3 +1,4 @@
+#%%
 using DrWatson
 @quickactivate "OutbreakDetection"
 
@@ -9,6 +10,7 @@ using OutbreakDetectionUtils
 
 include(srcdir("makie-plotting-setup.jl"))
 
+#%%
 states_p = StateParameters(;
     N = 500_000, s_prop = 0.05, e_prop = 0.00, i_prop = 0.00
 )
@@ -61,6 +63,7 @@ outbreak_detection_specification = OutbreakDetectionSpecification(
     "movingavg",
 )
 
+#%%
 function get_outbreak_status(
     inc_vec, outbreak_specification
 )
@@ -95,6 +98,7 @@ function get_outbreak_status(
     return outbreak_status, outbreak_bounds
 end
 
+#%%
 function shift_vec(invec, shift::T) where {T<:Integer}
     if shift == 0
         return invec
@@ -113,6 +117,7 @@ function shift_vec(invec, shift::T) where {T<:Integer}
     return outvec
 end
 
+#%%
 function create_schematic_simulation(
     states_p, dynamics_p, noise_states_p, noise_dynamics_p, test_specification,
     time_p; seed = 1234,
@@ -189,8 +194,9 @@ function create_schematic_simulation(
         outbreak_detection_specification.alert_threshold,
     )
     alert_bounds = calculate_outbreak_thresholds(
-        rle(alertstatus_vec .> 0); ncols = 2
+        rle(alertstatus_vec .> 0); ncols = 3
     )
+    OutbreakDetectionUtils.calculate_outbreak_duration!(alert_bounds)
 
     return inc_vec,
     outbreak_status,
@@ -201,6 +207,7 @@ function create_schematic_simulation(
     alert_bounds
 end
 
+#%%
 inc_vec, outbreak_status, outbreak_bounds, noise_vec, movingavg_testpositives, alertstatus_vec, alert_bounds = create_schematic_simulation(
     states_p,
     dynamics_p,
@@ -215,6 +222,7 @@ inc_vec, outbreak_status, outbreak_bounds, noise_vec, movingavg_testpositives, a
     shift_noise = -100,
 );
 
+#%%
 function plot_schematic(
     inc_vec,
     outbreakstatus_vec,
@@ -240,8 +248,8 @@ function plot_schematic(
     times = collect(time_p.trange)
 
     if haskey(kwargs_dict, :xlims)
-        lower = kwargs_dict[:xlims][1] * 365
-        upper = kwargs_dict[:xlims][2] * 365
+        lower = maximum([1, kwargs_dict[:xlims][1] * 365])
+        upper = minimum([Int64(time_p.tlength), kwargs_dict[:xlims][2] * 365])
         times = times[lower:upper]
         inc_vec = inc_vec[lower:upper]
         outbreakstatus_vec = outbreakstatus_vec[lower:upper]
@@ -253,13 +261,13 @@ function plot_schematic(
             (outbreak_bounds[:, 1] .>= lower) .& (outbreak_bounds[:, 2] .<= upper),
             :,
         ]
-        outbreak_bounds_vec = vec(outbreak_bounds)
 
         alert_bounds = alert_bounds[
             (alert_bounds[:, 1] .>= lower) .& (alert_bounds[:, 2] .<= upper), :,
         ]
-        alert_bounds_vec = vec(alert_bounds)
     end
+    outbreak_bounds_vec = vec(outbreak_bounds[:, 1:2])
+    alert_bounds_vec = vec(alert_bounds[:, 1:2])
 
     fig = Figure()
     noisega = fig[1, 1] = GridLayout()
@@ -367,6 +375,7 @@ function plot_schematic(
     return fig
 end
 
+#%%
 schematic_with_shade_fig = plot_schematic(
     inc_vec,
     outbreak_status,
@@ -375,9 +384,7 @@ schematic_with_shade_fig = plot_schematic(
     noise_vec,
     movingavg_testpositives,
     alertstatus_vec,
-    alert_bounds[
-        (@view(alert_bounds[:, 2]) .- @view(alert_bounds[:, 1]) .> 30), :,
-    ],
+    alert_bounds,
     outbreak_detection_specification.alert_threshold; time_p = time_p,
     shade_alert_outbreak_overlap = true,
     xlims = (5, 13),
