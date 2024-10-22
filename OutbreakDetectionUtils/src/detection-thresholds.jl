@@ -40,7 +40,7 @@ function create_inc_infec_arr!(
         abovethresholdrle = StatsBase.rle(@view(ensemble_inc_arr[:, 2, sim]))
 
         outbreak_thresholds = calculate_outbreak_thresholds(
-            abovethresholdrle; ncols = 4
+            abovethresholdrle; ncols = 5
         )
 
         classify_all_outbreaks!(
