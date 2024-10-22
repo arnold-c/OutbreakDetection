@@ -1,5 +1,5 @@
 @testset "detection-thresholds.jl" begin
-    using OutbreakDetectionUtils, StatsBase
+    using OutbreakDetectionUtils, StatsBase, StaticArrays
 
     outbreakthreshold = 5
     minoutbreakdur = 30
@@ -150,6 +150,73 @@
                 380 410 31 30*31
                 500 540 41 25*41
             ],
+        )
+    end
+
+    @testset "Incidence Infection Array" begin
+        ensemble_inc_vecs = reshape(
+            repeat(map(x -> SVector(x), inc_vec), 3),
+            length(inc_vec), 3,
+        )
+
+        inc_infec_arr, outbreak_thresholds = create_inc_infec_arr(
+            ensemble_inc_vecs,
+            OutbreakSpecification(
+                outbreakthreshold, minoutbreakdur, minoutbreaksize
+            ),
+        )
+
+        @test isequal(
+            inc_infec_arr,
+            reshape(
+                repeat(
+                    vcat(
+                        inc_vec,
+                        [
+                            repeat([0], 9)...,
+                            repeat([1], 51)..., # Outbreak here (i = 10 to 60)
+                            repeat([0], 19)...,
+                            repeat([1], 11)..., # NOT outbreak here (i = 80 to 90)
+                            repeat([0], 9)...,
+                            repeat([1], 81)..., # Outbreak here (i = 100 to 180)
+                            repeat([0], 199)...,
+                            repeat([1], 31)..., # Outbreak here (i = 380 to 410)
+                            repeat([0], 89)...,
+                            repeat([1], 41)..., # Outbreak here (i = 500 to 540)
+                        ],
+                        [
+                            repeat([0], 9)...,
+                            repeat([1], 51)..., # Outbreak here (i = 10 to 60)
+                            repeat([0], 19)...,
+                            repeat([0], 11)..., # NOT outbreak here (i = 80 to 90)
+                            repeat([0], 9)...,
+                            repeat([1], 81)..., # Outbreak here (i = 100 to 180)
+                            repeat([0], 199)...,
+                            repeat([1], 31)..., # Outbreak here (i = 380 to 410)
+                            repeat([0], 89)...,
+                            repeat([1], 41)..., # Outbreak here (i = 500 to 540)
+                        ],
+                    ),
+                    3),
+                length(inc_vec),
+                3,
+                3,
+            ),
+        )
+
+        @test isequal(
+            outbreak_thresholds,
+            repeat(
+                [
+                    [
+                        10 60 51 12*51
+                        100 180 81 8*81
+                        380 410 31 30*31
+                        500 540 41 25*41
+                    ],
+                ],
+                3,
+            ),
         )
     end
 end
