@@ -308,10 +308,11 @@ line_plot(
     labelsize = 20,
     show_x_facet_label = true,
     show_y_facet_label = false,
-    ylims = (0, 3.5e4),
+    ylims = (0, 2.4e4),
     force = true,
     save_plot = false,
     clinical_hline = clinical_hline,
+    cases_scaling = gha_2022_scale_population_per_annum
 )
 ```
 
