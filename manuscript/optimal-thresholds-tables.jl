@@ -6,8 +6,12 @@ using DataFrames
 using CategoricalArrays
 using Match: Match
 using CSV: CSV
+using Chain: Chain
 
-using OutbreakDetectionUtils: create_optimal_thresholds_df
+using OutbreakDetectionUtils:
+    create_optimal_thresholds_df, create_optimal_threshold_summary_df
+
+import OutbreakDetectionUtils: create_optimal_threshold_summary_df
 
 include(projectdir("manuscript", "optimal-thresholds-loading.jl"));
 
@@ -39,16 +43,7 @@ gha_2022_pop = only(
 gha_2022_scale_population =
     gha_2022_pop / ensemble_state_specification.init_states.N
 
-countries = [
-    (;
-        name = "Ghana",
-        code = "GHA",
-        cfr = gha_cfr,
-        year = "2022",
-        population_size = gha_2022_pop,
-        scale_population = gha_2022_scale_population,
-    ),
-]
+gha_2022_scale_population_per_annum = gha_2022_scale_population / 100
 
 #%%
 dynamical_noise_rdt_optimal_solutions = filter(
@@ -83,6 +78,38 @@ rdt_poisson_df[!, :noise_spec] .= "Poisson noise"
 thresholds_df = vcat(
     rdt_dynamical_df, rdt_poisson_df, elisa_df
 )
+
+#%%
+elisa_df = create_optimal_threshold_summary_df(
+    elisa_optimal_solutions,
+    [:unavoidable_cases, :detectiondelays, :alert_duration_vec];
+    percentiles = nothing,
+    nboots = nothing,
+)
+elisa_df[!, :noise_spec] .= "Common"
+elisa_df
+
+rdt_dynamical_df = create_optimal_threshold_summary_df(
+    dynamical_noise_rdt_optimal_solutions,
+    [:unavoidable_cases, :detectiondelays, :alert_duration_vec],
+    percentiles = nothing,
+    nboots = nothing,
+)
+rdt_dynamical_df[!, :noise_spec] .= "Dynamical noise: in-phase"
+
+rdt_poisson_df = create_optimal_threshold_summary_df(
+    poisson_noise_rdt_optimal_solutions,
+    [:unavoidable_cases, :detectiondelays, :alert_duration_vec],
+    percentiles = nothing,
+    nboots = nothing,
+)
+rdt_poisson_df[!, :noise_spec] .= "Poisson noise"
+
+thresholds_df = vcat(
+    rdt_dynamical_df, rdt_poisson_df, elisa_df
+)
+
+thresholds_df[!, :unavoidable_cases] = Int64.(round.(thresholds_df[!, :unavoidable_cases] * gha_2022_scale_population_per_annum; digits = 0))
 
 #%%
 function create_wide_df(
@@ -170,4 +197,16 @@ CSV.write(projectdir("manuscript/optimal-thresholds.csv"), wide_thresholds_df);
 wide_accuracy_df = create_wide_df(thresholds_df, :accuracy; digits = 2)
 CSV.write(
     projectdir("manuscript/optimal-thresholds_accuracy.csv"), wide_accuracy_df
+);
+
+#%%
+wide_unavoidable_df = create_wide_df(thresholds_df, :unavoidable_cases; digits = 2)
+CSV.write(
+    projectdir("manuscript/optimal-thresholds_unavoidable-cases.csv"), wide_unavoidable_df
+);
+
+#%%
+wide_delays_df = create_wide_df(thresholds_df, :detectiondelays; digits = 2)
+CSV.write(
+    projectdir("manuscript/optimal-thresholds_detection-delays.csv"), wide_delays_df
 );
