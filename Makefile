@@ -59,14 +59,25 @@ tmp/ensemble-diag-testing_optimal-thresholds_single-timeseries: scripts/ensemble
 
 
 # Manuscript targets
-MANUSCRIPT_TARGETS = manuscript
+MANUSCRIPT_TARGETS = manuscript supplemental-appendix
 .PHONY: $(MANUSCRIPT_TARGETS) manuscript-targets
 $(MANUSCRIPT_TARGETS): %: tmp/%
 manuscript-targets: $(MANUSCRIPT_TARGETS)
 
 tmp/manuscript: manuscript/manuscript.qmd manuscript/line-plots-script.jl tmp/ensemble-sim
+	@echo "Deleting old cache files"
+	$(shell fd . 'manuscript/.jupyter_cache/'| xargs rm -r)
+	@echo "Rendering manuscript"
 	quarto render manuscript/manuscript.qmd
 	@touch $@
+
+tmp/supplemental-appendix: manuscript/supplemental-appendix.qmd tmp/manuscript
+	@echo "Deleting old cache files"
+	$(shell fd . 'manuscript/.jupyter_cache/'| xargs rm -r)
+	@echo "Rendering supplemental appendix"
+	quarto render manuscript/supplemental-appendix.qmd
+	@touch $@
+
 
 # Test targets
 TEST_TARGETS = runtests
