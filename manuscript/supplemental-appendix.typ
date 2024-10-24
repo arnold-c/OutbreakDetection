@@ -501,7 +501,7 @@
 ], caption: figure.caption(
 position: top, 
 [
-The outbreak detection accuracy for each testing scenario, at the optimal thresholds.
+Mean outbreak detection accuracy of each testing scenario at their specific optimal thresholds, when the average noise incidence is 8 times higher than the average measles incidence. A) the noise structure is dynamical, and the seasonality is in-phase with the measles incidence. B) the noise structure is Poisson only.
 ]), 
 kind: "quarto-float-tbl", 
 supplement: "Table", 
@@ -524,7 +524,7 @@ supplement: "Table",
 ], caption: figure.caption(
 position: top, 
 [
-Unavoidable cases per annum of each testing scenario at their specific optimal thresholds, scaled up to Ghana’s 2022 population. A) the noise structure is dynamical, and the seasonality is in-phase with the measles incidence. B) the noise structure is Poisson only.
+Mean unavoidable cases per annum of each testing scenario at their specific optimal thresholds, scaled up to Ghana’s 2022 population, when the average noise incidence is 8 times higher than the average measles incidence. A) the noise structure is dynamical, and the seasonality is in-phase with the measles incidence. B) the noise structure is Poisson only.
 ]), 
 kind: "quarto-float-tbl", 
 supplement: "Table", 
@@ -547,7 +547,7 @@ supplement: "Table",
 ], caption: figure.caption(
 position: top, 
 [
-Outbreak alert delay (days) of each testing scenario at their specific optimal thresholds. A) the noise structure is dynamical, and the seasonality is in-phase with the measles incidence. B) the noise structure is Poisson only.
+Mean outbreak alert delay (days) of each testing scenario at their specific optimal thresholds, when the average noise incidence is 8 times higher than the average measles incidence. A) the noise structure is dynamical, and the seasonality is in-phase with the measles incidence. B) the noise structure is Poisson only.
 ]), 
 kind: "quarto-float-tbl", 
 supplement: "Table", 

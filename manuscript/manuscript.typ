@@ -550,6 +550,8 @@ supplement: "Table",
 
 To examine the sensitivity of the detection system to background noise, we layered the measles incidence time series with one of four noise time series structures: Poisson-only noise; or dynamical noise with rubella-like parameters that could be in- or out-of-phase, or with independent seasonality to the measles dynamics. Only dynamical in-phase noise and Poisson-only noise are presented in this manuscript. For each noise structure, five different magnitudes of noise were simulated and evaluated: the total annual incidence of noise in each system was either the same magnitude as the average annual measles incidence, two times, four times, six times, or eight times the average annual measles incidence. 100 time series of 100 years were simulated for each scenario, before summarizing the distributions of outbreak detection methods.
 
+#emph[Mention that the same model was used to define the noise as the outbreaks.]
+
 == Defining Outbreaks
 <defining-outbreaks>
 It is common to use expert review to define outbreaks when examining empirical data, but this is not feasible in a modeling study where tens of thousands of years are being simulated. To account for this, many studies only simulate a single outbreak within a time series (repeating this short stochastic simulation multiple times to ensemble results), define an outbreak as a period where $R_(upright("effective"))$ \> 1, or use a threshold of \> 2 standard deviations (s.d.) over the mean seasonal incidence observed in empirical data (or from a 'burn-in' period of the simulation) @sternAutomatedOutbreakDetection1999@jombartRealtimeMonitoringCOVID192021@stolermanUsingDigitalTraces2023@salmonMonitoringCountTime2016@teklehaimanotAlertThresholdAlgorithms2004@leclereAutomatedDetectionHospital2017. Each method has its uses, but to evaluate the performance of an outbreak detection system in an endemic region where multiple sequential epidemics are expected it is important to clearly define the bounds of the outbreak, which can only be achieved by 2 s.d. \> mean ($R_(upright("effective"))$ will be less than 1 after an outbreak’s peak, but still within what can be reasonably defined as the outbreak’s bounds). This, however, assumes strong seasonal forcing and regular periodicity of incidence to produce a smooth enough baseline, which is not present as countries near measles elimination status @grahamMeaslesCanonicalPath2019. Here we define a true measles outbreak as a region of the time series that meets the following three criteria:
@@ -562,15 +564,15 @@ Each of these is a necessary, but not sufficient, condition to the definition of
 
 == Triggering Alerts
 <triggering-alerts>
+#emph[Need to mention that an alert is any time the threshold is exceeded, regardless of the number of consecutive days of exceedance.] #emph[Clearly state that 1 day of exceedance is and 30 days of consecutive exceedance are both treated as a single alert i.e., the same.]
+
 The use of alert thresholds is common in locations burdened by measles, where access to high performance computing is limited making nowcasting-style approaches to outbreak detection impractical. For this reason, we define an "alert" as any single day where the 7-day moving average of the daily incidence is greater than, or equal to, a pre-specified alert threshold. To examine the interaction of test and surveillance systems we vary the alert threshold, between 1 and 15 cases per day, before computing the evaluation metrics and identifying the optimal threshold for each combination of individual test, testing rate, noise structure, and noise magnitude. We also examined an alert method that required either the daily incidence or the 7-day moving average of daily incidence to exceed the alert threshold (see supplemental results).
 
 Each day, 60% of the measles and non-measles febrile rash cases visit the clinic for treatment, and a percentage of these clinic visits are tested, as all clinic visits are deemed to be suspected measles cases because they meet the clinical case definition. This percentage of clinic visits that are tested is varied between 10% and 60%, in 10% increments, for all combinations of diagnostic test (except clinical case definition) and alert threshold, defining the "testing scenario". Each testing scenario uses one of the following tests:
 
-- No test, where every suspected measles case is counted as positive for measles and used to trigger an outbreak alert, which is equivalent to the use of the clinical case definition. This is implemented as a diagnostic test with 100% sensitivity, 0% specificity, a 0-day lag in returning the result, and all individuals who visit the clinic are tested (not varied between 10-60%, like the other diagnostic tests described).
 - An RDT equivalent with 85% sensitivity and specificity, and 0-day lag in result return. That is, 85% of true measles cases will be correctly labelled as positive, and 15% of non-measles febrile rash individuals that are tested will be incorrectly labelled as positive for measles. This acts as a lower bound of acceptability for a new measles RDT.
 - An RDT equivalent with 90% sensitivity and specificity, and 0-day lag in result return.
 - An ELISA equivalent test with 100% sensitivity and specificity with a 0-day test result delay.
-- An ELISA equivalent test with 100% sensitivity and specificity with a 7-day test result delay.
 - An ELISA equivalent test with 100% sensitivity and specificity with a 14-day test result delay.
 
 == Optimal Thresholds
@@ -685,11 +687,12 @@ supplement: "Figure",
 <discussion>
 The performance of an outbreak detection system is highly sensitive to the structure and level of background noise in the simulation. Despite the mean daily noise incidence set to equivalent values between the dynamical and Poisson-only simulations, drastically different results are observed.
 
-#quote(block: true)[
-Despite the same average incidence of noise in each (comparable) scenario, the relative proportion of measles to noise varies differently throughout the time series, exacerbating the effects of imperfect diagnostic tests that will produce higher rates of false positives and negatives than ELISA-like diagnostics. Imperfect tests are also more susceptible to incorrect results because of the varying prevalence throughout the time series, so the PPV of the system will not be static throughout the time series.
-]
+Under the assumption that non-measles febrile rash is relatively static in time (Poisson), RDTs can perform as well, if not better than ELISA tests at moderate to high testing rates, and at a fraction of the cost. However, if it is expected that the noise is non-stationary, imperfect tests cannot overcome their accuracy limitations through higher testing rates, saturating at c.~74% accuracy, relative to ELISA’s 93%. This occurs because, despite the same average incidence of noise in each (comparable) scenario, the relative proportion of measles to noise varies differently throughout the time series, exacerbating the effects of imperfect diagnostic tests that will produce higher rates of false positives and negatives than ELISA-like diagnostics. Imperfect tests are also more susceptible to incorrect results due to the varying prevalence throughout the time series, so the PPV of the system will not be static throughout the time series.
 
-Under the assumption that non-measles febrile rash is relatively static in time (Poisson), RDTs can perform as well, if not better than ELISA tests at moderate to high testing rates, and at a fraction of the cost. However, if it is expected that the noise is non-stationary, imperfect tests cannot overcome their accuracy limitations through higher testing rates, saturating at c.~74% accuracy, relative to ELISA’s 93%.
+- #emph[Make point about balance of false positive/negative outbreak detection]
+- #emph[Analysis isn’t true optimization:]
+  - #emph[Requires explicit decisions about preference for speed / false alerts vs higher PPV]
+  - #emph[Surveillance is counting for action (WHO quote)]
 
 The purpose of routine surveillance is to characterize the infection landscape. With strong public health infrastructure and infectious disease surveillance programs, it is possible to develop a strong understanding of the shape of febrile rash cases, regardless of source. With this information, countries can tailor their future activities to rely more or less heavily upon RDTs, depending on the dynamics of the target disease and its relationship to background noise, favoring RDTs when there are low levels of noise and ELISAs during large rubella outbreaks, for example.
 
@@ -708,6 +711,8 @@ Given these limitations, the explicit values (i.e., optimal thresholds, accuraci
 #pagebreak()
 = Funding
 <funding>
+- #emph[Something about GAVI/Gates]
+
 This work was supported by funding from the Office of the Provost and the Clinical and Translational Science Institute, Huck Life Sciences Institute, and Social Science Research Institutes at the Pennsylvania State University. The project described was supported by the National Center for Advancing Translational Sciences, National Institutes of Health, through Grant UL1 TR002014. The content is solely the responsibility of the authors and does not necessarily represent the official views of the NIH. The funding sources had no role in the collection, analysis, interpretation, or writing of the report.
 
 = Acknowledgements
