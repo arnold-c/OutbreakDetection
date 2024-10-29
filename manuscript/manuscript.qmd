@@ -173,7 +173,7 @@ Only dynamical in-phase noise and Poisson-only noise are presented in the main t
 For each noise structure, we simulated five different magnitudes of noise ($\Lambda$).
 $\Lambda$ was calculated as a multiple ($c$) of the average daily measles incidence ($\langle \Delta I_{M} \rangle$): $\Lambda = c \cdot \langle \Delta I_{M} \rangle \text{where} c \in	\{1, 2, 4, 6, 8 \}$.
 For the Poisson-noise scenarios, independent draws from a Poisson distribution with mean $\lambda = \Lambda$ were simulated to produce the noise time series.
-For the dynamical noise scenarios, the vaccination rate at birth was set to 85.4%, 73.8%, 50.8%, 27.9%, and 5.0% to produce equivalent mean daily noise values (to within 2 decimal places): $\Lambda = \langle \Delta I_{R} \rangle = c \cdot \langle \Delta I_{M} \rangle$.
+For the dynamical noise scenarios, the vaccination rate at birth was set to 85.38%, 73.83%, 50.88%, 27.89%, and 4.92% to produce equivalent mean daily noise values (to within 2 decimal places): $\Lambda = \langle \Delta I_{R} \rangle = c \cdot \langle \Delta I_{M} \rangle$.
 
 
 the total annual incidence of noise in each system was either the same magnitude as the average annual measles incidence, two times, four times, six times, or eight times the average annual measles incidence.

@@ -48,7 +48,7 @@ dynamical_noise_correlation = ["in-phase", "out-of-phase", "none"]
 dynamical_noise_mean_scaling_vec = [0.15]
 # dynamical_noise_vaccination_coverage_vec = collect(0.0:0.2:0.8)
 dynamical_noise_vaccination_coverage_vec = [
-    0.854, 0.738, 0.508, 0.279, 0.050
+    0.8538, 0.7383, 0.5088, 0.2789, 0.0492
 ]
 dynamical_noise_spec_vec = create_combinations_vec(
     DynamicalNoiseSpecification,
