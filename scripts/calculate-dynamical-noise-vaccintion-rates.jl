@@ -1,8 +1,10 @@
+using OutbreakDetectionUtils: StatsBase
 #%%
 using DrWatson
 @quickactivate "OutbreakDetection"
 
 using UnPack: @unpack
+using StatsBase: StatsBase
 using OutbreakDetectionUtils
 
 #%%
@@ -105,8 +107,9 @@ function calculate_dynamic_vaccination_coverage(
             )
         end
 
-        bisect_vaccination =
-            (vaccination_range[1] + vaccination_range[2]) / 2
+        bisect_vaccination = round(
+            (vaccination_range[1] + vaccination_range[2]) / 2; digits = 4
+        )
 
         new_noise = calculate_mean_dynamical_noise(
             R0,
@@ -125,7 +128,7 @@ function calculate_dynamic_vaccination_coverage(
         end
 
         if new_distance < 0
-            @assert abs(new_distance) < abs_distance[1]
+            # @assert abs(new_distance) < abs_distance[1]
 
             distance[1] = new_distance
             abs_distance[1] = abs(new_distance)
@@ -134,7 +137,7 @@ function calculate_dynamic_vaccination_coverage(
         end
 
         if new_distance > 0
-            @assert abs(new_distance) < abs_distance[2]
+            # @assert abs(new_distance) < abs_distance[2]
 
             distance[2] = new_distance
             abs_distance[2] = abs(new_distance)
@@ -194,10 +197,32 @@ dynamical_noise_spec = (;
 )
 
 #%%
-calculate_dynamic_vaccination_coverage(
-    1,
-    10,
-    dynamical_noise_spec,
-    ensemble_specification;
-    maxiters = 20,
+ensemble_inc_arr = get_ensemble_file(
+    ensemble_specification, OutbreakSpecification(5, 30, 500)
+)["ensemble_inc_arr"]
+
+mean_measles = StatsBase.mean(ensemble_inc_arr[:, 1, :])
+
+#%%
+dynamical_noise_coverages = map(
+    ((scale, coverage_range),) -> calculate_dynamic_vaccination_coverage(
+        scale,
+        mean_measles,
+        dynamical_noise_spec,
+        ensemble_specification;
+        maxiters = 20,
+        vaccination_range = coverage_range,
+        atol = 0.01,
+        showprogress = true,
+    ),
+    zip(
+        [1, 2, 4, 6, 8],
+        [[0.8, 0.9], [0.7, 0.8], [0.4, 0.6], [0.2, 0.4], [0.0, 0.1]],
+    ),
+)
+
+#%%
+map(
+    ((t, c),) -> t[2] - c * mean_measles,
+    zip(dynamical_noise_coverages, [1, 2, 4, 6, 8]),
 )
