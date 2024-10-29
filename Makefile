@@ -64,7 +64,7 @@ MANUSCRIPT_TARGETS = manuscript supplemental-appendix
 $(MANUSCRIPT_TARGETS): %: tmp/%
 manuscript-targets: $(MANUSCRIPT_TARGETS)
 
-tmp/manuscript: manuscript/manuscript.qmd manuscript/line-plots-script.jl tmp/ensemble-sim
+tmp/manuscript: manuscript/manuscript.qmd tmp/ensemble-sim
 	@echo "Deleting old cache files"
 	$(shell fd . 'manuscript/.jupyter_cache/'| xargs rm -r)
 	@echo "Rendering manuscript"
