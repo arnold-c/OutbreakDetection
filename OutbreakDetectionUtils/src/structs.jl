@@ -344,8 +344,9 @@ end
 function get_test_description(test_specification::IndividualTestSpecification)
     description = Match.@match test_specification begin
         IndividualTestSpecification(1.0, 0.0, 0) => "Clinical case definition"
+        [IndividualTestSpecification(0.98, 0.98, x::Int), IndividualTestSpecification(0.95, 0.98, x::Int)] => "ELISA-like ($(test_specification.sensitivity)% sens, $(test_specification.specificity)% spec, $(x) day lag)"
+        IndividualTestSpecification(1.0, 1.0, x::Int) => "Perfect test ($(x) day lag)"
         IndividualTestSpecification(x::AbstractFloat, x::AbstractFloat, 0) where {x<1.0} => "RDT-like ($(test_specification.sensitivity * 100)% sens/spec)"
-        IndividualTestSpecification(1.0, 1.0, x::Int) => "ELISA-like ($(x) day lag)"
     end
     return description
 end
