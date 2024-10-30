@@ -106,6 +106,6 @@ poisson_noise_optimal_solutions = filter_optimal_threshold_characteristics_by_no
 dynamical_noise_optimal_solutions = filter_optimal_threshold_characteristics_by_noise(
     optimal_threshold_characteristics,
     DynamicalNoiseSpecification(
-        "dynamical", 5.0, 7, 14, "in-phase", 0.15, 0.05
+        "dynamical", 5.0, 7, 14, "in-phase", 0.15, 0.0492
     ),
 );

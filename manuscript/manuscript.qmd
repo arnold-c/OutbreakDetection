@@ -166,7 +166,7 @@ Compartmental model parameters
 
 To examine the sensitivity of the detection system to background noise, we layered the measles incidence time series with one of four noise time series structures: Poisson-only noise; or dynamical noise with rubella-like parameters that could be in- or out-of-phase, or with independent seasonality to the measles dynamics.
 For Poisson-only noise, the number of non-measles febrile rash cases each day were independent draws from a Poisson distribution with mean $\lambda$.
-For dynamical noise, we generated time series of cases from an SEIR model that matched the measles model in structure, but had $R_0 = 5$, mean latent period of 7 days, and mean infectious period of 14 days (@tbl-model-parameters).
+For dynamical noise, we generated time series of cases from an SEIR model that matched the measles model in structure, but had $R_0 = 5$, mean latent period of 7 days, and mean infectious period of 14 days, and added some additional noise independently drawn from a Poisson distribution with mean equal to 15% of the average daily rubella incidence from the SEIR time series to account for non-rubella sources of febrile rash (@tbl-model-parameters) [_**REFERENCES**_].
 The seasonality for the dynamical noise was assumed to be in-phase with measles, anti-phase with measles (peak timing 6 months later), or non-seasonal.
 Only dynamical in-phase noise and Poisson-only noise are presented in the main text; the anti-phase and non-seasonal dynamical noise scenarios are presented in the supplement.
 
@@ -174,12 +174,8 @@ For each noise structure, we simulated five different magnitudes of noise ($\Lam
 $\Lambda$ was calculated as a multiple ($c$) of the average daily measles incidence ($\langle \Delta I_{M} \rangle$): $\Lambda = c \cdot \langle \Delta I_{M} \rangle \text{where} c \in	\{1, 2, 4, 6, 8 \}$.
 For the Poisson-noise scenarios, independent draws from a Poisson distribution with mean $\lambda = \Lambda$ were simulated to produce the noise time series.
 For the dynamical noise scenarios, the vaccination rate at birth was set to 85.38%, 73.83%, 50.88%, 27.89%, and 4.92% to produce equivalent mean daily noise values (to within 2 decimal places): $\Lambda = \langle \Delta I_{R} \rangle = c \cdot \langle \Delta I_{M} \rangle$.
-
-
-the total annual incidence of noise in each system was either the same magnitude as the average annual measles incidence, two times, four times, six times, or eight times the average annual measles incidence.
 100 time series of 100 years were simulated for each scenario, before summarizing the distributions of outbreak detection methods.
 
-_**Mention that the same model was used to define the noise as the outbreaks.**_
 
 ## Defining Outbreaks
 
@@ -193,23 +189,11 @@ Here we define a true measles outbreak as a region of the time series that meets
 - The daily measles incidence must remain above 5 cases for greater than, or equal to, 30 consecutive days
 - The total measles incidence must be great than, or equal to, 500 cases within the bounds of the outbreak
 
-Each of these is a necessary, but not sufficient, condition to the definition of an outbreak; all must be met.
-For example, a region may produce 1000 total cases within the lower and upper bounds defined by the daily incidence being $\ge$ 5 cases, but if this period only lasts for 20 days it would not be considered an outbreak as it would not be possible to mount a response to.
+Only events meeting all 3 criteria are classified as outbreaks
 The incidence of non-measles febrile rash (i.e., noise) does not affect the outbreak status of a region but may affect the alert status triggered by the testing protocol.
 
-## Triggering Alerts
-
-_Need to mention that an alert is any time the threshold is exceeded, regardless of the number of consecutive days of exceedance._
-_Clearly state that 1 day of exceedance is and 30 days of consecutive exceedance are both treated as a single alert i.e., the same._
-
-The use of alert thresholds is common in locations burdened by measles, where access to high performance computing is limited making nowcasting-style approaches to outbreak detection impractical.
-For this reason, we define an “alert” as any single day where the 7-day moving average of the daily incidence is greater than, or equal to, a pre-specified alert threshold.
-To examine the interaction of test and surveillance systems we vary the alert threshold, between 1 and 15 cases per day, before computing the evaluation metrics and identifying the optimal threshold for each combination of individual test, testing rate, noise structure, and noise magnitude.
-We also examined an alert method that required either the daily incidence or the 7-day moving average of daily incidence to exceed the alert threshold (see supplemental results).
-
-Each day, 60% of the measles and non-measles febrile rash cases visit the clinic for treatment, and a percentage of these clinic visits are tested, as all clinic visits are deemed to be suspected measles cases because they meet the clinical case definition.
+Each day, 60% of the measles and non-measles febrile rash cases visit the clinic for treatment, and a percentage (P) of these clinic visits are tested, as all clinic visits are deemed to be suspected measles cases because they meet the clinical case definition.
 This percentage of clinic visits that are tested is varied between 10% and 60%, in 10% increments, for all combinations of diagnostic test (except clinical case definition) and alert threshold, defining the “testing scenario”.
-<!--While a reporting rate of 6-48% is high, we are only simulating a population of 500,000 individuals i.e., approximately 1.5% of Ghana’s population, which produces absolute incidence values that are consistent with observed reporting on the national scale.-->
 Each testing scenario uses one of the following tests:
 
 <!-- - No test, where every suspected measles case is counted as positive for measles and used to trigger an outbreak alert, which is equivalent to the use of the clinical case definition. This is implemented as a diagnostic test with 100% sensitivity, 0% specificity, a 0-day lag in returning the result, and all individuals who visit the clinic are tested (not varied between 10-60%, like the other diagnostic tests described). -->
@@ -219,15 +203,20 @@ Each testing scenario uses one of the following tests:
 <!--- An ELISA equivalent test with 100% sensitivity and specificity with a 7-day test result delay.-->
 - An ELISA equivalent test with 100% sensitivity and specificity with a 14-day test result delay.
 
-## Optimal Thresholds
+The time series of "test-positive cases" is the daily count of those tested cases that return a positive test result.
+Thus, for each measles (@fig-outbreak-schematic b) and non-measles noise (@fig-outbreak-schematic a) time series, we have 1 time series of outbreaks (@fig-outbreak-schematic a) and 5 possible time series of test-positive cases (@fig-outbreak-schematic c) (all clinically compatible cases, plus the 4 testing scenarios), which will include false positive and negative cases resulting from imperfect diagnostic tests, that can be used to trigger outbreak alerts.
 
-For each of the previously defined tests, we calculate the number of test positive cases (that will include false positive and negative cases resulting from imperfect diagnostic tests), which is used to categorize the time series by alert status in conjunction with the alert threshold.
-The overlap with true outbreak status, or lack thereof, is used to classify the following metrics, and has been illustrated in @fig-outbreak-schematic:
+## Triggering Alerts
 
-- The percentage of alerts that are 'correct'. This is analogous to the PPV of the alert system. Note that it is possible to trigger multiple alerts within a single outbreak, and each would be considered correct.
-- The percentage of outbreaks that are detected. This is analogous to the sensitivity of the alert system.
-- The detection delay. If an alert precedes the start of the outbreak, as long as it successfully “captures” the outbreak within its bounds, it is considered to be a 'correct' alert, resulting in a negative detection delay i.e., an early warning triggered by false positives.
-- The number of unavoidable and avoidable outbreak cases and deaths. Avoidable cases are defined as those that occur within an outbreak after a correct alert is first triggered i.e., cases that could theoretically be prevented with a perfectly effective and timely response. Unavoidable cases are the inverse: those that occur before a correct alert, or those that occur in an undetected outbreak. Using a fitted age distribution of measles cases in Ghana [@mintaProgressMeaslesElimination2023] and the age-specific case fatality ratio for Ghana in 2022 [@sbarraEstimatingNationallevelMeasles2023], we scaled the values for each one-year age cohort, per annum. In practice, not all cases deemed avoidable are (due to imperfect and delays in responses), but to minimize the sensitivity of the results to the response implementation and operational constraints we are counting them as such.
+_**Need to mention that an alert is any time the threshold is exceeded, regardless of the number of consecutive days of exceedance.**_
+_**Clearly state that 1 day of exceedance is and 30 days of consecutive exceedance are both treated as a single alert i.e., the same.**_
+
+We define an "alert" as any contiguous string of 1 or more days where the 7-day moving average of the test-positive cases is greater than, or equal to, a pre-specified alert threshold, T.
+For each time series of test-positive cases, we calculate the percentage of alerts that are "correct", defined as any overlap of 1 or more days between the alert and outbreak period (@fig-outbreak-schematic c); this is analogous to the PPV of the alert system.
+Note that it is possible to have multiple alerts within a single outbreak, if the 7-day moving average of test positive cases drops below the threshold, and each would be considered correct.
+For all outbreaks that occur in the measles time series, we calculate the percentage for which at least 1 alert occurred between its start and end date (@fig-outbreak-schematic b); this is analogous to the sensitivity of the alert system.
+We also calculate the detection delay as the time from the start of an outbreak to the start of its first alert.
+If the alert starts before the outbreak and continues past the start date of the outbreak, this could be considered a correct alert with a negative delay i.e., an early warning triggered by a false positive.
 
 ```{julia}
 #| fig-cap: "A schematic of the outbreak definition and alert detection system. A) Noise time series. B) Measles incidence time series. C) Observed time series resulting from testing noise & measles cases that visit the healthcare facility. The orange bands/vertical lines represent regions of the measles time series that meet the outbreak definition criteria. The green bands/vertical lines represent regions of the observed (measles - noise) time series that breach the alert threshold (the horizontal dashed line), and constitute an alert."
@@ -235,9 +224,19 @@ The overlap with true outbreak status, or lack thereof, is used to classify the 
 include("schematic-plot.jl")
 ```
 
+Finally, for each time series we calculate the number of unavoidable and avoidable outbreak cases and deaths.
+Avoidable cases are defined as those that occur within an outbreak after a correct alert is first triggered i.e., cases that could theoretically be prevented with a perfectly effective and timely response.
+Unavoidable cases are the inverse: those that occur before a correct alert, or those that occur in an undetected outbreak.
+Using a fitted age distribution of measles cases in Ghana [@mintaProgressMeaslesElimination2023] and the age-specific case fatality ratio for Ghana in 2022 [@sbarraEstimatingNationallevelMeasles2023], we scaled the values for each one-year age cohort, per annum.
+In practice, not all cases deemed avoidable are (due to imperfect and delays in responses), but to minimize the sensitivity of the results to the response implementation and operational constraints we are counting them as such.
+
+We define the accuracy of the surveillance system for a given time series as the mean of the percentage of alerts that are correct and the proportion of the outbreaks with an alert.
+To examine the interaction of test and surveillance systems we varied the alert threshold, between 1 and 15 cases per day, and identified the threshold T for each combination of individual test, testing rate, noise structure and magnitude that maximizes accuracy.
+We also examined an alert method that required either the daily incidence or the 7-day moving average of daily incidence to exceed the alert threshold (see supplemental results).
+
 For each combination of diagnostic test and testing rate, the optimal alert threshold is calculated by selecting the threshold that produces the highest accuracy.
-Each of the 100 simulations produces an accuracy (the mean of the percentages of alerts that are correct and the percentage of the outbreaks that are detected), and the median accuracy of this distribution is used to determine the optimal alert threshold.
-Each testing scenario (the combination of the diagnostic test, testing rate, and alert threshold), is then compared (using the metrics above) at the optimal threshold that is specific for the scenario.
+Each of the 100 simulations per scenario produces an accuracy and the median accuracy of this distribution is used to determine the optimal alert threshold.
+We then compare testing scenarios (the combination of the diagnostic test, testing rate, and alert threshold) at the optimal threshold that is specific for the scenario.
 This allows for conclusions to be made about the surveillance system as a whole, instead of just single components.
 
 
@@ -312,7 +311,9 @@ line_plot(
     show_y_facet_label = false,
     ylims = (0.5, 1.0),
     force = true,
-    save_plot = false,
+    plotdirpath = DrWatson.projectdir("manuscript"),
+    plotname = "line_accuracy_plot",
+    save_plot = true,
     clinical_hline = clinical_hline,
 )
 ```
@@ -330,7 +331,9 @@ line_plot(
     show_y_facet_label = false,
     ylims = (0, 2.4e4),
     force = true,
-    save_plot = false,
+    plotdirpath = DrWatson.projectdir("manuscript"),
+    plotname = "line_unavoidable_plot",
+    save_plot = true,
     clinical_hline = clinical_hline,
     cases_scaling = gha_2022_scale_population_per_annum
 )
@@ -350,7 +353,9 @@ line_plot(
     show_y_facet_label = false,
     ylims = (-100, 100),
     force = true,
-    save_plot = false,
+    plotdirpath = DrWatson.projectdir("manuscript"),
+    plotname = "line_delays_plot",
+    save_plot = true,
     clinical_hline = clinical_hline,
 )
 ```
@@ -374,7 +379,9 @@ line_plot(
     show_y_facet_label = false,
     ylims = (0, 0.35),
     force = true,
-    save_plot = false,
+    plotdirpath = DrWatson.projectdir("manuscript"),
+    plotname = "line_prop_alert_plot",
+    save_plot = true,
     clinical_hline = clinical_hline,
 )
 ```
