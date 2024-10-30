@@ -554,7 +554,7 @@ supplement: "Table",
 
 To examine the sensitivity of the detection system to background noise, we layered the measles incidence time series with one of four noise time series structures: Poisson-only noise; or dynamical noise with rubella-like parameters that could be in- or out-of-phase, or with independent seasonality to the measles dynamics. For Poisson-only noise, the number of non-measles febrile rash cases each day were independent draws from a Poisson distribution with mean $lambda$. For dynamical noise, we generated time series of cases from an SEIR model that matched the measles model in structure, but had $R_0 = 5$, mean latent period of 7 days, and mean infectious period of 14 days, and added some additional noise independently drawn from a Poisson distribution with mean equal to 15% of the average daily rubella incidence from the SEIR time series to account for non-rubella sources of febrile rash (@tbl-model-parameters) \[#emph[#strong[REFERENCES];];\]. The seasonality for the dynamical noise was assumed to be in-phase with measles, anti-phase with measles (peak timing 6 months later), or non-seasonal. Only dynamical in-phase noise and Poisson-only noise are presented in the main text; the anti-phase and non-seasonal dynamical noise scenarios are presented in the supplement.
 
-For each noise structure, we simulated five different magnitudes of noise ($Lambda$). $Lambda$ was calculated as a multiple ($c$) of the average daily measles incidence ($angle.l Delta I_M angle.r$): $Lambda = c dot.op angle.l Delta I_M angle.r upright("where") c in { 1 , 2 , 4 , 6 , 8 }$. For the Poisson-noise scenarios, independent draws from a Poisson distribution with mean $lambda = Lambda$ were simulated to produce the noise time series. For the dynamical noise scenarios, the vaccination rate at birth was set to 85.38%, 73.83%, 50.88%, 27.89%, and 4.92% to produce equivalent mean daily noise values (to within 2 decimal places): $Lambda = angle.l Delta I_R angle.r = c dot.op angle.l Delta I_M angle.r$. 100 time series of 100 years were simulated for each scenario, before summarizing the distributions of outbreak detection methods.
+For each noise structure, we simulated five different magnitudes of noise ($Lambda$), representing the average daily noise incidence. $Lambda$ was calculated as a multiple ($c$) of the average daily measles incidence ($angle.l Delta I_M angle.r$): $Lambda = c dot.op angle.l Delta I_M angle.r upright("where") c in { 1 , 2 , 4 , 6 , 8 }$. For the Poisson-noise scenarios, independent draws from a Poisson distribution with mean $c dot.op angle.l Delta I_M angle.r$ were simulated to produce the noise time series i.e., $Lambda = upright("Pois") (c dot.op angle.l Delta I_M angle.r)$. For the dynamical noise scenarios, the rubella vaccination rate at birth was set to 85.38%, 73.83%, 50.88%, 27.89%, and 4.92% to produce equivalent values of $Lambda$ (to within 2 decimal places): $Lambda = angle.l Delta I_R angle.r + upright("Pois") (0.15 dot.op angle.l Delta I_R angle.r)$. 100 time series of 100 years were simulated for each scenario, before summarizing the distributions of outbreak detection methods.
 
 == Defining Outbreaks
 <defining-outbreaks>
@@ -604,8 +604,6 @@ For each combination of diagnostic test and testing rate, the optimal alert thre
 <results>
 The threshold that maximized outbreak detection accuracy depends on diagnostic test characteristics, the testing rate, and the structure of the non-measles noise (@tbl-optimal-thresholds). When the average noise incidence was 8 times higher than the average measles incidence, the optimal threshold ranged between 1 and 7 test-positive cases per day. Not surprisingly, the biggest driver of this difference was the testing rate; as a large fraction of suspected cases are tested the optimal threshold increases monotonically for all test and noise types (@tbl-optimal-thresholds). The maximal attainable outbreak detection accuracy at the optimal threshold depends strongly on the structure and magnitude of the background noise. For Poisson noise, at all magnitudes, the maximum outbreak detection accuracy increases rapidly from 65% at 10% of suspected cases tested to \~90% accuracy at ≥20% testing for all test types (@fig-accuracy). For dynamical SEIR noise, the ELISA-like tests perform similarly to the Poisson noise case at all magnitudes (@fig-accuracy). For RDT-like tests, which have lower individual sensitivity and specificity, the maximal attainable accuracy is lower than the ELISA-like test for all testing rates when the magnitude of background noise is 2-times measles incidence or higher (@fig-accuracy). Notably, the maximal attainable accuracy declines with increasing noise and, at all noise levels, decreases with higher testing rates as the signal becomes dominated by false positive tests (@fig-accuracy).
 
-Introducing a lag in test result reporting necessarily decreases outbreak detection accuracy because an alert can only begin once the test results are in-hand, which increases the chance that an outbreak will end before the result. For the conditions simulated here, introducing a 14-day lag in test reporting for an ELISA-like test reduces the outbreak detection accuracy by \#\#\#%. For all simulated scenarios, this is consistent with, or higher than the accuracy achievable with an RDT-like test. This always leads to an increase in the median delay from outbreak start to alert relative to an ELISA-like test with no detection and frequently leads to a detection delay relative to an RDT-like test (@fig-delay).
-
 #figure([
 #let optimal_thresholds = csv("optimal-thresholds.csv")
 
@@ -620,23 +618,15 @@ Introducing a lag in test result reporting necessarily decreases outbreak detect
   ..optimal_thresholds.flatten()
 )
 ], caption: figure.caption(
+separator: "", 
 position: bottom, 
 [
-Optimal threshold for each testing scenario, when the average noise incidence is 8 times higher than the average measles incidence. A) the noise structure is dynamical, and the seasonality is in-phase with the measles incidence. B) the noise structure is Poisson only
 ]), 
 kind: "quarto-float-tbl", 
 supplement: "Table", 
 )
 <tbl-optimal-thresholds>
 
-
-It is notable that outbreak detection accuracy and detection delays do not increase monotonically with an increase in testing rate, and this holds regardless of the type of test. The reason behind this unintuitive results stems from the use of integer-valued thresholds. An integer valued threshold can result in step-changes of accuracy between two threshold values, and the expected increase in the alert system’s PPV from a higher threshold value is outweighed by the loss in the alert system’s sensitivity to detecting outbreaks. Even with a perfect test, the alert system must discriminate between endemic/imported cases and epidemic cases; increasing the testing rate will result in higher numbers of test positive individuals, and a lower threshold can result in an overly sensitive alert system, triggering for measles infections, but not those within an outbreak. A higher threshold will face the opposite issue; not triggering for smaller outbreaks, which is more likely to be an issue at lower testing rates.
-
-In general, the increase in accuracy with higher testing rates, is accompanied with longer testing delays. This reflects the change from highly sensitive systems with low thresholds to more specific systems with higher thresholds at higher testing rates. For Poisson noise, similar detection delays are observed for all test and noise magnitudes, with variation by testing rate (mean of -3.7 to 36.1 days). Under dynamical noise, there are clearer differences in the performance of ELISA and RDTs, with the separation of outcomes occurring later than observed for detection accuracy (8 time noise magnitude vs.~2 times, respectively) (@fig-accuracy). With large amounts of dynamical noise (8 times the measles incidence), the mean detection delay of the 90% and 85% RDTs range from -17.5 days to 3.2 days, and from -25.2 days to -3.4 days, respectively. Long detection delays manifest as large numbers of unavoidable cases (i.e., cases that occur between the outbreak start and its detection. Given the initial exponential rate of increase of outbreaks, the pattern of unavoidable cases follows the same shape as for detection delays, but more exaggerated. Negative delays indicate that alerts are being triggered before the start of the outbreak and is correlated with the proportion of the time series that is under alert, with larger negative delays associated with more and/or longer alert periods (@fig-alert-proportion, Supplemental Figure 2).
-
-The non-monotic relationship between testing rate and both detection delay and unavoidable cases can be explained by the step changes in sensitivity due to integer thresholds and the overall sensitivity of the system. Notably, for all noise and testing combinations, the detection delay and number of unavoidable cases is lowest at low testing rates. This occurs because the system performs best with a highly sensitive threshold (1 test positive case) that means that the system in "alert" 15-30% of the time (@fig-alert-proportion, Supplemental Figure 2). Higher testing rates give rise to more a more specific outbreak detection system and a decrease in the proportion of the time series that is designated as alert. Note that for high testing rates and high ratios of dynamical noise to signal RDTs dominate the system with false positives leading to a correspondingly high proportion of the time series in alert (@fig-alert-proportion).
-
-Examining the number of unavoidable cases (@fig-unavoidable) and the detection delays (@fig-delay), we can see that the decrease in accuracy results from a decrease in the sensitivity of the alert system: the detection delay increases by 6 days, and the unavoidable cases by c.~2300. Although the testing rate increases, so does the optimal threshold, from 3 test positives to 4 test positives per day. The subsequent change in testing rate (40 - 50%) is associated with no change in the optimal threshold for the ELISA, and as expected, the number of unavoidable cases and detection delay decrease, resulting in a more sensitive alert system, with a higher system accuracy indicating that the increase more than offset the decrease in the system’s PPV.
 
 #figure([
 #box(image("manuscript_files/figure-typst/fig-accuracy-output-1.png"))
@@ -651,6 +641,8 @@ supplement: "Figure",
 <fig-accuracy>
 
 
+Introducing a lag in test result reporting necessarily decreases outbreak detection accuracy because an alert can only begin once the test results are in-hand, which increases the chance that an outbreak will end before the result. For the conditions simulated here, introducing a 14-day lag in test reporting for an ELISA-like test reduces the outbreak detection accuracy by \#\#\#%. For all simulated scenarios, this is consistent with, or higher than the accuracy achievable with an RDT-like test. This always leads to an increase in the median delay from outbreak start to alert relative to an ELISA-like test with no detection and frequently leads to a detection delay relative to an RDT-like test (@fig-delay).
+
 #figure([
 #box(image("manuscript_files/figure-typst/fig-delay-output-1.png"))
 ], caption: figure.caption(
@@ -664,18 +656,11 @@ supplement: "Figure",
 <fig-delay>
 
 
-#figure([
-#box(image("manuscript_files/figure-typst/fig-unavoidable-output-1.png"))
-], caption: figure.caption(
-position: bottom, 
-[
-The number of unavoidable cases of outbreak detection systems under different testing rates and noise structures. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate.
-]), 
-kind: "quarto-float-fig", 
-supplement: "Figure", 
-)
-<fig-unavoidable>
+Optimal threshold for each testing scenario, when the average noise incidence is 8 times higher than the average measles incidence. A) the noise structure is dynamical, and the seasonality is in-phase with the measles incidence. B) the noise structure is Poisson only
 
+It is notable that outbreak detection accuracy and detection delays do not increase monotonically with an increase in testing rate, and this holds regardless of the type of test. The reason behind this unintuitive results stems from the use of integer-valued thresholds. An integer valued threshold can result in step-changes of accuracy between two threshold values, and the expected increase in the alert system’s PPV from a higher threshold value is outweighed by the loss in the alert system’s sensitivity to detecting outbreaks. Even with a perfect test, the alert system must discriminate between endemic/imported cases and epidemic cases; increasing the testing rate will result in higher numbers of test positive individuals, and a lower threshold can result in an overly sensitive alert system, triggering for measles infections, but not those within an outbreak. A higher threshold will face the opposite issue; not triggering for smaller outbreaks, which is more likely to be an issue at lower testing rates.
+
+In general, the increase in accuracy with higher testing rates, is accompanied with longer testing delays. This reflects the change from highly sensitive systems with low thresholds to more specific systems with higher thresholds at higher testing rates. For Poisson noise, similar detection delays are observed for all test and noise magnitudes, with variation by testing rate (mean of -3.7 to 36.1 days). Under dynamical noise, there are clearer differences in the performance of ELISA and RDTs, with the separation of outcomes occurring later than observed for detection accuracy (8 time noise magnitude vs.~2 times, respectively) (@fig-accuracy). With large amounts of dynamical noise (8 times the measles incidence), the mean detection delay of the 90% and 85% RDTs range from -17.5 days to 3.2 days, and from -25.2 days to -3.4 days, respectively. Long detection delays manifest as large numbers of unavoidable cases (i.e., cases that occur between the outbreak start and its detection. Given the initial exponential rate of increase of outbreaks, the pattern of unavoidable cases follows the same shape as for detection delays, but more exaggerated. Negative delays indicate that alerts are being triggered before the start of the outbreak and is correlated with the proportion of the time series that is under alert, with larger negative delays associated with more and/or longer alert periods (@fig-alert-proportion, Supplemental Figure 2).
 
 #figure([
 #box(image("manuscript_files/figure-typst/fig-alert-proportion-output-1.png"))
@@ -688,6 +673,23 @@ kind: "quarto-float-fig",
 supplement: "Figure", 
 )
 <fig-alert-proportion>
+
+
+The non-monotic relationship between testing rate and both detection delay and unavoidable cases can be explained by the step changes in sensitivity due to integer thresholds and the overall sensitivity of the system. Notably, for all noise and testing combinations, the detection delay and number of unavoidable cases is lowest at low testing rates. This occurs because the system performs best with a highly sensitive threshold (1 test positive case) that means that the system in "alert" 15-30% of the time (@fig-alert-proportion, Supplemental Figure 2). Higher testing rates give rise to more a more specific outbreak detection system and a decrease in the proportion of the time series that is designated as alert. Note that for high testing rates and high ratios of dynamical noise to signal RDTs dominate the system with false positives leading to a correspondingly high proportion of the time series in alert (@fig-alert-proportion).
+
+Examining the number of unavoidable cases (@fig-unavoidable) and the detection delays (@fig-delay), we can see that the decrease in accuracy results from a decrease in the sensitivity of the alert system: the detection delay increases by 6 days, and the unavoidable cases by c.~2300. Although the testing rate increases, so does the optimal threshold, from 3 test positives to 4 test positives per day. The subsequent change in testing rate (40 - 50%) is associated with no change in the optimal threshold for the ELISA, and as expected, the number of unavoidable cases and detection delay decrease, resulting in a more sensitive alert system, with a higher system accuracy indicating that the increase more than offset the decrease in the system’s PPV.
+
+#figure([
+#box(image("manuscript_files/figure-typst/fig-unavoidable-output-1.png"))
+], caption: figure.caption(
+position: bottom, 
+[
+The number of unavoidable cases of outbreak detection systems under different testing rates and noise structures. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate.
+]), 
+kind: "quarto-float-fig", 
+supplement: "Figure", 
+)
+<fig-unavoidable>
 
 
 = Discussion
