@@ -289,6 +289,7 @@ line_plot(
     optimal_threshold_characteristics;
     outcome = :accuracy,
     ylabel = "Outbreak Detection\nAccuracy",
+    alpha = 0.1,
     facet_fontsize = 18,
     labelsize = 20,
     show_x_facet_label = true,
@@ -314,6 +315,7 @@ line_plot(
     optimal_threshold_characteristics;
     outcome = :detectiondelays,
     ylabel = "Detection Delays\n(Days)",
+    alpha = 0.1,
     hlines = (0.0),
     facet_fontsize = 18,
     labelsize = 20,
@@ -353,6 +355,7 @@ line_plot(
     optimal_threshold_characteristics;
     outcome = :proportion_timeseries_in_alert,
     ylabel = "Proportion of Time Series\nIn Alert",
+    alpha = 0.1,
     hlines = (0.0),
     facet_fontsize = 18,
     labelsize = 20,
@@ -384,6 +387,7 @@ line_plot(
     optimal_threshold_characteristics;
     outcome = :unavoidable_cases,
     ylabel = "Unavoidable Cases",
+    alpha = 0.1,
     facet_fontsize = 18,
     labelsize = 20,
     show_x_facet_label = true,
