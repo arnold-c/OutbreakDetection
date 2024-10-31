@@ -633,7 +633,7 @@ supplement: "Table",
 ], caption: figure.caption(
 position: bottom, 
 [
-The accuracy of outbreak detection systems under different testing rates and noise structures. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate.
+The accuracy of outbreak detection systems under different testing rates and noise structures. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate. Solid lines represent tests with 0-day turnaround times, and dashed lines represent tests with result delays.
 ]), 
 kind: "quarto-float-fig", 
 supplement: "Figure", 
@@ -648,7 +648,7 @@ Introducing a lag in test result reporting necessarily decreases outbreak detect
 ], caption: figure.caption(
 position: bottom, 
 [
-The detection delay of outbreak detection systems under different testing rates and noise structures. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate.
+The detection delay of outbreak detection systems under different testing rates and noise structures. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate. Solid lines represent tests with 0-day turnaround times, and dashed lines represent tests with result delays.
 ]), 
 kind: "quarto-float-fig", 
 supplement: "Figure", 
@@ -665,7 +665,7 @@ In general, the increase in accuracy with higher testing rates, is accompanied w
 ], caption: figure.caption(
 position: bottom, 
 [
-The difference between proportion of the time series in alert for outbreak detection systems under different testing rates and noise structures. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate.
+The difference between proportion of the time series in alert for outbreak detection systems under different testing rates and noise structures. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate. Solid lines represent tests with 0-day turnaround times, and dashed lines represent tests with result delays.
 ]), 
 kind: "quarto-float-fig", 
 supplement: "Figure", 
@@ -682,7 +682,7 @@ Examining the number of unavoidable cases (@fig-unavoidable) and the detection d
 ], caption: figure.caption(
 position: bottom, 
 [
-The number of unavoidable cases of outbreak detection systems under different testing rates and noise structures. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate.
+The number of unavoidable cases of outbreak detection systems under different testing rates and noise structures. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate. Solid lines represent tests with 0-day turnaround times, and dashed lines represent tests with result delays.
 ]), 
 kind: "quarto-float-fig", 
 supplement: "Figure", 
