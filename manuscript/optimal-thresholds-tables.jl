@@ -56,20 +56,30 @@ poisson_noise_rdt_optimal_solutions = filter(
     poisson_noise_optimal_solutions,
 );
 
-elisa_optimal_solutions = filter(
+dynamical_noise_elisa_optimal_solutions = filter(
     chars -> in(chars.individual_test_specification, elisa_test_spec_vec),
     dynamical_noise_optimal_solutions,
 );
 
+poisson_noise_elisa_optimal_solutions = filter(
+    chars -> in(chars.individual_test_specification, elisa_test_spec_vec),
+    poisson_noise_optimal_solutions,
+);
+
+perfect_test_optimal_solutions = filter(
+    chars -> in(chars.individual_test_specification, perfect_test_spec_vec),
+    poisson_noise_optimal_solutions,
+);
+
 #%%
-elisa_df = create_optimal_threshold_summary_df(
-    elisa_optimal_solutions,
+perfect_test_df = create_optimal_threshold_summary_df(
+    perfect_test_optimal_solutions,
     [:unavoidable_cases, :detectiondelays, :alert_duration_vec];
     percentiles = nothing,
     nboots = nothing,
 )
-elisa_df[!, :noise_spec] .= "Common"
-elisa_df
+perfect_test_df[!, :noise_spec] .= "All noise structures"
+perfect_test_df
 
 rdt_dynamical_df = create_optimal_threshold_summary_df(
     dynamical_noise_rdt_optimal_solutions,
@@ -87,8 +97,25 @@ rdt_poisson_df = create_optimal_threshold_summary_df(
 )
 rdt_poisson_df[!, :noise_spec] .= "Poisson noise"
 
+elisa_dynamical_df = create_optimal_threshold_summary_df(
+    dynamical_noise_elisa_optimal_solutions,
+    [:unavoidable_cases, :detectiondelays, :alert_duration_vec];
+    percentiles = nothing,
+    nboots = nothing,
+)
+elisa_dynamical_df[!, :noise_spec] .= "Dynamical noise: in-phase"
+
+elisa_poisson_df = create_optimal_threshold_summary_df(
+    poisson_noise_elisa_optimal_solutions,
+    [:unavoidable_cases, :detectiondelays, :alert_duration_vec];
+    percentiles = nothing,
+    nboots = nothing,
+)
+elisa_poisson_df[!, :noise_spec] .= "Poisson noise"
+
 thresholds_df = vcat(
-    rdt_dynamical_df, rdt_poisson_df, elisa_df
+    rdt_dynamical_df, rdt_poisson_df, elisa_dynamical_df, elisa_poisson_df,
+    perfect_test_df,
 )
 
 thresholds_df[!, :unavoidable_cases] =
@@ -104,7 +131,9 @@ thresholds_df[!, :unavoidable_cases] =
 function create_wide_df(
     long_df,
     outcome::Symbol;
-    noise_order = ["Dynamical noise: in-phase", "Poisson noise", "Common"],
+    noise_order = [
+        "Dynamical noise: in-phase", "Poisson noise", "All noise structures"
+    ],
     digits = 3,
 )
     if digits == 0
@@ -173,8 +202,9 @@ end
 function get_test_type(sensitivity, specificity, test_lag)
     return Match.@match (sensitivity, specificity, test_lag) begin
         (1.0, 0.0, 0) => "Clinical Case Definition"
+        (0.98, 0.98, x::Int) => "ELISA Equivalent ($(sensitivity * 100)%)"
         (x::AbstractFloat, x::AbstractFloat, 0) where {x<1.0} => "RDT Equivalent ($(sensitivity * 100)%)"
-        (1.0, 1.0, x::Int) => "ELISA Equivalent"
+        (1.0, 1.0, x::Int) => "Perfect Test"
     end
 end
 
@@ -195,16 +225,16 @@ wide_unavoidable_df = create_wide_df(
 transform!(
     wide_unavoidable_df,
     Not(r".*Type") .=> (x -> Int64.(x));
-    renamecols = false
+    renamecols = false,
 )
 CSV.write(
     projectdir("manuscript/optimal-thresholds_unavoidable-cases.csv"),
-    wide_unavoidable_df
+    wide_unavoidable_df,
 );
 
 #%%
 wide_delays_df = create_wide_df(thresholds_df, :detectiondelays; digits = 2)
 CSV.write(
     projectdir("manuscript/optimal-thresholds_detection-delays.csv"),
-    wide_delays_df
+    wide_delays_df,
 );

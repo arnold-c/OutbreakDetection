@@ -325,6 +325,7 @@ line_plot(
     plotname = "line_delays_plot",
     save_plot = true,
     clinical_hline = clinical_hline,
+    nbanks = 3
 )
 ```
 

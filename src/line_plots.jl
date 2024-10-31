@@ -7,6 +7,7 @@ using StructArrays
 lineplot_colors = [
     "#56B4E9"
     "#E69F00"
+    repeat(["#483248"], 2)...
     repeat(["#000000"], 2)...
 ]
 
@@ -31,6 +32,7 @@ function line_plot(
     hidedecorations = (true, true),
     clinical_hline = true,
     hlines = nothing,
+    nbanks = 3,
     force = false,
     save_plot = true,
     kwargs...,
@@ -65,6 +67,7 @@ function line_plot(
             hidedecorations = hidedecorations,
             clinical_hline = clinical_hline,
             hlines = hlines,
+            nbanks = nbanks,
             force = force,
             save_plot = save_plot,
             kwargs...,
@@ -82,6 +85,7 @@ function line_plot(
     plotformat = "png",
     size = (2200, 1200),
     colors = lineplot_colors,
+    alpha = 0.3,
     xlabel = "Proportion Tested",
     ylabel = "Outbreak Detection\nAccuracy",
     facet_fontsize = 24,
@@ -92,6 +96,7 @@ function line_plot(
     hidedecorations = (true, true),
     clinical_hline = true,
     hlines = nothing,
+    nbanks = 3,
     force = false,
     save_plot = true,
     kwargs...,
@@ -116,9 +121,12 @@ function line_plot(
             ),
         )
         num_noise_descriptions = length(unique_noise_descriptions)
-        unique_test_specifications = unique(
-            optimal_thresholds_chars_array[1, 1].individual_test_specification
-        )
+        unique_test_specifications = sort(
+            unique(
+                optimal_thresholds_chars_array[
+                    1, 1
+                ].individual_test_specification,
+            ); by = t -> (t.sensitivity, t.specificity), rev = false)
 
         for i in axes(optimal_thresholds_chars_array, 1)
             noise_description = get_noise_description(
@@ -143,6 +151,7 @@ function line_plot(
                     outcome = outcome,
                     num_noise_descriptions = num_noise_descriptions,
                     colors = colors,
+                    alpha = alpha,
                     xlabel = xlabel,
                     ylabel = "$label_noise_description\n" * ylabel,
                     ylims = ylims,
@@ -183,19 +192,20 @@ function line_plot(
                     LineElement(; color = colors[i], linestyle = linestyle),
                 ]
             end,
-            map(
-                test_description ->
-                    replace.(
-                        test_description,
-                        rg =>
-                            s -> parse(Float64, match(rg, s).captures[1]) / 100,
-                    ),
-                get_test_description.(unique_test_specifications),
-            );
+            # map(
+            #     test_description ->
+            #         replace.(
+            #             test_description,
+            #             rg =>
+            #                 s -> parse(Float64, match(rg, s).captures[1]) / 100,
+            #         ),
+            get_test_description.(unique_test_specifications);
+            # );
             labelsize = labelsize,
             orientation = :horizontal,
+            nbanks = nbanks,
         )
-        rowsize!(fig.layout, 0, Relative(0.03))
+        rowsize!(fig.layout, 0, Relative(0.1))
 
         if save_plot
             Makie.save(plotpath, fig; size = size)
@@ -275,6 +285,7 @@ function _line_plot(
     j;
     outcome = :accuracy,
     colors = lineplot_colors,
+    alpha = 0.3,
     xlabel = "Proportion Tested",
     ylabel = "Accuracy",
     show_x_facet_label = true,
@@ -351,6 +362,7 @@ function _line_plot(
         long_df;
         outcome = outcome,
         colors = colors,
+        alpha = alpha,
         xlabel = xlabel,
         ylabel = ylabel,
         facet_fontsize = facet_fontsize,
@@ -377,6 +389,7 @@ function _line_plot_facet(
     long_df;
     outcome = :accuracy,
     colors = lineplot_colors,
+    alpha = 0.3,
     xlabel = "Proportion Tested",
     ylabel = "Accuracy",
     facet_fontsize = 24,
@@ -429,9 +442,6 @@ function _line_plot_facet(
 
         linestyle = test.test_result_lag == 0 ? :solid : :dash
 
-        string(
-            subsetted_df.sensitivity[1], ", ", subsetted_df.test_lag[1]
-        )
         lines!(
             ax,
             subsetted_df.percent_clinic_tested,
@@ -446,7 +456,7 @@ function _line_plot_facet(
             subsetted_df[!, outcome_10th],
             subsetted_df[!, outcome_90th];
             color = colors[i],
-            alpha = 0.3,
+            alpha = alpha,
         )
 
         ylims!(ax, ylims)

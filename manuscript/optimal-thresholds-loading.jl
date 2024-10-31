@@ -14,13 +14,28 @@ if false
 end
 
 #%%
-rdt_test_spec_vec = [IndividualTestSpecification(0.85, 0.85, 0),
-    IndividualTestSpecification(0.9, 0.9, 0)]
+rdt_test_spec_vec = [
+    IndividualTestSpecification(0.85, 0.85, 0),
+    IndividualTestSpecification(0.9, 0.9, 0),
+]
 
-elisa_test_spec_vec = [IndividualTestSpecification(1.0, 1.0, 0),
-    IndividualTestSpecification(1.0, 1.0, 14)]
+elisa_test_spec_vec = [
+    # IndividualTestSpecification(0.98, 0.98, 0),
+    IndividualTestSpecification(0.98, 0.98, 3),
+    # IndividualTestSpecification(0.98, 0.98, 7),
+    IndividualTestSpecification(0.98, 0.98, 14),
+]
 
-optimal_threshold_test_spec_vec = vcat(rdt_test_spec_vec, elisa_test_spec_vec)
+perfect_test_spec_vec = [
+    IndividualTestSpecification(1.0, 1.0, 0),
+    # IndividualTestSpecification(1.0, 1.0, 3),
+    # IndividualTestSpecification(1.0, 1.0, 7),
+    IndividualTestSpecification(1.0, 1.0, 14),
+]
+
+optimal_threshold_test_spec_vec = vcat(
+    rdt_test_spec_vec, elisa_test_spec_vec, perfect_test_spec_vec
+)
 
 optimal_threshold_alertthreshold_vec = collect(1:1:15)
 
