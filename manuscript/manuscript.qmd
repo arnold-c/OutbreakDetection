@@ -1,5 +1,5 @@
 ---
-title: "The Need to Develop a Holistic Infectious Disease Surveillance System"
+title: "Individual and Population Level Uncertainty Interact to Determine Performance of Outbreak Detection"
 header-title: true
 authors:
   - name: "Callum R.K. Arnold"
@@ -167,7 +167,7 @@ Compartmental model parameters
 
 To examine the sensitivity of the detection system to background noise, we layered the measles incidence time series with one of four noise time series structures: Poisson-only noise; or dynamical noise with rubella-like parameters that could be in- or out-of-phase, or with independent seasonality to the measles dynamics.
 For Poisson-only noise, the number of non-measles febrile rash cases each day were independent draws from a Poisson distribution with mean $\lambda$.
-For dynamical noise, we generated time series of cases from an SEIR model that matched the measles model in structure, but had $R_0 = 5$, mean latent period of 7 days, and mean infectious period of 14 days, and added some additional noise independently drawn from a Poisson distribution with mean equal to 15% of the average daily rubella incidence from the SEIR time series to account for non-rubella sources of febrile rash (@tbl-model-parameters) [_**REFERENCES**_].
+For dynamical noise, we generated time series of cases from an SEIR model that matched the measles model in structure, but had $R_0 = 5$, mean latent period of 7 days, and mean infectious period of 14 days, and added some additional noise independently drawn from a Poisson distribution with mean equal to 15% of the average daily rubella incidence from the SEIR time series to account for non-rubella sources of febrile rash (@tbl-model-parameters) [@papadopoulosEstimatesBasicReproduction2022; @RubellaCDCYellow].
 The seasonality for the dynamical noise was assumed to be in-phase with measles, anti-phase with measles (peak timing 6 months later), or non-seasonal.
 Only dynamical in-phase noise and Poisson-only noise are presented in the main text; the anti-phase and non-seasonal dynamical noise scenarios are presented in the supplement.
 
@@ -199,12 +199,12 @@ This percentage of clinic visits that are tested is varied between 10% and 60%, 
 Each testing scenario uses one of the following tests:
 
 <!-- - No test, where every suspected measles case is counted as positive for measles and used to trigger an outbreak alert, which is equivalent to the use of the clinical case definition. This is implemented as a diagnostic test with 100% sensitivity, 0% specificity, a 0-day lag in returning the result, and all individuals who visit the clinic are tested (not varied between 10-60%, like the other diagnostic tests described). -->
-- An RDT equivalent with 85% sensitivity and specificity, and 0-day lag in result return. That is, 85% of true measles cases will be correctly labelled as positive, and 15% of non-measles febrile rash individuals that are tested will be incorrectly labelled as positive for measles. This acts as a lower bound of acceptability for a new measles RDT [@20240613_tpp_measles_rubell_FV_EN]. _**NOTE: TPP document used here was potentially influenced by the prelim results of this paper**_
+- An RDT equivalent with 85% sensitivity and specificity, and 0-day lag in result return. That is, 85% of true measles cases will be correctly labelled as positive, and 15% of non-measles febrile rash individuals that are tested will be incorrectly labelled as positive for measles. This acts as a lower bound of acceptability for a new measles RDT [@20240613_tpp_measles_rubell_FV_EN] _**NOTE: TPP document used here was potentially influenced by the prelim results of this paper**_
 - An RDT equivalent with 90% sensitivity and specificity, and 0-day lag in result return [@brownRapidDiagnosticTests2020].
-- A best-case scenario ELISA equivalent with 98 % sensitivity and specificity, and 3-day lag in result return [@hiebertEvaluationDiagnosticAccuracy2021]
-- An ELISA equivalent with 98 % sensitivity and specificity, and 14-day lag in result return [@hiebertEvaluationDiagnosticAccuracy2021]
-- A perfect test with 100% sensitivity and specificity with a 0-day test result delay
-- A perfect test with 100% sensitivity and specificity with a 14-day test result delay
+<!--- A best-case scenario ELISA equivalent with 98 % sensitivity and specificity, and 3-day lag in result return [@hiebertEvaluationDiagnosticAccuracy2021]-->
+<!--- An ELISA equivalent with 98 % sensitivity and specificity, and 14-day lag in result return [@hiebertEvaluationDiagnosticAccuracy2021]-->
+- An ELISA-like perfect test with 100% sensitivity and specificity, and a 0-day test result delay. This is more accurate than is observed for current ELISA tests [@hiebertEvaluationDiagnosticAccuracy2021], but it used to evaluate the theoretical best-case scenario
+- An ELISA-like perfect test with 100% sensitivity and specificity, and a 14-day test result delay
 
 The time series of "test-positive cases" is the daily count of those tested cases that return a positive test result.
 Thus, for each non-measles noise (@fig-outbreak-schematic a) and measles (@fig-outbreak-schematic b) time series, we have 1 time series of outbreaks (@fig-outbreak-schematic c) and 5 possible time series of test-positive cases (@fig-outbreak-schematic c) (all clinically compatible cases, plus the 4 testing scenarios), which will include false positive and negative cases resulting from imperfect diagnostic tests, that can be used to trigger outbreak alerts.
@@ -281,6 +281,9 @@ Optimal threshold for RDT-like, ELISA-like, and perfect tests, under dynamical a
 #| echo: false
 include(srcdir("makie-plotting-setup.jl"));
 using OutbreakDetection: line_plot
+alpha = 0.2
+nbanks = 1
+legend_rowsize = Makie.Relative(0.05);
 ```
 
 ```{julia}
@@ -290,7 +293,7 @@ line_plot(
     optimal_threshold_characteristics;
     outcome = :accuracy,
     ylabel = "Outbreak Detection\nAccuracy",
-    alpha = 0.1,
+    alpha = alpha,
     facet_fontsize = 18,
     labelsize = 20,
     show_x_facet_label = true,
@@ -301,6 +304,8 @@ line_plot(
     plotname = "line_accuracy_plot",
     save_plot = true,
     clinical_hline = clinical_hline,
+    nbanks = nbanks,
+    legend_rowsize = legend_rowsize,
 )
 ```
 
@@ -316,7 +321,7 @@ line_plot(
     optimal_threshold_characteristics;
     outcome = :detectiondelays,
     ylabel = "Detection Delays\n(Days)",
-    alpha = 0.1,
+    alpha = alpha,
     hlines = (0.0),
     facet_fontsize = 18,
     labelsize = 20,
@@ -328,10 +333,10 @@ line_plot(
     plotname = "line_delays_plot",
     save_plot = true,
     clinical_hline = clinical_hline,
-    nbanks = 3
+    nbanks = nbanks,
+    legend_rowsize = legend_rowsize,
 )
 ```
-
 
 It is notable that outbreak detection accuracy and detection delays do not increase monotonically with an increase in testing rate, and this holds regardless of the type of test.
 The reason behind this unintuitive results stems from the use of integer-valued thresholds.
@@ -355,7 +360,7 @@ line_plot(
     optimal_threshold_characteristics;
     outcome = :proportion_timeseries_in_alert,
     ylabel = "Proportion of Time Series\nIn Alert",
-    alpha = 0.1,
+    alpha = alpha,
     hlines = (0.0),
     facet_fontsize = 18,
     labelsize = 20,
@@ -367,12 +372,14 @@ line_plot(
     plotname = "line_prop_alert_plot",
     save_plot = true,
     clinical_hline = clinical_hline,
+    nbanks = nbanks,
+    legend_rowsize = legend_rowsize,
 )
 ```
 
 The non-monotic relationship between testing rate and both detection delay and unavoidable cases can be explained by the step changes in sensitivity due to integer thresholds and the overall sensitivity of the system.
 Notably, for all noise and testing combinations, the detection delay and number of unavoidable cases is lowest at low testing rates.
-This occurs because the system performs best with a highly sensitive threshold (1 test positive case) that means that the system in “alert” 15-30% of the time (@fig-alert-proportion, Supplemental Figure 2).
+This occurs because the system performs best with a highly sensitive threshold (1 test positive case), which means that the system in “alert” 15-30% of the time as a results of longer and more frequent alerts (@fig-alert-proportion, Supplemental Figures 2 & 3).
 Higher testing rates give rise to more a more specific outbreak detection system and a decrease in the proportion of the time series that is designated as alert.
 Note that for high testing rates and high ratios of dynamical noise to signal RDTs dominate the system with false positives leading to a correspondingly high proportion of the time series in alert (@fig-alert-proportion).
 
@@ -387,7 +394,7 @@ line_plot(
     optimal_threshold_characteristics;
     outcome = :unavoidable_cases,
     ylabel = "Unavoidable Cases",
-    alpha = 0.1,
+    alpha = alpha,
     facet_fontsize = 18,
     labelsize = 20,
     show_x_facet_label = true,
@@ -398,7 +405,9 @@ line_plot(
     plotname = "line_unavoidable_plot",
     save_plot = true,
     clinical_hline = clinical_hline,
-    cases_scaling = gha_2022_scale_population_per_annum
+    cases_scaling = gha_2022_scale_population_per_annum,
+    nbanks = nbanks,
+    legend_rowsize = legend_rowsize,
 )
 ```
 

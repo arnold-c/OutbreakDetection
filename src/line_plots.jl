@@ -32,7 +32,8 @@ function line_plot(
     hidedecorations = (true, true),
     clinical_hline = true,
     hlines = nothing,
-    nbanks = 3,
+    nbanks = 1,
+    legend_rowsize = Makie.Relative(0.05),
     force = false,
     save_plot = true,
     kwargs...,
@@ -68,6 +69,7 @@ function line_plot(
             clinical_hline = clinical_hline,
             hlines = hlines,
             nbanks = nbanks,
+            legend_rowsize = legend_rowsize,
             force = force,
             save_plot = save_plot,
             kwargs...,
@@ -96,7 +98,8 @@ function line_plot(
     hidedecorations = (true, true),
     clinical_hline = true,
     hlines = nothing,
-    nbanks = 3,
+    nbanks = 1,
+    legend_rowsize = Makie.Relative(0.05),
     force = false,
     save_plot = true,
     kwargs...,
@@ -205,7 +208,7 @@ function line_plot(
             orientation = :horizontal,
             nbanks = nbanks,
         )
-        rowsize!(fig.layout, 0, Relative(0.1))
+        rowsize!(fig.layout, 0, legend_rowsize)
 
         if save_plot
             Makie.save(plotpath, fig; size = size)

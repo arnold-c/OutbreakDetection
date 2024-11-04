@@ -23,10 +23,10 @@
 
 // Some quarto-specific definitions.
 
-#show raw.where(block: true): block.with(
-    fill: luma(230), 
-    width: 100%, 
-    inset: 8pt, 
+#show raw.where(block: true): set block(
+    fill: luma(230),
+    width: 100%,
+    inset: 8pt,
     radius: 2pt
   )
 
@@ -40,6 +40,10 @@
     fields.below = fields.below.amount
   }
   return block.with(..fields)(new_content)
+}
+
+#let unescape-eval(str) = {
+  return eval(str.replace("\\", ""))
 }
 
 #let empty(v) = {
@@ -142,7 +146,7 @@
       new_title))
 
   block_with_new_content(old_callout,
-    new_title_block +
+    block(below: 0pt, new_title_block) +
     old_callout.body.children.at(1))
 }
 
@@ -400,6 +404,7 @@
 
 }
 
+
  // title: "Title",
  // header-title: "Header Title",
  // authors: (
@@ -437,7 +442,7 @@
  // line-numbers: false,
 
 #show: body => article(
-      title: "The Need to Develop a Holistic Infectious Disease Surveillance System",
+      title: "Individual and Population Level Uncertainty Interact to Determine Performance of Outbreak Detection",
         header-title: "true",
         authors: (
                     "Callum R.K. Arnold": (
@@ -480,7 +485,6 @@
           bib: "OD.bib",
                 body,
 )
-
 
 = Results
 <results>
@@ -557,12 +561,16 @@ supplement: "Table",
 
 == Figures
 <figures>
+```
+false
+```
+
 #figure([
 #box(image("supplemental-appendix_files/figure-typst/fig-outbreak-proportion-output-1.png"))
 ], caption: figure.caption(
 position: bottom, 
 [
-The difference between proportion of the time series in outbreak for outbreak detection systems under different testing rates and noise structures. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate.
+The difference between the proportion of the time series in outbreak for outbreak detection systems under different testing rates and noise structures. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate. Solid lines represent tests with 0-day turnaround times, and dashed lines represent tests with result delays.
 ]), 
 kind: "quarto-float-fig", 
 supplement: "Figure", 
@@ -575,7 +583,7 @@ supplement: "Figure",
 ], caption: figure.caption(
 position: bottom, 
 [
-The alert durations of outbreak detection systems under different testing rates and noise structures. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate.
+The alert durations of outbreak detection systems under different testing rates and noise structures. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate. Solid lines represent tests with 0-day turnaround times, and dashed lines represent tests with result delays.
 ]), 
 kind: "quarto-float-fig", 
 supplement: "Figure", 
@@ -583,10 +591,25 @@ supplement: "Figure",
 <fig-alert-duration>
 
 
+#figure([
+#box(image("supplemental-appendix_files/figure-typst/fig-num-alerts-output-1.png"))
+], caption: figure.caption(
+position: bottom, 
+[
+The number of alerts of outbreak detection systems under different testing rates and noise structures. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate. Solid lines represent tests with 0-day turnaround times, and dashed lines represent tests with result delays.
+]), 
+kind: "quarto-float-fig", 
+supplement: "Figure", 
+)
+<fig-num-alerts>
 
 
+
+
+ 
 
 #set bibliography(style: "springer-vancouver")
+
 
 #bibliography("OD.bib")
 

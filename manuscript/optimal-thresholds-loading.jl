@@ -20,10 +20,10 @@ rdt_test_spec_vec = [
 ]
 
 elisa_test_spec_vec = [
-    # IndividualTestSpecification(0.98, 0.98, 0),
-    IndividualTestSpecification(0.98, 0.98, 3),
-    # IndividualTestSpecification(0.98, 0.98, 7),
-    IndividualTestSpecification(0.98, 0.98, 14),
+#     # IndividualTestSpecification(0.98, 0.98, 0),
+#     IndividualTestSpecification(0.98, 0.98, 3),
+#     # IndividualTestSpecification(0.98, 0.98, 7),
+#     IndividualTestSpecification(0.98, 0.98, 14),
 ]
 
 perfect_test_spec_vec = [

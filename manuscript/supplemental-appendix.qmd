@@ -1,5 +1,5 @@
 ---
-title: "The Need to Develop a Holistic Infectious Disease Surveillance System"
+title: "Individual and Population Level Uncertainty Interact to Determine Performance of Outbreak Detection"
 header-title: true
 authors:
   - name: "Callum R.K. Arnold"
@@ -119,35 +119,44 @@ Mean outbreak alert delay (days) of each testing scenario at their specific opti
 
 ```{julia plotting-setup}
 #| echo: false
+include("optimal-thresholds-loading.jl");
 include(srcdir("makie-plotting-setup.jl"));
 using OutbreakDetection: line_plot
+alpha = 0.2
+nbanks = 1
+legend_rowsize = Makie.Relative(0.05);
+clinical_hline = false
 ```
 
 ```{julia}
-#| fig-cap: "The difference between proportion of the time series in outbreak for outbreak detection systems under different testing rates and noise structures. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate."
+#| fig-cap: "The difference between the proportion of the time series in outbreak for outbreak detection systems under different testing rates and noise structures. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate. Solid lines represent tests with 0-day turnaround times, and dashed lines represent tests with result delays."
 #| label: fig-outbreak-proportion
 line_plot(
     optimal_threshold_characteristics;
     outcome = :proportion_timeseries_in_outbreak,
     ylabel = "Proportion of Time\nSeries In Outbreak",
+    alpha = alpha,
     facet_fontsize = 18,
     labelsize = 20,
     show_x_facet_label = true,
     show_y_facet_label = false,
-    ylims = (0.0, 0.35),
+    ylims = (0.5, 0.25),
     force = true,
     save_plot = false,
     clinical_hline = clinical_hline,
+    nbanks = nbanks,
+    legend_rowsize = legend_rowsize,
 )
 ```
 
 ```{julia}
-#| fig-cap: "The alert durations of outbreak detection systems under different testing rates and noise structures. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate."
+#| fig-cap: "The alert durations of outbreak detection systems under different testing rates and noise structures. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate. Solid lines represent tests with 0-day turnaround times, and dashed lines represent tests with result delays."
 #| label: fig-alert-duration
 line_plot(
     optimal_threshold_characteristics;
     outcome = :alert_duration_vec,
     ylabel = "Alert Duration\n(Days)",
+    alpha = alpha,
     facet_fontsize = 18,
     labelsize = 20,
     show_x_facet_label = true,
@@ -156,7 +165,31 @@ line_plot(
     force = true,
     save_plot = false,
     clinical_hline = clinical_hline,
+    nbanks = nbanks,
+    legend_rowsize = legend_rowsize,
 )
 ```
+
+```{julia}
+#| fig-cap: "The number of alerts of outbreak detection systems under different testing rates and noise structures. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate. Solid lines represent tests with 0-day turnaround times, and dashed lines represent tests with result delays."
+#| label: fig-num-alerts
+line_plot(
+    optimal_threshold_characteristics;
+    outcome = :nalerts,
+    ylabel = "Number of Alerts",
+    alpha = alpha,
+    facet_fontsize = 18,
+    labelsize = 20,
+    show_x_facet_label = true,
+    show_y_facet_label = false,
+    ylims = (0, 350),
+    force = true,
+    save_plot = false,
+    clinical_hline = clinical_hline,
+    nbanks = nbanks,
+    legend_rowsize = legend_rowsize,
+)
+```
+
 
 
