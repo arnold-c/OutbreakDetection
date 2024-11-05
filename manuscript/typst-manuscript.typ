@@ -89,9 +89,9 @@ Using these metrics we overcome issues encountered by early warning systems that
 
 = Methods
 == Model Structure
-We constructed a stochastic compartmental non-age structured Susceptible-Exposed-Infected-Recovered (SEIR) model of measles, and simulated using a modified Tau-leaping algorithm with a time step of 1 day, utilizing binomial draws to ensure compartment sizes remained positive valued @chatterjeeBinomialDistributionBased2005 @gillespieApproximateAcceleratedStochastic2001.
-We assumed that transmission rate ($beta_t$) is sinusoidal with a period of one year and 20% seasonal amplitude.
-$R_0$ was set to 16, with a latent period of 10 days and infectious period of 8 days.
+We constructed a stochastic compartmental non-age structured Susceptible-Exposed-Infected-Recovered (SEIR) model of measles, and simulated using a modified Tau-leaping algorithm with a time step of 1 day that utilizes binomial draws to ensure compartment sizes remained positive valued @chatterjeeBinomialDistributionBased2005 @gillespieApproximateAcceleratedStochastic2001.
+We assumed that the transmission rate ($beta_t$) is sinusoidal with a period of one year and 20% seasonal amplitude.
+$R_0$ was set to 16, with a latent period of 10 days and infectious period of 8 days @guerraBasicReproductionNumber2017 @gastanaduyMeasles2019.
 The population was initialized with 500,000 individuals with Ghana-like birth and vaccination rates, and the final results were scaled up to the approximate 2022 population size of Ghana (33 million) @worldbankGhana.
 We assumed commuter-style imports at each time step to avoid extinction; the number of imports each day were drawn from a Poisson distribution with mean proportional to the size of the population and $R_0$ @keelingModelingInfectiousDiseases2008.
 The full table of parameters can be found in @tbl-model-parameters.
@@ -123,18 +123,18 @@ All simulations and analysis was completed in Julia version 1.10.5 @bezansonJuli
 )
 <tbl-model-parameters>
 
-
-To examine the sensitivity of the detection system to background noise, we layered the measles incidence time series with one of four noise time series structures: Poisson-only noise; or dynamical noise with rubella-like parameters that could be in- or out-of-phase, or with independent seasonality to the measles dynamics.
-For Poisson-only noise, the number of non-measles febrile rash cases each day were independent draws from a Poisson distribution with mean $lambda$.
-For dynamical noise, we generated time series of cases from an SEIR model that matched the measles model in structure, but had $R_0 = 5$, mean latent period of 7 days, and mean infectious period of 14 days, and added some additional noise independently drawn from a Poisson distribution with mean equal to 15% of the average daily rubella incidence from the SEIR time series to account for non-rubella sources of febrile rash (@tbl-model-parameters) @papadopoulosEstimatesBasicReproduction2022 @RubellaCDCYellow.
-The seasonality for the dynamical noise was assumed to be in-phase with measles, anti-phase with measles (peak timing 6 months later), or non-seasonal.
+To examine the sensitivity of the detection system to background noise, we layered the measles incidence time series with a noise time series: either Poisson-only noise, or dynamical noise with rubella-like parameters.
+For Poisson-only noise, the time series of non-measles febrile rash cases each day was constructed by independent draws from a Poisson distribution.
+For dynamical noise, we generated time series of cases from an SEIR model that matched the measles model in structure, but had $R_0 = 5$, mean latent period of 7 days, and mean infectious period of 14 days, and added some additional Poisson noise to account for non-rubella sources of febrile rash @papadopoulosEstimatesBasicReproduction2022 @RubellaCDCYellow.
+This noise was constructed by independent draws from a Poisson distribution with mean equal to 15% of the average daily rubella incidence (@tbl-model-parameters).
+The seasonality for the rubella noise was simulated to be in-phase with measles, anti-phase with measles (peak timing 6 months later), or non-seasonal.
 Only dynamical in-phase noise and Poisson-only noise are presented in the main text; the anti-phase and non-seasonal dynamical noise scenarios are presented in the supplement.
 
-For each noise structure, we simulated five different magnitudes of noise ($Lambda$), representing the average daily noise incidence.
-$Lambda$ was calculated as a multiple ($c$) of the average daily measles incidence ($angle.l Delta I_M angle.r$): $Lambda = c dot.op angle.l Delta I_M angle.r upright("where") c in { 1 , 2 , 4 , 6 , 8 }$.
-Noise magnitudes will be denoted as $Lambda (c)$ for the rest of the magnitude e.g., $Lambda (8)$ to denote simulations where the average noise incidence is 8 times that of the average measles incidence.
-For the Poisson-noise scenarios, independent draws from a Poisson distribution with mean $c dot.op angle.l Delta I_M angle.r$ were simulated to produce the noise time series i.e., $Lambda = upright("Pois") (c dot.op angle.l Delta I_M angle.r)$.
-For the dynamical noise scenarios, the rubella vaccination rate at birth was set to 85.38%, 73.83%, 50.88%, 27.89%, and 4.92% to produce equivalent values of $Lambda$ (to within 2 decimal places): $Lambda = angle.l Delta I_R angle.r + upright("Pois") (0.15 dot.op angle.l Delta I_R angle.r)$.
+For each noise structure, we simulated five magnitudes of noise ($Lambda$), representing the average daily noise incidence.
+$Lambda$ was calculated as a multiple ($c$) of the average daily measles incidence ($angle.l Delta I_M angle.r$): $Lambda = c dot.op angle.l Delta I_M angle.r upright("where") c in { 1, 2, 4, 6, 8 }$.
+Noise magnitudes will be denoted as $Lambda (c)$ for the rest of the manuscript e.g., $Lambda (8)$ to denote scenarios where the average noise incidence is 8 times that of the average measles incidence.
+For the Poisson-noise scenarios, independent draws from a Poisson distribution with mean $c dot.op angle.l Delta I_M angle.r$ were simulated to produce the noise time series i.e., $Lambda (c) = upright("Pois") (c dot.op angle.l Delta I_M angle.r)$.
+For the dynamical noise scenarios, the rubella vaccination rate at birth was set to 85.38%, 73.83%, 50.88%, 27.89%, or 4.92% to produce equivalent values of $Lambda$ (to within 2 decimal places): $Lambda (c) = angle.l Delta I_R angle.r + upright("Pois") (0.15 dot.op angle.l Delta I_R angle.r)$.
 100 time series of 100 years were simulated for each scenario, before summarizing the distributions of outbreak detection methods.
 
 == Defining Outbreaks
