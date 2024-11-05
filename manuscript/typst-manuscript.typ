@@ -119,7 +119,6 @@ All simulations and analysis was completed in Julia version 1.10.5 @bezansonJuli
     [Initial proportion recovered], table.cell(colspan: 2, align: center, "0.95"),
   ),
   caption: [Compartmental model parameters],
-  placement: bottom,
 )
 <tbl-model-parameters>
 
@@ -133,25 +132,26 @@ Only dynamical in-phase noise and Poisson-only noise are presented in the main t
 For each noise structure, we simulated five magnitudes of noise ($Lambda$), representing the average daily noise incidence.
 $Lambda$ was calculated as a multiple ($c$) of the average daily measles incidence ($angle.l Delta I_M angle.r$): $Lambda = c dot.op angle.l Delta I_M angle.r upright("where") c in { 1, 2, 4, 6, 8 }$.
 Noise magnitudes will be denoted as $Lambda (c)$ for the rest of the manuscript e.g., $Lambda (8)$ to denote scenarios where the average noise incidence is 8 times that of the average measles incidence.
-For the Poisson-noise scenarios, independent draws from a Poisson distribution with mean $c dot.op angle.l Delta I_M angle.r$ were simulated to produce the noise time series i.e., $Lambda (c) = upright("Pois") (c dot.op angle.l Delta I_M angle.r)$.
-For the dynamical noise scenarios, the rubella vaccination rate at birth was set to 85.38%, 73.83%, 50.88%, 27.89%, or 4.92% to produce equivalent values of $Lambda$ (to within 2 decimal places): $Lambda (c) = angle.l Delta I_R angle.r + upright("Pois") (0.15 dot.op angle.l Delta I_R angle.r)$.
+For the Poisson-noise scenarios, independent draws from a Poisson distribution with mean $c dot.op angle.l Delta I_M angle.r$ were simulated to produce the noise time series i.e., $Lambda (c) = upright("Pois")(c dot.op angle.l Delta I_M angle.r)$.
+For the dynamical noise scenarios, the rubella vaccination rate at birth was set to 85.38%, 73.83%, 50.88%, 27.89%, or 4.92% to produce equivalent values of $Lambda$ (to within 2 decimal places): $Lambda (c) = angle.l Delta I_R angle.r + upright("Pois")(0.15 dot.op angle.l Delta I_R angle.r)$.
 100 time series of 100 years were simulated for each scenario, before summarizing the distributions of outbreak detection methods.
 
 == Defining Outbreaks
 It is common to use expert review to define outbreaks when examining empirical data, but this is not feasible in a modeling study where tens of thousands of years are being simulated.
-To account for this, many studies only simulate a single outbreak within a time series (repeating this short stochastic simulation multiple times to ensemble results), define an outbreak as a period where $R_(upright("effective"))$ \> 1, or use a threshold of \> 2 standard deviations (s.d.) over the mean seasonal incidence observed in empirical data (or from a 'burn-in' period of the simulation) @sternAutomatedOutbreakDetection1999 @jombartRealtimeMonitoringCOVID192021 @stolermanUsingDigitalTraces2023 @salmonMonitoringCountTime2016 @teklehaimanotAlertThresholdAlgorithms2004 @leclereAutomatedDetectionHospital2017.
-Each method has its uses, but to evaluate the performance of an outbreak detection system in an endemic region where multiple sequential epidemics are expected it is important to clearly define the bounds of the outbreak, which can only be achieved by 2 s.d. \> mean ($R_(upright("effective"))$ will be less than 1 after an outbreak’s peak, but still within what can be reasonably defined as the outbreak’s bounds).
+To account for this, many studies only simulate a single outbreak within a time series (repeating this short stochastic simulation multiple times to ensemble results), define an outbreak as a period where $R_(upright("effective")) > 1$ (or $R_(upright("t"))$), or use a threshold of > 2 standard deviations (s.d.) over the mean seasonal incidence observed in empirical data (or from a 'burn-in' period of the simulation) @sternAutomatedOutbreakDetection1999 @jombartRealtimeMonitoringCOVID192021 @stolermanUsingDigitalTraces2023 @salmonMonitoringCountTime2016 @teklehaimanotAlertThresholdAlgorithms2004 @leclereAutomatedDetectionHospital2017.
+Each method has its uses, but to evaluate the performance of an outbreak detection system in an endemic region where multiple sequential epidemics are expected it is important to clearly define the bounds of the outbreak, which can only be achieved by 2 s.d. > mean ($R_(upright("effective"))$ and $R_(upright("t"))$ will be less than 1 after an outbreak’s peak, but still within what can be reasonably defined as the outbreak’s bounds).
 This, however, assumes strong seasonal forcing and regular periodicity of incidence to produce a smooth enough baseline, which is not present as countries near measles elimination status @grahamMeaslesCanonicalPath2019.
-Here we define a true measles outbreak as a region of the time series that meets the following three criteria:
+Here we define a measles outbreak as a region of the time series that meets the following three criteria:
 
 - The daily measles incidence must be greater than, or equal to, 5 cases
 - The daily measles incidence must remain above 5 cases for greater than, or equal to, 30 consecutive days
 - The total measles incidence must be great than, or equal to, 500 cases within the bounds of the outbreak
 
-Only events meeting all 3 criteria are classified as outbreaks The incidence of non-measles febrile rash (i.e., noise) does not affect the outbreak status of a region but may affect the alert status triggered by the testing protocol.
+Only events meeting all 3 criteria are classified as outbreaks.
+The incidence of non-measles febrile rash (i.e., noise) does not affect the outbreak status of a region but may affect the alert status triggered by the testing protocol.
 
 Each day, 60% of the measles and non-measles febrile rash cases visit the clinic for treatment, and a percentage (P) of these clinic visits are tested, as all clinic visits are deemed to be suspected measles cases because they meet the clinical case definition.
-This percentage of clinic visits that are tested is varied between 10% and 60%, in 10% increments, for all combinations of diagnostic test (except clinical case definition) and alert threshold, defining the "testing scenario".
+The percentage of clinic visits (P) that are tested is varied between 10% and 60%, in 10% increments, for all combinations of diagnostic test and alert threshold, defining the "testing scenario".
 Each testing scenario uses one of the following tests:
 
 - An RDT equivalent with 85% sensitivity and specificity, and 0-day lag in result return.
@@ -168,8 +168,7 @@ Thus, for each non-measles noise (@fig-outbreak-schematic a) and measles (@fig-o
   image("manuscript_files/figure-typst/fig-outbreak-schematic-output-1.png"),
   caption: [
     Test A schematic of the outbreak definition and alert detection system. A) Noise time series. B) Measles incidence time series. C) Observed time series resulting from testing noise & measles cases that visit the healthcare facility. The orange bands/vertical lines represent regions of the measles time series that meet the outbreak definition criteria. The green bands/vertical lines represent regions of the observed (measles - noise) time series that breach the alert threshold (the horizontal dashed line), and constitute an alert.
-    ],
-  placement: bottom,
+    ]
 )
 <fig-outbreak-schematic>
 
@@ -219,16 +218,14 @@ Notably, the maximal attainable accuracy declines with increasing noise and, at 
     [], table.cell(colspan: 2, align: center, "Test Characteristic"), table.cell(colspan: 6, align: center, "Testing Rate"),
     ..optimal_thresholds.flatten()
   ),
-  caption: [Optimal threshold for RDT-like, ELISA-like, and perfect tests, under dynamical and Poisson-like noise structures where the average daily noise incidence is 8 times the average daily measles incidence],
-  placement: bottom,
+  caption: [Optimal threshold for RDT-like, ELISA-like, and perfect tests, under dynamical and Poisson-like noise structures where the average daily noise incidence is 8 times the average daily measles incidence]
 )
 <tbl-optimal-thresholds>
 
 
 #figure(
   image("manuscript_files/figure-typst/fig-accuracy-output-1.png"),
-  caption: [The accuracy of outbreak detection systems under different testing rates and noise structures. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate. Solid lines represent tests with 0-day turnaround times, and dashed lines represent tests with result delays.],
-  placement: bottom,
+  caption: [The accuracy of outbreak detection systems under different testing rates and noise structures. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate. Solid lines represent tests with 0-day turnaround times, and dashed lines represent tests with result delays.]
 )
 <fig-accuracy>
 
@@ -240,8 +237,7 @@ This always leads to an increase in the median delay from outbreak start to aler
 
 #figure(
   image("manuscript_files/figure-typst/fig-delay-output-1.png"),
-  caption: [The detection delay of outbreak detection systems under different testing rates and noise structures. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate. Solid lines represent tests with 0-day turnaround times, and dashed lines represent tests with result delays.],
-  placement: bottom,
+  caption: [The detection delay of outbreak detection systems under different testing rates and noise structures. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate. Solid lines represent tests with 0-day turnaround times, and dashed lines represent tests with result delays.]
 )
 <fig-delay>
 
@@ -262,8 +258,7 @@ Negative delays indicate that alerts are being triggered before the start of the
 
 #figure(
   image("manuscript_files/figure-typst/fig-alert-proportion-output-1.png"),
-  caption: [The difference between proportion of the time series in alert for outbreak detection systems under different testing rates and noise structures. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate. Solid lines represent tests with 0-day turnaround times, and dashed lines represent tests with result delays.],
-  placement: bottom,
+  caption: [The difference between proportion of the time series in alert for outbreak detection systems under different testing rates and noise structures. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate. Solid lines represent tests with 0-day turnaround times, and dashed lines represent tests with result delays.]
 )
 <fig-alert-proportion>
 
@@ -279,8 +274,7 @@ The subsequent change in testing rate (40 - 50%) is associated with no change in
 
 #figure(
   image("manuscript_files/figure-typst/fig-unavoidable-output-1.png"),
-  caption: [The number of unavoidable cases of outbreak detection systems under different testing rates and noise structures. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate. Solid lines represent tests with 0-day turnaround times, and dashed lines represent tests with result delays.],
-  placement: bottom,
+  caption: [The number of unavoidable cases of outbreak detection systems under different testing rates and noise structures. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate. Solid lines represent tests with 0-day turnaround times, and dashed lines represent tests with result delays.]
 )
 <fig-unavoidable>
 
