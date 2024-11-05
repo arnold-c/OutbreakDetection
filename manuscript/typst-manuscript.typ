@@ -194,15 +194,15 @@ We then compare testing scenarios at their respective optimal alert threshold.
 This allows for conclusions to be made about the surveillance system as a whole, rather than just single components.
 
 = Results
-The threshold that maximized outbreak detection accuracy depends on diagnostic test characteristics, the testing rate, and the structure of the non-measles noise (@tbl-optimal-thresholds).
+The threshold that maximized surveillance accuracy depends on diagnostic test characteristics, the testing rate, and the structure of the non-measles noise (@tbl-optimal-thresholds).
 When the average noise incidence was 8 times higher than the average measles incidence ($Lambda (8)$), the optimal threshold ranged between 1 and 7 test-positive cases per day.
 Not surprisingly, the biggest driver of this difference was the testing rate; as a large fraction of suspected cases are tested, the optimal threshold increases monotonically for all test and noise types (@tbl-optimal-thresholds).
 
-The maximal attainable outbreak detection accuracy at the optimal threshold depends strongly on the structure and magnitude of the background noise.
-For Poisson noise, at all magnitudes, the maximum outbreak detection accuracy increases rapidly from 65% at 10% of suspected cases tested to $approx$ 90% accuracy at $gt.eq$ 20% testing for all test types (@fig-accuracy).
-For dynamical SEIR noise, the ELISA-like tests perform similarly to the Poisson noise case at all magnitudes (@fig-accuracy), as well as to the perfect tests with complete discrimination.
-For RDT-like tests, which have lower individual sensitivity and specificity, the maximal attainable accuracy is lower than the ELISA-like test for all testing rates at noise magnitude $gt.eq Lambda (2)$ (@fig-accuracy).
-Notably, the maximal attainable accuracy declines with increasing noise and, at all noise levels, is not improved with higher testing rates as the signal becomes increasingly dominated by false positive tests (@fig-accuracy).
+The maximal attainable surveillance accuracy at the optimal threshold depends strongly on the structure and magnitude of the background noise.
+For Poisson noise, at all magnitudes, the maximum surveillance accuracy increases rapidly from 65% at 10% testing of suspected cases, to $approx$ 90% accuracy at $gt.eq$ 20% testing, for all test types (@fig-accuracy).
+For dynamical SEIR noise, the ELISA-like perfect tests perform identically to the Poisson noise case at all magnitudes (@fig-accuracy).
+For RDT-like tests, which have lower individual sensitivity and specificity, the maximal attainable accuracy is lower than the ELISA-like tests for all testing rates (P) at noise magnitude $gt.eq Lambda (2)$ (@fig-accuracy).
+Notably, the surveillance accuracy declines with increasing noise and, at all noise levels, is not improved with higher testing rates as the signal becomes increasingly dominated by false positive test results (@fig-accuracy).
 
 #let optimal_thresholds = csv("optimal-thresholds.csv")
 #figure(
@@ -227,11 +227,10 @@ Notably, the maximal attainable accuracy declines with increasing noise and, at 
 )
 <fig-accuracy>
 
-
-Introducing a lag in test result reporting necessarily decreases outbreak detection accuracy because an alert can only begin once the test results are in-hand, which increases the chance that an outbreak will end before the result.
-For the conditions simulated here, introducing a 14-day lag in test reporting for an ELISA-like test reduces the outbreak detection accuracy by $approx$ 3%.
-For all simulated scenarios, this is consistent with, or higher than the accuracy achievable with an RDT-like test.
-This always leads to an increase in the median delay from outbreak start to alert relative to an ELISA-like test with no detection and frequently leads to a detection delay relative to an RDT-like test (@fig-delay).
+Introducing a lag in test result reporting necessarily decreases surveillance accuracy because an alert can only begin once the test results are in-hand, which increases the chance that an outbreak will end before results can be translated to an alert.
+For the conditions simulated here, introducing a 14-day lag in test reporting for an ELISA-like test reduces the surveillance accuracy by $approx$ 3%.
+For all simulated scenarios, this is consistent with, or higher than, the accuracy achievable with an RDT-like test.
+This always leads to an increase in the median delay from outbreak start to alert, relative to an ELISA-like test with no result delays, as well as RDT-like tests (@fig-delay).
 
 #figure(
   image("manuscript_files/figure-typst/fig-delay-output-1.png"),
@@ -239,7 +238,7 @@ This always leads to an increase in the median delay from outbreak start to aler
 )
 <fig-delay>
 
-It is notable that outbreak detection accuracy and detection delays do not increase monotonically with an increase in testing rate, and this holds regardless of the type of test.
+It is notable that surveillance accuracy and detection delays do not increase monotonically with an increase in testing rate, and this holds regardless of the type of test.
 The reason behind this unintuitive results stems from the use of integer-valued thresholds.
 An integer valued threshold can result in step-changes of accuracy between two threshold values, and the expected increase in the alert system’s PPV from a higher threshold value is outweighed by the loss in the alert system’s sensitivity to detecting outbreaks.
 Even with a perfect test, the alert system must discriminate between endemic/imported cases and epidemic cases; increasing the testing rate will result in higher numbers of test positive individuals, and a lower threshold can result in an overly sensitive alert system, triggering for measles infections, but not those within an outbreak.
