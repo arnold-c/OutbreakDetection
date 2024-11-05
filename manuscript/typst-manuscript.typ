@@ -238,36 +238,22 @@ This always leads to an increase in the median delay from outbreak start to aler
 )
 <fig-delay>
 
-It is notable that surveillance accuracy and detection delays do not increase monotonically with an increase in testing rate, and this holds regardless of the type of test.
-The reason behind this unintuitive results stems from the use of integer-valued thresholds.
-An integer valued threshold can result in step-changes of accuracy between two threshold values, and the expected increase in the alert system’s PPV from a higher threshold value is outweighed by the loss in the alert system’s sensitivity to detecting outbreaks.
-Even with a perfect test, the alert system must discriminate between endemic/imported cases and epidemic cases; increasing the testing rate will result in higher numbers of test positive individuals, and a lower threshold can result in an overly sensitive alert system, triggering for measles infections, but not those within an outbreak.
-A higher threshold will face the opposite issue; not triggering for smaller outbreaks, which is more likely to be an issue at lower testing rates.
-
-In general, the increase in accuracy with higher testing rates, is accompanied with longer testing delays.
+It is notable that surveillance metrics do not change monotonically with an increase in testing rate, and this holds regardless of the type of test.
+This effect is exaggerated for some metrics (detection delays, proportion of time in alert, and number of unavoidable cases) than others (accuracy).
+In general, the increase in accuracy with higher testing rates is accompanied with longer testing delays.
 This reflects the change from highly sensitive systems with low thresholds to more specific systems with higher thresholds at higher testing rates.
-For Poisson noise, similar detection delays are observed for all test and noise magnitudes, with variation by testing rate (mean of -3.7 to 36.1 days).
-Under dynamical noise, there are clearer differences in the performance of ELISA and RDTs, with the separation of outcomes occurring later than observed for detection accuracy (8 time noise magnitude vs. 2 times, respectively) (@fig-accuracy).
-With large amounts of dynamical noise (8 times the measles incidence), the mean detection delay of the 90% and 85% RDTs range from -17.5 days to 3.2 days, and from -25.2 days to -3.4 days, respectively.
-Long detection delays manifest as large numbers of unavoidable cases (i.e., cases that occur between the outbreak start and its detection.
-Given the initial exponential rate of increase of outbreaks, the pattern of unavoidable cases follows the same shape as for detection delays, but more exaggerated.
-Negative delays indicate that alerts are being triggered before the start of the outbreak and is correlated with the proportion of the time series that is under alert, with larger negative delays associated with more and/or longer alert periods (@fig-alert-proportion, Supplemental Figure 2).
+For Poisson noise, similar detection delays are observed for all test and noise magnitudes, with most of the variation attributable to the change in the testing rate (means of -3.7 to 36.1 days).
+Under dynamical noise, there are clearer differences in the performance of ELISA and RDTs, with the separation of outcomes occurring later than observed for surveillance accuracy ($Lambda(8)$ vs $Lambda(2)$ #sym.dash.em @fig-delay and @fig-accuracy #sym.dash.em respectively).
+With large amounts of dynamical noise ($Lambda(8)$), the mean detection delay of the 90% and 85% RDTs range from -17.5 days to 3.2 days, and from -25.2 days to -3.4 days, respectively.
+Negative delays indicate that alerts are being triggered before the start of the outbreak and is correlated with the proportion of the time series that is under alert, with larger negative delays associated with more and/or longer alert periods (@fig-alert-proportion, Supplemental Figures 2 and 3).
+Long detection delays manifest as large numbers of unavoidable cases (i.e., cases that occur between the outbreak start and its detection) (@fig-unavoidable).
+Given the exponential trajectory of infections in the initial phase of an outbreak, the pattern of unavoidable cases follows the same shape as for detection delays, but more exaggerated.
 
 #figure(
   image("manuscript_files/figure-typst/fig-alert-proportion-output-1.png"),
   caption: [The difference between proportion of the time series in alert for outbreak detection systems under different testing rates and noise structures. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate. Solid lines represent tests with 0-day turnaround times, and dashed lines represent tests with result delays.]
 )
 <fig-alert-proportion>
-
-The non-monotic relationship between testing rate and both detection delay and unavoidable cases can be explained by the step changes in sensitivity due to integer thresholds and the overall sensitivity of the system.
-Notably, for all noise and testing combinations, the detection delay and number of unavoidable cases is lowest at low testing rates.
-This occurs because the system performs best with a highly sensitive threshold (1 test positive case), which means that the system in "alert" 15-30% of the time as a results of longer and more frequent alerts (@fig-alert-proportion, Supplemental Figures 2 & 3).
-Higher testing rates give rise to more a more specific outbreak detection system and a decrease in the proportion of the time series that is designated as alert.
-Note that for high testing rates and high ratios of dynamical noise to signal RDTs dominate the system with false positives leading to a correspondingly high proportion of the time series in alert (@fig-alert-proportion).
-
-Examining the number of unavoidable cases (@fig-unavoidable) and the detection delays (@fig-delay), we can see that the decrease in accuracy results from a decrease in the sensitivity of the alert system: the detection delay increases by 6 days, and the unavoidable cases by c. 2300.
-Although the testing rate increases, so does the optimal threshold, from 3 test positives to 4 test positives per day.
-The subsequent change in testing rate (40 - 50%) is associated with no change in the optimal threshold for the ELISA, and as expected, the number of unavoidable cases and detection delay decrease, resulting in a more sensitive alert system, with a higher system accuracy indicating that the increase more than offset the decrease in the system’s PPV.
 
 #figure(
   image("manuscript_files/figure-typst/fig-unavoidable-output-1.png"),
@@ -277,39 +263,53 @@ The subsequent change in testing rate (40 - 50%) is associated with no change in
 
 
 = Discussion
+
+#line(length: 100%)
+
+The reason behind this unintuitive results stems from the use of integer-valued thresholds.
+An integer valued threshold can result in step-changes of accuracy between two threshold values, and the expected increase in the alert system’s PPV from a higher threshold value is outweighed by the loss in the alert system’s sensitivity to detecting outbreaks.
+Even with a perfect test, the alert system must discriminate between endemic/imported cases and epidemic cases; increasing the testing rate will result in higher numbers of test positive individuals, and a lower threshold can result in an overly sensitive alert system, triggering for measles infections, but not those within an outbreak.
+A higher threshold will face the opposite issue; not triggering for smaller outbreaks, which is more likely to be an issue at lower testing rates.
+
+The non-monotic relationship between testing rate and both detection delay and unavoidable cases can be explained by the step changes in sensitivity due to integer thresholds and the overall sensitivity of the system.
+Notably, for all noise and testing combinations, the detection delay and number of unavoidable cases is lowest at low testing rates.
+This occurs because the system performs best with a highly sensitive threshold (1 test positive case), which means that the system in "alert" 15-30% of the time as a results of longer and more frequent alerts (@fig-alert-proportion, Supplemental Figures 2 & 3).
+Higher testing rates give rise to more a more specific outbreak detection system and a decrease in the proportion of the time series that is designated as alert.
+Note that for high testing rates and high ratios of dynamical noise to signal RDTs dominate the system with false positives leading to a correspondingly high proportion of the time series in alert (@fig-alert-proportion).
+
+#line(length: 100%)
+
 The performance of an outbreak detection system is highly sensitive to the structure and level of background noise in the simulation.
 Despite the mean daily noise incidence set to equivalent values between the dynamical and Poisson-only simulations, drastically different results are observed.
 
-Under the assumption that non-measles febrile rash is relatively static in time (Poisson), RDTs can perform as well, if not better than ELISA tests at moderate to high testing rates, and at a fraction of the cost.
-However, if it is expected that the noise is non-stationary, imperfect tests cannot overcome their accuracy limitations through higher testing rates, saturating at c. 74% accuracy, relative to ELISA’s 93%.
-This occurs because, despite the same average incidence of noise in each (comparable) scenario, the relative proportion of measles to noise varies differently throughout the time series, exacerbating the effects of imperfect diagnostic tests that will produce higher rates of false positives and negatives than ELISA-like diagnostics.
-Imperfect tests are also more susceptible to incorrect results due to the varying prevalence throughout the time series, so the PPV of the system will not be static throughout the time series.
-
-- #emph[Make point about balance of false positive/negative outbreak detection]
-- #emph[Analysis isn’t true optimization:]
-  - #emph[Requires explicit decisions about preference for speed / false alerts vs higher PPV]
-  - #emph[Surveillance is counting for action (WHO quote)]
+Under the assumption that non-measles febrile rash is relatively static in time (Poisson noise scenarios), RDTs can perform as well, if not better than ELISA tests at moderate to high testing rates, and at a fraction of the cost @brownRapidDiagnosticTests2020.
+However, if it is expected that the noise is dynamic, imperfect tests cannot overcome their accuracy limitations through higher testing rates, saturating at c. 74% accuracy, relative to ELISA’s 93%.
+This discrepancy occurs because, despite the same average incidence of noise in each (comparable) scenario, the relative proportion of measles to noise on any one day varies throughout the dynamical noise time series, exacerbating the effects of imperfect diagnostic tests that produce higher rates of false positives and negatives than ELISA-like diagnostics.
 
 The purpose of routine surveillance is to characterize the infection landscape.
-With strong public health infrastructure and infectious disease surveillance programs, it is possible to develop a strong understanding of the shape of febrile rash cases, regardless of source.
-With this information, countries can tailor their future activities to rely more or less heavily upon RDTs, depending on the dynamics of the target disease and its relationship to background noise, favoring RDTs when there are low levels of noise and ELISAs during large rubella outbreaks, for example.
+With strong public health infrastructure and infectious disease surveillance programs, it is possible to develop a deep understanding of the shape of febrile rash cases, regardless of source.
+With this information, countries can tailor their future activities to rely more or less heavily upon RDTs, depending on the dynamics of the target disease and its relationship to background noise.
+Surveillance is counting for action @DiseaseSurveillance.
+What actions are taken are dependent upon the constraints imposed, and the values held, within a particular surveillance context.
+This analysis is therefore not a complete optimization, which would require explicit decisions to be made about the preference for increased speed at the cost of higher false alert rates and lower PPV (and visa versa).
+These will be country-specific decisions, and they may change throughout time, for example, favoring RDTs when there are low levels of background infections, and ELISAs during large (suspected) rubella outbreaks.
+Instead, we present a framework to evaluate the implicit trade-offs, while acknowledging the deep interconnectedness between individual and population-level uncertainty resulting from necessary categorizations.
 
 == Limitations and Strengths
 To our knowledge, this is one of the first simulation studies to examine the relationship between individual test characteristics and the wider surveillance program.
-By explicitly modeling the interaction between the two, we make a case that surveillance systems should take a holistic approach; ignoring one component can lead to drastically different, and suboptimal, results.
-Additionally, by defining outbreak bounds concretely we have been able to calculate metrics of outbreak detection performance that draw parallels to those used when evaluating individual diagnostic tests, allowing for intuitive and simple implementation of this method in resource-constrained environments, something that is not possible with most outbreak detection and early warning system simulations in the literature.
+By explicitly modeling the interaction between the two, we make a case that surveillance systems should take a holistic approach; prematurely constraining one component can lead to drastically different, and suboptimal, results.
+Additionally, by defining outbreak bounds concretely we have been able to calculate metrics of outbreak detection performance that draw parallels to those used when evaluating individual diagnostic tests, allowing for intuitive and simple implementation of this method in resource-constrained environments, something that may not be possible with many outbreak detection and early warning system simulations in the literature.
 An evaluation of all outbreak detection algorithms is beyond the scope of this work, but a more computationally expensive approach based on nowcasting incidence may help overcome the shortcomings of RDTs in high-noise scenarios.
 
 For computational simplicity, this paper did not include demography in the model structure.
 And while a simulation-based approach allows for complete determination of true infection status i.e., measles vs non-measles febrile rash cases, and therefore an accurate accounting of the outbreak and alert bounds, these simulations do not specifically represent any real-world setting.
-The evaluation of empirical data does provide this opportunity, but at the cost of knowing the true infection status of individuals and confounding of multiple variables, limiting analysis to only those who are observed (i.e., not those in the community who do not visit a healthcare center), and removing the possibility to explore the sensitivity of the results to parameters of interest to a surveillance program e.g., testing rate, and the test itself.
+The evaluation of empirical data does provide this opportunity, but at the cost of knowing the true infection status of individuals, confounding of multiple variables, limiting analysis to only those who are observed (i.e., not those in the community who do not visit a healthcare center), and removing the possibility to explore the sensitivity of the results to parameters of interest to a surveillance program e.g., testing rate, and the test itself.
 
-Additionally, is has been well documented that the performance of an individual test is highly sensitive to its timing within a person’s infection cycle @gastanaduyMeasles2019 @larremoreTestSensitivitySecondary2021 @middletonModelingTransmissionMitigation2023 @kisslerViralDynamicsAcute2021 @ratnamPerformanceIndirectImmunoglobulin2000, so it is possible that different conclusions would be drawn if temporal information about the test acquisition was included in the simulation.
+Additionally, is has been well documented that the performance of an individual test is highly sensitive to its timing within a person’s infection cycle @gastanaduyMeasles2019 @larremoreTestSensitivitySecondary2021 @middletonModelingTransmissionMitigation2023 @kisslerViralDynamicsAcute2021 @ratnamPerformanceIndirectImmunoglobulin2000, so it is possible that different conclusions would be drawn if temporal information about the test administration was included in the simulation.
 
 Finally, the optimal threshold for a testing scenario depends heavily on the costs ascribed to incorrect actions, be that failing to detect an outbreak or incorrectly mounting a response for an outbreak that doesn’t exist.
-In the simulations we have weighted them equally, but it is likely that they should not be deemed equivalent: missing an outbreak leads to many thousands of cases and associated DALYs, whereas an unnecessary alert would generally launch an initial low-cost investigation for full determination of the outbreak status.
+In the simulations we have weighted them equally, but it is likely that they should not be deemed equivalent: missing an outbreak may result in many thousands of cases, whereas an unnecessary alert would generally launch an initial low-cost investigation for full determination of the outbreak status.
 This is particularly important in countries with vast heterogeneity in transmission: different weightings should be applied to higher vs. lower priority/risk regions to account for discrepancies in consequences of incorrect decisions.
-For example, a high priority zone could still benefit from a false alert as many high-risk healthcare regions within a country are targeted for Supplemental Immunization Activities, so a false alert would just hasten the (proactive) vaccination response.
 
 Given these limitations, the explicit values (i.e., optimal thresholds, accuracies etc.) should be interpreted with caution, and the exact results observed in the real-world will likely be highly dependent on unseen factors, such as the proportion of measles and non-measles sources of febrile rash that seek healthcare.
 However, the general patterns should hold, and more importantly, the analysis framework provides a consistent and holistic approach to evaluating the trade-off between individual level tests and the alert system enacted to detect outbreaks.
