@@ -175,25 +175,23 @@ Thus, for each non-measles noise (@fig-outbreak-schematic a) and measles (@fig-o
 
 == Triggering Alerts
 We define an "alert" as any consecutive string of 1 or more days where the 7-day moving average of the test-positive cases is greater than, or equal to, a pre-specified alert threshold, T.
-For each time series of test-positive cases, we calculate the percentage of alerts that are "correct", defined as any overlap of 1 or more days between the alert and outbreak period (@fig-outbreak-schematic c).
-This is analogous to the PPV of the alert system, which is how it will be referred to for the rest of the manuscript.
-Note that it is possible to have multiple alerts within a single outbreak, if the 7-day moving average of test positive cases drops below the threshold, and each would be considered correct.
-For all outbreaks in the measles time series, we calculate the percentage that contain at least 1 alert within the outbreak’s start and end dates (@fig-outbreak-schematic b).
+For each time series of test-positive cases, we calculate the percentage of alerts that are "correct", defined as any overlap of 1 or more days between the alert and outbreak periods (@fig-outbreak-schematic b and c).
+This is analogous to the PPV of the alert system, and will be referred to as such for the rest of the manuscript.
+Note that it is possible to have multiple alerts within a single outbreak if the 7-day moving average of test positive cases drops below the threshold, T, and each would be considered correct.
+For all outbreaks in the measles time series, we calculate the percentage that contain at least 1 alert within the outbreak’s start and end dates (@fig-outbreak-schematic b and c).
 We refer to this as the sensitivity of the alert system.
 We also calculate the detection delay as the time from the start of an outbreak to the start of its first alert.
-If the alert starts before the outbreak and continues past the start date of the outbreak, this could be considered a correct alert with a negative delay i.e., an early warning triggered by a false positive.
+If the alert period starts before the outbreak and continues past the start date of the outbreak, this would be considered a correct alert with a negative delay i.e., an early warning triggered by false positive test results.
 Finally, for each time series we calculate the number of unavoidable and avoidable outbreak cases.
 Avoidable cases are defined as those that occur within an outbreak after a correct alert is first triggered i.e., cases that could theoretically be prevented with a perfectly effective and timely response.
 Unavoidable cases are the inverse: those that occur before a correct alert, or those that occur in an undetected outbreak.
 In practice, not all cases deemed avoidable are (due to imperfect and delays in responses), but to minimize the sensitivity of the results to the response implementation and operational constraints we are counting them as such.
 
 We define the accuracy of the surveillance system for a given time series as the mean of the system’s sensitivity and PPV.
-To examine the interaction of test and surveillance systems we varied the alert threshold, between 1 and 15 cases per day, and identified the threshold T for each combination of individual test, testing rate, noise structure and magnitude that maximizes accuracy.
-
-For each combination of diagnostic test and testing rate, the optimal alert threshold is calculated by selecting the threshold that produces the highest accuracy.
-Each of the 100 simulations per scenario produces an accuracy and the median accuracy of this distribution is used to determine the optimal alert threshold.
-We then compare testing scenarios (the combination of the diagnostic test, testing rate, and alert threshold) at the optimal threshold that is specific for the scenario.
-This allows for conclusions to be made about the surveillance system as a whole, instead of just single components.
+To examine the interaction of the test with the surveillance system's characteristics (i.e., testing rate, and noise structure and magnitude), we varied the alert threshold, T, between 1 and 15 cases per day.
+Each of the 100 simulations per scenario produces an accuracy, and we identified the optimal alert threshold, T#sub([O]), as the value that produced the highest median accuracy for a given scenario.
+We then compare testing scenarios at their respective optimal alert threshold.
+This allows for conclusions to be made about the surveillance system as a whole, rather than just single components.
 
 = Results
 The threshold that maximized outbreak detection accuracy depends on diagnostic test characteristics, the testing rate, and the structure of the non-measles noise (@tbl-optimal-thresholds).
