@@ -67,32 +67,29 @@ By examining the combination of alert threshold and individual test characterist
 == Model Structure
 We constructed a stochastic compartmental non-age structured Susceptible-Exposed-Infected-Recovered (SEIR) model of measles and simulated using a modified Tau-leaping algorithm with a time step of 1 day, utilizing binomial draws to ensure compartment sizes remained positive valued @chatterjeeBinomialDistributionBased2005@gillespieApproximateAcceleratedStochastic2001. We assumed that transmission rate ($beta_t$) is sinusoidal with a period of one year and 20% seasonal amplitude. $R_0$ was set to 16, with a latent period of 10 days and infectious period of 8 days. The population was initialized with 500,000 individuals with Ghana-like birth and vaccination rates, and the final results were scaled up to the approximate 2022 population size of Ghana (33 million) @worldbankGhana. We assumed commuter-style imports at each time step to avoid extinction; the number of imports each day were drawn from a Poisson distribution with mean proportional to the size of the population and $R_0$ @keelingModelingInfectiousDiseases2008. The full table of parameters can be found in @tbl-model-parameters. All simulations and analysis was completed in Julia version 1.10.5 @bezansonJuliaFreshApproach2017, with all code stored at #link("https://github.com/arnold-c/OutbreakDetection");.
 
-#figure([
 #let parameters = csv("parameters.csv")
 #let import_rate = $(1.06*μ*R_0)/(√(N))$
 #let parameter_labels = ( "Parameters", $R_0$, $"Latent period ("#sym.sigma")"$, $"Infectious period ("#sym.gamma")"$, "Seasonal amplitude", $"Birth/death rate ("#sym.mu")"$, $"Vaccination rate at birth ("#sym.rho")"$)
 
-#table(
-  columns: 3,
-  [Parameters],[Measles],[Dynamical noise],
-  [R0],[16],[5],
-  [Latent period (s)],[10 days],[7 days],
-  [Infectious period (g)],[8 days],[14 days],
-  [Seasonal amplitude],[0.2],[0.2],
-  [Vaccination rate at birth (r)],[80%],[(5-85)%],
-  [Birth rate (m)],table.cell(colspan: 2, align: center, "27 per 1000 per annum"),
-  [Importation rate], table.cell(colspan: 2, align: center, $(1.06*μ*R_0)/(√(N))$),
-  [Population size (N)], table.cell(colspan: 2, align: center, "500,000, scaled to 33M"),
-  [Initial proportion susceptible], table.cell(colspan: 2, align: center, "0.05"),
-  [Initial proportion exposed], table.cell(colspan: 2, align: center, "0.0"),
-  [Initial proportion infected], table.cell(colspan: 2, align: center, "0.0"),
-  [Initial proportion recovered], table.cell(colspan: 2, align: center, "0.95"),
-)
-], caption: figure.caption(
-  position: bottom,
-  [
-  Compartmental model parameters
-  ]),
+#figure(
+  table(
+    columns: 3,
+    [Parameters],[Measles],[Dynamical noise],
+    [R0],[16],[5],
+    [Latent period (s)],[10 days],[7 days],
+    [Infectious period (g)],[8 days],[14 days],
+    [Seasonal amplitude],[0.2],[0.2],
+    [Vaccination rate at birth (r)],[80%],[(5-85)%],
+    [Birth rate (m)],table.cell(colspan: 2, align: center, "27 per 1000 per annum"),
+    [Importation rate], table.cell(colspan: 2, align: center, $(1.06*μ*R_0)/(√(N))$),
+    [Population size (N)], table.cell(colspan: 2, align: center, "500,000, scaled to 33M"),
+    [Initial proportion susceptible], table.cell(colspan: 2, align: center, "0.05"),
+    [Initial proportion exposed], table.cell(colspan: 2, align: center, "0.0"),
+    [Initial proportion infected], table.cell(colspan: 2, align: center, "0.0"),
+    [Initial proportion recovered], table.cell(colspan: 2, align: center, "0.95"),
+  ),
+  caption: [Compartmental model parameters],
+  placement: bottom,
 )
 <tbl-model-parameters>
 
@@ -119,13 +116,12 @@ Each day, 60% of the measles and non-measles febrile rash cases visit the clinic
 
 The time series of "test-positive cases" is the daily count of those tested cases that return a positive test result. Thus, for each non-measles noise (@fig-outbreak-schematic a) and measles (@fig-outbreak-schematic b) time series, we have 1 time series of outbreaks (@fig-outbreak-schematic c) and 5 possible time series of test-positive cases (@fig-outbreak-schematic c) (all clinically compatible cases, plus the 4 testing scenarios), which will include false positive and negative cases resulting from imperfect diagnostic tests, that can be used to trigger outbreak alerts.
 
-#figure([
-#image("manuscript_files/figure-typst/fig-outbreak-schematic-output-1.png")
-], caption: figure.caption(
-position: bottom,
-[
-A schematic of the outbreak definition and alert detection system. A) Noise time series. B) Measles incidence time series. C) Observed time series resulting from testing noise & measles cases that visit the healthcare facility. The orange bands/vertical lines represent regions of the measles time series that meet the outbreak definition criteria. The green bands/vertical lines represent regions of the observed (measles - noise) time series that breach the alert threshold (the horizontal dashed line), and constitute an alert.
-]),
+#figure(
+  image("manuscript_files/figure-typst/fig-outbreak-schematic-output-1.png"),
+  caption: [
+    Test A schematic of the outbreak definition and alert detection system. A) Noise time series. B) Measles incidence time series. C) Observed time series resulting from testing noise & measles cases that visit the healthcare facility. The orange bands/vertical lines represent regions of the measles time series that meet the outbreak definition criteria. The green bands/vertical lines represent regions of the observed (measles - noise) time series that breach the alert threshold (the horizontal dashed line), and constitute an alert.
+    ],
+  placement: bottom,
 )
 <fig-outbreak-schematic>
 
@@ -142,48 +138,38 @@ The threshold that maximized outbreak detection accuracy depends on diagnostic t
 
 The maximal attainable outbreak detection accuracy at the optimal threshold depends strongly on the structure and magnitude of the background noise. For Poisson noise, at all magnitudes, the maximum outbreak detection accuracy increases rapidly from 65% at 10% of suspected cases tested to $approx$ 90% accuracy at $gt.eq$ 20% testing for all test types (@fig-accuracy). For dynamical SEIR noise, the ELISA-like tests perform similarly to the Poisson noise case at all magnitudes (@fig-accuracy), as well as to the perfect tests with complete discrimination. For RDT-like tests, which have lower individual sensitivity and specificity, the maximal attainable accuracy is lower than the ELISA-like test for all testing rates at noise magnitude $gt.eq Lambda (2)$ (@fig-accuracy). Notably, the maximal attainable accuracy declines with increasing noise and, at all noise levels, is not improved with higher testing rates as the signal becomes increasingly dominated by false positive tests (@fig-accuracy).
 
-#figure([
 #let optimal_thresholds = csv("optimal-thresholds.csv")
-
-#table(
-  columns: 9,
-  fill: (x, y) => {
-    if y == 0 {gray}
-    if y == 1 {gray}
-  },
-  align: center,
-  [], table.cell(colspan: 2, align: center, "Test Characteristic"), table.cell(colspan: 6, align: center, "Testing Rate"),
-  ..optimal_thresholds.flatten()
-)
-], caption: figure.caption(
-position: bottom,
-[
-Optimal threshold for RDT-like, ELISA-like, and perfect tests, under dynamical and Poisson-like noise structures where the average daily noise incidence is 8 times the average daily measles incidence
-]),
+#figure(
+  table(
+    columns: 9,
+    fill: (x, y) => {
+      if y == 0 {gray}
+      if y == 1 {gray}
+    },
+    align: center,
+    [], table.cell(colspan: 2, align: center, "Test Characteristic"), table.cell(colspan: 6, align: center, "Testing Rate"),
+    ..optimal_thresholds.flatten()
+  ),
+  caption: [Optimal threshold for RDT-like, ELISA-like, and perfect tests, under dynamical and Poisson-like noise structures where the average daily noise incidence is 8 times the average daily measles incidence],
+  placement: bottom,
 )
 <tbl-optimal-thresholds>
 
 
-#figure([
-image("manuscript_files/figure-typst/fig-accuracy-output-1.png")
-], caption: figure.caption(
-position: bottom,
-[
-The accuracy of outbreak detection systems under different testing rates and noise structures. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate. Solid lines represent tests with 0-day turnaround times, and dashed lines represent tests with result delays.
-]),
+#figure(
+  image("manuscript_files/figure-typst/fig-accuracy-output-1.png"),
+  caption: [The accuracy of outbreak detection systems under different testing rates and noise structures. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate. Solid lines represent tests with 0-day turnaround times, and dashed lines represent tests with result delays.],
+  placement: bottom,
 )
 <fig-accuracy>
 
 
 Introducing a lag in test result reporting necessarily decreases outbreak detection accuracy because an alert can only begin once the test results are in-hand, which increases the chance that an outbreak will end before the result. For the conditions simulated here, introducing a 14-day lag in test reporting for an ELISA-like test reduces the outbreak detection accuracy by $approx$ 3%. For all simulated scenarios, this is consistent with, or higher than the accuracy achievable with an RDT-like test. This always leads to an increase in the median delay from outbreak start to alert relative to an ELISA-like test with no detection and frequently leads to a detection delay relative to an RDT-like test (@fig-delay).
 
-#figure([
-image("manuscript_files/figure-typst/fig-delay-output-1.png")
-], caption: figure.caption(
-position: bottom,
-[
-The detection delay of outbreak detection systems under different testing rates and noise structures. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate. Solid lines represent tests with 0-day turnaround times, and dashed lines represent tests with result delays.
-]),
+#figure(
+  image("manuscript_files/figure-typst/fig-delay-output-1.png"),
+  caption: [The detection delay of outbreak detection systems under different testing rates and noise structures. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate. Solid lines represent tests with 0-day turnaround times, and dashed lines represent tests with result delays.],
+  placement: bottom,
 )
 <fig-delay>
 
@@ -192,13 +178,10 @@ It is notable that outbreak detection accuracy and detection delays do not incre
 
 In general, the increase in accuracy with higher testing rates, is accompanied with longer testing delays. This reflects the change from highly sensitive systems with low thresholds to more specific systems with higher thresholds at higher testing rates. For Poisson noise, similar detection delays are observed for all test and noise magnitudes, with variation by testing rate (mean of -3.7 to 36.1 days). Under dynamical noise, there are clearer differences in the performance of ELISA and RDTs, with the separation of outcomes occurring later than observed for detection accuracy (8 time noise magnitude vs.~2 times, respectively) (@fig-accuracy). With large amounts of dynamical noise (8 times the measles incidence), the mean detection delay of the 90% and 85% RDTs range from -17.5 days to 3.2 days, and from -25.2 days to -3.4 days, respectively. Long detection delays manifest as large numbers of unavoidable cases (i.e., cases that occur between the outbreak start and its detection. Given the initial exponential rate of increase of outbreaks, the pattern of unavoidable cases follows the same shape as for detection delays, but more exaggerated. Negative delays indicate that alerts are being triggered before the start of the outbreak and is correlated with the proportion of the time series that is under alert, with larger negative delays associated with more and/or longer alert periods (@fig-alert-proportion, Supplemental Figure 2).
 
-#figure([
-image("manuscript_files/figure-typst/fig-alert-proportion-output-1.png")
-], caption: figure.caption(
-position: bottom,
-[
-The difference between proportion of the time series in alert for outbreak detection systems under different testing rates and noise structures. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate. Solid lines represent tests with 0-day turnaround times, and dashed lines represent tests with result delays.
-]),
+#figure(
+  image("manuscript_files/figure-typst/fig-alert-proportion-output-1.png"),
+  caption: [The difference between proportion of the time series in alert for outbreak detection systems under different testing rates and noise structures. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate. Solid lines represent tests with 0-day turnaround times, and dashed lines represent tests with result delays.],
+  placement: bottom,
 )
 <fig-alert-proportion>
 
@@ -207,13 +190,10 @@ The non-monotic relationship between testing rate and both detection delay and u
 
 Examining the number of unavoidable cases (@fig-unavoidable) and the detection delays (@fig-delay), we can see that the decrease in accuracy results from a decrease in the sensitivity of the alert system: the detection delay increases by 6 days, and the unavoidable cases by c.~2300. Although the testing rate increases, so does the optimal threshold, from 3 test positives to 4 test positives per day. The subsequent change in testing rate (40 - 50%) is associated with no change in the optimal threshold for the ELISA, and as expected, the number of unavoidable cases and detection delay decrease, resulting in a more sensitive alert system, with a higher system accuracy indicating that the increase more than offset the decrease in the system’s PPV.
 
-#figure([
-image("manuscript_files/figure-typst/fig-unavoidable-output-1.png")
-], caption: figure.caption(
-position: bottom,
-[
-The number of unavoidable cases of outbreak detection systems under different testing rates and noise structures. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate. Solid lines represent tests with 0-day turnaround times, and dashed lines represent tests with result delays.
-]),
+#figure(
+  image("manuscript_files/figure-typst/fig-unavoidable-output-1.png"),
+  caption: [The number of unavoidable cases of outbreak detection systems under different testing rates and noise structures. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate. Solid lines represent tests with 0-day turnaround times, and dashed lines represent tests with result delays.],
+  placement: bottom,
 )
 <fig-unavoidable>
 
