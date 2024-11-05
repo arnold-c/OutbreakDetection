@@ -41,8 +41,8 @@
 
   // The path to a bibliography file if you want to cite some external
   // works.
-  bib: none,
-  bib-title: "References",
+  // bib: none,
+  // bib-title: "References",
 
   // Word count
   word-count: false,
@@ -53,9 +53,6 @@
   // Paper's content
   body
 ) = {
-  // Set document properties
-  set bibliography(title: bib-title)
-
   // Line numbers have not yet been implemented in a release version, but are coming soon
   // https://github.com/typst/typst/issues/352
   // https://github.com/typst/typst/pull/4516
