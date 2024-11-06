@@ -458,8 +458,7 @@ function _line_plot_facet(
             subsetted_df.percent_clinic_tested,
             subsetted_df[!, outcome_10th],
             subsetted_df[!, outcome_90th];
-            color = colors[i],
-            alpha = alpha,
+            color = (colors[i], alpha),
         )
 
         ylims!(ax, ylims)

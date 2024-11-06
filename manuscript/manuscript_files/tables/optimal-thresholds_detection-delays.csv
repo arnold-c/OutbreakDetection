@@ -1,0 +1,7 @@
+Noise Type,Test Type,Test Lag,10%,20%,30%,40%,50%,60%
+Dynamical noise: in-phase,RDT Equivalent (85.0%),0,-24.82,-12.79,-9.15,-3.21,-16.22,-10.77
+Dynamical noise: in-phase,RDT Equivalent (90.0%),0,-17.21,-5.34,-0.55,3.03,-10.55,-3.66
+Poisson noise,RDT Equivalent (85.0%),0,-3.75,24.49,31.45,31.85,38.17,37.87
+Poisson noise,RDT Equivalent (90.0%),0,-3.69,12.94,32.92,40.14,20.26,28.74
+All noise structures,Perfect Test,0,-3.69,22.61,30.64,36.08,17.92,23.05
+All noise structures,Perfect Test,14,3.69,33.64,42.38,48.18,28.21,34.07

@@ -1,14 +1,13 @@
 #%%
-using DrWatson
-@quickactivate "OutbreakDetection"
+manuscriptdir("plotting-setup.jl")
 
-using GLMakie
+#%%
 using StatsBase
 
-using OutbreakDetection
-using OutbreakDetectionUtils
+using OutbreakDetection: N_MISSED_OUTBREAKS_COLOR,
+    PERC_OUTBREAKS_DETECTED_COLOR, N_MISSED_OUTBREAKS_COLOR, N_ALERTS_COLOR
 
-include(srcdir("makie-plotting-setup.jl"))
+using OutbreakDetectionUtils
 
 #%%
 states_p = StateParameters(;
@@ -388,4 +387,9 @@ schematic_with_shade_fig = plot_schematic(
     outbreak_detection_specification.alert_threshold; time_p = time_p,
     shade_alert_outbreak_overlap = true,
     xlims = (5, 13),
+)
+
+save(
+    manuscript_plotdir("schematic-plot.svg"),
+    schematic_with_shade_fig,
 )
