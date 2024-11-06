@@ -14,20 +14,33 @@ using OutbreakDetectionUtils:
 import OutbreakDetectionUtils: create_optimal_threshold_summary_df
 
 #%%
+using OutbreakDetection: line_plot
+
+#%%
 manuscriptdir(args...) = DrWatson.projectdir("manuscript", args...)
+manuscript_scripts(args...) = manuscriptdir("scripts", args...)
 manuscript_files(args...) = manuscriptdir("manuscript_files", args...)
 manuscript_plotdir(args...) = manuscript_files("plots", args...)
 manuscript_tabledir(args...) = manuscript_files("tables", args...)
 appendix_files(args...) = manuscriptdir("supplemental-appendix_files", args...)
+appendix_plotdir(args...) = appendix_files("plots", args...)
+appendix_tabledir(args...) = appendix_files("tables", args...)
+include(manuscript_scripts("plotting-setup.jl"))
 
 #%%
-include(manuscriptdir("optimal-thresholds_loading.jl"));
+include(manuscript_scripts("optimal-thresholds_loading.jl"));
 
 #%%
-include(manuscriptdir("optimal-thresholds_tables.jl"));
+include(manuscript_scripts("optimal-thresholds_tables.jl"));
 
 #%%
-include(manuscriptdir("optimal-thresholds_plots.jl"));
+include(manuscript_scripts("optimal-thresholds_plots.jl"));
 
 #%%
-# include(manuscriptdir("optimal-thresholds_checks.jl"))
+include(manuscript_scripts("supplemental_tables.jl"))
+
+#%%
+include(manuscript_scripts("supplemental_plots.jl"))
+
+#%%
+# include(manuscript_scripts("optimal-thresholds_checks.jl"))

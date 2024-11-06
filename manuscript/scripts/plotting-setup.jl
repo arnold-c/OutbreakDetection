@@ -25,3 +25,7 @@ set_theme!(
 
 update_theme!(; size = (1300, 800))
 CairoMakie.activate!(; type = "svg", px_per_unit = 1.0)
+
+alpha = 0.2
+nbanks = 1
+legend_rowsize = Makie.Relative(0.05);

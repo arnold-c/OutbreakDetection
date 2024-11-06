@@ -1,13 +1,4 @@
 #%%
-manuscriptdir("plotting-setup.jl")
-
-#%%
-using OutbreakDetection: line_plot
-alpha = 0.2
-nbanks = 1
-legend_rowsize = Makie.Relative(0.05);
-
-#%%
 accuracy_plot = line_plot(
     optimal_threshold_characteristics;
     outcome = :accuracy,

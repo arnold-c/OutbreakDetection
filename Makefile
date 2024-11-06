@@ -59,25 +59,19 @@ tmp/ensemble-diag-testing_optimal-thresholds_single-timeseries: scripts/ensemble
 
 
 # Manuscript targets
-MANUSCRIPT_TARGETS = manuscript supplemental-appendix
+MANUSCRIPT_TARGETS = manuscript
 .PHONY: $(MANUSCRIPT_TARGETS) manuscript-targets
 $(MANUSCRIPT_TARGETS): %: tmp/%
 manuscript-targets: $(MANUSCRIPT_TARGETS)
 
-tmp/manuscript: manuscript/manuscript.qmd tmp/ensemble-sim
-	@echo "Deleting old cache files"
-	$(shell fd . 'manuscript/.jupyter_cache/'| xargs rm -r)
-	@echo "Rendering manuscript"
-	quarto render manuscript/manuscript.qmd
+tmp/manuscript: manuscript/manuscript.typ tmp/ensemble-sim  manuscript/scripts/optimal-thresholds_loading.jl manuscript/scripts/optimal-thresholds_plots.jl manuscript/scripts/optimal-thresholds_tables.jl manuscript/scripts/plotting-setup.jl manuscript/scripts/schematic-plot.jl manuscript/scripts/supplemental_plots.jl manuscript/scripts/supplemental_tables.jl
+	@echo "Recomputing schematic, and optimal threshold tables and plots"
+	julia manuscript/scripts/optimal-thresholds.jl
+	@echo "Compiling manuscript"
+	typst compile manuscript/manuscript.typ
+	@echo "Compiling supplemental appendix"
+	typst compile manuscript/supplemental-appendix.typ
 	@touch $@
-
-tmp/supplemental-appendix: manuscript/supplemental-appendix.qmd tmp/manuscript
-	@echo "Deleting old cache files"
-	$(shell fd . 'manuscript/.jupyter_cache/'| xargs rm -r)
-	@echo "Rendering supplemental appendix"
-	quarto render manuscript/supplemental-appendix.qmd
-	@touch $@
-
 
 # Test targets
 TEST_TARGETS = runtests

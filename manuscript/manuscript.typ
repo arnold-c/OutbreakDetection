@@ -97,7 +97,6 @@ We assumed commuter-style imports at each time step to avoid extinction; the num
 The full table of parameters can be found in @tbl-model-parameters.
 All simulations and analysis was completed in Julia version 1.10.5 @bezansonJuliaFreshApproach2017, with all code stored at #link("https://github.com/arnold-c/OutbreakDetection").
 
-// #let parameters = csv("parameters.csv")
 #let import_rate = $(1.06*μ*R_0)/(√(N))$
 #let parameter_labels = ( "Parameters", $R_0$, $"Latent period ("#sym.sigma")"$, $"Infectious period ("#sym.gamma")"$, "Seasonal amplitude", $"Birth/death rate ("#sym.mu")"$, $"Vaccination rate at birth ("#sym.rho")"$)
 
@@ -204,10 +203,9 @@ For dynamical SEIR noise, the ELISA-like perfect tests perform identically to th
 For RDT-like tests, which have lower individual sensitivity and specificity, the maximal attainable accuracy is lower than the ELISA-like tests for all testing rates (P) at noise magnitude $gt.eq Lambda (2)$ (@fig-accuracy).
 Notably, the surveillance accuracy declines with increasing noise and, at all noise levels, is not improved with higher testing rates as the signal becomes increasingly dominated by false positive test results (@fig-accuracy).
 
+#let optimal_thresholds = csv("manuscript_files/tables/optimal-thresholds.csv")
 #figure(
-  block[
-    #let optimal_thresholds = csv("manuscript_files/tables/optimal-thresholds.csv")
-    #table(
+    table(
     columns: 9,
     fill: (x, y) => {
       if y == 0 {gray}
@@ -218,7 +216,6 @@ Notably, the surveillance accuracy declines with increasing noise and, at all no
     ..optimal_thresholds.flatten()
   ),
   caption: [Optimal threshold for RDT-like, ELISA-like, and perfect tests, under dynamical and Poisson-like noise structures where the average daily noise incidence is 8 times the average daily measles incidence]
-  ]
 )
 <tbl-optimal-thresholds>
 
@@ -253,7 +250,7 @@ Given the exponential trajectory of infections in the initial phase of an outbre
 
 #figure(
   image("manuscript_files/plots/optimal-thresholds_prop-alert-plot.svg"),
-  caption: [The difference between proportion of the time series in alert for outbreak detection systems under different testing rates and noise structures. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate. Solid lines represent tests with 0-day turnaround times, and dashed lines represent tests with result delays.]
+  caption: [The difference between the proportion of the time series in alert for outbreak detection systems under different testing rates and noise structures. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate. Solid lines represent tests with 0-day turnaround times, and dashed lines represent tests with result delays.]
 )
 <fig-alert-proportion>
 
