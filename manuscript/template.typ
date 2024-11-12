@@ -53,13 +53,6 @@
   // Paper's content
   body
 ) = {
-  // Line numbers have not yet been implemented in a release version, but are coming soon
-  // https://github.com/typst/typst/issues/352
-  // https://github.com/typst/typst/pull/4516
-  //if line-numbers {
-  //  set par.line(numbering: "1")
-  //  show figure: set par.line(numbering: none)
-  //}
 
   set document(title: title, author: authors.keys())
   set page(numbering: "1", number-align: center)
@@ -177,7 +170,7 @@
     ],
   )
   if word-count {
-    import "@preview/wordometer:0.1.2": word-count, total-words
+    import "@preview/wordometer:0.1.4": word-count, total-words
     show: word-count.with(exclude: (heading, table, figure.caption))
   }
 
@@ -187,7 +180,7 @@
 
     block([
         #if word-count {
-        import "@preview/wordometer:0.1.2": word-count, word-count-of, total-words
+        import "@preview/wordometer:0.1.4": word-count, word-count-of, total-words
         text(weight: "bold", [Word count: ])
         text([#word-count-of(exclude: (heading))[#abstract].words])
       }
@@ -208,7 +201,7 @@
 
   pagebreak()
 
-      show heading.where(level: 1): it => block(above: 1.5em, below: 0.5em)[
+  show heading.where(level: 1): it => block(above: 1.5em, below: 0.5em)[
       #set text(13pt, weight: "black")
       #it.body
     ]
@@ -222,12 +215,20 @@
   set par(first-line-indent: 0em)
 
   if word-count {
-      import "@preview/wordometer:0.1.2": word-count, word-count-of, total-words
+      import "@preview/wordometer:0.1.4": word-count, word-count-of, total-words
       text(weight: "bold", [Word count: ])
-      text([#word-count-of(exclude: (heading, table, figure.caption))[#body].words])
+      text([#word-count-of(exclude: (heading, table, figure.caption, <additional-info>))[#body].words])
   }
 
-  body
+  if line-numbers {
+    set par.line(numbering: "1")
+    show figure: set par.line(
+      numbering: none
+    )
+    body
+  } else {
+    body
+  }
 
 }
 

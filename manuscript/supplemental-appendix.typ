@@ -110,6 +110,6 @@
 <fig-num-alerts>
 
 
-#set bibliography(style: "springer-vancouver")
+#set bibliography(style: "elsevier-vancouver")
 
 #bibliography("OD.bib")

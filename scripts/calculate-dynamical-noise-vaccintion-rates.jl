@@ -1,4 +1,3 @@
-using OutbreakDetectionUtils: StatsBase
 #%%
 using DrWatson
 @quickactivate "OutbreakDetection"
