@@ -1,7 +1,4 @@
 #%%
-manuscriptdir("plotting-setup.jl")
-
-#%%
 using StatsBase
 
 using OutbreakDetection: N_MISSED_OUTBREAKS_COLOR,
@@ -269,20 +266,12 @@ function plot_schematic(
     alert_bounds_vec = vec(alert_bounds[:, 1:2])
 
     fig = Figure()
-    noisega = fig[1, 1] = GridLayout()
-    incga = fig[2, 1] = GridLayout()
+    incga = fig[1, 1] = GridLayout()
+    noisega = fig[2, 1] = GridLayout()
     testga = fig[3, 1] = GridLayout()
-    noiseax = Axis(noisega[1, 1]; ylabel = "Noise")
     incax = Axis(incga[1, 1]; ylabel = "Incidence")
+    noiseax = Axis(noisega[1, 1]; ylabel = "Noise")
     testax = Axis(testga[1, 1]; xlabel = "Time", ylabel = "Test Positives")
-
-    lines!(
-        noiseax,
-        times,
-        noise_vec;
-        color = :black,
-        linewidth = 3,
-    )
 
     lines!(
         incax,
@@ -302,6 +291,14 @@ function plot_schematic(
     )
 
     lines!(
+        noiseax,
+        times,
+        noise_vec;
+        color = :black,
+        linewidth = 3,
+    )
+
+    lines!(
         testax,
         times,
         testpositive_vec;
@@ -318,6 +315,14 @@ function plot_schematic(
         linestyle = :dash,
     )
 
+    text!(
+        testax,
+        times[1] + 1,
+        alertthreshold + 0.5;
+        text = "T = $alertthreshold",
+        justification = :left,
+    )
+
     if shade_alert_outbreak_overlap
         if !isempty(outbreak_bounds_vec)
             vspan!(
@@ -327,11 +332,11 @@ function plot_schematic(
                 color = (outbreakcolormap[2], 0.2),
             )
 
-            vlines!(testax,
-                outbreak_bounds_vec;
-                color = outbreakcolormap[2],
-                linewidth = 3,
-            )
+            # vlines!(testax,
+            #     outbreak_bounds_vec;
+            #     color = outbreakcolormap[2],
+            #     linewidth = 3,
+            # )
         end
 
         if !isempty(alert_bounds)
@@ -342,17 +347,17 @@ function plot_schematic(
                 color = (alertcolormap[2], 0.2),
             )
 
-            vlines!(
-                incax,
-                alert_bounds_vec;
-                color = alertcolormap[2],
-                linewidth = 3,
-            )
+            # vlines!(
+            #     incax,
+            #     alert_bounds_vec;
+            #     color = alertcolormap[2],
+            #     linewidth = 3,
+            # )
         end
     end
 
     for (label, layout) in
-        zip(["a", "b", "c"], [noisega[1, 1], incga[1, 1], testga[1, 1]])
+        zip(["a", "b", "c"], [incga[1, 1], noisega[1, 1], testga[1, 1]])
         Label(layout[1, 1, TopLeft()], label;
             fontsize = 30,
             font = :bold,
@@ -384,7 +389,8 @@ schematic_with_shade_fig = plot_schematic(
     movingavg_testpositives,
     alertstatus_vec,
     alert_bounds,
-    outbreak_detection_specification.alert_threshold; time_p = time_p,
+    outbreak_detection_specification.alert_threshold;
+    time_p = time_p,
     shade_alert_outbreak_overlap = true,
     xlims = (5, 13),
 )

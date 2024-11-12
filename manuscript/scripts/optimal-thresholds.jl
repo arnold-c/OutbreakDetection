@@ -28,6 +28,9 @@ appendix_tabledir(args...) = appendix_files("tables", args...)
 include(manuscript_scripts("plotting-setup.jl"))
 
 #%%
+include(manuscript_scripts("schematic-plot.jl"))
+
+#%%
 include(manuscript_scripts("optimal-thresholds_loading.jl"));
 
 #%%

@@ -89,10 +89,11 @@ Using these metrics we overcome issues encountered by early warning systems that
 
 = Methods
 == Model Structure
-We constructed a stochastic compartmental non-age structured Susceptible-Exposed-Infected-Recovered (SEIR) model of measles, and simulated using a modified Tau-leaping algorithm with a time step of 1 day that utilizes binomial draws to ensure compartment sizes remained positive valued @chatterjeeBinomialDistributionBased2005 @gillespieApproximateAcceleratedStochastic2001.
+We constructed a stochastic compartmental non-age structured Susceptible-Exposed-Infected-Recovered (SEIR) model of measles, and simulated using a modified Tau-leaping algorithm with a time step of 1 day. We utilized binomial draws to ensure compartment sizes remained positive valued @chatterjeeBinomialDistributionBased2005 @gillespieApproximateAcceleratedStochastic2001.
 We assumed that the transmission rate ($beta_t$) is sinusoidal with a period of one year and 20% seasonal amplitude.
 $R_0$ was set to 16, with a latent period of 10 days and infectious period of 8 days @guerraBasicReproductionNumber2017 @gastanaduyMeasles2019.
 The population was initialized with 500,000 individuals with Ghana-like birth and vaccination rates, and the final results were scaled up to the approximate 2022 population size of Ghana (33 million) @worldbankGhana.
+Ghana was chosen to reflect a setting with a high-performing measles vaccination program that has not yet achieved elimination status (c. 80% coverage for two doses of measles-containing vaccine), and must remain vigilant to outbreaks @WHOImmunizationData @masreshaTrackingMeaslesRubella2024.
 We assumed commuter-style imports at each time step to avoid extinction; the number of imports each day were drawn from a Poisson distribution with mean proportional to the size of the population and $R_0$ @keelingModelingInfectiousDiseases2008.
 The full table of parameters can be found in @tbl-model-parameters.
 All simulations and analysis was completed in Julia version 1.10.5 @bezansonJuliaFreshApproach2017, with all code stored at #link("https://github.com/arnold-c/OutbreakDetection").
@@ -121,10 +122,11 @@ All simulations and analysis was completed in Julia version 1.10.5 @bezansonJuli
 )
 <tbl-model-parameters>
 
-To examine the sensitivity of the detection system to background noise, we layered the measles incidence time series with a noise time series: either Poisson-only noise, or dynamical noise with rubella-like parameters.
+To examine the sensitivity of the detection system to background noise, we generated a time series of symptomatic febrile rash by combining the measles incidence time series with a noise time series.
+The noise time series was modeled as either Poisson-only noise, to represent the incidence of non-specific febrile rash due to any of a number of possible etiologies, or dynamical noise modeled as a rubella SEIR process.
 For Poisson-only noise, the time series of non-measles febrile rash cases each day was constructed by independent draws from a Poisson distribution.
-For dynamical noise, we generated time series of cases from an SEIR model that matched the measles model in structure, but had $R_0 = 5$, mean latent period of 7 days, and mean infectious period of 14 days, and added some additional Poisson noise to account for non-rubella sources of febrile rash @papadopoulosEstimatesBasicReproduction2022 @RubellaCDCYellow.
-This noise was constructed by independent draws from a Poisson distribution with mean equal to 15% of the average daily rubella incidence (@tbl-model-parameters).
+For dynamical noise, we generated time series of cases from an SEIR model that matched the measles model in structure, but had $R_0 = 5$, mean latent period of 7 days, and mean infectious period of 14 days.
+We also added additional Poisson noise with mean equal to 15% of the average daily rubella incidence to account for non-rubella sources of febrile rash (@tbl-model-parameters) @papadopoulosEstimatesBasicReproduction2022 @RubellaCDCYellow.
 The seasonality for the rubella noise was simulated to be in-phase with measles, anti-phase with measles (peak timing 6 months later), or non-seasonal.
 Only dynamical in-phase noise and Poisson-only noise are presented in the main text; the anti-phase and non-seasonal dynamical noise scenarios are presented in the supplement.
 
@@ -133,14 +135,13 @@ $Lambda$ was calculated as a multiple ($c$) of the average daily measles inciden
 Noise magnitudes will be denoted as $Lambda (c)$ for the rest of the manuscript e.g., $Lambda (8)$ to denote scenarios where the average noise incidence is 8 times that of the average measles incidence.
 For the Poisson-noise scenarios, independent draws from a Poisson distribution with mean $c dot.op angle.l Delta I_M angle.r$ were simulated to produce the noise time series i.e., $Lambda (c) = upright("Pois")(c dot.op angle.l Delta I_M angle.r)$.
 For the dynamical noise scenarios, the rubella vaccination rate at birth was set to 85.38%, 73.83%, 50.88%, 27.89%, or 4.92% to produce equivalent values of $Lambda$ (to within 2 decimal places): $Lambda (c) = angle.l Delta I_R angle.r + upright("Pois")(0.15 dot.op angle.l Delta I_R angle.r)$.
-100 time series of 100 years were simulated for each scenario, before summarizing the distributions of outbreak detection methods.
+We simulated 100 time series of 100 years for each scenario, before summarizing the distributions of outbreak detection methods.
 
 == Defining Outbreaks
 It is common to use expert review to define outbreaks when examining empirical data, but this is not feasible in a modeling study where tens of thousands of years are being simulated.
-To account for this, many studies only simulate a single outbreak within a time series (repeating this short stochastic simulation multiple times to ensemble results), define an outbreak as a period where $R_(upright("effective")) > 1$ (or $R_(upright("t"))$), or use a threshold of > 2 standard deviations (s.d.) over the mean seasonal incidence observed in empirical data (or from a 'burn-in' period of the simulation) @sternAutomatedOutbreakDetection1999 @jombartRealtimeMonitoringCOVID192021 @stolermanUsingDigitalTraces2023 @salmonMonitoringCountTime2016 @teklehaimanotAlertThresholdAlgorithms2004 @leclereAutomatedDetectionHospital2017.
-Each method has its uses, but to evaluate the performance of an outbreak detection system in an endemic region where multiple sequential epidemics are expected it is important to clearly define the bounds of the outbreak, which can only be achieved by 2 s.d. > mean ($R_(upright("effective"))$ and $R_(upright("t"))$ will be less than 1 after an outbreak’s peak, but still within what can be reasonably defined as the outbreak’s bounds).
-This, however, assumes strong seasonal forcing and regular periodicity of incidence to produce a smooth enough baseline, which is not present as countries near measles elimination status @grahamMeaslesCanonicalPath2019.
-Here we define a measles outbreak as a region of the time series that meets the following three criteria:
+Previous simulation studies define an outbreak as a period where $R_"t" > 1$ with the aim of detecting an outbreak during the grow period @jombartRealtimeMonitoringCOVID192021 @stolermanUsingDigitalTraces2023, or use a threshold of > 2 standard deviations (s.d.) over the mean seasonal incidence observed in empirical data (or from a 'burn-in' period of the simulation) @sternAutomatedOutbreakDetection1999 @salmonMonitoringCountTime2016 @teklehaimanotAlertThresholdAlgorithms2004 @leclereAutomatedDetectionHospital2017.
+
+Here we simulate time series of 100 years and we define a measles outbreak as a region of the time series that meets the following three criteria:
 
 - The daily measles incidence must be greater than, or equal to, 5 cases
 - The daily measles incidence must remain above 5 cases for greater than, or equal to, 30 consecutive days
@@ -149,45 +150,44 @@ Here we define a measles outbreak as a region of the time series that meets the 
 Only events meeting all 3 criteria are classified as outbreaks.
 The incidence of non-measles febrile rash (i.e., noise) does not affect the outbreak status of a region but may affect the alert status triggered by the testing protocol.
 
-Each day, 60% of the measles and non-measles febrile rash cases visit the clinic for treatment, and a percentage (P) of these clinic visits are tested, as all clinic visits are deemed to be suspected measles cases because they meet the clinical case definition.
-The percentage of clinic visits (P) that are tested is varied between 10% and 60%, in 10% increments, for all combinations of diagnostic test and alert threshold, defining the "testing scenario".
-Each testing scenario uses one of the following tests:
+Each day, 60% of the measles and non-measles febrile rash cases visit the clinic for treatment, and a percentage (P) of these clinic visits are tested; all clinic visits are deemed to be suspected measles cases because they meet the clinical case definition.
+The percentage of clinic visits (P) that are tested is varied between 10% and 60%, in 10% increments.
+Each "testing scenario" combines a testing rate (P) with one of the following tests:
 
 - An RDT equivalent with 85% sensitivity and specificity, and 0-day lag in result return.
 That is, 85% of true measles cases will be correctly labelled as positive, and 15% of non-measles febrile rash individuals that are tested will be incorrectly labelled as positive for measles.
-This acts as a lower bound of acceptability for a new measles RDT @20240613_tpp_measles_rubell_FV_EN #emph[#strong[NOTE: TPP document used here was potentially influenced by the prelim results of this paper];]
+This acts as a lower bound of acceptability for a hypothetical measles RDT @20240613_tpp_measles_rubell_FV_EN
 - An RDT equivalent with 90% sensitivity and specificity, and 0-day lag in result return @brownRapidDiagnosticTests2020
-- An ELISA-like perfect test with 100% sensitivity and specificity, and a 0-day test result delay. This is more accurate than is observed for current ELISA tests @hiebertEvaluationDiagnosticAccuracy2021, but it used to evaluate the theoretical best-case scenario
-- An ELISA-like perfect test with 100% sensitivity and specificity, and a 14-day test result delay
+- A perfect test with 100% sensitivity and specificity, and a 0-day test result delay. This is more accurate than is observed for current ELISA tests @hiebertEvaluationDiagnosticAccuracy2021, but it used to evaluate the theoretical best-case scenario
+- A perfect test with 100% sensitivity and specificity, and a 14-day test result delay
 
-The time series of "test-positive cases" is the daily count of those tested cases that return a positive test result.
-Thus, for each non-measles noise (@fig-outbreak-schematic a) and measles (@fig-outbreak-schematic b) time series, we have 1 time series of outbreaks (@fig-outbreak-schematic c) and 5 possible time series of test-positive cases (@fig-outbreak-schematic c) (all clinically compatible cases, plus the 4 testing scenarios), which will include false positive and negative cases resulting from imperfect diagnostic tests, that can be used to trigger outbreak alerts.
+For each time series of true measles cases, we define outbreaks as the range of time that meets the definition above (@fig-outbreak-schematic a).
+We then add non-measles noise (@fig-outbreak-schematic b) and test according to the testing scenario, which yields 5 time series of test-positive cases (@fig-outbreak-schematic c): one time series of all clinically compatible cases and 4 reflecting the testing scenarios.
 
 #figure(
   image("manuscript_files/plots/schematic-plot.svg"),
   caption: [
-    Test A schematic of the outbreak definition and alert detection system. A) Noise time series. B) Measles incidence time series. C) Observed time series resulting from testing noise & measles cases that visit the healthcare facility. The orange bands/vertical lines represent regions of the measles time series that meet the outbreak definition criteria. The green bands/vertical lines represent regions of the observed (measles - noise) time series that breach the alert threshold (the horizontal dashed line), and constitute an alert.
+   A schematic of the outbreak definition and alert detection system. A) Measles incidence time series. B) Noise time series. C) Observed time series of test positive cases according to a given testing scenario. In panel A, the orange bands represent regions of the measles time series that meet the outbreak definition criteria. In panel C, the green bands represent regions of the test positive time series that breach the alert threshold (the horizontal dashed line), and constitute an alert.
     ]
 )
 <fig-outbreak-schematic>
-
 
 == Triggering Alerts
 We define an "alert" as any consecutive string of 1 or more days where the 7-day moving average of the test-positive cases is greater than, or equal to, a pre-specified alert threshold, T.
 For each time series of test-positive cases, we calculate the percentage of alerts that are "correct", defined as any overlap of 1 or more days between the alert and outbreak periods (@fig-outbreak-schematic b and c).
 This is analogous to the PPV of the alert system, and will be referred to as such for the rest of the manuscript.
-Note that it is possible to have multiple alerts within a single outbreak if the 7-day moving average of test positive cases drops below the threshold, T, and each would be considered correct.
+Note that it is possible to have multiple alerts within a single outbreak if the 7-day moving average of test positive cases drops below the threshold, T, and we count each as correct.
 For all outbreaks in the measles time series, we calculate the percentage that contain at least 1 alert within the outbreak’s start and end dates (@fig-outbreak-schematic b and c).
 We refer to this as the sensitivity of the alert system.
 We also calculate the detection delay as the time from the start of an outbreak to the start of its first alert.
 If the alert period starts before the outbreak and continues past the start date of the outbreak, this would be considered a correct alert with a negative delay i.e., an early warning triggered by false positive test results.
 Finally, for each time series we calculate the number of unavoidable and avoidable outbreak cases.
+Unavoidable cases are those that occur before a correct alert, or those that occur in an undetected outbreak.
 Avoidable cases are defined as those that occur within an outbreak after a correct alert is first triggered i.e., cases that could theoretically be prevented with a perfectly effective and timely response.
-Unavoidable cases are the inverse: those that occur before a correct alert, or those that occur in an undetected outbreak.
-In practice, not all cases deemed avoidable are (due to imperfect and delays in responses), but to minimize the sensitivity of the results to the response implementation and operational constraints we are counting them as such.
+Not all cases defined as avoidable would be in practice (due to imperfect and delays in responses); the specifics of operation response are beyond the scope of this work.
 
-We define the accuracy of the surveillance system for a given time series as the mean of the system’s sensitivity and PPV.
-To examine the interaction of the test with the surveillance system's characteristics (i.e., testing rate, and noise structure and magnitude), we varied the alert threshold, T, between 1 and 15 cases per day.
+We define the accuracy of the surveillance system for a given time series as the mean of the system’s PPV and sensitivity.
+To examine the interaction of the test with the surveillance system's characteristics (i.e., testing rate, noise structure and magnitude), we varied the alert threshold, T, between 1 and 15 cases per day.
 Each of the 100 simulations per scenario produces an accuracy, and we identified the optimal alert threshold, T#sub([O]), as the value that produced the highest median accuracy for a given scenario.
 We then compare testing scenarios at their respective optimal alert threshold.
 This allows for conclusions to be made about the surveillance system as a whole, rather than just single components.
