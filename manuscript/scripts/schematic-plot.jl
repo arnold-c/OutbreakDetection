@@ -237,6 +237,7 @@ function plot_schematic(
         N_MISSED_OUTBREAKS_COLOR, N_ALERTS_COLOR
     ],
     shade_alert_outbreak_overlap = false,
+    alpha = 0.5,
     kwargs...,
 )
     kwargs_dict = Dict(kwargs)
@@ -344,7 +345,7 @@ function plot_schematic(
                 testax,
                 alert_bounds[:, 1],
                 alert_bounds[:, 2];
-                color = (alertcolormap[2], 0.2),
+                color = (alertcolormap[2], alpha),
             )
 
             # vlines!(
@@ -393,6 +394,7 @@ schematic_with_shade_fig = plot_schematic(
     time_p = time_p,
     shade_alert_outbreak_overlap = true,
     xlims = (5, 13),
+    alpha = 0.4,
 )
 
 save(

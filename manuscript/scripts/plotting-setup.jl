@@ -2,15 +2,15 @@ using CairoMakie
 
 function theme_adjustments()
     return Theme(;
-        fontsize = 16,
+        fontsize = 24,
         Axis = (;
-            xlabelsize = 20,
-            ylabelsize = 20,
+            xlabelsize = 28,
+            ylabelsize = 28,
             xlabelfont = :bold,
             ylabelfont = :bold,
         ),
         Colorbar = (;
-            labelsize = 20,
+            labelsize = 24,
             labelfont = :bold,
         ),
     )
@@ -19,8 +19,8 @@ custom_theme = merge(theme_adjustments(), theme_minimal())
 
 set_theme!(
     custom_theme;
-    fontsize = 16,
-    linewidth = 4,
+    # fontsize = 16,
+    linewidth = 6,
 )
 
 update_theme!(; size = (1300, 800))

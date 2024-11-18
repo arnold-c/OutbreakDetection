@@ -13,7 +13,6 @@ using OutbreakDetectionUtils:
 
 import OutbreakDetectionUtils: create_optimal_threshold_summary_df
 
-#%%
 using OutbreakDetection: line_plot
 
 #%%
