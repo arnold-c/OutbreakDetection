@@ -1,73 +1,87 @@
 #import "template.typ": article
 //
 #show: article.with(
-        title: "Individual and Population Level Uncertainty Interact to Determine Performance of Outbreak Detection",
-        header-title: "true",
-        authors: (
-	  "Callum R.K. Arnold": (
-            affiliation: ("PSU-Bio", "CIDD"),
-            corresponding: "true",
-            email: "contact\@callumarnold.com",
-	  ),
-	  "Alex C. Kong": (
-            affiliation: ("Hopkins-IH"),
-	  ),
-	  "Amy K. Winter": (
-            affiliation: ("UGA"),
-	  ),
-	  "William J. Moss": (
-            affiliation: ("Hopkins-IH", "Hopkins-Epi"),
-	  ),
-	 "Bryan N. Patenaude": (
-            affiliation: ("Hopkins-IH"),
-	  ),
-	  "Matthew J. Ferrari": (
-            affiliation: ("PSU-Bio", "CIDD"),
-	  ),
-	),
-        affiliations: (
-          "PSU-Bio": "Department of Biology, Pennsylvania State University, University Park, PA, USA 16802",
-          "CIDD": "Center for Infectious Disease Dynamics, Pennsylvania State University, University Park, PA, USA 16802",
-          "Hopkins-IH": "Department of International Health, Johns Hopkins Bloomberg School of Public Health, Baltimore, MD, USA 21205",
-          "UGA": "Department of Epidemiology, College of Public Health, University of Georgia, Athens, GA, USA 30602",
-          "Hopkins-Epi": "Department of Epidemiology, Johns Hopkins Bloomberg School of Public Health, Baltimore, MD, USA 21205"
-	),
-        // bib: "/Users/cfa5228/Documents/Repos/OutbreakDetection/manuscript/manuscript_files/OD.bib",
-	// bib: "OD.bib",
-	keywords: ("Rapid-Diagnostic Tests","ELISA","Infectious Disease Surveillance","Outbreak Detection"),
-        abstract: [
-  == Background
-Infectious disease surveillance and outbreak detection systems often utilize diagnostic testing to validate case identification. The metrics of sensitivity, specificity, and positive predictive value are commonly discussed when evaluating the performance of diagnostic tests, and to a lesser degree, the performance of outbreak detection systems. However, the interaction of the two levels’ (the test and the alert system) metrics, is typically overlooked. Here, we describe how equivalent regions of detection accuracy can exist over a range of diagnostic test characteristics, examining the sensitivity to background noise structure and magnitude.
+  title: "Individual and Population Level Uncertainty Interact to Determine Performance of Outbreak Detection",
+  header-title: "true",
+  authors: (
+    "Callum R.K. Arnold": (
+      affiliation: ("PSU-Bio", "CIDD"),
+      corresponding: "true",
+      email: "contact\@callumarnold.com",
+    ),
+    "Alex C. Kong": (
+      affiliation: ("Hopkins-IH"),
+    ),
+    "Amy K. Winter": (
+      affiliation: ("UGA"),
+    ),
+    "William J. Moss": (
+      affiliation: ("Hopkins-IH", "Hopkins-Epi"),
+    ),
+   "Bryan N. Patenaude": (
+      affiliation: ("Hopkins-IH"),
+    ),
+    "Matthew J. Ferrari": (
+      affiliation: ("PSU-Bio", "CIDD"),
+    ),
+  ),
+  affiliations: (
+    "PSU-Bio": "Department of Biology, Pennsylvania State University, University Park, PA, USA 16802",
+    "CIDD": "Center for Infectious Disease Dynamics, Pennsylvania State University, University Park, PA, USA 16802",
+    "Hopkins-IH": "Department of International Health, Johns Hopkins Bloomberg School of Public Health, Baltimore, MD, USA 21205",
+    "UGA": "Department of Epidemiology, College of Public Health, University of Georgia, Athens, GA, USA 30602",
+    "Hopkins-Epi": "Department of Epidemiology, Johns Hopkins Bloomberg School of Public Health, Baltimore, MD, USA 21205"
+  ),
+  keywords: ("Rapid-Diagnostic Tests","ELISA","Infectious Disease Surveillance","Outbreak Detection"),
+  abstract: [
+    == Background
+    Infectious disease surveillance and outbreak detection systems often utilize diagnostic testing to validate case identification. The metrics of sensitivity, specificity, and positive predictive value are commonly discussed when evaluating the performance of diagnostic tests, and to a lesser degree, the performance of outbreak detection systems. However, the interaction of the two levels’ (the test and the alert system) metrics, is typically overlooked. Here, we describe how equivalent regions of detection accuracy can exist over a range of diagnostic test characteristics, examining the sensitivity to background noise structure and magnitude.
 
-== Methods
-We generated a stochastic SEIR model with importation to simulate true measles and non-measles sources of febrile rash (noise) daily incidence. We generated time series of febrile rash (i.e., measles clinical case definition) by summing the daily incidence of measles and either independent Poisson noise or non-measles dynamical noise (consistent with rubella virus). For each time series we assumed a fraction of all cases were seen at a healthcare clinic, and a subset of those were diagnostically confirmed using a test with sensitivity and specificity consistent with either a rapid diagnostic test (RDT) or an enzyme-linked immunosorbent assay (ELISA). From the resulting time series of test-positive cases, we define an outbreak alert as the exceedance of a threshold by the 7-day rolling average of observed (test positive) cases. For each threshold level, we calculated percentages of alerts that were aligned with an outbreak (analogous to the positive predictive value), the percentage of outbreaks detected (analogous to the sensitivity), and combined these two measures into an accuracy metric for outbreak detection. We selected the optimal threshold as the value that maximizes accuracy. We show how the optimal threshold and resulting accuracy depend on the diagnostic test, testing rate, and the type and magnitude of the non-measles noise.
+    == Methods
+    We generated a stochastic SEIR model with importation to simulate true measles and non-measles sources of febrile rash (noise) daily incidence. We generated time series of febrile rash (i.e., measles clinical case definition) by summing the daily incidence of measles and either independent Poisson noise or non-measles dynamical noise (consistent with rubella virus). For each time series we assumed a fraction of all cases were seen at a healthcare clinic, and a subset of those were diagnostically confirmed using a test with sensitivity and specificity consistent with either a rapid diagnostic test (RDT) or an enzyme-linked immunosorbent assay (ELISA). From the resulting time series of test-positive cases, we define an outbreak alert as the exceedance of a threshold by the 7-day rolling average of observed (test positive) cases. For each threshold level, we calculated percentages of alerts that were aligned with an outbreak (analogous to the positive predictive value), the percentage of outbreaks detected (analogous to the sensitivity), and combined these two measures into an accuracy metric for outbreak detection. We selected the optimal threshold as the value that maximizes accuracy. We show how the optimal threshold and resulting accuracy depend on the diagnostic test, testing rate, and the type and magnitude of the non-measles noise.
 
-== Results
-The optimal threshold for each test increased monotonically as the percentage of clinic visits who were tested increased. With Poisson-only noise, similar outbreak detection accuracies could be achieved with imperfect RDT-like tests as with ELISA-like diagnostic tests (c. 93%), given moderately high testing rates. With larger delays (14 days) between the ELISA test administration and result date, RDTs could outperform the ELISA. Similar numbers of unavoidable cases and outbreak alert delays could be achieved between the test types. With dynamical noise, however, the accuracy of ELISA scenarios was far superior to those achieved with RDTs (c.~93% vs.~73%). For dynamical noise, RDT-based scenarios typically favored more sensitive alert threshold than ELISA-based scenarios (at a given testing rate), observed with lower numbers of unavoidable cases and detection delays.
+    == Results
+    The optimal threshold for each test increased monotonically as the percentage of clinic visits who were tested increased. With Poisson-only noise, similar outbreak detection accuracies could be achieved with imperfect RDT-like tests as with ELISA-like diagnostic tests (c. 93%), given moderately high testing rates. With larger delays (14 days) between the ELISA test administration and result date, RDTs could outperform the ELISA. Similar numbers of unavoidable cases and outbreak alert delays could be achieved between the test types. With dynamical noise, however, the accuracy of ELISA scenarios was far superior to those achieved with RDTs (c.~93% vs.~73%). For dynamical noise, RDT-based scenarios typically favored more sensitive alert threshold than ELISA-based scenarios (at a given testing rate), observed with lower numbers of unavoidable cases and detection delays.
 
-== Conclusions
-The performance of an outbreak detection system is highly sensitive to the structure and the magnitude of background noise. Under the assumption that the noise is relatively static over time, RDTs can perform as well as ELISA in a surveillance system. However, when the noise is temporally correlated, as from a separate SEIR process, imperfect tests cannot overcome their accuracy limitations through higher testing rates.
-
-],
+    == Conclusions
+    The performance of an outbreak detection system is highly sensitive to the structure and the magnitude of background noise. Under the assumption that the noise is relatively static over time, RDTs can perform as well as ELISA in a surveillance system. However, when the noise is temporally correlated, as from a separate SEIR process, imperfect tests cannot overcome their accuracy limitations through higher testing rates.
+  ],
+  word-count: true
 )
 
 = Background
-At the heart of an outbreak detection system is a surveillance program, often utilizing individual diagnostic tests as required components of case detection and epidemiological investigations before an outbreak can be declared @murrayInfectiousDiseaseSurveillance2017 @zhouEliminationTropicalDisease2013 @pahoIntegratedApproachCommunicable2000@worldhealthorganizationMeaslesOutbreakGuide2022 @craggOutbreakResponse2018.
-For diseases with non-specific symptoms, accurate measurement tools are often necessary to confidently and correctly ascribe changes in symptom prevalence within a population to a particular disease, and therefore detect outbreaks of specific pathogens.
-As a result, it has been commonplace for surveillance systems to be developed around high-accuracy tests, such as Polymerase Chain Reaction (PCR) tests and immunoglobulin (Ig) tests, when financially and logistically feasible @gastanaduyMeasles2019 @commissionerCoronavirusCOVID19Update2020@grasslyComparisonMolecularTesting2020@ezhilanSARSCoVMERSCoVSARSCoV22021 @worldhealthorganizationCholera2023 @essentialprogrammeonimmunizationepiimmunizationClinicalSpecimensLaboratory2018.
-Depending on the disease in question, either sensitivity (the ability to correctly detect a true positive individual) or specificity (the ability to correctly discount a true negative) will be prioritized, as they often are at odds with each other @westreichDiagnosticTestingScreening2019 @shrefflerDiagnosticTestingAccuracy2024 @parikhUnderstandingUsingSensitivity2008.
-This balance is commonly defined within the Target Product Profile (TPP) of a test @worldhealthorganizationTargetProductProfiles, which is a set of minimum characteristics that should be met for production and widespread use, helping to guide research and development.
-For example, in the wake of the 2013 Ebola outbreak in Guinea a TPP was developed that listed the minimum acceptable values of sensitivity and specificity as 95% and 99%, respectively @chuaCaseImprovedDiagnostic2015.
-Recognizing that Ebola is not the major cause of fever and other non-specific symptoms in the region, it is arguably more important to prioritize the specificity of the disease; however, the authors note that the disease severity requires a high level of sensitivity, as the consequences of a missed case are dire at an individual and population level @chuaCaseImprovedDiagnostic2015.
 
-Much like the accuracy of an individual test, outbreak detection systems face the same issue regarding the prioritization of sensitive or specific alerts @germanSensitivityPredictiveValue2000@worldhealthorganizationOperationalThresholds2014 @lewisTimelyDetectionMeningococcal2001.
+Diagnostics are medical devices and techniques used to detect the presence of a specific pathogen in a host sample @DiagnosticsGlobal.
+This may include #emph[in vivo] measures, such as x-ray imagery, or #emph[in vitro] tests to directly quantify the presence of the pathogen itself, e.g. polymerase chain reaction (PCR), or the host's response e.g., enzyme immunoassay/enzyme-linked immunosorbent assay (EIA/ELISA) @DiagnosticsGlobal @yangPCRbasedDiagnosticsInfectious2004 @alhajjEnzymeLinkedImmunosorbent2024.
+Any given diagnostic will vary in its ability to correctly identify the presence of the pathogen, which is described by its sensitivity and specificity.
+The sensitivity of a diagnostic is the ability to correctly identify a positive result, conditional on a positive individual being tested i.e., a true positive result @westreichDiagnosticTestingScreening2019 @shrefflerDiagnosticTestingAccuracy2024 @parikhUnderstandingUsingSensitivity2008.
+The specificity is the opposite: the ability to correctly determine a true negative result, conditional on a negative individual being tested @westreichDiagnosticTestingScreening2019 @shrefflerDiagnosticTestingAccuracy2024 @parikhUnderstandingUsingSensitivity2008.
+Due to the translation of quantitative measures e.g., PCR cycles, into a binary outcomes (positive/negative), the sensitivity and specificity of a diagnostic are often at odds with one another; optimizing for one is typically at the expense of the other.
+For example, defining the threshold for detection for an ELISA with a low optical density will produce a diagnostic that is highly sensitive, as it only requires a small host response to the pathogen and many resulting antibody titers will exceed this value.
+However, this may lead to low specificity due to an increase in spurious false positive results from non-infected individuals.
+
+The choice to prioritize sensitivity or specificity will be pathogen and context-specific.
+When the cost of a false negative result is disproportionately high relative to a false positive, such as for Ebola @chuaCaseImprovedDiagnostic2015, highly specific tests are required.
+This balance will, however, vary as the prevalence of infection in a population varies.
+Higher presence of infection in a population will increase the positive predictive value (PPV) of the test i.e., the probability that a positive test reflects a positive individual, that unlike the sensitivity of the test, is not conditioned upon the infection status of the tested individual @westreichDiagnosticTestingScreening2019 @shrefflerDiagnosticTestingAccuracy2024.
+Regions of high disease burden may therefore prioritize test sensitivity, in contrast to a lower burden location's preference for test specificity, all else being equal.
+To account for these differences, the target product profile (TPP) of a diagnostic provides a minimum set of characteristics that should be met, helping to guide the development and use @worldhealthorganizationTargetProductProfiles.
+
+At the heart of an outbreak detection system is a surveillance program that enumerates the baseline rate of case incidence and defines an outbreak as an anomalously high incidence relative that that baseline @murrayInfectiousDiseaseSurveillance2017 @zhouEliminationTropicalDisease2013 @pahoIntegratedApproachCommunicable2000 @craggOutbreakResponse2018.
+As many disease symptoms reflect generic host responses to infection e.g., febrile rash, and infection with a given pathogen can give rise to a wide range of disease symptoms and severity across individuals, accurate methods of case identification are required.
+Given the imperfect nature of diagnostic classification, any result for an individual is uncertain.
+Accumulating multiple individual test results to produce population-level counts will propagate this uncertainty, and may result in over- or under-counts due to a preponderance of false positive and negative individual test results, respectively.
+This process becomes increasingly important when the prevalence of the surveillance program's target disease is low relative to the presence of other sources of clinically-compatible cases; the PPV of an individual diagnostic decreases, increasing the number of false positives, and making it harder to distinguish true anomalies in incidence relative to baseline.
+As a result, it has been commonplace for surveillance systems to be developed around high-accuracy tests, such as PCR and immunoglobulin (Ig) ELISA tests, when financially and logistically feasible @gastanaduyMeasles2019 @commissionerCoronavirusCOVID19Update2020@grasslyComparisonMolecularTesting2020@ezhilanSARSCoVMERSCoVSARSCoV22021 @worldhealthorganizationCholera2023 @essentialprogrammeonimmunizationepiimmunizationClinicalSpecimensLaboratory2018.
+
+Outbreak detection systems face the same issue regarding the prioritization of sensitive or specific alerts @germanSensitivityPredictiveValue2000@worldhealthorganizationOperationalThresholds2014 @lewisTimelyDetectionMeningococcal2001.
 For many disease systems, particularly in resource constrained environments where the burden of infectious diseases is typically highest @gbd2019childandadolescentcommunicablediseasecollaboratorsUnfinishedAgendaCommunicable2023 @roserBurdenDisease2023, cases are counted and if a pre-determined threshold is breached, be that weekly, monthly, or some combination of the two, an alert is triggered that may launch a further investigation and/or a response @worldhealthorganizationMeaslesOutbreakGuide2022 @worldhealthorganizationOperationalThresholds2014.
 In effect, this discretizes a distinctly continuous phenomenon (observed cases) into a binary measure, outbreak or no outbreak, for decision making purposes.
 For reactive management approaches, such as vaccination campaigns and non-pharmaceutical based interventions that are designed to reduce transmission or limit and suppress outbreaks, early action has the potential to avert the most cases @atkinsAnticipatingFutureLearning2020@taoLogisticalConstraintsLead @graisTimeEssenceExploring2008 @ferrariTimeStillEssence2014 @worldhealthorganizationConfirmingInvestigatingManaging2009 @minettiLessonsChallengesMeasles2013.
 While this framing would point towards a sensitive (i.e., early alert) surveillance system being optimal, each action comes with both direct and indirect financial and opportunity costs stemming from unnecessary activities that limit resources for future response capabilities.
 Just as the balance of sensitivity and specificity of a test for an individual must be carefully evaluated, so must the balance at the outbreak level.
 
-The concept of using incidence-based alert triggers to define the discrete event of an "outbreak" with characteristics analogous to individual tests has been well documented in the case of meningitis, measles, and malaria @worldhealthorganizationMeaslesOutbreakGuide2022 @lewisTimelyDetectionMeningococcal2001 @worldhealthorganizationConfirmingInvestigatingManaging2009 @trotterResponseThresholdsEpidemic2015 @cooperReactiveVaccinationControl2019 @zalwangoEvaluationMalariaOutbreak2024 @kanindaEffectivenessIncidenceThresholds2000.
+The concept of using incidence-based alert triggers to detect the discrete event of an outbreak with characteristics analogous to individual tests has been well documented in the case of meningitis, measles, and malaria @worldhealthorganizationMeaslesOutbreakGuide2022 @lewisTimelyDetectionMeningococcal2001 @worldhealthorganizationConfirmingInvestigatingManaging2009 @trotterResponseThresholdsEpidemic2015 @cooperReactiveVaccinationControl2019 @zalwangoEvaluationMalariaOutbreak2024 @kanindaEffectivenessIncidenceThresholds2000.
 However, an overlooked, yet critical, aspect of an outbreak detection system is the interplay between the individual test and outbreak alert characteristics.
 With their success within malaria surveillance systems, and particularly since the COVID-19 pandemic, rapid diagnostic tests (RDTs) have garnered wider acceptance, and their potential for use in other disease systems has been gaining interest @warrenerEvaluationRapidDiagnostic2023.
 Despite concerns of their lower diagnostic accuracy slowing their adoption until recently @millerAddressingBarriersDevelopment2015, the reduced cold-chain requirements @brownRapidDiagnosticTests2020 and faster speed of result provided by RDTs has been show to outweigh the cost of false positive/negative results in some settings @warrenerEvaluationRapidDiagnostic2023 @mcmorrowMalariaRapidDiagnostic2011 @larremoreTestSensitivitySecondary2021 @middletonModelingTransmissionMitigation2023.
@@ -89,7 +103,8 @@ Using these metrics we overcome issues encountered by early warning systems that
 
 = Methods
 == Model Structure
-We constructed a stochastic compartmental non-age structured Susceptible-Exposed-Infected-Recovered (SEIR) model of measles, and simulated using a modified Tau-leaping algorithm with a time step of 1 day. We utilized binomial draws to ensure compartment sizes remained positive valued @chatterjeeBinomialDistributionBased2005 @gillespieApproximateAcceleratedStochastic2001.
+We constructed a stochastic compartmental non-age structured Susceptible-Exposed-Infected-Recovered (SEIR) model of measles, and simulated using a modified Tau-leaping algorithm with a time step of 1 day @gillespieApproximateAcceleratedStochastic2001.
+We utilized binomial draws to ensure compartment sizes remained positive valued @chatterjeeBinomialDistributionBased2005.
 We assumed that the transmission rate ($beta_t$) is sinusoidal with a period of one year and 20% seasonal amplitude.
 $R_0$ was set to 16, with a latent period of 10 days and infectious period of 8 days @guerraBasicReproductionNumber2017 @gastanaduyMeasles2019.
 The population was initialized with 500,000 individuals with Ghana-like birth and vaccination rates, and the final results were scaled up to the approximate 2022 population size of Ghana (33 million) @worldbankGhana.
@@ -98,20 +113,21 @@ We assumed commuter-style imports at each time step to avoid extinction; the num
 The full table of parameters can be found in @tbl-model-parameters.
 All simulations and analysis was completed in Julia version 1.10.5 @bezansonJuliaFreshApproach2017, with all code stored at #link("https://github.com/arnold-c/OutbreakDetection").
 
+#let table_math(inset: 8pt, size: 16pt, content) = table.cell(inset: inset, text(size: size, content))
+
 #let import_rate = $(1.06*μ*R_0)/(√(N))$
-#let parameter_labels = ( "Parameters", $R_0$, $"Latent period ("#sym.sigma")"$, $"Infectious period ("#sym.gamma")"$, "Seasonal amplitude", $"Birth/death rate ("#sym.mu")"$, $"Vaccination rate at birth ("#sym.rho")"$)
 
 #figure(
   table(
-    columns: 3,
+    columns: 3, align: horizon,
     [Parameters],[Measles],[Dynamical noise],
     [R0],[16],[5],
     [Latent period (s)],[10 days],[7 days],
     [Infectious period (g)],[8 days],[14 days],
     [Seasonal amplitude],[0.2],[0.2],
     [Vaccination rate at birth (r)],[80%],[(5-85)%],
-    [Birth rate (m)],table.cell(colspan: 2, align: center, "27 per 1000 per annum"),
-    [Importation rate], table.cell(colspan: 2, align: center, $(1.06*μ*R_0)/(√(N))$),
+    [Birth/death rate (m)],table.cell(colspan: 2, align: center, "27 per 1000 per annum"),
+    [Importation rate], table.cell(colspan: 2, align: center, table_math[$(1.06*μ*R_0)/(√(N))$]),
     [Population size (N)], table.cell(colspan: 2, align: center, "500,000, scaled to 33M"),
     [Initial proportion susceptible], table.cell(colspan: 2, align: center, "0.05"),
     [Initial proportion exposed], table.cell(colspan: 2, align: center, "0.0"),
@@ -358,4 +374,4 @@ All code and data for the simulations can be found at #link("https://github.com/
 
 #set bibliography(style: "elsevier-vancouver")
 
-#bibliography("OD.bib")
+#bibliography("./OD.bib")
