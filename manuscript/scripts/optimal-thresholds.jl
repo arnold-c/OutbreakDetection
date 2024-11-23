@@ -21,10 +21,23 @@ manuscript_scripts(args...) = manuscriptdir("scripts", args...)
 manuscript_files(args...) = manuscriptdir("manuscript_files", args...)
 manuscript_plotdir(args...) = manuscript_files("plots", args...)
 manuscript_tabledir(args...) = manuscript_files("tables", args...)
-appendix_files(args...) = manuscriptdir("supplemental-appendix_files", args...)
+appendix_files(args...) = manuscriptdir("supplemental_files", args...)
 appendix_plotdir(args...) = appendix_files("plots", args...)
 appendix_tabledir(args...) = appendix_files("tables", args...)
 include(manuscript_scripts("plotting-setup.jl"))
+
+#%%
+function manuscript_noise_description(
+    noise_specification::T
+) where {T<:NoiseSpecification}
+    return string("Poisson scaling: ", noise_specification.noise_mean_scaling)
+end
+
+function manuscript_noise_description(
+    noise_specification::DynamicalNoiseSpecification
+)
+    return string("Rubella vax: ", noise_specification.vaccination_coverage)
+end
 
 #%%
 include(manuscript_scripts("schematic-plot.jl"))

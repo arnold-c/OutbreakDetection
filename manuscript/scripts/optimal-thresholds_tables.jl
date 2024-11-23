@@ -66,7 +66,7 @@ rdt_dynamical_df = create_optimal_threshold_summary_df(
     percentiles = nothing,
     nboots = nothing,
 )
-rdt_dynamical_df[!, :noise_spec] .= "Dynamical noise: in-phase"
+rdt_dynamical_df[!, :noise_spec] .= "Dynamical noise"
 
 rdt_poisson_df = create_optimal_threshold_summary_df(
     poisson_noise_rdt_optimal_solutions,
@@ -114,7 +114,7 @@ function create_wide_df(
     long_df,
     outcome::Symbol;
     noise_order = [
-        "Dynamical noise: in-phase", "Poisson noise", "All noise structures"
+        "Dynamical noise", "Poisson noise", "All noise structures"
     ],
     digits = 3,
 )
@@ -184,8 +184,7 @@ end
 function get_test_type(sensitivity, specificity, test_lag)
     return Match.@match (sensitivity, specificity, test_lag) begin
         (1.0, 0.0, 0) => "Clinical Case Definition"
-        (0.98, 0.98, x::Int) => "ELISA Equivalent ($(sensitivity * 100)%)"
-        (x::AbstractFloat, x::AbstractFloat, 0) where {x<1.0} => "RDT Equivalent ($(sensitivity * 100)%)"
+        (x::AbstractFloat, x::AbstractFloat, 0) where {x<1.0} => "Imperfect Test ($(Int64(round(sensitivity * 100; digits = 0)))%)"
         (1.0, 1.0, x::Int) => "Perfect Test"
     end
 end
