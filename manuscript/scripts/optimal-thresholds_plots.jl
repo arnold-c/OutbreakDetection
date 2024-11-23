@@ -4,7 +4,7 @@ accuracy_plot = line_plot(
     outcome = :accuracy,
     ylabel = "Outbreak Detection\nAccuracy",
     alpha = alpha,
-    facet_fontsize = facet_fontsize,
+    facet_fontsize = 28,
     legendsize = legendsize,
     xlabelsize = xlabelsize,
     ylabelsize = ylabelsize,
@@ -18,6 +18,7 @@ accuracy_plot = line_plot(
     clinical_hline = clinical_hline,
     nbanks = nbanks,
     legend_rowsize = legend_rowsize,
+    xlabel_rowsize = xlabel_rowsize,
     size = (1300, 800),
 )
 

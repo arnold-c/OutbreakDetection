@@ -3,12 +3,13 @@ using DrWatson: DrWatson
 using StatsBase: StatsBase
 using Match: Match
 using StructArrays
+using LaTeXStrings
+using Markdown
 
 lineplot_colors = [
     "#56B4E9"
     "#E69F00"
     repeat(["#483248"], 2)...
-    repeat(["#000000"], 2)...
 ]
 
 function line_plot(
@@ -23,7 +24,7 @@ function line_plot(
     size = (1300, 800),
     colors = lineplot_colors,
     alpha = 0.5,
-    xlabel = "Proportion Tested",
+    xlabel = "Proportion Of Clinic Visits Tested",
     ylabel = "Outbreak Detection\nAccuracy",
     facet_fontsize = 24,
     legendsize = 28,
@@ -37,6 +38,7 @@ function line_plot(
     hlines = nothing,
     nbanks = 1,
     legend_rowsize = Makie.Relative(0.05),
+    xlabel_rowsize = Makie.Relative(0.03),
     force = false,
     save_plot = true,
     kwargs...,
@@ -75,6 +77,7 @@ function line_plot(
             hlines = hlines,
             nbanks = nbanks,
             legend_rowsize = legend_rowsize,
+            xlabel_rowsize = xlabel_rowsize,
             force = force,
             save_plot = save_plot,
             kwargs...,
@@ -93,7 +96,7 @@ function line_plot(
     size = (1300, 800),
     colors = lineplot_colors,
     alpha = 0.5,
-    xlabel = "Proportion Tested",
+    xlabel = "Proportion Of Clinic Visits Tested",
     ylabel = "Outbreak Detection\nAccuracy",
     facet_fontsize = 24,
     legendsize = 28,
@@ -107,6 +110,7 @@ function line_plot(
     hlines = nothing,
     nbanks = 1,
     legend_rowsize = Makie.Relative(0.05),
+    xlabel_rowsize = Makie.Relative(0.03),
     force = false,
     save_plot = true,
     kwargs...,
@@ -132,11 +136,18 @@ function line_plot(
         )
         num_noise_descriptions = length(unique_noise_descriptions)
         unique_test_specifications = sort(
-            unique(
-                optimal_thresholds_chars_array[
-                    1, 1
-                ].individual_test_specification,
-            ); by = t -> (t.sensitivity, t.specificity), rev = false)
+            sort(
+                unique(
+                    optimal_thresholds_chars_array[
+                        1, 1
+                    ].individual_test_specification,
+                );
+                by = t -> t.test_result_lag,
+                rev = true,
+            );
+            by = t -> (t.sensitivity, t.specificity),
+            rev = false,
+        )
 
         for i in axes(optimal_thresholds_chars_array, 1)
             noise_description = get_noise_description(
@@ -144,7 +155,7 @@ function line_plot(
             )
             label_noise_description = Match.@match noise_description begin
                 "poisson" => "Poisson Noise"
-                "dynamical, in-phase" => "Dynamical Noise: In-Phase"
+                "dynamical, in-phase" => "Dynamical Noise"
                 _ => "Other Noise"
             end
 
@@ -162,9 +173,7 @@ function line_plot(
                     num_noise_descriptions = num_noise_descriptions,
                     colors = colors,
                     alpha = alpha,
-                    xlabel = xlabel,
                     ylabel = "$label_noise_description\n" * ylabel,
-                    xlabelsize = xlabelsize,
                     ylabelsize = ylabelsize,
                     ylims = ylims,
                     hidedecorations = hidedecorations,
@@ -197,27 +206,31 @@ function line_plot(
         rg = r"\((.*)(\% .*\))"
         Legend(
             fig[0, :],
-            map(enumerate(unique_test_specifications)) do (i, test_spec)
+            map(
+                enumerate(reverse(unique_test_specifications))
+            ) do (i, test_spec)
                 linestyle = test_spec.test_result_lag == 0 ? :solid : :dot
                 return [
-                    PolyElement(; color = (colors[i], 0.3)),
-                    LineElement(; color = colors[i], linestyle = linestyle),
+                    PolyElement(; color = (reverse(colors)[i], 0.3)),
+                    LineElement(;
+                        color = reverse(colors)[i], linestyle = linestyle
+                    ),
                 ]
             end,
-            # map(
-            #     test_description ->
-            #         replace.(
-            #             test_description,
-            #             rg =>
-            #                 s -> parse(Float64, match(rg, s).captures[1]) / 100,
-            #         ),
-            get_test_description.(unique_test_specifications);
-            # );
+            plot_test_description.(reverse(unique_test_specifications));
             labelsize = legendsize,
             orientation = :horizontal,
             nbanks = nbanks,
         )
+        xlabel_position = num_noise_descriptions + 1
+        Label(
+            fig[xlabel_position, :],
+            xlabel;
+            fontsize = xlabelsize,
+            font = :bold,
+        )
         rowsize!(fig.layout, 0, legend_rowsize)
+        rowsize!(fig.layout, xlabel_position, xlabel_rowsize)
 
         if save_plot
             Makie.save(plotpath, fig; size = size)
@@ -298,9 +311,9 @@ function _line_plot(
     outcome = :accuracy,
     colors = lineplot_colors,
     alpha = 0.3,
-    xlabel = "Proportion Tested",
+    # xlabel = "",
     ylabel = "Accuracy",
-    xlabelsize = 28,
+    # xlabelsize = 28,
     ylabelsize = 28,
     show_x_facet_label = true,
     facet_fontsize = 24,
@@ -349,12 +362,12 @@ function _line_plot(
     end
 
     if show_x_facet_label && i == 1
-        x_facet_label = "$(Int64(round(
+        x_facet_label = L"\Lambda(%$(Int64(round(
             StatsBase.mean(
                 optimal_thresholds_vec[1].outbreak_threshold_chars.mean_noise_incidence_ratio
             );
             digits = 0,
-        ))):1 Noise:Signal Ratio"
+        ))))"
 
         kwargs_dict[:x_facet_label] = x_facet_label
     end
@@ -377,9 +390,9 @@ function _line_plot(
         outcome = outcome,
         colors = colors,
         alpha = alpha,
-        xlabel = xlabel,
+        # xlabel = xlabel,
         ylabel = ylabel,
-        xlabelsize = xlabelsize,
+        # xlabelsize = xlabelsize,
         ylabelsize = ylabelsize,
         facet_fontsize = facet_fontsize,
         ylims = ylims,
@@ -426,9 +439,7 @@ function _line_plot_facet(
 
     ax = Axis(
         gl[ypos, xpos];
-        xlabel = xlabel,
         ylabel = ylabel,
-        xlabelsize = xlabelsize,
         ylabelsize = ylabelsize,
     )
 

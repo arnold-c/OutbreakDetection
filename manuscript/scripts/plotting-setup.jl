@@ -28,8 +28,9 @@ CairoMakie.activate!(; type = "svg", px_per_unit = 1.0)
 
 alpha = 0.4
 nbanks = 1
-legend_rowsize = Makie.Relative(0.05);
-facet_fontsize = 20
-legendsize = 22
-xlabelsize = 22
-ylabelsize = 22
+facet_fontsize = 28
+legendsize = 24
+xlabelsize = 28
+ylabelsize = 26
+legend_rowsize = Makie.Relative(0.05)
+xlabel_rowsize = Makie.Relative(0.01);

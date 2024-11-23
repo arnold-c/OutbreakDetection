@@ -351,6 +351,22 @@ function get_test_description(test_specification::IndividualTestSpecification)
     return description
 end
 
+function table_test_type(sensitivity, specificity, test_lag)
+    return Match.@match (sensitivity, specificity, test_lag) begin
+        (1.0, 0.0, 0) => "Clinical Case Definition"
+        (x::AbstractFloat, x::AbstractFloat, 0) where {x<1.0} => "Imperfect Test ($(Int64(round(sensitivity * 100; digits = 0)))%)"
+        (1.0, 1.0, x::Int) => "Perfect Test"
+    end
+end
+
+function plot_test_description(test_specification::IndividualTestSpecification)
+    return Match.@match test_specification begin
+        IndividualTestSpecification(1.0, 0.0, 0) => "Clinical Case Definition"
+        IndividualTestSpecification(x::AbstractFloat, x::AbstractFloat, 0) where {x<1.0} => "Imperfect Test ($(Int64(round(x * 100; digits = 0)))%)"
+        IndividualTestSpecification(1.0, 1.0, x::Int) => "Perfect Test ($x day lag)"
+    end
+end
+
 abstract type NoiseSpecification end
 
 struct PoissonNoiseSpecification{

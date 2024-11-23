@@ -148,7 +148,7 @@ function create_wide_df(
     sort!(wide_df, [:noise_spec, order(:specificity; rev = false)])
 
     wide_df[!, :test_type] =
-        get_test_type.(
+        table_test_type.(
             wide_df.sensitivity,
             wide_df.specificity,
             wide_df.test_lag,
@@ -179,14 +179,6 @@ function create_wide_df(
         cols = contains('0'),
     )
     return wide_df
-end
-
-function get_test_type(sensitivity, specificity, test_lag)
-    return Match.@match (sensitivity, specificity, test_lag) begin
-        (1.0, 0.0, 0) => "Clinical Case Definition"
-        (x::AbstractFloat, x::AbstractFloat, 0) where {x<1.0} => "Imperfect Test ($(Int64(round(sensitivity * 100; digits = 0)))%)"
-        (1.0, 1.0, x::Int) => "Perfect Test"
-    end
 end
 
 #%%

@@ -10,7 +10,9 @@ export calculate_beta,
 include("structs.jl")
 export SimTimeParameters, EnsembleSpecification, DynamicsParameters,
     StateParameters, OutbreakThresholdChars, OutbreakDetectionSpecification,
-    OutbreakSpecification, IndividualTestSpecification, get_test_description,
+    OutbreakSpecification, IndividualTestSpecification,
+    get_test_description,
+    table_test_type, plot_test_description,
     PoissonNoiseSpecification, DynamicalNoiseSpecification, NoiseSpecification,
     get_noise_description, get_noise_magnitude, getdirpath,
     ScenarioSpecification, TestPositivity, OptimalThresholdCharacteristics
