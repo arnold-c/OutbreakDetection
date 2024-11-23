@@ -2,7 +2,7 @@
 accuracy_plot = line_plot(
     optimal_threshold_characteristics;
     outcome = :accuracy,
-    ylabel = "Outbreak Detection\nAccuracy",
+    ylabel = "Detection Accuracy",
     alpha = alpha,
     facet_fontsize = 28,
     legendsize = legendsize,
@@ -59,7 +59,7 @@ save(
 prop_alert_plot = line_plot(
     optimal_threshold_characteristics;
     outcome = :proportion_timeseries_in_alert,
-    ylabel = "Proportion of Time Series\nIn Alert",
+    ylabel = "Proportion of Time\nIn Alert",
     alpha = alpha,
     hlines = (0.0),
     facet_fontsize = facet_fontsize,
