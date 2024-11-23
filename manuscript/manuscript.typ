@@ -13,7 +13,7 @@
       affiliation: ("Hopkins-IH"),
     ),
     "Amy K. Winter": (
-      affiliation: ("UGA"),
+      affiliation: ("UGA-Epi", "UGA-Eco"),
     ),
     "William J. Moss": (
       affiliation: ("Hopkins-IH", "Hopkins-Epi"),
@@ -29,7 +29,8 @@
     "PSU-Bio": "Department of Biology, Pennsylvania State University, University Park, PA, USA 16802",
     "CIDD": "Center for Infectious Disease Dynamics, Pennsylvania State University, University Park, PA, USA 16802",
     "Hopkins-IH": "Department of International Health, Johns Hopkins Bloomberg School of Public Health, Baltimore, MD, USA 21205",
-    "UGA": "Department of Epidemiology, College of Public Health, University of Georgia, Athens, GA, USA 30602",
+    "UGA-Epi": "Department of Epidemiology and Biostatistics, College of Public Health, University of Georgia, Athens, GA, USA 30602",
+    "UGA-Eco": "Center for the Ecology of Infectious Disease, University of Georgia, Athens, GA, UGA 30602",
     "Hopkins-Epi": "Department of Epidemiology, Johns Hopkins Bloomberg School of Public Health, Baltimore, MD, USA 21205"
   ),
   keywords: ("Rapid-Diagnostic Tests","ELISA","Infectious Disease Surveillance","Outbreak Detection"),
@@ -84,7 +85,7 @@ Much like the need to carefully evaluate the balance of an individual diagnostic
 The concept of using incidence-based alert triggers to detect the discrete event of an outbreak with characteristics analogous to individual tests has been well documented in the case of meningitis, measles, and malaria @worldhealthorganizationMeaslesOutbreakGuide2022 @lewisTimelyDetectionMeningococcal2001 @worldhealthorganizationConfirmingInvestigatingManaging2009 @trotterResponseThresholdsEpidemic2015 @cooperReactiveVaccinationControl2019 @zalwangoEvaluationMalariaOutbreak2024 @kanindaEffectivenessIncidenceThresholds2000.
 However, an overlooked, yet critical, aspect of an outbreak detection system is the interplay between the individual test and outbreak alert characteristics.
 With their success within malaria surveillance systems, and particularly since the COVID-19 pandemic, rapid diagnostic tests (RDTs) have garnered wider acceptance, and their potential for use in other disease systems has been gaining interest @warrenerEvaluationRapidDiagnostic2023.
-Despite concerns of their lower diagnostic accuracy slowing their adoption until recently @millerAddressingBarriersDevelopment2015, the reduced cold-chain requirements @brownRapidDiagnosticTests2020, reduced training and laboratory requirements and costs @essentialprogrammeonimmunizationepiimmunizationClinicalSpecimensLaboratory2018 @worldhealthorganizationMeaslesOutbreakGuide2022 @brownRapidDiagnosticTests2020, and faster speed of result provided by RDTs has been show to outweigh the cost of false positive/negative results in some settings @warrenerEvaluationRapidDiagnostic2023 @mcmorrowMalariaRapidDiagnostic2011 @larremoreTestSensitivitySecondary2021 @middletonModelingTransmissionMitigation2023.
+Despite concerns of their lower diagnostic accuracy slowing their adoption until recently @millerAddressingBarriersDevelopment2015, the reduced cold-chain requirements @brownRapidDiagnosticTests2020, reduced training and laboratory requirements and costs @essentialprogrammeonimmunizationepiimmunizationClinicalSpecimensLaboratory2018 @worldhealthorganizationMeaslesOutbreakGuide2022 @brownRapidDiagnosticTests2020, and faster speed of result provided by RDTs has been show to outweigh the cost of false positive/negative results in some settings @warrenerEvaluationRapidDiagnostic2023 @mcmorrowMalariaRapidDiagnostic2011 @larremoreTestSensitivitySecondary2021 @middletonModelingTransmissionMitigation2024.
 
 
 In this paper, we examine how the use of imperfect diagnostic tests affects the performance of outbreak detection in the context of measles where RDTs are being developed with promising results @20240613_tpp_measles_rubell_FV_EN @brownRapidDiagnosticTests2020 @warrenerEvaluationRapidDiagnostic2023 @shonhaiInvestigationMeaslesOutbreak2015 (though not exclusively @seninMeaslesIgMRapid2024).
@@ -101,7 +102,7 @@ $R_0$ was set to 16, with a latent period of 10 days and infectious period of 8 
 The population was initialized with 500,000 individuals with Ghana-like birth and vaccination rates, and the final results were scaled up to the approximate 2022 population size of Ghana (33 million) @worldbankGhana.
 Ghana was chosen to reflect a setting with a high-performing measles vaccination program that has not yet achieved elimination status (c. 80% coverage for two doses of measles-containing vaccine), and must remain vigilant to outbreaks @WHOImmunizationData @masreshaTrackingMeaslesRubella2024.
 We assumed commuter-style imports at each time step to avoid extinction; the number of imports each day were drawn from a Poisson distribution with mean proportional to the size of the population and $R_0$ @keelingModelingInfectiousDiseases2008.
-The full table of parameters can be found in @tbl-model-parameters.
+The full table of parameters can be found in @tbl_od-model-parameters.
 All simulations and analysis was completed in Julia version 1.10.5 @bezansonJuliaFreshApproach2017, with all code stored at #link("https://github.com/arnold-c/OutbreakDetection").
 
 #let table_math(inset: 6pt, size: 14pt, content) = table.cell(inset: inset, text(size: size, content))
@@ -127,15 +128,14 @@ All simulations and analysis was completed in Julia version 1.10.5 @bezansonJuli
   ),
   caption: [Compartmental model parameters],
 )
-<tbl-model-parameters>
+<tbl_od-model-parameters>
 
 To examine the sensitivity of the detection system to background noise, we generated a time series of symptomatic febrile rash by combining the measles incidence time series with a noise time series.
 The noise time series was modeled as either Poisson-only noise, to represent the incidence of non-specific febrile rash due to any of a number of possible etiologies, or dynamical noise modeled as a rubella SEIR process.
 For Poisson-only noise, the time series of non-measles febrile rash cases each day was constructed by independent draws from a Poisson distribution.
 For dynamical noise, we generated time series of cases from an SEIR model that matched the measles model in structure, but had $R_0 = 5$, mean latent period of 7 days, and mean infectious period of 14 days.
-We also added additional Poisson noise with mean equal to 15% of the average daily rubella incidence to account for non-rubella sources of febrile rash (@tbl-model-parameters) @papadopoulosEstimatesBasicReproduction2022 @RubellaCDCYellow.
-The seasonality for the rubella noise was simulated to be in-phase with measles, anti-phase with measles (peak timing 6 months later), or non-seasonal.
-Only dynamical in-phase noise and Poisson-only noise are presented in the main text; the anti-phase and non-seasonal dynamical noise scenarios are presented in the supplement.
+We also added additional Poisson noise with mean equal to 15% of the average daily rubella incidence to account for non-rubella sources of febrile rash (@tbl_od-model-parameters) @papadopoulosEstimatesBasicReproduction2022 @RubellaCDCYellow.
+The seasonality for the rubella noise was simulated to be in-phase with measles.
 
 For each noise structure, we simulated five magnitudes of noise ($Lambda$), representing the average daily noise incidence.
 $Lambda$ was calculated as a multiple ($c$) of the average daily measles incidence ($angle.l Delta I_M angle.r$): $Lambda = c dot.op angle.l Delta I_M angle.r upright("where") c in { 1, 2, 4, 6, 8 }$.
@@ -174,17 +174,17 @@ We then add non-measles noise (@fig-outbreak-schematic b) and test according to 
 #figure(
   image("manuscript_files/plots/schematic-plot.svg"),
   caption: [
-   A schematic of the outbreak definition and alert detection system. A) Measles incidence time series. B) Noise time series. C) Observed time series of test positive cases according to a given testing scenario. In panel A, the orange bands represent regions of the measles time series that meet the outbreak definition criteria. In panel C, the green bands represent regions of the test positive time series that breach the alert threshold (the horizontal dashed line), and constitute an alert.
+   A schematic of the outbreak definition and alert detection system. A) Measles incidence time series. B) Noise incidence time series. C) Observed time series of test positive cases according to a given testing scenario. In panel A, the orange bands represent regions of the measles time series that meet the outbreak definition criteria. In panel C, the green bands represent regions of the test positive time series that breach the alert threshold (the horizontal dashed line), and constitute an alert.
     ]
 )
 <fig-outbreak-schematic>
 
 == Triggering Alerts
 We define an "alert" as any consecutive string of 1 or more days where the 7-day moving average of the test-positive cases is greater than, or equal to, a pre-specified alert threshold, T.
-For each time series of test-positive cases, we calculate the percentage of alerts that are "correct", defined as any overlap of 1 or more days between the alert and outbreak periods (@fig-outbreak-schematic b and c).
+For each time series of test-positive cases, we calculate the percentage of alerts that are "correct", defined as any overlap of 1 or more days between the alert and outbreak periods (@fig-outbreak-schematic a and c).
 This is analogous to the PPV of the alert system, and will be referred to as such for the rest of the manuscript.
 Note that it is possible to have multiple alerts within a single outbreak if the 7-day moving average of test positive cases drops below the threshold, T, and we count each as correct.
-For all outbreaks in the measles time series, we calculate the percentage that contain at least 1 alert within the outbreak’s start and end dates (@fig-outbreak-schematic b and c).
+For all outbreaks in the measles time series, we calculate the percentage that contain at least 1 alert within the outbreak’s start and end dates (@fig-outbreak-schematic a and c).
 We refer to this as the sensitivity of the alert system.
 We also calculate the detection delay as the time from the start of an outbreak to the start of its first alert.
 If the alert period starts before the outbreak and continues past the start date of the outbreak, this would be considered a correct alert with a negative delay i.e., an early warning triggered by false positive test results.
@@ -200,9 +200,9 @@ We then compare testing scenarios at their respective optimal alert threshold.
 This allows for conclusions to be made about the surveillance system as a whole, rather than just single components.
 
 = Results
-The threshold that maximized surveillance accuracy depends on diagnostic test characteristics, the testing rate, and the structure of the non-measles noise (@tbl-optimal-thresholds).
+The threshold that maximized surveillance accuracy depends on diagnostic test characteristics, the testing rate, and the structure of the non-measles noise (@tbl_od-optimal-thresholds).
 When the average noise incidence was 8 times higher than the average measles incidence ($Lambda (8)$), the optimal threshold ranged between 1 and 7 test-positive cases per day.
-Not surprisingly, the biggest driver of this difference was the testing rate; as a large fraction of suspected cases are tested, the optimal threshold increases monotonically for all test and noise types (@tbl-optimal-thresholds).
+Not surprisingly, the biggest driver of this difference was the testing rate; as a larger fraction of suspected cases are tested, the optimal threshold increases monotonically for all test and noise types (@tbl_od-optimal-thresholds).
 
 The maximal attainable surveillance accuracy at the optimal threshold depends strongly on the structure and magnitude of the background noise.
 For Poisson noise, at all magnitudes, the maximum surveillance accuracy increases rapidly from 65% at 10% testing of suspected cases, to $approx$ 90% accuracy at $gt.eq$ 20% testing, for all test types (@fig-accuracy).
@@ -222,9 +222,9 @@ Notably, the surveillance accuracy declines with increasing noise and, at all no
     [], table.cell(colspan: 2, align: center, "Test Characteristic"), table.cell(colspan: 6, align: center, "Testing Rate"),
     ..optimal_thresholds.flatten()
   ),
-  caption: [Optimal threshold for RDT-like, ELISA-like, and perfect tests, under dynamical and Poisson-like noise structures where the average daily noise incidence is 8 times the average daily measles incidence]
+  caption: [Optimal outbreak alert thresholds for imperfect and perfect diagnostic tests, under dynamical and Poisson noise structures where the average daily noise incidence is 8 times the average daily measles incidence]
 )
-<tbl-optimal-thresholds>
+<tbl_od-optimal-thresholds>
 
 
 #figure(
@@ -251,7 +251,7 @@ This reflects the change from highly sensitive systems with low thresholds to mo
 For Poisson noise, similar detection delays are observed for all test and noise magnitudes, with most of the variation attributable to the change in the testing rate (means of -3.7 to 36.1 days).
 Under dynamical noise, there are clearer differences in the performance of ELISA and RDTs, with the separation of outcomes occurring later than observed for surveillance accuracy ($Lambda(8)$ vs $Lambda(2)$ #sym.dash.em @fig-delay and @fig-accuracy #sym.dash.em respectively).
 With large amounts of dynamical noise ($Lambda(8)$), the mean detection delay of the 90% and 85% RDTs range from -17.5 days to 3.2 days, and from -25.2 days to -3.4 days, respectively.
-Negative delays indicate that alerts are being triggered before the start of the outbreak and is correlated with the proportion of the time series that is under alert, with larger negative delays associated with more and/or longer alert periods (@fig-alert-proportion, Supplemental Figures 2 and 3).
+Negative delays indicate that alerts are being triggered before the start of the outbreak and is correlated with the proportion of the time series that is under alert, with larger negative delays associated with more and/or longer alert periods (@fig-alert-proportion, Supplemental Figures 1 and 2).
 Long detection delays manifest as large numbers of unavoidable cases (i.e., cases that occur between the outbreak start and its detection) (@fig-unavoidable).
 Given the exponential trajectory of infections in the initial phase of an outbreak, the pattern of unavoidable cases follows the same shape as for detection delays, but more exaggerated.
 
@@ -304,7 +304,7 @@ For computational simplicity, this paper did not include demography in the model
 And while a simulation-based approach allows for complete determination of true infection status i.e., measles vs non-measles febrile rash cases, and therefore an accurate accounting of the outbreak and alert bounds, these simulations do not specifically represent any real-world setting.
 The evaluation of empirical data does provide this opportunity, but at the cost of knowing the true infection status of individuals, confounding of multiple variables, limiting analysis to only those who are observed (i.e., not those in the community who do not visit a healthcare center), and removing the possibility to explore the sensitivity of the results to parameters of interest to a surveillance program e.g., testing rate, and the test itself.
 
-Additionally, is has been well documented that the performance of an individual test is highly sensitive to its timing within a person’s infection cycle @gastanaduyMeasles2019 @larremoreTestSensitivitySecondary2021 @middletonModelingTransmissionMitigation2023 @kisslerViralDynamicsAcute2021 @ratnamPerformanceIndirectImmunoglobulin2000, so it is possible that different conclusions would be drawn if temporal information about the test administration was included in the simulation.
+Additionally, is has been well documented that the performance of an individual test is highly sensitive to its timing within a person’s infection cycle @gastanaduyMeasles2019 @larremoreTestSensitivitySecondary2021 @middletonModelingTransmissionMitigation2024 @kisslerViralDynamicsAcute2021 @ratnamPerformanceIndirectImmunoglobulin2000, so it is possible that different conclusions would be drawn if temporal information about the test administration was included in the simulation.
 
 Finally, the optimal threshold for a testing scenario is affected by the use of integer-values; smaller steps could be chosen to potentially minimize discontinuities.
 Similarly, the optimal threshold depends heavily on the costs ascribed to incorrect actions, be that failing to detect an outbreak or incorrectly mounting a response for an outbreak that doesn’t exist.
@@ -317,22 +317,19 @@ However, the general patterns should hold, and more importantly, the analysis fr
 
 #pagebreak()
 = Funding
-- #emph[Something about GAVI/Gates]
 
-This work was supported by funding from the Office of the Provost and the Clinical and Translational Science Institute, Huck Life Sciences Institute, and Social Science Research Institutes at the Pennsylvania State University.
-The project described was supported by the National Center for Advancing Translational Sciences, National Institutes of Health, through Grant UL1 TR002014.
-The content is solely the responsibility of the authors and does not necessarily represent the official views of the NIH.
-The funding sources had no role in the collection, analysis, interpretation, or writing of the report.
+This work was supported by Gavi, the Vaccine Alliance, through Contract No. 266639 PO4500012795, A01.
+The funding sources had no role in the collection, analysis, interpretation, or writing of the work.
 
 = Acknowledgements
 == Author Contributions
-#emph[Conceptualization:] CA, MJF
+#emph[Conceptualization:] all authors
 
-#emph[Data curation:] MJF, CA
+#emph[Data curation:] CA, MJF
 
 #emph[Formal analysis:] CA, MJF
 
-#emph[Funding acquisition:] MJF, WM, AW
+#emph[Funding acquisition:] AW, BP, MJF, WM
 
 #emph[Investigation:] CA, MJF
 
@@ -348,15 +345,15 @@ The funding sources had no role in the collection, analysis, interpretation, or 
 
 #emph[Visualization:] CA
 
-#emph[Writing - original draft:] CA, MJF
+#emph[Writing - original draft:] CA
 
-#emph[Writing - review and editing:] all authors.
+#emph[Writing - review and editing:] all authors
 
 == Conflicts of Interest and Financial Disclosures
 The authors declare no conflicts of interest.
 
 == Data Access, Responsibility, and Analysis
-Callum Arnold and Dr. Matthew J. Ferrari had full access to all the data in the study and take responsibility for the integrity of the data and the accuracy of the data analysis. Callum Arnold and Dr. Matthew J. Ferrari (Department of Biology, Pennsylvania State University) conducted the data analysis.
+Callum Arnold and Dr. Matthew J. Ferrari had full access to all the data in the study and take responsibility for the integrity of the data and the accuracy of the data analysis. Callum Arnold (Department of Biology, Pennsylvania State University) conducted the data analysis.
 
 == Data Availability
 All code and data for the simulations can be found at #link("https://github.com/arnold-c/OutbreakDetection")
