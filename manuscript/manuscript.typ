@@ -174,7 +174,7 @@ We then add non-measles noise (@fig-outbreak-schematic b) and test according to 
 #figure(
   image("manuscript_files/plots/schematic-plot.svg"),
   caption: [
-   A schematic of the outbreak definition and alert detection system. A) Measles incidence time series. B) Noise incidence time series. C) Observed time series of test positive cases according to a given testing scenario. In panel A, the orange bands represent regions of the measles time series that meet the outbreak definition criteria. In panel C, the green bands represent regions of the test positive time series that breach the alert threshold (the horizontal dashed line), and constitute an alert.
+   A schematic of the outbreak definition and alert detection system. A) Measles incidence time series. B) Noise incidence time series. C) Observed time series of test positive cases according to a given testing scenario. The orange bands present in all 3 panels represent regions of the measles time series that meet the outbreak definition criteria. In panel C, the dark blue bands represent regions of the test positive time series that breach the alert threshold (the horizontal dashed line), and constitute an alert.
     ]
 )
 <fig-outbreak-schematic>

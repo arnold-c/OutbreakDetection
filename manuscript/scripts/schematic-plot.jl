@@ -277,11 +277,14 @@ function plot_schematic(
 
     if shade_alert_outbreak_overlap
         if !isempty(outbreak_bounds_vec)
-            vspan!(
-                incax,
-                outbreak_bounds[:, 1],
-                outbreak_bounds[:, 2];
-                color = (outbreakcolormap[2], measlesalpha),
+            map(
+                ax -> vspan!(
+                    ax,
+                    outbreak_bounds[:, 1],
+                    outbreak_bounds[:, 2];
+                    color = (outbreakcolormap[2], measlesalpha),
+                ),
+                [incax, noiseax, testax],
             )
         end
 
@@ -384,6 +387,14 @@ schematic_with_shade_fig = plot_schematic(
     xlims = (5, 13),
     measlesalpha = 0.4,
     testalpha = 0.4,
+    outbreakcolormap = [
+        N_MISSED_OUTBREAKS_COLOR,
+        "#CE6F58",
+    ],
+    alertcolormap = [
+        N_MISSED_OUTBREAKS_COLOR,
+        "#2B3465",
+    ],
 )
 
 save(
