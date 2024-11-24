@@ -32,10 +32,10 @@
           "UGA": "Department of Epidemiology, College of Public Health, University of Georgia, Athens, GA, USA 30602",
           "Hopkins-Epi": "Department of Epidemiology, Johns Hopkins Bloomberg School of Public Health, Baltimore, MD, USA 21205"
 	),
-        // bib: "/Users/cfa5228/Documents/Repos/OutbreakDetection/manuscript/manuscript_files/OD.bib",
-	// bib: "OD.bib",
 )
 
+#show figure.where(kind: table): set figure(supplement: [Supplemental Table])
+#show figure.where(kind: image): set figure(supplement: [Supplemental Figure])
 
 == Tables
 
@@ -51,7 +51,7 @@
     [], table.cell(colspan: 2, align: center, "Test Characteristic"), table.cell(colspan: 6, align: center, "Testing Rate"),
     ..accuracy.flatten()
   ),
-  caption: [Mean outbreak detection accuracy of each testing scenario at their specific optimal thresholds, when the average noise incidence is 8 times higher than the average measles incidence. A) the noise structure is dynamical, and the seasonality is in-phase with the measles incidence. B) the noise structure is Poisson only.]
+  caption: [Mean outbreak detection accuracy for imperfect and perfect diagnostic tests, at their respective optimal alert thresholds, under dynamical and Poisson noise structures where the average daily noise incidence is 8 times the average daily measles incidence $Lambda(8)$. The test sensitivity equals the test specificity for all diagnostic tests.]
 )
 <tbl-optimal-thresholds-accuracy>
 
@@ -67,7 +67,7 @@
     [], table.cell(colspan: 2, align: center, "Test Characteristic"), table.cell(colspan: 6, align: center, "Testing Rate"),
     ..delays.flatten()
   ),
-  caption: [Mean outbreak alert delay (days) of each testing scenario at their specific optimal thresholds, when the average noise incidence is 8 times higher than the average measles incidence. A) the noise structure is dynamical, and the seasonality is in-phase with the measles incidence. B) the noise structure is Poisson only.]
+  caption: [Mean outbreak detection delays (days) for imperfect and perfect diagnostic tests, at their respective optimal alert thresholds, under dynamical and Poisson noise structures where the average daily noise incidence is 8 times the average daily measles incidence $Lambda(8)$. The test sensitivity equals the test specificity for all diagnostic tests.]
 )
 <tbl-optimal-thresholds-delays>
 
@@ -83,7 +83,7 @@
     [], table.cell(colspan: 2, align: center, "Test Characteristic"), table.cell(colspan: 6, align: center, "Testing Rate"),
     ..unavoidable.flatten()
   ),
-  caption: [Mean unavoidable cases per annum of each testing scenario at their specific optimal thresholds, scaled up to Ghana’s 2022 population, when the average noise incidence is 8 times higher than the average measles incidence. A) the noise structure is dynamical, and the seasonality is in-phase with the measles incidence. B) the noise structure is Poisson only.]
+  caption: [Mean unavoidable cases per annum (scaled to Ghana's 2022 population) for imperfect and perfect diagnostic tests, at their respective optimal alert thresholds, under dynamical and Poisson noise structures where the average daily noise incidence is 8 times the average daily measles incidence $Lambda(8)$. The test sensitivity equals the test specificity for all diagnostic tests.]
 )
 <tbl-optimal-thresholds-unavoidable>
 
@@ -92,12 +92,12 @@
 
 #figure(
   image("supplemental_files/plots/optimal-thresholds_alert-duration-plot.svg"),
-  caption: [The duration of alerts of outbreak detection systems under different testing rates and noise structures. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate. Imperfect tests have the same values for sensitivity and specificity. Solid lines represent tests with 0-day turnaround times, and dashed lines represent tests with result delays. $Lambda(4)$ indicates the mean noise incidence is 4 times higher than the mean measles incidence.]
+  caption: [The duration of alerts of outbreak detection systems under different testing rates and noise structures, at their respective optimal alert thresholds. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate. Imperfect tests have the same values for sensitivity and specificity. Solid lines represent tests with 0-day turnaround times, and dashed lines represent tests with result delays. $Lambda(4)$ indicates the mean noise incidence is 4 times higher than the mean measles incidence, for example.]
 )
 <fig-alert-duration>
 
 #figure(
   image("supplemental_files/plots/optimal-thresholds_n-alerts-plot.svg"),
-  caption: [The number of alerts of outbreak detection systems under different testing rates and noise structures. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate. Imperfect tests have the same values for sensitivity and specificity. Solid lines represent tests with 0-day turnaround times, and dashed lines represent tests with result delays. $Lambda(4)$ indicates the mean noise incidence is 4 times higher than the mean measles incidence.]
+  caption: [The number of alerts of outbreak detection systems under different testing rates and noise structures, at their respective optimal alert thresholds. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate. Imperfect tests have the same values for sensitivity and specificity. Solid lines represent tests with 0-day turnaround times, and dashed lines represent tests with result delays. $Lambda(4)$ indicates the mean noise incidence is 4 times higher than the mean measles incidence, for example.]
 )
 <fig-num-alerts>
