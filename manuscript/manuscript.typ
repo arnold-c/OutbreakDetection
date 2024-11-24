@@ -89,7 +89,7 @@ Despite concerns of their lower diagnostic accuracy slowing their adoption until
 
 
 In this paper, we examine how the use of imperfect diagnostic tests affects the performance of outbreak detection in the context of measles where RDTs are being developed with promising results @20240613_tpp_measles_rubell_FV_EN @brownRapidDiagnosticTests2020 @warrenerEvaluationRapidDiagnostic2023 @shonhaiInvestigationMeaslesOutbreak2015 (though not exclusively @seninMeaslesIgMRapid2024).
-We evaluate the scenarios under which equivalence in outbreak detection can be achieved, where altering testing rates can offset the reduction in diagnostic discrimination of RDTs relative to ELISAs, and meaningful improvements can be attained with respect to specific metrics e.g., speed of response.
+We evaluate the scenarios under which equivalence in outbreak detection can be achieved, where altering testing rates can offset the reduction in diagnostic discrimination of imperfect tests relative to perfect tests, and meaningful improvements can be attained with respect to specific metrics e.g., speed of response.
 By examining the combination of the alert threshold and individual test characteristics in a modeling study that explicitly incorporates dynamical background noise, we illustrate the need to develop TPPs for surveillance programs as a whole.
 
 
@@ -161,10 +161,8 @@ Each day, 60% of the measles and non-measles febrile rash cases visit the clinic
 The percentage of clinic visits (P) that are tested is varied between 10% and 60%, in 10% increments.
 Each "testing scenario" combines a testing rate (P) with one of the following tests:
 
-- An RDT equivalent with 85% sensitivity and specificity, and 0-day lag in result return.
-That is, 85% of true measles cases will be correctly labelled as positive, and 15% of non-measles febrile rash individuals that are tested will be incorrectly labelled as positive for measles.
-This acts as a lower bound of acceptability for a hypothetical measles RDT @20240613_tpp_measles_rubell_FV_EN
-- An RDT equivalent with 90% sensitivity and specificity, and 0-day lag in result return @brownRapidDiagnosticTests2020
+- An imperfect test with 85% sensitivity and specificity, and 0-day lag in result return. That is, 85% of true measles cases will be correctly labelled as positive, and 15% of non-measles febrile rash individuals that are tested will be incorrectly labelled as positive for measles. This acts as a lower bound of acceptability for a hypothetical measles RDT @20240613_tpp_measles_rubell_FV_EN
+- An imperfect test with 90% sensitivity and specificity, and 0-day lag in result return @brownRapidDiagnosticTests2020
 - A perfect test with 100% sensitivity and specificity, and a 0-day test result delay. This is more accurate than is observed for current ELISA tests @hiebertEvaluationDiagnosticAccuracy2021, but it used to evaluate the theoretical best-case scenario
 - A perfect test with 100% sensitivity and specificity, and a 14-day test result delay
 
@@ -205,9 +203,9 @@ When the average noise incidence was 8 times higher than the average measles inc
 Not surprisingly, the biggest driver of this difference was the testing rate; as a larger fraction of suspected cases are tested, the optimal threshold increases monotonically for all test and noise types (@tbl_od-optimal-thresholds).
 
 The maximal attainable surveillance accuracy at the optimal threshold depends strongly on the structure and magnitude of the background noise.
-For Poisson noise, at all magnitudes, the maximum surveillance accuracy increases rapidly from 65% at 10% testing of suspected cases, to $approx$ 90% accuracy at $gt.eq$ 20% testing, for all test types (@fig-accuracy).
-For dynamical SEIR noise, the ELISA-like perfect tests perform identically to the Poisson noise case at all magnitudes (@fig-accuracy).
-For RDT-like tests, which have lower individual sensitivity and specificity, the maximal attainable accuracy is lower than the ELISA-like tests for all testing rates (P) at noise magnitude $gt.eq Lambda (2)$ (@fig-accuracy).
+For Poisson noise, at all magnitudes, the maximum surveillance accuracy increases rapidly from 65% at 10% testing of suspected clinic cases, to $approx$ 90% accuracy at $gt.eq$ 20% testing, for all test types (@fig-accuracy).
+For dynamical SEIR noise, the perfect tests perform identically to the Poisson noise case at all magnitudes (@fig-accuracy).
+For imperfect diagnostic tests, which have lower individual sensitivity and specificity, the maximal attainable accuracy is lower than the perfect tests for all testing rates (P) at noise magnitude $gt.eq Lambda (2)$ (@fig-accuracy).
 Notably, the surveillance accuracy declines with increasing noise and, at all noise levels, is not improved with higher testing rates as the signal becomes increasingly dominated by false positive test results (@fig-accuracy).
 
 #let optimal_thresholds = csv("manuscript_files/tables/optimal-thresholds.csv")
@@ -234,9 +232,9 @@ Notably, the surveillance accuracy declines with increasing noise and, at all no
 <fig-accuracy>
 
 Introducing a lag in test result reporting necessarily decreases surveillance accuracy because an alert can only begin once the test results are in-hand, which increases the chance that an outbreak will end before results can be translated to an alert.
-For the conditions simulated here, introducing a 14-day lag in test reporting for an ELISA-like test reduces the surveillance accuracy by $approx$ 3%.
-For all simulated scenarios, this is consistent with, or higher than, the accuracy achievable with an RDT-like test.
-This always leads to an increase in the median delay from outbreak start to alert, relative to an ELISA-like test with no result delays, as well as RDT-like tests (@fig-delay).
+For the conditions simulated here, introducing a 14-day lag in test reporting for a perfect test reduces the surveillance accuracy by $approx$ 3%.
+For all simulated scenarios, this is consistent with, or higher than, the accuracy achievable with an RDT-like imperfect test.
+This always leads to an increase in the median delay from outbreak start to alert, relative to a perfect test with no result delays, as well as imperfect tests (@fig-delay).
 
 #figure(
   image("manuscript_files/plots/optimal-thresholds_delays-plot.svg"),
@@ -249,8 +247,8 @@ This effect is exaggerated for some metrics (detection delays, proportion of tim
 In general, the increase in accuracy with higher testing rates is accompanied with longer testing delays.
 This reflects the change from highly sensitive systems with low thresholds to more specific systems with higher thresholds at higher testing rates.
 For Poisson noise, similar detection delays are observed for all test and noise magnitudes, with most of the variation attributable to the change in the testing rate (means of -3.7 to 36.1 days).
-Under dynamical noise, there are clearer differences in the performance of ELISA and RDTs, with the separation of outcomes occurring later than observed for surveillance accuracy ($Lambda(8)$ vs $Lambda(2)$ #sym.dash.em @fig-delay and @fig-accuracy #sym.dash.em respectively).
-With large amounts of dynamical noise ($Lambda(8)$), the mean detection delay of the 90% and 85% RDTs range from -17.5 days to 3.2 days, and from -25.2 days to -3.4 days, respectively.
+Under dynamical noise, there are clearer differences in the performance of perfect and imperfect diagnostic tests, with the separation of outcomes occurring later than observed for surveillance accuracy ($Lambda(8)$ vs $Lambda(2)$ #sym.dash.em @fig-delay and @fig-accuracy #sym.dash.em respectively).
+With large amounts of dynamical noise ($Lambda(8)$), the mean detection delay of the 90% and 85% imperfect tests range from -17.5 days to 3.2 days, and from -25.2 days to -3.4 days, respectively.
 Negative delays indicate that alerts are being triggered before the start of the outbreak and is correlated with the proportion of the time series that is under alert, with larger negative delays associated with more and/or longer alert periods (@fig-alert-proportion, Supplemental Figures 1 and 2).
 Long detection delays manifest as large numbers of unavoidable cases (i.e., cases that occur between the outbreak start and its detection) (@fig-unavoidable).
 Given the exponential trajectory of infections in the initial phase of an outbreak, the pattern of unavoidable cases follows the same shape as for detection delays, but more exaggerated.
@@ -273,9 +271,9 @@ Given the exponential trajectory of infections in the initial phase of an outbre
 The performance of an outbreak detection system is highly sensitive to the structure and level of background noise in the simulation.
 Despite the mean daily noise incidence set to equivalent values between the dynamical and Poisson-only simulations, drastically different results are observed.
 
-Under the assumption that non-measles febrile rash is relatively static in time (Poisson noise scenarios), RDTs can perform as well, if not better than ELISA tests at moderate to high testing rates, and at a fraction of the cost @brownRapidDiagnosticTests2020.
-However, if it is expected that the noise is dynamic, imperfect tests cannot overcome their accuracy limitations through higher testing rates, saturating at c. 74% accuracy, relative to ELISA’s 93%.
-This discrepancy occurs because, despite the same average incidence of noise in each (comparable) scenario, the relative proportion of measles to noise on any one day varies throughout the dynamical noise time series, exacerbating the effects of imperfect diagnostic tests that produce higher rates of false positives and negatives than ELISA-like diagnostics.
+Under the assumption that non-measles febrile rash is relatively static in time (Poisson noise scenarios), imperfect diagnostics can perform as well, if not better than perfect (ELISA-like) tests at moderate to high testing rates, and at a fraction of the cost @brownRapidDiagnosticTests2020.
+However, if it is expected that the noise is dynamic, imperfect tests cannot overcome their accuracy limitations through higher testing rates, saturating at c. 74% accuracy, relative to 93% achieved with perfect tests.
+This discrepancy occurs because, despite the same average incidence of noise in each (comparable) scenario, the relative proportion of measles to noise on any one day varies throughout the dynamical noise time series, exacerbating the effects of imperfect diagnostic tests that produce higher rates of false positives and negatives than perfect diagnostics.
 
 For all noise structures and diagnostic tests, increasing testing rate was not accompanied by a monotonic change in the associated metrics.
 The reason behind this unintuitive result stems from the use of integer-valued alert thresholds.
@@ -298,7 +296,7 @@ To our knowledge, this is one of the first simulation studies to examine the rel
 By explicitly modeling the interaction between the two, we make a case that surveillance systems should take a holistic approach; prematurely constraining one component can lead to drastically different, and suboptimal, results.
 Additionally, by defining outbreak bounds concretely we have been able to calculate metrics of outbreak detection performance that draw parallels to those used when evaluating individual diagnostic tests.
 This provides an intuitive understanding and simple implementation of this method in resource-constrained environments, something that may not be possible with many outbreak detection and early warning system simulations in the literature.
-An evaluation of all outbreak detection algorithms is beyond the scope of this work, but a more computationally expensive approach based on nowcasting incidence may help overcome the shortcomings of RDTs in high-noise scenarios.
+An evaluation of all outbreak detection algorithms is beyond the scope of this work, but a more computationally expensive approach based on nowcasting incidence may help overcome the shortcomings of imperfect diagnostics in high-noise scenarios.
 
 For computational simplicity, this paper did not include demography in the model structure.
 And while a simulation-based approach allows for complete determination of true infection status i.e., measles vs non-measles febrile rash cases, and therefore an accurate accounting of the outbreak and alert bounds, these simulations do not specifically represent any real-world setting.
