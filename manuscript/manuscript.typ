@@ -1,5 +1,5 @@
 #import "template.typ": article
-//
+
 #show: article.with(
   title: "Individual and Population Level Uncertainty Interact to Determine Performance of Outbreak Surveillance Systems",
   header-title: "true",
