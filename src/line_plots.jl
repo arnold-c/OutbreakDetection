@@ -4,7 +4,6 @@ using StatsBase: StatsBase
 using Match: Match
 using StructArrays
 using LaTeXStrings
-using Markdown
 
 lineplot_colors = [
     "#56B4E9"
