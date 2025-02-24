@@ -57,7 +57,7 @@ outbreak_specification = OutbreakSpecification(5, 30, 500)
 movingavg_window = 20
 
 outbreak_detection_specification = OutbreakDetectionSpecification(
-    8,
+    5,
     movingavg_window,
     1.0,
     0.75,
@@ -441,6 +441,45 @@ save(
 )
 
 #%%
+
+inc_alertstatus_vec = detectoutbreak(
+    inc_vec,
+    6,
+)
+inc_alert_bounds = calculate_outbreak_thresholds(
+    rle(inc_alertstatus_vec .> 0); ncols = 3
+)
+OutbreakDetectionUtils.calculate_outbreak_duration!(inc_alert_bounds)
+
+incidence_threshold_schematic_6 = plot_schematic(
+    inc_vec,
+    outbreak_status,
+    outbreak_bounds[:, 1:2],
+    inc_alertstatus_vec,
+    inc_alert_bounds,
+    6;
+    time_p = time_p,
+    shade_alert_outbreak_overlap = true,
+    xlims = (5, 13),
+    measlesalpha = 0.4,
+    testalpha = 0.4,
+    outbreakcolormap = [
+        N_MISSED_OUTBREAKS_COLOR,
+        "#CE6F58",
+    ],
+    alertcolormap = [
+        N_MISSED_OUTBREAKS_COLOR,
+        "#2B3465",
+    ],
+)
+
+save(
+    plotsdir("schematic-plot_incidence-threshold-6.svg"),
+    incidence_threshold_schematic_6;
+    size = (1300, 800 / 3),
+)
+
+#%%
 function plot_schematic(
     inc_vec,
     outbreakstatus_vec,
@@ -529,14 +568,6 @@ function plot_schematic(
         linewidth = 3,
     )
 
-    hlines!(
-        incax,
-        outbreak_specification.outbreak_threshold;
-        color = :black,
-        linewidth = 2,
-        linestyle = :dash,
-    )
-
     lines!(
         noiseax,
         times,
@@ -585,6 +616,102 @@ function plot_schematic(
 end
 
 #%%
+function plot_schematic(
+    inc_vec,
+    outbreakstatus_vec,
+    outbreak_bounds,
+    noise_vec,
+    testpositive_vec;
+    time_p = SimTimeParameters(; tmin = 0.0, tmax = 365.0 * 10, tstep = 1.0),
+    outbreakcolormap = [
+        N_MISSED_OUTBREAKS_COLOR, PERC_OUTBREAKS_DETECTED_COLOR
+    ],
+    shade_alert_outbreak_overlap = false,
+    measlesalpha = 0.5,
+    kwargs...,
+)
+    kwargs_dict = Dict(kwargs)
+
+    times = collect(time_p.trange)
+
+    if haskey(kwargs_dict, :xlims)
+        lower = maximum([1, kwargs_dict[:xlims][1] * 365])
+        upper = minimum([Int64(time_p.tlength), kwargs_dict[:xlims][2] * 365])
+        times = times[lower:upper]
+        inc_vec = inc_vec[lower:upper]
+        outbreakstatus_vec = outbreakstatus_vec[lower:upper]
+        noise_vec = noise_vec[lower:upper]
+        testpositive_vec = testpositive_vec[lower:upper]
+
+        outbreak_bounds = outbreak_bounds[
+            (outbreak_bounds[:, 1] .>= lower) .& (outbreak_bounds[:, 2] .<= upper),
+            :,
+        ]
+    end
+    outbreak_bounds_vec = vec(outbreak_bounds[:, 1:2])
+
+    fig = Figure()
+    incga = fig[1, 1] = GridLayout()
+    noisega = fig[2, 1] = GridLayout()
+    testga = fig[3, 1] = GridLayout()
+    incax = Axis(incga[1, 1]; ylabel = "Measles Incidence")
+    noiseax = Axis(noisega[1, 1]; ylabel = "Noise Incidence")
+    testax = Axis(testga[1, 1]; xlabel = "Time", ylabel = "Test Positives")
+
+    if shade_alert_outbreak_overlap
+        if !isempty(outbreak_bounds_vec)
+            map(
+                ax -> vspan!(
+                    ax,
+                    outbreak_bounds[:, 1],
+                    outbreak_bounds[:, 2];
+                    color = (outbreakcolormap[2], measlesalpha),
+                ),
+                [incax, noiseax, testax],
+            )
+        end
+    end
+
+    lines!(
+        incax,
+        times,
+        inc_vec;
+        color = outbreakstatus_vec,
+        colormap = outbreakcolormap,
+        linewidth = 3,
+    )
+
+    lines!(
+        noiseax,
+        times,
+        noise_vec;
+        color = N_MISSED_OUTBREAKS_COLOR,
+        linewidth = 3,
+    )
+
+    lines!(
+        testax,
+        times,
+        testpositive_vec;
+        color = N_MISSED_OUTBREAKS_COLOR,
+        linewidth = 3,
+    )
+
+    map(
+        ax -> hidexdecorations!(ax),
+        [
+            noiseax,
+            incax,
+            testax,
+        ],
+    )
+
+    linkxaxes!(noiseax, incax, testax)
+
+    return fig
+end
+
+#%%
 schematic_with_shade_fig = plot_schematic(
     inc_vec,
     outbreak_status,
@@ -611,7 +738,147 @@ schematic_with_shade_fig = plot_schematic(
 )
 
 save(
-    plotsdir("schematic-plot.svg"),
+    plotsdir("schematic-plot_threshold-5.svg"),
+    schematic_with_shade_fig,
+)
+
+#%%
+test_6_1_alertstatus_vec = detectoutbreak(
+    movingavg_testpositives,
+    6.2,
+)
+test_6_1_alert_bounds = calculate_outbreak_thresholds(
+    rle(test_6_1_alertstatus_vec .> 0); ncols = 3
+)
+
+schematic_with_shade_fig = plot_schematic(
+    inc_vec,
+    outbreak_status,
+    outbreak_bounds[:, 1:2],
+    outbreak_specification,
+    noise_vec,
+    movingavg_testpositives,
+    test_6_1_alertstatus_vec,
+    test_6_1_alert_bounds,
+    6;
+    time_p = time_p,
+    shade_alert_outbreak_overlap = true,
+    xlims = (5, 13),
+    measlesalpha = 0.4,
+    testalpha = 0.4,
+    outbreakcolormap = [
+        N_MISSED_OUTBREAKS_COLOR,
+        "#CE6F58",
+    ],
+    alertcolormap = [
+        N_MISSED_OUTBREAKS_COLOR,
+        "#2B3465",
+    ],
+)
+
+save(
+    plotsdir("schematic-plot_threshold-6.svg"),
+    schematic_with_shade_fig,
+)
+
+#%%
+schematic_no_shade_fig = plot_schematic(
+    inc_vec,
+    outbreak_status,
+    outbreak_bounds[:, 1:2],
+    noise_vec,
+    movingavg_testpositives;
+    time_p = time_p,
+    shade_alert_outbreak_overlap = true,
+    xlims = (5, 13),
+    measlesalpha = 0.4,
+    testalpha = 0.4,
+    outbreakcolormap = [
+        N_MISSED_OUTBREAKS_COLOR,
+        "#CE6F58",
+    ],
+)
+
+save(
+    plotsdir("schematic-plot_no-threshold.svg"),
+    schematic_no_shade_fig,
+)
+
+#%%
+test_5_1_alertstatus_vec = detectoutbreak(
+    movingavg_testpositives,
+    5.105,
+)
+test_5_1_alert_bounds = calculate_outbreak_thresholds(
+    rle(test_5_1_alertstatus_vec .> 0); ncols = 3
+)
+
+schematic_with_shade_fig = plot_schematic(
+    inc_vec,
+    outbreak_status,
+    outbreak_bounds[:, 1:2],
+    outbreak_specification,
+    noise_vec,
+    movingavg_testpositives,
+    test_5_1_alertstatus_vec,
+    test_5_1_alert_bounds,
+    5;
+    time_p = time_p,
+    shade_alert_outbreak_overlap = true,
+    xlims = (5, 13),
+    measlesalpha = 0.4,
+    testalpha = 0.4,
+    outbreakcolormap = [
+        N_MISSED_OUTBREAKS_COLOR,
+        "#CE6F58",
+    ],
+    alertcolormap = [
+        N_MISSED_OUTBREAKS_COLOR,
+        "#2B3465",
+    ],
+)
+
+save(
+    plotsdir("schematic-plot_threshold-5.svg"),
+    schematic_with_shade_fig,
+)
+
+#%%
+test_3_alertstatus_vec = detectoutbreak(
+    movingavg_testpositives,
+    measles_incidence_threshold,
+)
+test_3_alert_bounds = calculate_outbreak_thresholds(
+    rle(test_3_alertstatus_vec .> 0); ncols = 3
+)
+
+schematic_with_shade_fig = plot_schematic(
+    inc_vec,
+    outbreak_status,
+    outbreak_bounds[:, 1:2],
+    outbreak_specification,
+    noise_vec,
+    movingavg_testpositives,
+    test_3_alertstatus_vec,
+    test_3_alert_bounds,
+    3;
+    time_p = time_p,
+    shade_alert_outbreak_overlap = true,
+    xlims = (5, 13),
+    measlesalpha = 0.4,
+    testalpha = 0.4,
+    outbreakcolormap = [
+        N_MISSED_OUTBREAKS_COLOR,
+        "#CE6F58",
+    ],
+    alertcolormap = [
+        N_MISSED_OUTBREAKS_COLOR,
+        "#2B3465",
+    ],
+)
+
+save(
+    plotsdir("schematic-plot_threshold-3.svg"),
     schematic_with_shade_fig,
 )
 
@@ -684,6 +951,10 @@ function inc_noise_schematic(
         linewidth = 3,
     )
 
+    if haskey(kwargs_dict, :ylims)
+        ylims!(incax, kwargs_dict[:ylims])
+    end
+
     # band!(
     #     incax,
     #     times,
@@ -726,9 +997,9 @@ dynamical_noise = create_noise_arr(
 ];
 mean(dynamical_noise)
 
-round.(
+dynamical_noise = round.(
     calculate_movingavg(
-        vec(convert_svec_to_matrix(inc_sv)),
+        dynamical_noise,
         movingavg_window,
     )
 )
@@ -740,13 +1011,13 @@ dynamical_noise_schematic = inc_noise_schematic(
     dynamical_noise;
     time_p = time_p,
     xlims = (5, 13),
+    ylims = (0, 20),
     size = (1300, 800 / 3),
     shade_alert_outbreak_overlap = false,
     measlesalpha = 1,
-    noisealpha = 0.5,
+    noisealpha = 0.4,
 )
 
-#%%
 save(
     plotsdir("dynamical-noise-schematic.svg"),
     dynamical_noise_schematic;
@@ -759,14 +1030,28 @@ poisson_noise = create_noise_arr(
     seed = 1234,
 )[1]
 
-inc_noise_schematic(
+poisson_noise = round.(
+    calculate_movingavg(
+        poisson_noise,
+        movingavg_window,
+    )
+)
+
+poisson_noise_schematic = inc_noise_schematic(
     inc_vec,
     outbreak_status,
     outbreak_bounds[:, 1:2],
     poisson_noise;
     time_p = time_p,
     xlims = (5, 13),
+    ylims = (0, 20),
     size = (1300, 800 / 3),
     shade_alert_outbreak_overlap = false,
-    measlesalpha = 0.4,
+    measlesalpha = 1.0,
+    noisealpha = 0.4,
+)
+
+save(
+    plotsdir("poisson-noise-schematic.svg"),
+    poisson_noise_schematic;
 )
