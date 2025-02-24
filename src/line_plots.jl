@@ -153,7 +153,7 @@ function line_plot(
                 optimal_thresholds_chars_array[i, 1].noise_specification[1]
             )
             label_noise_description = Match.@match noise_description begin
-                "poisson" => "Poisson Noise"
+                "poisson" => "Static Noise"
                 "dynamical, in-phase" => "Dynamical Noise"
                 _ => "Other Noise"
             end

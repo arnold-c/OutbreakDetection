@@ -74,7 +74,7 @@ rdt_poisson_df = create_optimal_threshold_summary_df(
     percentiles = nothing,
     nboots = nothing,
 )
-rdt_poisson_df[!, :noise_spec] .= "Poisson noise"
+rdt_poisson_df[!, :noise_spec] .= "Static noise"
 
 # elisa_dynamical_df = create_optimal_threshold_summary_df(
 #     dynamical_noise_elisa_optimal_solutions,
@@ -90,7 +90,7 @@ rdt_poisson_df[!, :noise_spec] .= "Poisson noise"
 #     percentiles = nothing,
 #     nboots = nothing,
 # )
-# elisa_poisson_df[!, :noise_spec] .= "Poisson noise"
+# elisa_poisson_df[!, :noise_spec] .= "Static noise"
 
 thresholds_df = vcat(
     rdt_dynamical_df,
@@ -114,7 +114,7 @@ function create_wide_df(
     long_df,
     outcome::Symbol;
     noise_order = [
-        "Dynamical noise", "Poisson noise", "All noise structures"
+        "Dynamical noise", "Static noise", "All noise structures"
     ],
     digits = 3,
 )
