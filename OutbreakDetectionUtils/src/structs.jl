@@ -363,7 +363,7 @@ function plot_test_description(test_specification::IndividualTestSpecification)
     return Match.@match test_specification begin
         IndividualTestSpecification(1.0, 0.0, 0) => "Clinical Case Definition"
         IndividualTestSpecification(x::AbstractFloat, x::AbstractFloat, 0) where {x<1.0} => "Imperfect Test ($(Int64(round(x * 100; digits = 0)))%)"
-        IndividualTestSpecification(1.0, 1.0, x::Int) => "Perfect Test ($x day lag)"
+        IndividualTestSpecification(1.0, 1.0, x::Int) => "Perfect Test ($x-day lag)"
     end
 end
 
