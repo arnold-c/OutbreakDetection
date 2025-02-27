@@ -1,9 +1,152 @@
+using StatsBase: StatsBase
 using NaNMath: NaNMath
+using UnPack: @unpack
+using Optimization: Optimization
+using OptimizationBBO: OptimizationBBO
+using DataFrames: DataFrames
+
+function setup_optimization(ensemble_param_dict)
+    UnPack.@unpack ensemble_spec,
+    seed,
+    outbreak_spec = ensemble_param_dict
+
+    UnPack.@unpack state_parameters,
+    dynamics_parameters, time_parameters,
+    nsims =
+        ensemble_spec
+
+    UnPack.@unpack tstep, tlength, trange = time_parameters
+
+    ensemble_seir_vecs = Array{typeof(state_parameters.init_states),2}(
+        undef,
+        tlength,
+        nsims,
+    )
+
+    ensemble_inc_vecs = Array{typeof(StaticArrays.SVector(0)),2}(
+        undef,
+        tlength,
+        nsims,
+    )
+
+    ensemble_beta_arr = zeros(Float64, tlength)
+
+    for sim in axes(ensemble_inc_vecs, 2)
+        run_seed = seed + (sim - 1)
+
+        seir_mod!(
+            @view(ensemble_seir_vecs[:, sim]),
+            @view(ensemble_inc_vecs[:, sim]),
+            ensemble_beta_arr,
+            state_parameters.init_states,
+            dynamics_parameters,
+            time_parameters;
+            seed = run_seed,
+        )
+    end
+
+
+	ensemble_inc_arr, ensemble_thresholds_vec = create_inc_infec_arr(
+		ensemble_inc_vecs, outbreak_spec
+    )
+
+
+    return ensemble_inc_arr, ensemble_thresholds_vec
+end
+
+function run_optimization(
+	OT_chars_param_dict;
+	guess_threshold = 2.0,
+	threshold_lower_bound = 0.5,
+	threshold_upper_bound = 50.0,
+	maxiters = 100000,
+	maxtime	= 1000.0,
+)
+    UnPack.@unpack scenario_spec, ensemble_inc_arr, thresholds_vec, seed =
+        OT_chars_param_dict
+    UnPack.@unpack noise_specification,
+    outbreak_detection_specification,
+    individual_test_specification = scenario_spec
+
+    noise_array = create_noise_arr(
+        noise_specification,
+        ensemble_inc_arr;
+        ensemble_specification = scenario_spec.ensemble_specification,
+        seed = seed,
+	)[1]
+
+	obj_inputs = (;
+		ensemble_inc_arr,
+		noise_array,
+		outbreak_detection_specification,
+		individual_test_specification,
+		thresholds_vec
+	)
+
+	f = Optimization.OptimizationFunction(objective_function)
+
+	prob = Optimization.OptimizationProblem(
+		f,
+		[guess_threshold],
+		obj_inputs;
+		lb = [threshold_lower_bound],
+		ub = [threshold_upper_bound]
+	)
+
+	sol = Optimization.solve(
+		prob,
+		OptimizationBBO.BBO_adaptive_de_rand_1_bin_radiuslimited();
+		maxiters = maxiters,
+		maxtime = maxtime
+	)
+
+    return sol
+end
+
+function objective_function(
+	alert_threshold_vec,
+	inputs
+)
+	@unpack ensemble_inc_arr,
+	noise_array,
+	outbreak_detection_specification,
+	individual_test_specification,
+	thresholds_vec,
+	output_df = inputs
+
+	outbreak_detection_specification = OutbreakDetectionSpecification(
+		alert_threshold_vec[1],
+		outbreak_detection_specification.moving_average_lag,
+		outbreak_detection_specification.percent_visit_clinic,
+		outbreak_detection_specification.percent_clinic_tested,
+		outbreak_detection_specification.alert_method.method_name
+	)
+
+	testarr = create_testing_arrs(
+        ensemble_inc_arr,
+        noise_array,
+        outbreak_detection_specification,
+        individual_test_specification,
+	)[1]
+
+    objective = calculate_ensemble_objective_metric(
+        testarr, ensemble_inc_arr, thresholds_vec
+    )
+
+	# DataFrames.push!(
+	# 	output_df,
+	# 	("threshold" = alert_threshold_vec[1], "loss" = objective),
+	# 	cols = :union
+	# )
+	#
+	return objective
+
+end
 
 function calculate_ensemble_objective_metric(
-    testarr, infecarr, thresholds_vec, noise_means
+    testarr, infecarr, thresholds_vec
 )
-    mean_accuracy = mapreduce(NaNMath.mean, axes(infecarr, 3)) do sim
+    mean_accuracy = map(axes(infecarr, 3)) do sim
         dailychars = calculate_daily_detection_characteristics(
             @view(testarr[:, 6, sim]), @view(infecarr[:, 3, sim])
         )
@@ -17,7 +160,7 @@ function calculate_ensemble_objective_metric(
         )
     end
 
-	return 1 - mean_accuracy
+	return 1 - NaNMath.mean(mean_accuracy)
 end
 
 function calculate_outbreak_detection_accuracy(
@@ -25,7 +168,7 @@ function calculate_outbreak_detection_accuracy(
 )
     filtered_matched_bounds = match_outbreak_detection_bounds(
         outbreakbounds, alertbounds
-	)[1]
+    )[1]
 
     noutbreaks = size(outbreakbounds, 1)
     nalerts = size(alertbounds, 1)
@@ -34,7 +177,6 @@ function calculate_outbreak_detection_accuracy(
         Set(@view(filtered_matched_bounds[:, 1]))
     )
     n_correct_alerts = size(filtered_matched_bounds, 1)
-
 
     perc_true_outbreaks_detected = n_true_outbreaks_detected / noutbreaks
     perc_alerts_correct = n_correct_alerts / nalerts # c.f. PPV
