@@ -76,4 +76,7 @@ export calculate_optimal_threshold, calculate_OptimalThresholdCharacteristics,
     create_and_save_xlsx_optimal_threshold_summaries,
     gt_table
 
+include("threshold-optimization-functions.jl")
+export calculate_ensemble_objective_metric, calculate_outbreak_detection_accuracy
+
 end
