@@ -286,9 +286,9 @@ struct AlertMethod{T1<:AbstractString}
 end
 
 struct OutbreakDetectionSpecification{
-    T1<:Integer,T2<:AbstractFloat,T3<:AlertMethod,T4<:AbstractString
+    TReal<:Real,T1<:Integer,T2<:AbstractFloat,T3<:AlertMethod,T4<:AbstractString
 }
-    alert_threshold::T1
+    alert_threshold::TReal
     moving_average_lag::T1
     percent_visit_clinic::T2
     percent_clinic_tested::T2
@@ -502,11 +502,12 @@ struct OptimalThresholdCharacteristics{
     T3<:NoiseSpecification,
     T4<:AbstractFloat,
     T5<:Integer,
+	TReal<:Real
 }
     outbreak_threshold_chars::T1
     individual_test_specification::T2
     noise_specification::T3
     percent_clinic_tested::T4
-    alert_threshold::T5
+    alert_threshold::TReal
     accuracy::T4
 end
