@@ -107,6 +107,8 @@ function objective_function(
 	alert_threshold_vec,
 	inputs
 )
+	@assert length(alert_threshold_vec) == 1
+
 	@unpack ensemble_inc_arr,
 	noise_array,
 	outbreak_detection_specification,
