@@ -373,6 +373,22 @@ multistart_method = TikTak(100)
 p.location, p.value
 
 #%%
+using QuadDIRECT
+
+@elapsed root, x0 = analyze(
+    x -> objective_function(x, obj_inputs),
+    ([8.0, 15.0, 35.0],),
+    [0.0],
+    [50.0],
+)
+
+box = minimum(root)
+
+value(box)
+
+position(box)
+
+#%%
 sort!(output_df, :threshold)
 scatter(output_df.threshold, output_df.loss; markersize = 20, alpha = 0.2)
 scatter!(Optim.x_trace(optim_sol), Optim.f_trace(optim_sol); color = :red)

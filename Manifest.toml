@@ -2,7 +2,7 @@
 
 julia_version = "1.11.3"
 manifest_format = "2.0"
-project_hash = "1803fda74bd3dddff99ce437fe1966e8dc663d43"
+project_hash = "939cf681d633fb2162eb87ff13a4c5645201ae20"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -1570,6 +1570,12 @@ deps = ["ColorTypes", "FileIO", "FixedPointNumbers"]
 git-tree-sha1 = "8b3fc30bc0390abdce15f8822c889f669baed73d"
 uuid = "4b34888f-f399-49d4-9bb3-47ed5cae4e65"
 version = "1.0.1"
+
+[[deps.QuadDIRECT]]
+deps = ["LinearAlgebra", "PositiveFactorizations", "StaticArrays"]
+git-tree-sha1 = "4f2d28cfdc85401db5401037fb25d8891c376c37"
+uuid = "dae52e8d-d666-5120-a592-9e15c33b8d7a"
+version = "0.1.2"
 
 [[deps.QuadGK]]
 deps = ["DataStructures", "LinearAlgebra"]
