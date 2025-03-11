@@ -311,9 +311,9 @@ end
     0,
     50,
     Brent(),
-    3;
-    return_all_optims = true,
-    store_trace = true,
+    5;
+    return_all_optims = false,
+    store_trace = false,
 )
 
 #%%
@@ -351,6 +351,26 @@ obj_wrapper(x, g) = objective_function(x, obj_inputs)
 NLopt.min_objective!(opt, obj_wrapper)
 min_f, min_x, ret = NLopt.optimize(opt, [5.0])
 num_evals = NLopt.numevals(opt)
+
+#%%
+using MultistartOptimization
+using NLopt
+
+P = MinimizationProblem(
+    x -> objective_function(x, obj_inputs),
+    [0.0],
+    [50.0],
+)
+
+local_method = NLoptLocalMethod(
+    NLopt.LN_BOBYQA;
+    xtol_abs = 1e-3,
+)
+
+multistart_method = TikTak(100)
+
+@elapsed p = multistart_minimization(multistart_method, local_method, P)
+p.location, p.value
 
 #%%
 sort!(output_df, :threshold)
