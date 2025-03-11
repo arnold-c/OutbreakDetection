@@ -4,10 +4,10 @@ using DrWatson
 
 using OutbreakDetectionUtils
 using OutbreakDetection
-using Optimization
-using OptimizationBBO
+using Optim
 using DataFrames
 using GLMakie
+using ProgressMeter
 
 include(srcdir("makie-plotting-setup.jl"))
 
@@ -16,10 +16,6 @@ include(srcdir("ensemble-parameters.jl"))
 if false
     include("../src/ensemble-parameters.jl")
 end
-
-#%%
-using DrWatson
-@quickactivate "OutbreakDetection"
 
 #%%
 model_types_vec = [("seasonal-infectivity-import", "tau-leaping")]
@@ -58,13 +54,13 @@ ensemble_inc_arr, thresholds_vec = setup_optimization(base_param_dict)
 #%%
 # noise_spec = PoissonNoiseSpecification(8.0)
 noise_spec = DynamicalNoiseSpecification(
-	"dynamical",
-	5.0,
-	7,
-	14,
-	"in-phase",
-	0.15,
-	0.0492 #0.8538, 0.7383, 0.5088, 0.2789, 0.0492
+    "dynamical",
+    5.0,
+    7,
+    14,
+    "in-phase",
+    0.15,
+    0.0492, #0.8538, 0.7383, 0.5088, 0.2789, 0.0492
 )
 
 individual_test_specification = IndividualTestSpecification(0.85, 0.85, 0)
@@ -150,9 +146,9 @@ obj_inputs = (;
 #
 #
 @showprogress for threshold in collect(0.1:0.1:30.0)
-	if length(filter(t -> t.==threshold, output_df.threshold)) > 0
-	       continue
-	   end
+    if length(filter(t -> t .== threshold, output_df.threshold)) > 0
+        continue
+    end
 
     loss = objective_function(
         [threshold],
@@ -162,15 +158,15 @@ obj_inputs = (;
     DataFrames.push!(
         output_df,
         (
-        	threshold = threshold,
-        	loss = loss
+            threshold = threshold,
+            loss = loss,
         );
         cols = :union,
     )
 end
 
 #%%
-sort!(output_df, :threshold)
+sort!(output_df, :threshold);
 scatter(output_df.threshold, output_df.loss; markersize = 20, alpha = 0.2)
 # scatter!(threshold_trace, obj_trace, color = :red)
 #
@@ -188,106 +184,206 @@ scatter(output_df.threshold, output_df.loss; markersize = 20, alpha = 0.2)
 # 	maxtime	= 10.0,
 # )
 
-
 #%%
 optim_sol = Optim.optimize(
-	t -> objective_function(t, obj_inputs),
-	0.0,
-	100.0,
-	Brent();
-	store_trace = true
+    t -> objective_function(t, obj_inputs),
+    0.0,
+    100.0,
+    Brent();
+    store_trace = true,
 )
 Optim.minimizer(optim_sol)
 Optim.minimum(optim_sol)
 
 #%%
 optim_sol2 = Optim.optimize(
-	t -> objective_function(t, obj_inputs),
-	0.0,
-	100.0,
-	GoldenSection();
-	store_trace = true
+    t -> objective_function(t, obj_inputs),
+    0.0,
+    100.0,
+    GoldenSection();
+    store_trace = true,
 )
 Optim.minimizer(optim_sol2)
 Optim.minimum(optim_sol2)
 
 #%%
 optim_sol3 = Optim.optimize(
-	t -> objective_function(t, obj_inputs),
-	[0.0],
-	[100.0],
-	[7.0],
-	SAMIN(),
-	Optim.Options(
-		store_trace = true,
-		extended_trace = true,
-		iterations = 10^6
-	)
+    t -> objective_function(t, obj_inputs),
+    [0.0],
+    [100.0],
+    [7.0],
+    SAMIN(;
+        rt = 0.8,
+        x_tol = 1e-3,
+    ),
+    Optim.Options(;
+        store_trace = true,
+        extended_trace = true,
+        iterations = 10^6,
+    ),
 )
-
 Optim.minimizer(optim_sol3)
 Optim.minimum(optim_sol3)
 
 #%%
-optim_sol4 = Optim.optimize(
-	t -> objective_function(t, obj_inputs),
-	[7.0],
-	NelderMead(),
-	Optim.Options(
-		store_trace = true,
-		extended_trace = true,
-		iterations = 10^6
-	)
+@elapsed optim_sol4 = Optim.optimize(
+    t -> objective_function(t, obj_inputs),
+    [0.0],
+    [100.0],
+    [7.0],
+    SimulatedAnnealing(),
+    Optim.Options(;
+        store_trace = true,
+        extended_trace = true,
+        iterations = 10^6,
+    ),
 )
-
-Optim.minimizer(optim_sol4)
-Optim.minimum(optim_sol4)
 
 #%%
-optim_sol5 = Optim.optimize(
-	t -> objective_function(t, obj_inputs),
-	[7.0],
-	ParticleSwarm(),
-	Optim.Options(
-		store_trace = true,
-		extended_trace = true,
-		iterations = 10^6
-	)
+function multi_start_local_optim(
+    obj_fun,
+    lower,
+    upper,
+    method = Brent(),
+    nsections = 5,
+    adjustment = 0.2;
+    store_trace = false,
+    return_all_optims = false,
+    kwargs...,
 )
+    @assert adjustment >= 0.0 && adjustment <= 1.0
 
-Optim.minimizer(optim_sol5)
-Optim.minimum(optim_sol5)
+    width = (upper - lower) / nsections
+    width_adj = width * adjustment
+
+    upper_segments = map(i -> i * width, 1:nsections)
+
+    bounds = Vector{Vector{Float64}}(undef, nsections)
+
+    for (i, u) in pairs(upper_segments)
+        if i == 1
+            bounds[i] = [lower, u + width_adj]
+            continue
+        end
+        if i == length(upper_segments)
+            bounds[i] = [upper_segments[(i - 1)] - width_adj, u]
+            continue
+        end
+
+        bounds[i] = [upper_segments[(i - 1)] - width_adj, u + width_adj]
+    end
+
+    optims = map(bounds) do (lower, upper)
+        Optim.optimize(
+            obj_fun,
+            lower,
+            upper,
+            method;
+            store_trace = store_trace,
+        )
+    end
+
+    for o in optims
+        if !Optim.converged(o)
+            @warn "Optimization with bounds [$(o.initial_lower), $(o.initial_upper)] failed to converge"
+        end
+    end
+
+    if return_all_optims
+        return optims
+    end
+    return extract_best_local_optim(optims)
+end
+
+function extract_best_local_optim(
+    solution_vec
+)
+    return solution_vec[partialsortperm(
+        map(
+            o -> Optim.minimum(o),
+            solution_vec,
+        ), 1)]
+end
 
 #%%
-optim_sol6 = Optim.optimize(
-	t -> objective_function(t, obj_inputs),
-	[7.0],
-	SimulatedAnnealing(),
-	Optim.Options(
-		store_trace = true,
-		extended_trace = true,
-		iterations = 10^6
-	)
+@elapsed multi_start_optims = multi_start_local_optim(
+    t -> objective_function(t, obj_inputs),
+    0,
+    50,
+    Brent(),
+    3;
+    return_all_optims = true,
+    store_trace = true,
 )
 
-Optim.minimizer(optim_sol6)
-Optim.minimum(optim_sol6)
+#%%
+function extract_multi_start_traces(
+    solutions_vec
+)
+    x_trace = mapreduce(
+        Optim.x_trace,
+        vcat,
+        solutions_vec,
+    )
+    f_trace = mapreduce(
+        Optim.f_trace,
+        vcat,
+        solutions_vec,
+    )
 
+    return x_trace, f_trace
+end
+
+multi_x_traces, multi_f_traces = extract_multi_start_traces(multi_start_optims)
+
+#%%
+opt = NLopt.Opt(:G_MLSL, 1)
+local_opt = NLopt.Opt(:LN_COBYLA, 1)
+NLopt.local_optimizer!(opt, local_opt)
+NLopt.lower_bounds!(opt, [0.0])
+NLopt.upper_bounds!(opt, [50.0])
+NLopt.xtol_abs!(opt, 1e-1)
+NLopt.ftol_abs!(opt, 1e-1)
+
+obj_wrapper(x, g) = objective_function(x, obj_inputs)
+
+# NLopt.min_objective!(opt, t -> objective_function(t, obj_inputs))
+NLopt.min_objective!(opt, obj_wrapper)
+min_f, min_x, ret = NLopt.optimize(opt, [5.0])
+num_evals = NLopt.numevals(opt)
 
 #%%
 sort!(output_df, :threshold)
 scatter(output_df.threshold, output_df.loss; markersize = 20, alpha = 0.2)
-scatter!(Optim.x_trace(optim_sol), Optim.f_trace(optim_sol), color = :red)
-scatter!(Optim.x_trace(optim_sol2), Optim.f_trace(optim_sol2), color = :purple)
-scatter!(reduce(vcat, Optim.x_trace(optim_sol3)), reduce(vcat, Optim.f_trace(optim_sol3)), color = :green)
+scatter!(Optim.x_trace(optim_sol), Optim.f_trace(optim_sol); color = :red)
+scatter!(Optim.x_trace(optim_sol2), Optim.f_trace(optim_sol2); color = :purple)
+scatter!(
+    reduce(vcat, Optim.x_trace(optim_sol3)),
+    reduce(vcat, Optim.f_trace(optim_sol3));
+    color = :green,
+)
+# scatter!(
+#     reduce(vcat, Optim.x_trace(optim_sol4)),
+#     reduce(vcat, Optim.f_trace(optim_sol4));
+#     color = :darkyellow,
+# )
+scatter!(multi_x_traces, multi_f_traces; color = :black)
+scatter!(min_x, [min_f]; color = :yellow)
 
 #%%
 lines(eachindex(Optim.x_trace(optim_sol)), Optim.x_trace(optim_sol))
 lines!(eachindex(Optim.x_trace(optim_sol2)), Optim.x_trace(optim_sol2))
-lines!(eachindex(reduce(vcat, Optim.x_trace(optim_sol3))), reduce(vcat, Optim.x_trace(optim_sol3)), color = :green)
+lines!(
+    eachindex(reduce(vcat, Optim.x_trace(optim_sol3))),
+    reduce(vcat, Optim.x_trace(optim_sol3));
+    color = :green,
+)
 
 #%%
 lines(eachindex(Optim.f_trace(optim_sol)), Optim.f_trace(optim_sol))
 lines!(eachindex(Optim.f_trace(optim_sol2)), Optim.f_trace(optim_sol2))
-lines!(eachindex(reduce(vcat, Optim.f_trace(optim_sol3))), reduce(vcat, Optim.f_trace(optim_sol3)), color = :green)
-
+lines!(
+    eachindex(reduce(vcat, Optim.f_trace(optim_sol3))),
+    reduce(vcat, Optim.f_trace(optim_sol3));
+    color = :green,
+)

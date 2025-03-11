@@ -1,8 +1,7 @@
 using StatsBase: StatsBase
 using NaNMath: NaNMath
 using UnPack: @unpack
-using Optimization: Optimization
-using OptimizationBBO: OptimizationBBO
+using Optim: Optim
 using DataFrames: DataFrames
 
 function setup_optimization(ensemble_param_dict)
@@ -45,22 +44,22 @@ function setup_optimization(ensemble_param_dict)
         )
     end
 
-
-	ensemble_inc_arr, ensemble_thresholds_vec = create_inc_infec_arr(
-		ensemble_inc_vecs, outbreak_spec
+    ensemble_inc_arr, ensemble_thresholds_vec = create_inc_infec_arr(
+        ensemble_inc_vecs, outbreak_spec
     )
-
 
     return ensemble_inc_arr, ensemble_thresholds_vec
 end
 
 function run_optimization(
-	OT_chars_param_dict;
-	guess_threshold = 2.0,
-	threshold_lower_bound = 0.5,
-	threshold_upper_bound = 50.0,
-	maxiters = 100000,
-	maxtime	= 1000.0,
+    OT_chars_param_dict;
+    guess_threshold = 2.0,
+    threshold_lower_bound = 0.5,
+    threshold_upper_bound = 50.0,
+    optim_method = Optim.Brent(),
+    optim_options = Optim.Options(),
+    maxiters = 100000,
+    maxtime = 1000.0,
 )
     UnPack.@unpack scenario_spec, ensemble_inc_arr, thresholds_vec, seed =
         OT_chars_param_dict
@@ -73,76 +72,66 @@ function run_optimization(
         ensemble_inc_arr;
         ensemble_specification = scenario_spec.ensemble_specification,
         seed = seed,
-	)[1]
+    )[1]
 
-	obj_inputs = (;
-		ensemble_inc_arr,
-		noise_array,
-		outbreak_detection_specification,
-		individual_test_specification,
-		thresholds_vec
-	)
+    obj_inputs = (;
+        ensemble_inc_arr,
+        noise_array,
+        outbreak_detection_specification,
+        individual_test_specification,
+        thresholds_vec,
+    )
 
-	f = Optimization.OptimizationFunction(objective_function)
-
-	prob = Optimization.OptimizationProblem(
-		f,
-		[guess_threshold],
-		obj_inputs;
-		lb = [threshold_lower_bound],
-		ub = [threshold_upper_bound]
-	)
-
-	sol = Optimization.solve(
-		prob,
-		OptimizationBBO.BBO_adaptive_de_rand_1_bin_radiuslimited();
-		maxiters = maxiters,
-		maxtime = maxtime
-	)
+    optim_sol = Optim.optimize(
+        t -> objective_function(t, obj_inputs),
+        guess_threshold,
+        threshold_lower_bound,
+        threshold_upper_bound,
+        optim_method,
+    )
 
     return sol
 end
 
 function objective_function(
-	alert_threshold_vec,
-	inputs
+    alert_threshold_vec,
+    inputs,
 )
-	@assert length(alert_threshold_vec) == 1
+    @assert length(alert_threshold_vec) == 1
 
-	@unpack ensemble_inc_arr,
-	noise_array,
-	outbreak_detection_specification,
-	individual_test_specification,
-	thresholds_vec,
-	output_df = inputs
+    @unpack ensemble_inc_arr,
+    noise_array,
+    outbreak_detection_specification,
+    individual_test_specification,
+    thresholds_vec,
+    output_df = inputs
 
-	outbreak_detection_specification = OutbreakDetectionSpecification(
-		alert_threshold_vec[1],
-		outbreak_detection_specification.moving_average_lag,
-		outbreak_detection_specification.percent_visit_clinic,
-		outbreak_detection_specification.percent_clinic_tested,
-		outbreak_detection_specification.alert_method.method_name
-	)
+    outbreak_detection_specification = OutbreakDetectionSpecification(
+        alert_threshold_vec[1],
+        outbreak_detection_specification.moving_average_lag,
+        outbreak_detection_specification.percent_visit_clinic,
+        outbreak_detection_specification.percent_clinic_tested,
+        outbreak_detection_specification.alert_method.method_name,
+    )
 
-	testarr = create_testing_arrs(
+    testarr = create_testing_arrs(
         ensemble_inc_arr,
         noise_array,
         outbreak_detection_specification,
         individual_test_specification,
-	)[1]
+    )[1]
 
     objective = calculate_ensemble_objective_metric(
         testarr, ensemble_inc_arr, thresholds_vec
     )
 
-	# DataFrames.push!(
-	# 	output_df,
-	# 	("threshold" = alert_threshold_vec[1], "loss" = objective),
-	# 	cols = :union
-	# )
-	#
-	return objective
-
+    # DataFrames.push!(
+    # 	output_df,
+    # 	("threshold" = alert_threshold_vec[1], "loss" = objective),
+    # 	cols = :union
+    # )
+    #
+    return objective
 end
 
 function calculate_ensemble_objective_metric(
@@ -162,7 +151,7 @@ function calculate_ensemble_objective_metric(
         )
     end
 
-	return 1 - NaNMath.mean(mean_accuracy)
+    return 1 - NaNMath.mean(mean_accuracy)
 end
 
 function calculate_outbreak_detection_accuracy(
