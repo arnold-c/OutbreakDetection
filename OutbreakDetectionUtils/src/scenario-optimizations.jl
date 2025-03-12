@@ -92,6 +92,8 @@ function run_scenario_optimizations!(
                     outbreak_detection_specifications,
                     individual_test_spec in individual_test_specifications
 
+					println("Individual Test: $(individual_test_spec.sensitivity), $(individual_test_spec.specificity), $(individual_test_spec.test_result_lag)")
+
                     obj_inputs = (;
                         ensemble_inc_arr,
                         noise_array,
