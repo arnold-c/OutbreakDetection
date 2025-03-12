@@ -55,8 +55,7 @@ function run_scenario_optimizations!(
     executor = FLoops.SequentialEx(),
     kwargs...,
 ) where {TMethod<:Type{<:OptimizationMethods}}
-    prog = Progress(
-        length(
+	ncombinations = length(
             Iterators.product(
                 ensemble_specifications,
                 outbreak_specifications,
@@ -64,9 +63,11 @@ function run_scenario_optimizations!(
                 outbreak_detection_specifications,
                 individual_test_specifications,
             ),
-        ),
-    )
+        )
 
+    prog = Progress(ncombinations)
+
+	ncompleted = 0
     for ensemble_spec in ensemble_specifications
         for outbreak_spec in outbreak_specifications
             base_param_dict = @dict(
@@ -144,6 +145,8 @@ function run_scenario_optimizations!(
                         ),
                     )
 
+					ncompleted += 1
+					println("Completed $ncompleted scenarios. $(ncombinations - ncompleted) left of $ncombinations")
                     next!(prog)
                 end
             end
