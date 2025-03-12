@@ -21,7 +21,7 @@ function run_scenario_optimizations(
         test_result_lag = Int64[],
         optimal_threshold = Float64[],
         optimal_accuracy = Float64[],
-        optimization_method = OptimizationMethods[],
+        optimization_method = Union{Type{QD},Type{MSO}}[],
     ))
 
     run_scenario_optimizations!(
