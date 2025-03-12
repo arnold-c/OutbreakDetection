@@ -132,7 +132,9 @@ function optimization_wrapper(
         filtered_kwargs...,
     )
 
-    return optim_minimizer, optim_minimum
+    @assert length(optim_minimizer) == 1
+
+    return optim_minimizer[1], optim_minimum
 end
 
 function optimization_wrapper(
@@ -200,7 +202,9 @@ function optimization_wrapper(
         use_threads = use_threads,
     )
 
-    return p.location, p.value
+    @assert length(p.location) == 1
+
+    return p.location[1], p.value
 end
 
 function objective_function(
