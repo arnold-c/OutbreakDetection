@@ -2,6 +2,7 @@ using DataFrames: DataFrames
 using DrWatson: @dict
 using StructArrays: StructVector
 using ProgressMeter: Progress, next!
+using FLoops: FLoops
 
 function run_scenario_optimizations(
     ensemble_specifications,
@@ -11,6 +12,7 @@ function run_scenario_optimizations(
     individual_test_specifications,
     optim_method::TMethod = QD;
     seed = 1234,
+    executor = FLoops.SequentialEx(),
     kwargs...,
 ) where {TMethod<:Type{<:OptimizationMethods}}
     optim_df = DataFrames.DataFrame((
@@ -50,6 +52,7 @@ function run_scenario_optimizations!(
     individual_test_specifications,
     optim_method::TMethod = QD;
     seed = 1234,
+    executor = FLoops.SequentialEx(),
     kwargs...,
 ) where {TMethod<:Type{<:OptimizationMethods}}
     prog = Progress(
@@ -76,7 +79,7 @@ function run_scenario_optimizations!(
                 base_param_dict
             )
 
-            for noise_spec in noise_specifications
+            FLoops.@floop executor for noise_spec in noise_specifications
                 noise_array, noise_means = create_noise_arr(
                     noise_spec,
                     ensemble_inc_arr;

@@ -4,6 +4,7 @@ using DrWatson
 
 using OutbreakDetectionUtils
 using OutbreakDetection
+using FLoops
 
 include(srcdir("makie-plotting-setup.jl"))
 
@@ -161,7 +162,8 @@ optim_df = OutbreakDetectionUtils.run_scenario_optimizations(
     noise_spec_vec,
     outbreak_detection_spec_vec,
     test_spec_vec,
-    QD,
+    QD;
+    executor = ThreadedEx(),
 )
 
 #%%
