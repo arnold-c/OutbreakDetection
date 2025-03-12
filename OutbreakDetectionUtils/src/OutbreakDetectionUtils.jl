@@ -83,7 +83,8 @@ export run_optimization,
     setup_optimization,
     objective_function,
     calculate_ensemble_objective_metric,
-    calculate_outbreak_detection_accuracy
+    calculate_outbreak_detection_accuracy,
+    optimization_wrapper
 
 include("scenario-optimizations.jl")
 export run_scenario_optimizations, run_scenario_optimizations!
