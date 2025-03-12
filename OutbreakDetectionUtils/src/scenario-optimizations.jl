@@ -1,0 +1,114 @@
+using DataFrames: DataFrames
+using DrWatson: @dict
+
+function run_scenario_optimizations(
+    ensemble_specifications,
+    outbreak_specifications,
+    noise_specifications,
+    outbreak_detection_specifications,
+    individual_test_specifications,
+    optim_method::TMethod = QD;
+    seed = 1234,
+    kwargs...,
+) where {TMethod<:Type{<:OptimizationMethods}}
+    optim_df = DataFrames.DataFrame((
+        ensemble_spec = EnsembleSpecification[],
+        outbreak_spec = OutbreakSpecification[],
+        noise_spec = NoiseSpecification[],
+        outbreak_detection_spec = OutbreakDetectionSpecification[],
+        test_sensitivity = Float64[],
+        test_specificity = Float64[],
+        test_result_lag = Int64[],
+        optimal_threshold = Float64[],
+        optimal_accuracy = Float64[],
+        optimization_method = OptimizationMethods[],
+    ))
+
+    run_scenario_optimizations!(
+        optim_df,
+        ensemble_specifications,
+        outbreak_specifications,
+        noise_specifications,
+        outbreak_detection_specifications,
+        individual_test_specifications,
+        optim_method;
+        seed = seed,
+        kwargs...,
+    )
+    return optim_df
+end
+
+function run_scenario_optimizations!(
+    optim_df,
+    ensemble_specifications,
+    outbreak_specifications,
+    noise_specifications,
+    outbreak_detection_specifications,
+    individual_test_specifications,
+    optim_method::TMethod = QD;
+    seed = 1234,
+    kwargs...,
+) where {TMethod<:Type{<:OptimizationMethods}}
+    for ensemble_spec in ensemble_specifications
+        for outbreak_spec in outbreak_specifications
+            base_param_dict = @dict(
+                ensemble_spec = ensemble_spec,
+                outbreak_spec = outbreak_spec,
+                seed = seed,
+            )
+
+            ensemble_inc_arr, thresholds_vec = setup_optimization(
+                base_param_dict
+            )
+
+            for noise_spec in noise_specifications
+                noise_array = create_noise_arr(
+                    noise_spec,
+                    ensemble_inc_arr;
+                    ensemble_specification = ensemble_spec,
+                    seed = seed,
+                )[1]
+
+                for outbreak_detection_spec in
+                    outbreak_detection_specifications,
+                    individual_test_spec in individual_test_specifications
+
+                    obj_inputs = (;
+                        ensemble_inc_arr,
+                        noise_array,
+                        outbreak_detection_specification = outbreak_detection_spec,
+                        individual_test_specification = individual_test_spec,
+                        thresholds_vec,
+                    )
+
+                    objective_function_closure =
+                        x -> objective_function(x, obj_inputs)
+
+                    # for optim_method in optim_methods
+                    optim_minimizer, optim_minimum = optimization_wrapper(
+                        objective_function_closure,
+                        optim_method;
+                        kwargs...,
+                    )
+
+                    push!(
+                        optim_df,
+                        (
+                            ensemble_spec,
+                            outbreak_spec,
+                            noise_spec,
+                            outbreak_detection_spec,
+                            individual_test_spec.sensitivity,
+                            individual_test_spec.specificity,
+                            individual_test_spec.test_result_lag,
+                            optim_minimizer,
+                            1 - optim_minimum,
+                            optim_method,
+                        ),
+                    )
+                    # end
+                end
+            end
+        end
+    end
+end

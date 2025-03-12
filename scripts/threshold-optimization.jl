@@ -1,4 +1,3 @@
-using Base: kwarg_decl
 #%%
 using DrWatson
 @quickactivate "OutbreakDetection"
@@ -43,16 +42,6 @@ ensemble_spec = EnsembleSpecification(
 
 outbreak_spec = OutbreakSpecification(5, 30, 500)
 
-base_param_dict = @dict(
-    ensemble_spec = ensemble_spec,
-    outbreak_spec = outbreak_spec,
-    seed = seed,
-)
-
-#%%
-ensemble_inc_arr, thresholds_vec = setup_optimization(base_param_dict)
-
-#%%
 # noise_spec = PoissonNoiseSpecification(8.0)
 noise_spec = DynamicalNoiseSpecification(
     "dynamical",
@@ -72,6 +61,25 @@ outbreak_detection_specification = OutbreakDetectionSpecification(
     0.6,
     "movingavg",
 )
+
+#%%
+optim_df = OutbreakDetectionUtils.run_scenario_optimizations(
+    [ensemble_spec],
+    [outbreak_spec],
+    [noise_spec],
+    [outbreak_detection_specification],
+    [individual_test_specification],
+    QD,
+)
+
+#%%
+base_param_dict = @dict(
+    ensemble_spec = ensemble_spec,
+    outbreak_spec = outbreak_spec,
+    seed = seed,
+)
+
+ensemble_inc_arr, thresholds_vec = setup_optimization(base_param_dict)
 
 scenario_spec = ScenarioSpecification(
     ensemble_spec,
