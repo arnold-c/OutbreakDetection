@@ -1,5 +1,6 @@
 using DataFrames: DataFrames
 using DrWatson: @dict
+using StructArrays: StructVector
 
 function run_scenario_optimizations(
     ensemble_specifications,
@@ -22,6 +23,7 @@ function run_scenario_optimizations(
         optimal_threshold = Float64[],
         optimal_accuracy = Float64[],
         optimization_method = Union{Type{QD},Type{MSO}}[],
+        OT_chars = StructVector{<:OutbreakThresholdChars}[],
     ))
 
     run_scenario_optimizations!(
@@ -62,12 +64,12 @@ function run_scenario_optimizations!(
             )
 
             for noise_spec in noise_specifications
-                noise_array = create_noise_arr(
+                noise_array, noise_means = create_noise_arr(
                     noise_spec,
                     ensemble_inc_arr;
                     ensemble_specification = ensemble_spec,
                     seed = seed,
-                )[1]
+                )
 
                 for outbreak_detection_spec in
                     outbreak_detection_specifications,
@@ -84,11 +86,29 @@ function run_scenario_optimizations!(
                     objective_function_closure =
                         x -> objective_function(x, obj_inputs)
 
-                    # for optim_method in optim_methods
                     optim_minimizer, optim_minimum = optimization_wrapper(
                         objective_function_closure,
                         optim_method;
                         kwargs...,
+                    )
+
+                    optimal_outbreak_detection_spec = OutbreakDetectionSpecification(
+                        optim_minimizer,
+                        outbreak_detection_spec.moving_average_lag,
+                        outbreak_detection_spec.percent_visit_clinic,
+                        outbreak_detection_spec.percent_clinic_tested,
+                        outbreak_detection_spec.alert_method.method_name,
+                    )
+
+                    testarr, test_movingvg_arr = create_testing_arrs(
+                        ensemble_inc_arr,
+                        noise_array,
+                        optimal_outbreak_detection_spec,
+                        individual_test_spec,
+                    )
+
+                    OT_chars = calculate_OutbreakThresholdChars(
+                        testarr, ensemble_inc_arr, thresholds_vec, noise_means
                     )
 
                     push!(
@@ -104,9 +124,9 @@ function run_scenario_optimizations!(
                             optim_minimizer,
                             1 - optim_minimum,
                             optim_method,
+                            OT_chars,
                         ),
                     )
-                    # end
                 end
             end
         end

@@ -251,7 +251,6 @@ function calculate_ensemble_objective_metric(
         alertrle = StatsBase.rle(@view(testarr[:, 6, sim]))
         outbreakbounds = thresholds_vec[sim]
         alertbounds = calculate_outbreak_thresholds(alertrle; ncols = 3)
-        # calculate_outbreak_duration!(alertbounds)
 
         accuracy = calculate_outbreak_detection_accuracy(
             outbreakbounds, alertbounds
