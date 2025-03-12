@@ -1,11 +1,11 @@
 using StatsBase: StatsBase
 using NaNMath: NaNMath
 using UnPack: @unpack
-using Optim: Optim
+# using Optim: Optim
 using DataFrames: DataFrames
 using QuadDIRECT: QuadDIRECT
-using NLopt: NLopt
 using MultistartOptimization: MultistartOptimization
+using NLopt: NLopt
 
 function setup_optimization(ensemble_param_dict)
     UnPack.@unpack ensemble_spec,
@@ -108,6 +108,33 @@ function optimization_wrapper(
     )
 
     return optim_minimizer, optim_minimum
+end
+
+function optimization_wrapper(
+    objective_function_closure,
+    ::Type{MSO};
+    lowers = [0.0],
+    uppers = [50.0],
+    kwargs...,
+)
+    P = MultistartOptimization.MinimizationProblem(
+        objective_function_closure,
+        lowers,
+        uppers,
+    )
+
+    local_method = MultistartOptimization.NLoptLocalMethod(
+        NLopt.LN_BOBYQA;
+        xtol_abs = 1e-3,
+    )
+
+    multistart_method = MultistartOptimization.TikTak(100)
+
+    p = MultistartOptimization.multistart_minimization(
+        multistart_method, local_method, P
+    )
+
+    return p.location, p.value
 end
 
 function objective_function(

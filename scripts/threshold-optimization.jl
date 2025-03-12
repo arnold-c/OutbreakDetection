@@ -91,6 +91,14 @@ OT_chars_param_dict = (;
 run_optimization(
     objective_function,
     OT_chars_param_dict,
+    QD,
+)
+
+#%%
+run_optimization(
+    objective_function,
+    OT_chars_param_dict,
+    MSO,
 )
 
 #%%
