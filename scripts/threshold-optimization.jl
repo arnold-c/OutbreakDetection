@@ -1,3 +1,4 @@
+using Base: kwarg_decl
 #%%
 using DrWatson
 @quickactivate "OutbreakDetection"
@@ -91,7 +92,10 @@ OT_chars_param_dict = (;
 run_optimization(
     objective_function,
     OT_chars_param_dict,
-    QD,
+    QD;
+    lowers = [0.0],
+    uppers = [15.0],
+    splits = ([0.0, 5.0, 8.0],),
 )
 
 #%%
@@ -100,6 +104,15 @@ run_optimization(
     OT_chars_param_dict,
     MSO,
 )
+
+#%%
+kwargs_dict = Dict(
+    :a => 10,
+    :b => 20,
+    :rtol => 1e-5,
+)
+
+filter(((k, v),) -> k in allowed_kwargs, kwargs_dict)
 
 #%%
 noise_array = create_noise_arr(

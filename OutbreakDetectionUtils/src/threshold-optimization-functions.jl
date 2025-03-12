@@ -100,11 +100,36 @@ function optimization_wrapper(
     uppers = [50.0],
     kwargs...,
 )
+    kwargs_dict = Dict{Symbol,Any}(kwargs)
+
+    if haskey(kwargs_dict, :splits)
+        splits = kwargs_dict[:splits]
+    end
+    if haskey(kwargs_dict, :lowers)
+        lowers = kwargs_dict[:lowers]
+    end
+    if haskey(kwargs_dict, :uppers)
+        uppers = kwargs_dict[:uppers]
+    end
+
+    allowed_kwargs = (
+        :rtol,
+        :atol,
+        :fvalue,
+        :maxevals,
+        :nquasinewton,
+        :minwidth,
+        :print_interval,
+    )
+
+    filtered_kwargs = filter(((k, v),) -> k in allowed_kwargs, kwargs_dict)
+
     optim_minimizer, optim_minimum = QuadDIRECT.minimize(
         objective_function_closure,
         splits,
         lowers,
-        uppers,
+        uppers;
+        filtered_kwargs...,
     )
 
     return optim_minimizer, optim_minimum
