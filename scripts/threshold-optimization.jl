@@ -4,9 +4,7 @@ using DrWatson
 
 using OutbreakDetectionUtils
 using OutbreakDetection
-using Optim
 using DataFrames
-using GLMakie
 using ProgressMeter
 
 include(srcdir("makie-plotting-setup.jl"))
@@ -167,3 +165,6 @@ optim_df = OutbreakDetectionUtils.run_scenario_optimizations(
     test_spec_vec,
     QD,
 )
+
+#%%
+@tagsave(outdir("optimization-df.jld2"), Dict("optim_df" => optim_df))
