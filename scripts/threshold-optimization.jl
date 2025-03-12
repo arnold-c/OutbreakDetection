@@ -4,8 +4,6 @@ using DrWatson
 
 using OutbreakDetectionUtils
 using OutbreakDetection
-using DataFrames
-using ProgressMeter
 
 include(srcdir("makie-plotting-setup.jl"))
 

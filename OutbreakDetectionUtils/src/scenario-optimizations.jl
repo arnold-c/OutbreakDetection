@@ -1,6 +1,7 @@
 using DataFrames: DataFrames
 using DrWatson: @dict
 using StructArrays: StructVector
+using ProgressMeter: Progress, next!
 
 function run_scenario_optimizations(
     ensemble_specifications,
@@ -51,6 +52,18 @@ function run_scenario_optimizations!(
     seed = 1234,
     kwargs...,
 ) where {TMethod<:Type{<:OptimizationMethods}}
+    prog = Progress(
+        length(
+            Iterators.product(
+                ensemble_specifications,
+                outbreak_specifications,
+                noise_specifications,
+                outbreak_detection_specifications,
+                individual_test_specifications,
+            ),
+        ),
+    )
+
     for ensemble_spec in ensemble_specifications
         for outbreak_spec in outbreak_specifications
             base_param_dict = @dict(
@@ -127,6 +140,8 @@ function run_scenario_optimizations!(
                             OT_chars,
                         ),
                     )
+
+                    next!(prog)
                 end
             end
         end
