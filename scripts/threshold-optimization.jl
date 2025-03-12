@@ -132,7 +132,7 @@ alertthreshold_vec = 5.0
 moveavglag_vec = [7]
 perc_clinic_vec = [0.6]
 perc_clinic_test_vec = [
-	# collect(0.1:0.1:0.6)...,
+	collect(0.1:0.1:0.6)...,
 	1.0
 ]
 alert_method_vec = ["movingavg"]
