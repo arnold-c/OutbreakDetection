@@ -1,5 +1,6 @@
 module OutbreakDetectionUtils
 
+using Optim: MultivariateOptimizationResults
 include("DrWatson-helpers.jl")
 export outdir
 
@@ -15,7 +16,8 @@ export SimTimeParameters, EnsembleSpecification, DynamicsParameters,
     table_test_type, plot_test_description,
     PoissonNoiseSpecification, DynamicalNoiseSpecification, NoiseSpecification,
     get_noise_description, get_noise_magnitude, getdirpath,
-    ScenarioSpecification, TestPositivity, OptimalThresholdCharacteristics
+    ScenarioSpecification, TestPositivity, OptimalThresholdCharacteristics,
+    OptimizationMethods, QD, MSO
 
 include("dynamics-constants.jl")
 export POPULATION_N, LATENT_PER_DAYS, DUR_INF_DAYS, R0, SIGMA, GAMMA,
@@ -78,9 +80,9 @@ export calculate_optimal_threshold, calculate_OptimalThresholdCharacteristics,
 
 include("threshold-optimization-functions.jl")
 export run_optimization,
-	setup_optimization,
-	objective_function,
-	calculate_ensemble_objective_metric,
-	calculate_outbreak_detection_accuracy
+    setup_optimization,
+    objective_function,
+    calculate_ensemble_objective_metric,
+    calculate_outbreak_detection_accuracy
 
 end

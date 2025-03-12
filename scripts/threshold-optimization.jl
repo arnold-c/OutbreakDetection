@@ -80,12 +80,18 @@ scenario_spec = ScenarioSpecification(
     individual_test_specification,
 )
 
-# OT_chars_param_dict = (;
-#     scenario_spec,
-#     ensemble_inc_arr,
-#     thresholds_vec,
-#     seed = seed,
-# )
+OT_chars_param_dict = (;
+    scenario_spec,
+    ensemble_inc_arr,
+    thresholds_vec,
+    seed = seed,
+)
+
+#%%
+run_optimization(
+    objective_function,
+    OT_chars_param_dict,
+)
 
 #%%
 noise_array = create_noise_arr(
@@ -387,6 +393,15 @@ box = minimum(root)
 value(box)
 
 position(box)
+
+obj_wrapper2 = x -> objective_function(x, obj_inputs)
+
+QuadDIRECT.minimize(
+    obj_wrapper2,
+    ([8.0, 15.0, 35.0],),
+    [0.0],
+    [50.0],
+)
 
 #%%
 sort!(output_df, :threshold)

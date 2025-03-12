@@ -3,6 +3,9 @@ using NaNMath: NaNMath
 using UnPack: @unpack
 using Optim: Optim
 using DataFrames: DataFrames
+using QuadDIRECT: QuadDIRECT
+using NLopt: NLopt
+using MultistartOptimization: MultistartOptimization
 
 function setup_optimization(ensemble_param_dict)
     UnPack.@unpack ensemble_spec,
@@ -52,15 +55,11 @@ function setup_optimization(ensemble_param_dict)
 end
 
 function run_optimization(
-    OT_chars_param_dict;
-    guess_threshold = 2.0,
-    threshold_lower_bound = 0.5,
-    threshold_upper_bound = 50.0,
-    optim_method = Optim.Brent(),
-    optim_options = Optim.Options(),
-    maxiters = 100000,
-    maxtime = 1000.0,
-)
+    objective_function,
+    OT_chars_param_dict,
+    optim_method::TMethod = QD;
+    kwargs...,
+) where {TMethod<:Type{<:OptimizationMethods}}
     UnPack.@unpack scenario_spec, ensemble_inc_arr, thresholds_vec, seed =
         OT_chars_param_dict
     UnPack.@unpack noise_specification,
@@ -82,15 +81,33 @@ function run_optimization(
         thresholds_vec,
     )
 
-    optim_sol = Optim.optimize(
-        t -> objective_function(t, obj_inputs),
-        guess_threshold,
-        threshold_lower_bound,
-        threshold_upper_bound,
-        optim_method,
+    objective_function_closure = x -> objective_function(x, obj_inputs)
+
+    optim_minimizer, optim_minimum = optimization_wrapper(
+        objective_function_closure,
+        optim_method;
+        kwargs...,
     )
 
-    return sol
+    return optim_minimizer, optim_minimum
+end
+
+function optimization_wrapper(
+    objective_function_closure,
+    ::Type{QD};
+    splits = ([8.0, 15.0, 35.0],),
+    lowers = [0.0],
+    uppers = [50.0],
+    kwargs...,
+)
+    optim_minimizer, optim_minimum = QuadDIRECT.minimize(
+        objective_function_closure,
+        splits,
+        lowers,
+        uppers,
+    )
+
+    return optim_minimizer, optim_minimum
 end
 
 function objective_function(
@@ -103,8 +120,7 @@ function objective_function(
     noise_array,
     outbreak_detection_specification,
     individual_test_specification,
-    thresholds_vec,
-    output_df = inputs
+    thresholds_vec = inputs
 
     outbreak_detection_specification = OutbreakDetectionSpecification(
         alert_threshold_vec[1],
@@ -125,12 +141,6 @@ function objective_function(
         testarr, ensemble_inc_arr, thresholds_vec
     )
 
-    # DataFrames.push!(
-    # 	output_df,
-    # 	("threshold" = alert_threshold_vec[1], "loss" = objective),
-    # 	cols = :union
-    # )
-    #
     return objective
 end
 

@@ -502,7 +502,7 @@ struct OptimalThresholdCharacteristics{
     T3<:NoiseSpecification,
     T4<:AbstractFloat,
     T5<:Integer,
-	TReal<:Real
+    TReal<:Real,
 }
     outbreak_threshold_chars::T1
     individual_test_specification::T2
@@ -511,3 +511,10 @@ struct OptimalThresholdCharacteristics{
     alert_threshold::TReal
     accuracy::T4
 end
+
+abstract type OptimizationMethods end
+
+# QuadDIRECT optimization
+struct QD <: OptimizationMethods end
+# MultistartOptimization
+struct MSO <: OptimizationMethods end
