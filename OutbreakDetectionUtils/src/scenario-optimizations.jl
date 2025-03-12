@@ -150,6 +150,7 @@ function run_scenario_optimizations!(
 					ncompleted += 1
 					println("Completed $ncompleted scenarios. $(ncombinations - ncompleted) left of $ncombinations")
                     next!(prog)
+					println("")
                 end
             end
         end

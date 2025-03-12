@@ -172,7 +172,7 @@ optim_df = OutbreakDetectionUtils.run_scenario_optimizations(
     outbreak_detection_spec_vec,
     test_spec_vec,
     QD;
-    executor = ThreadedEx(),
+    executor = SequentialEx(),
 )
 
 #%%
