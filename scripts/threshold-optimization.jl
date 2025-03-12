@@ -102,7 +102,10 @@ run_optimization(
 run_optimization(
     objective_function,
     OT_chars_param_dict,
-    MSO,
+    MSO;
+    lowers = [0.0],
+    uppers = [15.0],
+    xtol_abs = 1e-3,
 )
 
 #%%

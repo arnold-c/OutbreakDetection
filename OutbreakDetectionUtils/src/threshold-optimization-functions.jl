@@ -140,8 +140,46 @@ function optimization_wrapper(
     ::Type{MSO};
     lowers = [0.0],
     uppers = [50.0],
+    local_algorithm = NLopt.LN_BOBYQA,
+    n_sobol_points = 100,
+    use_threads = false,
+    xtol_rel = 1e-3,
+    xtol_abs = 1e-3,
     kwargs...,
 )
+    kwargs_dict = Dict{Symbol,Any}(kwargs)
+
+    if haskey(kwargs_dict, :lowers)
+        lowers = kwargs_dict[:lowers]
+    end
+    if haskey(kwargs_dict, :uppers)
+        uppers = kwargs_dict[:uppers]
+    end
+    if haskey(kwargs_dict, :n_sobol_points)
+        n_sobol_points = kwargs_dict[:n_sobol_points]
+    end
+    if haskey(kwargs_dict, :use_threads)
+        use_threads = kwargs_dict[:use_threads]
+    end
+    if !haskey(kwargs_dict, :xtol_rel)
+        kwargs_dict[:xtol_rel] = xtol_rel
+    end
+    if !haskey(kwargs_dict, :xtol_abs)
+        kwargs_dict[:xtol_abs] = xtol_abs
+    end
+
+    allowed_kwargs = (
+        :stopval,
+        :xtol_rel,
+        :xtol_abs,
+        :ftol_rel,
+        :ftol_abs,
+        :maxeval,
+        :maxtime,
+    )
+
+    filtered_kwargs = filter(((k, v),) -> k in allowed_kwargs, kwargs_dict)
+
     P = MultistartOptimization.MinimizationProblem(
         objective_function_closure,
         lowers,
@@ -149,14 +187,17 @@ function optimization_wrapper(
     )
 
     local_method = MultistartOptimization.NLoptLocalMethod(
-        NLopt.LN_BOBYQA;
-        xtol_abs = 1e-3,
+        local_algorithm;
+        filtered_kwargs...,
     )
 
-    multistart_method = MultistartOptimization.TikTak(100)
+    multistart_method = MultistartOptimization.TikTak(n_sobol_points)
 
     p = MultistartOptimization.multistart_minimization(
-        multistart_method, local_method, P
+        multistart_method,
+        local_method,
+        P;
+        use_threads = use_threads,
     )
 
     return p.location, p.value
