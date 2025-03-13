@@ -5,6 +5,7 @@ using DrWatson
 using OutbreakDetectionUtils
 using OutbreakDetection
 using FLoops
+using JLD2
 
 include(srcdir("makie-plotting-setup.jl"))
 
@@ -123,7 +124,7 @@ dynamical_noise_spec_vec = create_combinations_vec(
 
 noise_spec_vec = vcat(
 	poisson_noise_spec_vec,
-	dynamical_noise_spec_vec
+	# dynamical_noise_spec_vec
 )
 
 #%%
@@ -132,7 +133,7 @@ alertthreshold_vec = 5.0
 moveavglag_vec = [7]
 perc_clinic_vec = [0.6]
 perc_clinic_test_vec = [
-	collect(0.1:0.1:0.6)...,
+	# collect(0.1:0.1:0.6)...,
 	1.0
 ]
 alert_method_vec = ["movingavg"]
@@ -193,7 +194,43 @@ run_missing_scenario_optimizations!(
 )
 
 #%%
+optim_df
+
+#%%
+using GLMakie
+
+#%%
+
+
+#%%
 @tagsave(outdir("2025-03-13_11:00:00_optimization-df.jld2"), Dict("optim_df" => optim_df))
+
+#%%
+JLD2.save(outdir("TEST_optimization-df.jld2"), Dict("optim_df" => optim_df))
+
+#%%
+JLD2.load(outdir("TEST_optimization-df.jld2"))
+
+#%%
+f = JLD2.jldopen(outdir("optimization-df.jld2"))
+
+f["optim_df"]
+
+f["optim_df"][:, Not(:ensemble_spec)]
+
+function Base.convert(::Type{DataFrame}, nt::NamedTuple)
+           return DataFrame(nt.columns, nt.colindex)
+       end
+
+load(outdir("optimization-df.jld2"), "optim_df";
+    typemap = Dict("DataFrames.DataFrame" => JLD2.Upgrade(DataFrame))
+    )
+
+
+#%%
+c = h5open(outdir("TEST_optimization-df.jld2"), "r") do file
+    read(file, "optim_df")
+end
 
 #%%
 base_param_dict = @dict(
