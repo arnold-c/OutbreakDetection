@@ -176,10 +176,23 @@ optim_df = OutbreakDetectionUtils.run_scenario_optimizations(
 )
 
 #%%
-@tagsave(outdir("optimization-df.jld2"), Dict("optim_df" => optim_df))
+check_missing_scenario_optimizations(
+	optim_df,
+    ensemble_spec_vec,
+    outbreak_spec_vec,
+    noise_spec_vec,
+    outbreak_detection_spec_vec,
+    test_spec_vec,
+    MSO;
+)
 
 #%%
 
+
+#%%
+@tagsave(outdir("optimization-df.jld2"), Dict("optim_df" => optim_df))
+
+#%%
 base_param_dict = @dict(
 	ensemble_spec = ensemble_spec_vec[1],
 	outbreak_spec = outbreak_spec_vec[1],

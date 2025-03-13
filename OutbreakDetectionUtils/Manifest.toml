@@ -2,7 +2,7 @@
 
 julia_version = "1.11.3"
 manifest_format = "2.0"
-project_hash = "1893a57443917a867f0edb8ce5c2024fc341ab1d"
+project_hash = "d0c66e9652ed4ec4c3c0417bf7ab1fbcbebc13a4"
 
 [[deps.Accessors]]
 deps = ["CompositionsBase", "ConstructionBase", "Dates", "InverseFunctions", "MacroTools"]
@@ -1160,6 +1160,17 @@ version = "0.4.80"
     LazyArrays = "5078a376-72f3-5289-bfd5-ec5146d43c02"
     OnlineStatsBase = "925886fa-5bf2-5e8e-b522-a9147a512338"
     Referenceables = "42d2dcc6-99eb-4e98-b66c-637b7d73030e"
+
+[[deps.Try]]
+git-tree-sha1 = "56e72d45a7d77e23f6e943d28183eb509119843a"
+uuid = "bf1d0ff0-c4a9-496b-85f0-2b0d71c4f32a"
+version = "0.1.1"
+
+[[deps.TryExperimental]]
+deps = ["Try"]
+git-tree-sha1 = "4af340a24be37069a3642220b3397bacc437a0a9"
+uuid = "ae3b139e-64da-4858-8f55-5617df0d650e"
+version = "0.1.0"
 
 [[deps.UUIDs]]
 deps = ["Random", "SHA"]

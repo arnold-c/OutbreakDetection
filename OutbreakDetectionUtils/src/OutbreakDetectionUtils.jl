@@ -87,6 +87,7 @@ export run_optimization,
     optimization_wrapper
 
 include("scenario-optimizations.jl")
-export run_scenario_optimizations, run_scenario_optimizations!
+export run_scenario_optimizations, run_scenario_optimizations!,
+check_missing_scenario_optimizations
 
 end

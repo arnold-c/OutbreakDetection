@@ -3,6 +3,11 @@ using DrWatson: @dict
 using StructArrays: StructVector
 using ProgressMeter: Progress, next!
 using FLoops: FLoops
+using Try: Try
+using TryExperimental: TryExperimental
+using REPL: REPL
+using REPL.TerminalMenus: RadioMenu, request
+using StyledStrings
 
 function run_scenario_optimizations(
     ensemble_specifications,
@@ -10,7 +15,7 @@ function run_scenario_optimizations(
     noise_specifications,
     outbreak_detection_specifications,
     individual_test_specifications,
-    optim_method::TMethod = QD;
+    optim_method::TMethod = MSO;
     seed = 1234,
     executor = FLoops.SequentialEx(),
     kwargs...,
@@ -20,9 +25,7 @@ function run_scenario_optimizations(
         outbreak_spec = OutbreakSpecification[],
         noise_spec = NoiseSpecification[],
         outbreak_detection_spec = OutbreakDetectionSpecification[],
-        test_sensitivity = Float64[],
-        test_specificity = Float64[],
-        test_result_lag = Int64[],
+        test_spec = IndividualTestSpecification[],
         optimal_threshold = Float64[],
         optimal_accuracy = Float64[],
         optimization_method = Union{Type{QD},Type{MSO}}[],
@@ -50,7 +53,7 @@ function run_scenario_optimizations!(
     noise_specifications,
     outbreak_detection_specifications,
     individual_test_specifications,
-    optim_method::TMethod = QD;
+    optim_method::TMethod = MSO;
     seed = 1234,
     executor = FLoops.SequentialEx(),
     kwargs...,
@@ -152,4 +155,73 @@ function run_scenario_optimizations!(
             end
         end
     end
+end
+
+function check_missing_scenario_optimizations(
+	optim_df,
+    ensemble_specifications,
+    outbreak_specifications,
+    noise_specifications,
+    outbreak_detection_specifications,
+    individual_test_specifications,
+    optim_method::TMethod = MSO;
+	disable_time_check = false,
+    time_per_run_s = 45,
+) where {TMethod<:Type{<:OptimizationMethods}}
+	scenario_parameter_symbols = [
+			:ensemble_spec ,
+			:outbreak_spec ,
+			:noise_spec ,
+			:outbreak_detection_spec ,
+			:test_spec,
+			:optimization_method,
+		]
+
+	combinations_to_run = DataFrames.DataFrame(
+		Iterators.product(
+			ensemble_specifications,
+			outbreak_specifications,
+			noise_specifications,
+			outbreak_detection_specifications,
+			individual_test_specifications,
+			[optim_method]
+		),
+		scenario_parameter_symbols
+	)
+
+	missing_combinations = DataFrames.antijoin(
+		combinations_to_run,
+		optim_df,
+		on = scenario_parameter_symbols
+	)
+
+
+    missing_runs = DataFrames.nrow(missing_combinations)
+    if missing_runs == 0
+        return Try.Err("No missing simulations")
+    end
+
+    if missing_runs > 0 && !disable_time_check
+        nrun_time_s = missing_runs * time_per_run_s
+        nrun_time_minutes = round(nrun_time_s / 60; digits = 2)
+        nrun_time_message = if nrun_time_s < 10
+            "less than 10 seconds"
+        elseif nrun_time_s < 60
+            "approximately $(round(nrun_time_s; digits = 0)) seconds"
+        else
+            "approximately $(nrun_time_minutes) minutes"
+        end
+        choice = request(
+            "There are $(missing_runs) missing simulations. This is estimated to take $(nrun_time_message). Do you want to continue?",
+            RadioMenu(["No", "Yes"]; ctrl_c_interrupt = false),
+        )
+
+        if choice != 2
+            return Try.Err("User aborted")
+        end
+
+        println("Continuing ...")
+    end
+
+    return Try.Ok(missing_combinations)
 end
