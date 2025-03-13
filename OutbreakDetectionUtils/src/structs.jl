@@ -501,7 +501,6 @@ struct OptimalThresholdCharacteristics{
     T2<:IndividualTestSpecification,
     T3<:NoiseSpecification,
     T4<:AbstractFloat,
-    T5<:Integer,
     TReal<:Real,
 }
     outbreak_threshold_chars::T1
