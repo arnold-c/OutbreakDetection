@@ -88,6 +88,6 @@ export run_optimization,
 
 include("scenario-optimizations.jl")
 export run_scenario_optimizations, run_scenario_optimizations!,
-check_missing_scenario_optimizations
+    check_missing_scenario_optimizations, run_missing_scenario_optimizations!
 
 end

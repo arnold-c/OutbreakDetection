@@ -123,7 +123,7 @@ dynamical_noise_spec_vec = create_combinations_vec(
 
 noise_spec_vec = vcat(
 	poisson_noise_spec_vec,
-	# dynamical_noise_spec_vec
+	dynamical_noise_spec_vec
 )
 
 #%%
@@ -176,7 +176,7 @@ optim_df = OutbreakDetectionUtils.run_scenario_optimizations(
 )
 
 #%%
-check_missing_scenario_optimizations(
+missing_optimizations = check_missing_scenario_optimizations(
 	optim_df,
     ensemble_spec_vec,
     outbreak_spec_vec,
@@ -187,10 +187,13 @@ check_missing_scenario_optimizations(
 )
 
 #%%
-
+run_missing_scenario_optimizations!(
+	optim_df,
+	missing_optimizations
+)
 
 #%%
-@tagsave(outdir("optimization-df.jld2"), Dict("optim_df" => optim_df))
+@tagsave(outdir("2025-03-13_11:00:00_optimization-df.jld2"), Dict("optim_df" => optim_df))
 
 #%%
 base_param_dict = @dict(

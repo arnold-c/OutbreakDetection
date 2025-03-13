@@ -58,15 +58,15 @@ function run_scenario_optimizations!(
     executor = FLoops.SequentialEx(),
     kwargs...,
 ) where {TMethod<:Type{<:OptimizationMethods}}
-	ncombinations = length(
-            Iterators.product(
-                ensemble_specifications,
-                outbreak_specifications,
-                noise_specifications,
-                outbreak_detection_specifications,
-                individual_test_specifications,
-            ),
-        )
+    ncombinations = length(
+        Iterators.product(
+            ensemble_specifications,
+            outbreak_specifications,
+            noise_specifications,
+            outbreak_detection_specifications,
+            individual_test_specifications,
+        ),
+    )
 
     prog = Progress(ncombinations)
 
@@ -94,7 +94,9 @@ function run_scenario_optimizations!(
                     outbreak_detection_specifications,
                     individual_test_spec in individual_test_specifications
 
-					println("Individual Test: $(individual_test_spec.sensitivity), $(individual_test_spec.specificity), $(individual_test_spec.test_result_lag)")
+                    println(
+                        "Individual Test: $(individual_test_spec.sensitivity), $(individual_test_spec.specificity), $(individual_test_spec.test_result_lag)"
+                    )
 
                     obj_inputs = (;
                         ensemble_inc_arr,
@@ -150,7 +152,7 @@ function run_scenario_optimizations!(
                     )
 
                     next!(prog)
-					println("")
+                    println("")
                 end
             end
         end
@@ -158,43 +160,42 @@ function run_scenario_optimizations!(
 end
 
 function check_missing_scenario_optimizations(
-	optim_df,
+    optim_df,
     ensemble_specifications,
     outbreak_specifications,
     noise_specifications,
     outbreak_detection_specifications,
     individual_test_specifications,
     optim_method::TMethod = MSO;
-	disable_time_check = false,
+    disable_time_check = false,
     time_per_run_s = 45,
 ) where {TMethod<:Type{<:OptimizationMethods}}
-	scenario_parameter_symbols = [
-			:ensemble_spec ,
-			:outbreak_spec ,
-			:noise_spec ,
-			:outbreak_detection_spec ,
-			:test_spec,
-			:optimization_method,
-		]
+    scenario_parameter_symbols = [
+        :ensemble_spec,
+        :outbreak_spec,
+        :noise_spec,
+        :outbreak_detection_spec,
+        :test_spec,
+        :optimization_method,
+    ]
 
-	combinations_to_run = DataFrames.DataFrame(
-		Iterators.product(
-			ensemble_specifications,
-			outbreak_specifications,
-			noise_specifications,
-			outbreak_detection_specifications,
-			individual_test_specifications,
-			[optim_method]
-		),
-		scenario_parameter_symbols
-	)
+    combinations_to_run = DataFrames.DataFrame(
+        Iterators.product(
+            ensemble_specifications,
+            outbreak_specifications,
+            noise_specifications,
+            outbreak_detection_specifications,
+            individual_test_specifications,
+            [optim_method],
+        ),
+        scenario_parameter_symbols,
+    )
 
-	missing_combinations = DataFrames.antijoin(
-		combinations_to_run,
-		optim_df,
-		on = scenario_parameter_symbols
-	)
-
+    missing_combinations = DataFrames.antijoin(
+        combinations_to_run,
+        optim_df;
+        on = scenario_parameter_symbols,
+    )
 
     missing_runs = DataFrames.nrow(missing_combinations)
     if missing_runs == 0
@@ -224,4 +225,121 @@ function check_missing_scenario_optimizations(
     end
 
     return Try.Ok(missing_combinations)
+end
+
+function run_missing_scenario_optimizations!(
+    optim_df,
+    missing_optimizations;
+    seed = 1234,
+    kwargs...,
+)
+    missing_optims_df = Try.unwrap(missing_optimizations)
+
+    prog = Progress(DataFrames.nrow(missing_optims_df))
+
+    incidence_sim_grouped_df = DataFrames.groupby(
+        missing_optims_df,
+        [:ensemble_spec, :outbreak_spec],
+    )
+
+    for inc_gp in incidence_sim_grouped_df
+        ensemble_spec = inc_gp[1, :ensemble_spec]
+        outbreak_spec = inc_gp[1, :outbreak_spec]
+
+        base_param_dict = @dict(
+            ensemble_spec = ensemble_spec,
+            outbreak_spec = outbreak_spec,
+            seed = seed,
+        )
+
+        ensemble_inc_arr, thresholds_vec = setup_optimization(
+            base_param_dict
+        )
+
+        for noise_gp in DataFrames.groupby(inc_gp, [:noise_spec])
+            noise_spec = noise_gp[1, :noise_spec]
+
+            noise_array, noise_means = create_noise_arr(
+                noise_spec,
+                ensemble_inc_arr;
+                ensemble_specification = ensemble_spec,
+                seed = seed,
+            )
+
+            for detect_test_gp in DataFrames.groupby(
+                noise_gp, [:outbreak_detection_spec, :test_spec]
+            )
+                outbreak_detection_spec = detect_test_gp[
+                    1, :outbreak_detection_spec
+                ]
+                individual_test_spec = detect_test_gp[1, :test_spec]
+
+                println(
+                    "Individual Test: $(individual_test_spec.sensitivity), $(individual_test_spec.specificity), $(individual_test_spec.test_result_lag)"
+                )
+
+                obj_inputs = (;
+                    ensemble_inc_arr,
+                    noise_array,
+                    outbreak_detection_specification = outbreak_detection_spec,
+                    individual_test_specification = individual_test_spec,
+                    thresholds_vec,
+                )
+
+                objective_function_closure =
+                    x -> objective_function(x, obj_inputs)
+
+                @assert length(
+                    unique(detect_test_gp[:, :optimization_method])
+                ) == 1
+
+                optim_method = detect_test_gp[1, :optimization_method]
+
+                optim_minimizer, optim_minimum = optimization_wrapper(
+                    objective_function_closure,
+                    optim_method;
+                    kwargs...,
+                )
+
+                optimal_outbreak_detection_spec = OutbreakDetectionSpecification(
+                    optim_minimizer,
+                    outbreak_detection_spec.moving_average_lag,
+                    outbreak_detection_spec.percent_visit_clinic,
+                    outbreak_detection_spec.percent_clinic_tested,
+                    outbreak_detection_spec.alert_method.method_name,
+                )
+
+                testarr = create_testing_arrs(
+                    ensemble_inc_arr,
+                    noise_array,
+                    optimal_outbreak_detection_spec,
+                    individual_test_spec,
+                )[1]
+
+                OT_chars = calculate_OutbreakThresholdChars(
+                    testarr, ensemble_inc_arr, thresholds_vec, noise_means
+                )
+
+                push!(
+                    optim_df,
+                    (
+                        ensemble_spec,
+                        outbreak_spec,
+                        noise_spec,
+                        outbreak_detection_spec,
+                        individual_test_spec,
+                        optim_minimizer,
+                        1 - optim_minimum,
+                        optim_method,
+                        OT_chars,
+                    ),
+                )
+
+                next!(prog)
+                println("")
+            end
+        end
+    end
+
+    return nothing
 end
