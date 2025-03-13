@@ -41,6 +41,8 @@ function run_scenario_optimizations(
         filedir,
     )
 
+    optim_df = nothing
+
     if Try.isok(load_filepath) && !force
         optim_df = load(Try.unwrap(load_filepath))["threshold_optim_df"]
     else
@@ -82,15 +84,15 @@ function run_scenario_optimizations(
         return nothing
     end
 
-    missing_optimizations_df = Try.unwrap(missing_optimizations)
+    missing_optims_df = Try.unwrap(missing_optimizations)
 
-    if DataFrames.nrow(missing_optimizations_df) == 0
+    if DataFrames.nrow(missing_optims_df) == 0
         @info "🟨 Previous optimal ews_df is the same as the current. No need to save a new version. 🟨"
     end
 
     run_missing_scenario_optimizations!(
         optim_df,
-        missing_optimizations_df;
+        missing_optims_df;
         seed = seed,
         executor = executor,
         kwargs...,
@@ -305,13 +307,11 @@ end
 
 function run_missing_scenario_optimizations!(
     optim_df,
-    missing_optimizations;
+    missing_optims_df;
     seed = 1234,
     executor = FLoops.SequentialEx(),
     kwargs...,
 )
-    missing_optims_df = Try.unwrap(missing_optimizations)
-
     prog = Progress(DataFrames.nrow(missing_optims_df))
 
     incidence_sim_grouped_df = DataFrames.groupby(
