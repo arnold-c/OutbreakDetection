@@ -175,7 +175,7 @@ optim_df = OutbreakDetectionUtils.run_scenario_optimizations(
     MSO;
     executor = SequentialEx(),
 )
-#
+
 # #%%
 # missing_optimizations = check_missing_scenario_optimizations(
 # 	optim_df,

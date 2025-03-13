@@ -336,6 +336,13 @@ function run_missing_scenario_optimizations!(
         for noise_gp in DataFrames.groupby(inc_gp, [:noise_spec])
             noise_spec = noise_gp[1, :noise_spec]
 
+            println(
+                styled"{green:\n=================================================================}"
+            )
+            println(
+                styled"Noise type: {green,inverse: $(getdirpath(noise_spec))}"
+            )
+
             noise_array, noise_means = create_noise_arr(
                 noise_spec,
                 ensemble_inc_arr;
@@ -352,7 +359,7 @@ function run_missing_scenario_optimizations!(
                 individual_test_spec = detect_test_gp[1, :test_spec]
 
                 println(
-                    "Individual Test: $(individual_test_spec.sensitivity), $(individual_test_spec.specificity), $(individual_test_spec.test_result_lag)"
+                    styled"\t\t-> Test specification: {blue: $(get_test_description(individual_test_spec))}, Percent tested: {red,inverse: $(outbreak_detection_spec.percent_tested)}"
                 )
 
                 obj_inputs = (;
