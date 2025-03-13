@@ -175,71 +175,71 @@ optim_df = OutbreakDetectionUtils.run_scenario_optimizations(
     MSO;
     executor = SequentialEx(),
 )
-
-#%%
-missing_optimizations = check_missing_scenario_optimizations(
-	optim_df,
-    ensemble_spec_vec,
-    outbreak_spec_vec,
-    noise_spec_vec,
-    outbreak_detection_spec_vec,
-    test_spec_vec,
-    MSO;
-)
-
-#%%
-run_missing_scenario_optimizations!(
-	optim_df,
-	missing_optimizations
-)
-
-#%%
-optim_df
-
-#%%
-@tagsave(outdir("2025-03-13_11:00:00_optimization-df.jld2"), Dict("optim_df" => optim_df))
-
-
-#%%
-base_param_dict = @dict(
-	ensemble_spec = ensemble_spec_vec[1],
-	outbreak_spec = outbreak_spec_vec[1],
-		seed = 1234,
-)
-
-ensemble_inc_arr, thresholds_vec = setup_optimization(
-	base_param_dict
-)
-
-noise_array, noise_means = create_noise_arr(
-	noise_spec_vec[1],
-	ensemble_inc_arr;
-	ensemble_specification = ensemble_spec_vec[1],
-	seed = seed,
-)
-
-obj_inputs = (;
-	ensemble_inc_arr,
-	noise_array,
-	outbreak_detection_specification = outbreak_detection_spec_vec[1],
-	individual_test_specification = test_spec_vec[2],
-	thresholds_vec,
-)
-
-objective_function_closure =
-	x -> objective_function(x, obj_inputs)
-
-#%%
-@elapsed optim_minimizer, optim_minimum = optimization_wrapper(
-	objective_function_closure,
-	QD;
-)
-@show optim_minimizer, optim_minimum
-
-#%%
-@elapsed optim_minimizer, optim_minimum = optimization_wrapper(
-	objective_function_closure,
-	MSO;
-)
-
-@show optim_minimizer, optim_minimum
+#
+# #%%
+# missing_optimizations = check_missing_scenario_optimizations(
+# 	optim_df,
+#     ensemble_spec_vec,
+#     outbreak_spec_vec,
+#     noise_spec_vec,
+#     outbreak_detection_spec_vec,
+#     test_spec_vec,
+#     MSO;
+# )
+#
+# #%%
+# run_missing_scenario_optimizations!(
+# 	optim_df,
+# 	missing_optimizations
+# )
+#
+# #%%
+# optim_df
+#
+# #%%
+# @tagsave(outdir("2025-03-13_11:00:00_optimization-df.jld2"), Dict("optim_df" => optim_df))
+#
+#
+# #%%
+# base_param_dict = @dict(
+# 	ensemble_spec = ensemble_spec_vec[1],
+# 	outbreak_spec = outbreak_spec_vec[1],
+# 		seed = 1234,
+# )
+#
+# ensemble_inc_arr, thresholds_vec = setup_optimization(
+# 	base_param_dict
+# )
+#
+# noise_array, noise_means = create_noise_arr(
+# 	noise_spec_vec[1],
+# 	ensemble_inc_arr;
+# 	ensemble_specification = ensemble_spec_vec[1],
+# 	seed = seed,
+# )
+#
+# obj_inputs = (;
+# 	ensemble_inc_arr,
+# 	noise_array,
+# 	outbreak_detection_specification = outbreak_detection_spec_vec[1],
+# 	individual_test_specification = test_spec_vec[2],
+# 	thresholds_vec,
+# )
+#
+# objective_function_closure =
+# 	x -> objective_function(x, obj_inputs)
+#
+# #%%
+# @elapsed optim_minimizer, optim_minimum = optimization_wrapper(
+# 	objective_function_closure,
+# 	QD;
+# )
+# @show optim_minimizer, optim_minimum
+#
+# #%%
+# @elapsed optim_minimizer, optim_minimum = optimization_wrapper(
+# 	objective_function_closure,
+# 	MSO;
+# )
+#
+# @show optim_minimizer, optim_minimum
