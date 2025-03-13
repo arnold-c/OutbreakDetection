@@ -87,7 +87,7 @@ function run_scenario_optimizations!(
                     styled"{green:\n=================================================================}"
                 )
                 println(
-                    styled"Noise type: {green,inverse: $(getdirpath(noise_specification))}"
+                    styled"Noise type: {green,inverse: $(getdirpath(noise_spec))}"
                 )
 
                 noise_array, noise_means = create_noise_arr(
@@ -102,7 +102,7 @@ function run_scenario_optimizations!(
                     individual_test_spec in individual_test_specifications
 
                     println(
-                        styled"\t\t\t\t-> Test specification: {blue: $(get_test_description(test_specification))}, Percent tested: {red,inverse: $(outbreak_detection_spec.percent_tested)}"
+                        styled"\t\t\t\t-> Test specification: {blue: $(get_test_description(individual_test_spec))}, Percent tested: {red,inverse: $(outbreak_detection_spec.percent_tested)}"
                     )
 
                     obj_inputs = (;
