@@ -1,5 +1,6 @@
 using DataFrames: DataFrames
 using DrWatson: @dict
+using DataFramesMeta: exec
 using StructArrays: StructVector
 using ProgressMeter: Progress, next!
 using FLoops: FLoops
@@ -8,6 +9,7 @@ using TryExperimental: TryExperimental
 using REPL: REPL
 using REPL.TerminalMenus: RadioMenu, request
 using StyledStrings
+using Dates: Dates
 
 function run_scenario_optimizations(
     ensemble_specifications,
@@ -18,23 +20,48 @@ function run_scenario_optimizations(
     optim_method::TMethod = MSO;
     seed = 1234,
     executor = FLoops.SequentialEx(),
+    filedir = outdir("ensemble", "scenario-optimizations"),
+    optimization_filename_base = "alert-threshold-optimization.jld2",
+    optimization_output_filepath = joinpath(
+        filedir,
+        string(Dates.now()) * "_" * optimization_filename_base,
+    ),
+    force = false,
+    return_df = true,
+    disable_time_check = false,
+    time_per_run_s = 45,
     kwargs...,
 ) where {TMethod<:Type{<:OptimizationMethods}}
-    optim_df = DataFrames.DataFrame((
-        ensemble_spec = typeof(ensemble_specifications[1])[],
-        outbreak_spec = typeof(outbreak_specifications[1])[],
-        noise_spec = Union{
-            PoissonNoiseSpecification,DynamicalNoiseSpecification
-        }[],
-        outbreak_detection_spec = typeof(outbreak_detection_specifications[1])[],
-        test_spec = typeof(individual_test_specifications[1])[],
-        optimal_threshold = Float64[],
-        optimal_accuracy = Float64[],
-        optimization_method = Union{Type{QD},Type{MSO}}[],
-        OT_chars = StructVector{<:OutbreakThresholdChars}[],
-    ))
+    if !isdir(filedir)
+        mkpath(filedir)
+    end
 
-    run_scenario_optimizations!(
+    load_filepath = get_most_recent_hyperparam_filepath(
+        optimization_filename_base,
+        filedir,
+    )
+
+    if Try.isok(load_filepath) && !force
+        optim_df = load(Try.unwrap(load_filepath))["threshold_optim_df"]
+    else
+        optim_df = DataFrames.DataFrame((
+            ensemble_spec = typeof(ensemble_specifications[1])[],
+            outbreak_spec = typeof(outbreak_specifications[1])[],
+            noise_spec = Union{
+                PoissonNoiseSpecification,DynamicalNoiseSpecification
+            }[],
+            outbreak_detection_spec = typeof(
+                outbreak_detection_specifications[1]
+            )[],
+            test_spec = typeof(individual_test_specifications[1])[],
+            optimal_threshold = Float64[],
+            optimal_accuracy = Float64[],
+            optimization_method = Union{Type{QD},Type{MSO}}[],
+            OT_chars = StructVector{<:OutbreakThresholdChars}[],
+        ))
+    end
+
+    missing_optimizations = check_missing_scenario_optimizations(
         optim_df,
         ensemble_specifications,
         outbreak_specifications,
@@ -42,10 +69,44 @@ function run_scenario_optimizations(
         outbreak_detection_specifications,
         individual_test_specifications,
         optim_method;
+        disable_time_check = disable_time_check,
+        time_per_run_s = time_per_run_s,
+    )
+
+    if Try.iserr(missing_optimizations)
+        println(Try.unwrap_err(missing_optimizations))
+        if return_df
+            println("Returning previously computed threshold_optim_df")
+            return optim_df
+        end
+        return nothing
+    end
+
+    missing_optimizations_df = Try.unwrap(missing_optimizations)
+
+    if DataFrames.nrow(missing_optimizations_df) == 0
+        @info "🟨 Previous optimal ews_df is the same as the current. No need to save a new version. 🟨"
+    end
+
+    run_missing_scenario_optimizations!(
+        optim_df,
+        missing_optimizations_df;
         seed = seed,
+        executor = executor,
         kwargs...,
     )
-    return optim_df
+
+    @tagsave(
+        optimization_output_filepath,
+        Dict("threshold_optim_df" => optim_df)
+    )
+    @info "🟢 Saved optimal ews_df to $(optimization_output_filepath) 🟢"
+
+    if return_df
+        return optim_df
+    end
+
+    return nothing
 end
 
 function run_scenario_optimizations!(
@@ -58,6 +119,14 @@ function run_scenario_optimizations!(
     optim_method::TMethod = MSO;
     seed = 1234,
     executor = FLoops.SequentialEx(),
+    filedir = outdir("ensemble", "scenario-optimizations"),
+    optimization_filename_base = "alert-threshold-optimization.jld2",
+    optimization_output_filepath = joinpath(
+        filedir,
+        string(Dates.now()) * "_" * optimization_filename_base,
+    ),
+    force = false,
+    return_df = true,
     kwargs...,
 ) where {TMethod<:Type{<:OptimizationMethods}}
     ncombinations = length(
@@ -238,6 +307,7 @@ function run_missing_scenario_optimizations!(
     optim_df,
     missing_optimizations;
     seed = 1234,
+    executor = FLoops.SequentialEx(),
     kwargs...,
 )
     missing_optims_df = Try.unwrap(missing_optimizations)
@@ -249,7 +319,7 @@ function run_missing_scenario_optimizations!(
         [:ensemble_spec, :outbreak_spec],
     )
 
-    for inc_gp in incidence_sim_grouped_df
+    FLoops.@floop executor for inc_gp in incidence_sim_grouped_df
         ensemble_spec = inc_gp[1, :ensemble_spec]
         outbreak_spec = inc_gp[1, :outbreak_spec]
 

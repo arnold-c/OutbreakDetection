@@ -1466,7 +1466,7 @@ uuid = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
 version = "1.8.0"
 
 [[deps.OutbreakDetectionUtils]]
-deps = ["Bootstrap", "Chain", "DataFrames", "DataFramesMeta", "Distributions", "DrWatson", "FLoops", "FreqTables", "JLD2", "LabelledArrays", "LinearAlgebra", "Match", "MultistartOptimization", "NLopt", "NaNMath", "Optim", "ProgressMeter", "QuadDIRECT", "RCall", "REPL", "Random", "Reexport", "StaticArrays", "Statistics", "StatsBase", "StructArrays", "StyledStrings", "Tables", "Try", "TryExperimental", "UnPack", "XLSX"]
+deps = ["Bootstrap", "Chain", "DataFrames", "DataFramesMeta", "Dates", "Distributions", "DrWatson", "FLoops", "FreqTables", "JLD2", "LabelledArrays", "LinearAlgebra", "Match", "MultistartOptimization", "NLopt", "NaNMath", "Optim", "ProgressMeter", "QuadDIRECT", "RCall", "REPL", "Random", "Reexport", "StaticArrays", "Statistics", "StatsBase", "StructArrays", "StyledStrings", "Tables", "Try", "TryExperimental", "UnPack", "XLSX"]
 path = "OutbreakDetectionUtils"
 uuid = "f998a708-2341-46f4-85c5-02aab2fba5ed"
 version = "1.0.0-DEV"

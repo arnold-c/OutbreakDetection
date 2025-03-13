@@ -124,7 +124,7 @@ dynamical_noise_spec_vec = create_combinations_vec(
 
 noise_spec_vec = vcat(
 	poisson_noise_spec_vec,
-	# dynamical_noise_spec_vec
+	dynamical_noise_spec_vec
 )
 
 #%%
@@ -133,7 +133,7 @@ alertthreshold_vec = 5.0
 moveavglag_vec = [7]
 perc_clinic_vec = [0.6]
 perc_clinic_test_vec = [
-	# collect(0.1:0.1:0.6)...,
+	collect(0.1:0.1:0.6)...,
 	1.0
 ]
 alert_method_vec = ["movingavg"]
@@ -197,72 +197,7 @@ run_missing_scenario_optimizations!(
 optim_df
 
 #%%
-NamedTuple.(eachrow(optim_df))
-
-#%%
-Tables.columntable(optim_df)
-
-#%%
-using GLMakie
-
-#%%
-DataFrames.select(optim_df, DataFrames.Not(:ensemble_spec))
-
-#%%
 @tagsave(outdir("2025-03-13_11:00:00_optimization-df.jld2"), Dict("optim_df" => optim_df))
-
-#%%
-[eltype(optim_df[!, col]) for col in names(optim_df)]
-
-#%%
-JLD2.save(outdir("TEST_optimization-df.jld2"), Dict("optim_df" => optim_df))
-
-JLD2.load(outdir("TEST_optimization-df.jld2"))["optim_df"]
-
-#%%
-f = JLD2.jldopen(outdir("optimization-df.jld2"))
-
-f["optim_df"]
-
-f["optim_df"][:, Not(:ensemble_spec)]
-load(
-	outdir("TEST_optimization-df.jld2"),
-	"optim_df";
-)
-#%%
-working_test = convert.(EnsembleSpecification, (repeat(ensemble_spec_vec, 2)))
-
-JLD2.save("test.jld2", Dict("ensemble_spec" => working_test))
-JLD2.load("test.jld2")
-
-#%%
-test_ensemble_spec_vec = optim_df[1:2, 1]
-
-eltype(test_ensemble_spec_vec)
-eltype(working_test)
-
-typeof(test_ensemble_spec_vec)
-typeof(working_test)
-
-typeof(convert.(EnsembleSpecification, working_test)) == typeof(working_test)
-
-typeof(working_test) <: typeof(test_ensemble_spec_vec)
-
-typeof(convert.(EnsembleSpecification, test_ensemble_spec_vec)) == typeof(working_test)
-
-JLD2.save("test.jld2", Dict("ensemble_spec" => convert.(EnsembleSpecification, test_ensemble_spec_vec)))
-JLD2.load("test.jld2")["ensemble_spec"]
-
-#%%
-optim_df[!, :ensemble_spec] .= convert.(typeof(optim_df[1, :ensemble_spec]), optim_df[:, :ensemble_spec])
-
-JLD2.save(outdir("TEST_optimization-df.jld2"), Dict("optim_df" => optim_df))
-
-JLD2.load(outdir("TEST_optimization-df.jld2"))["optim_df"]
-
-Vector{Int64}(undef, 0)
-
-typeof(ensemble_spec_vec[1])[]
 
 
 #%%
