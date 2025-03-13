@@ -507,7 +507,7 @@ function create_optimal_threshold_summary_df(
     nboots = 10000,
     ci = 0.95,
 )
-    create_optimal_threshold_summary_df(
+    return create_optimal_threshold_summary_df(
         optimal_thresholds_vec,
         [characteristic];
         percentiles = percentiles,
@@ -578,8 +578,8 @@ function create_optimal_threshold_summary_df(
     if isnothing(percentiles) && (isnothing(nboots) || isnothing(ci))
         DataFrames.rename!(
             x -> replace(x, "_mean" => ""),
-            chars_df,
-            cols = DataFrames.Cols(r".*_mean")
+            chars_df;
+            cols = DataFrames.Cols(r".*_mean"),
         )
     end
 
