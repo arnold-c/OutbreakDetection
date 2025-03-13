@@ -1,5 +1,5 @@
 using DataFrames: DataFrames
-using DrWatson: @dict
+using DrWatson: @dict, @tagsave
 using DataFramesMeta: exec
 using StructArrays: StructVector
 using ProgressMeter: Progress, next!
