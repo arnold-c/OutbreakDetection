@@ -21,11 +21,13 @@ function run_scenario_optimizations(
     kwargs...,
 ) where {TMethod<:Type{<:OptimizationMethods}}
     optim_df = DataFrames.DataFrame((
-        ensemble_spec = EnsembleSpecification[],
-        outbreak_spec = OutbreakSpecification[],
-        noise_spec = NoiseSpecification[],
-        outbreak_detection_spec = OutbreakDetectionSpecification[],
-        test_spec = IndividualTestSpecification[],
+        ensemble_spec = typeof(ensemble_specifications[1])[],
+        outbreak_spec = typeof(outbreak_specifications[1])[],
+        noise_spec = Union{
+            PoissonNoiseSpecification,DynamicalNoiseSpecification
+        }[],
+        outbreak_detection_spec = typeof(outbreak_detection_specifications[1])[],
+        test_spec = typeof(individual_test_specifications[1])[],
         optimal_threshold = Float64[],
         optimal_accuracy = Float64[],
         optimization_method = Union{Type{QD},Type{MSO}}[],

@@ -197,19 +197,27 @@ run_missing_scenario_optimizations!(
 optim_df
 
 #%%
+NamedTuple.(eachrow(optim_df))
+
+#%%
+Tables.columntable(optim_df)
+
+#%%
 using GLMakie
 
 #%%
-
+DataFrames.select(optim_df, DataFrames.Not(:ensemble_spec))
 
 #%%
 @tagsave(outdir("2025-03-13_11:00:00_optimization-df.jld2"), Dict("optim_df" => optim_df))
 
 #%%
-JLD2.save(outdir("TEST_optimization-df.jld2"), Dict("optim_df" => optim_df))
+[eltype(optim_df[!, col]) for col in names(optim_df)]
 
 #%%
-JLD2.load(outdir("TEST_optimization-df.jld2"))
+JLD2.save(outdir("TEST_optimization-df.jld2"), Dict("optim_df" => optim_df))
+
+JLD2.load(outdir("TEST_optimization-df.jld2"))["optim_df"]
 
 #%%
 f = JLD2.jldopen(outdir("optimization-df.jld2"))
@@ -217,20 +225,45 @@ f = JLD2.jldopen(outdir("optimization-df.jld2"))
 f["optim_df"]
 
 f["optim_df"][:, Not(:ensemble_spec)]
+load(
+	outdir("TEST_optimization-df.jld2"),
+	"optim_df";
+)
+#%%
+working_test = convert.(EnsembleSpecification, (repeat(ensemble_spec_vec, 2)))
 
-function Base.convert(::Type{DataFrame}, nt::NamedTuple)
-           return DataFrame(nt.columns, nt.colindex)
-       end
-
-load(outdir("optimization-df.jld2"), "optim_df";
-    typemap = Dict("DataFrames.DataFrame" => JLD2.Upgrade(DataFrame))
-    )
-
+JLD2.save("test.jld2", Dict("ensemble_spec" => working_test))
+JLD2.load("test.jld2")
 
 #%%
-c = h5open(outdir("TEST_optimization-df.jld2"), "r") do file
-    read(file, "optim_df")
-end
+test_ensemble_spec_vec = optim_df[1:2, 1]
+
+eltype(test_ensemble_spec_vec)
+eltype(working_test)
+
+typeof(test_ensemble_spec_vec)
+typeof(working_test)
+
+typeof(convert.(EnsembleSpecification, working_test)) == typeof(working_test)
+
+typeof(working_test) <: typeof(test_ensemble_spec_vec)
+
+typeof(convert.(EnsembleSpecification, test_ensemble_spec_vec)) == typeof(working_test)
+
+JLD2.save("test.jld2", Dict("ensemble_spec" => convert.(EnsembleSpecification, test_ensemble_spec_vec)))
+JLD2.load("test.jld2")["ensemble_spec"]
+
+#%%
+optim_df[!, :ensemble_spec] .= convert.(typeof(optim_df[1, :ensemble_spec]), optim_df[:, :ensemble_spec])
+
+JLD2.save(outdir("TEST_optimization-df.jld2"), Dict("optim_df" => optim_df))
+
+JLD2.load(outdir("TEST_optimization-df.jld2"))["optim_df"]
+
+Vector{Int64}(undef, 0)
+
+typeof(ensemble_spec_vec[1])[]
+
 
 #%%
 base_param_dict = @dict(
