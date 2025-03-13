@@ -89,7 +89,7 @@ outbreak_spec_vec = create_combinations_vec(
 # struct currently
 poisson_noise_mean_scaling_vec = [
 	1.0,
-	# collect(2.0:2.0:8.0)...
+	collect(2.0:2.0:8.0)...
 ]
 
 poisson_noise_spec_vec = create_combinations_vec(
@@ -124,7 +124,7 @@ dynamical_noise_spec_vec = create_combinations_vec(
 
 noise_spec_vec = vcat(
 	poisson_noise_spec_vec,
-	dynamical_noise_spec_vec
+	# dynamical_noise_spec_vec
 )
 
 #%%
