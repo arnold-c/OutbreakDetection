@@ -117,6 +117,8 @@ function line_plot(
     mkpath(plotdirpath)
     plotpath = joinpath(plotdirpath, "$plotname.$plotformat")
 
+    local_colors = colors
+
     if !isfile(plotpath) || force
         if in(outcome, [:avoidable_cases, :unavoidable_cases])
             kwargs_dict = Dict{Symbol,Any}(kwargs)
@@ -200,7 +202,7 @@ function line_plot(
             colsize!(fig.layout, 0, Relative(0.03))
         end
         if clinical_hline
-            push!(colors, "green")
+            push!(local_colors, "green")
         end
         rg = r"\((.*)(\% .*\))"
         Legend(
