@@ -193,6 +193,7 @@ function run_missing_scenario_optimizations!(
         [:ensemble_spec, :outbreak_spec],
     )
 
+    lk = ReentrantLock()
     FLoops.@floop executor for inc_gp in incidence_sim_grouped_df
         ensemble_spec = inc_gp[1, :ensemble_spec]
         outbreak_spec = inc_gp[1, :outbreak_spec]
@@ -278,6 +279,7 @@ function run_missing_scenario_optimizations!(
                     testarr, ensemble_inc_arr, thresholds_vec, noise_means
                 )
 
+                lock(lk)
                 push!(
                     optim_df,
                     (
@@ -292,6 +294,7 @@ function run_missing_scenario_optimizations!(
                         OT_chars,
                     ),
                 )
+                unlock(lk)
 
                 next!(prog)
                 println("")
