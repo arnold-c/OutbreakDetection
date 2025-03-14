@@ -174,14 +174,21 @@ optim_df = OutbreakDetectionUtils.run_scenario_optimizations(
 )
 
 #%%
-most_recent_optim_df = get_most_recent_optimization_filepath(
-	"alert-threshold-optimization.jld2",
-    outdir("ensemble", "scenario-optimizations"),
-) |>
-	fp -> Try.unwrap(fp) |>
-	fp -> JLD2.load(fp)
+filter(
+	:outbreak_detection_spec => x -> getproperty(x, :percent_visit_clinic) .== 0.6,
+	optim_df
+)
 
-most_recent_optim_df["threshold_optim_df"]
+#%%
+original_optims = subset(
+	optim_df,
+	:outbreak_detection_spec => x -> getproperty.(x, :percent_visit_clinic) .== 0.6 .&& getproperty.(x, :percent_clinic_tested) .!= 1.0,
+	# :test_spec => ByRow(in([IndividualTestSpecification(1.0, 1.0, 0)]))
+)
+
+#%%
+original_optims_threshold_chars = reshape_optim_df_to_matrix(original_optims);
+
 
 # #%%
 # missing_optimizations = check_missing_scenario_optimizations(

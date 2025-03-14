@@ -497,3 +497,78 @@ function _line_plot_facet(
 
     return nothing
 end
+
+function reshape_optim_df_to_matrix(
+    optim_df::T1;
+    clinical_hline = false,
+) where {T1<:DataFrames.DataFrame}
+    noise_spec_vec = unique(optim_df.noise_spec)
+    unique_noise_descriptions = unique(get_noise_description.(noise_spec_vec))
+    num_noise_descriptions = length(unique_noise_descriptions)
+
+    shape_noise_specifications =
+        map(unique_noise_descriptions) do noise_description
+            filter(
+                noise_spec ->
+                    noise_description == get_noise_description(noise_spec),
+                noise_spec_vec,
+            )
+        end
+
+    num_shape_noise_specifications = length(shape_noise_specifications[1])
+
+    @assert length(vcat(shape_noise_specifications...)) ==
+        num_noise_descriptions * num_shape_noise_specifications
+
+    optim_arr = Array{Any}(
+        undef,
+        num_noise_descriptions,
+        num_shape_noise_specifications,
+    )
+
+    if !clinical_hline
+        filter!(
+            :outbreak_detection_spec =>
+                x -> getproperty(x, :percent_clinic_tested) .!= 1.0,
+            optim_df,
+        )
+    end
+
+    for (i, noise_description) in pairs(unique_noise_descriptions)
+        for (j, noise_spec) in pairs(shape_noise_specifications[i])
+            subset_df = DataFrames.subset(
+                optim_df,
+                :noise_spec => ByRow(==(noise_spec)),
+            )
+
+            unique_test_specifications = sort(
+                sort(
+                    subset_df.test_spec;
+                    by = t -> t.test_result_lag,
+                    rev = true,
+                );
+                by = t -> (t.sensitivity, t.specificity),
+                rev = false,
+            )
+            subset_df = subset_df[
+                indexin(unique_test_specifications, subset_df.test_spec), :,
+            ]
+
+            optim_arr[i, j] = StructVector(
+                OptimalThresholdCharacteristics.(
+                    subset_df.OT_chars,
+                    subset_df.test_spec,
+                    subset_df.noise_spec,
+                    getfield.(
+                        subset_df.outbreak_detection_spec,
+                        :percent_clinic_tested,
+                    ),
+                    subset_df.optimal_threshold,
+                    subset_df.optimal_accuracy,
+                ),
+            )
+        end
+    end
+
+    return optim_arr
+end
