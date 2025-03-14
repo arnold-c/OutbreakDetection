@@ -528,13 +528,22 @@ function reshape_optim_df_to_matrix(
         num_shape_noise_specifications,
     )
 
-    if !clinical_hline
-        filter!(
-            :outbreak_detection_spec =>
-                x -> getproperty(x, :percent_clinic_tested) .!= 1.0,
-            optim_df,
-        )
-    end
+    # if !clinical_hline
+    #     filter!(
+    #         :outbreak_detection_spec =>
+    #             x -> getproperty(x, :percent_clinic_tested) .!= 1.0,
+    #         optim_df,
+    #     )
+    # end
+    unique_test_specifications = sort(
+        sort(
+            unique(optim_df.test_spec);
+            by = t -> t.test_result_lag,
+            rev = true,
+        );
+        by = t -> (t.sensitivity, t.specificity),
+        rev = false,
+    )
 
     for (i, noise_description) in pairs(unique_noise_descriptions)
         for (j, noise_spec) in pairs(shape_noise_specifications[i])
@@ -543,18 +552,13 @@ function reshape_optim_df_to_matrix(
                 :noise_spec => ByRow(==(noise_spec)),
             )
 
-            unique_test_specifications = sort(
-                sort(
-                    subset_df.test_spec;
-                    by = t -> t.test_result_lag,
-                    rev = true,
-                );
-                by = t -> (t.sensitivity, t.specificity),
-                rev = false,
+            test_order = mapreduce(
+                t -> findall(isequal(t).(subset_df.test_spec)),
+                vcat,
+                unique_test_specifications,
             )
-            subset_df = subset_df[
-                indexin(unique_test_specifications, subset_df.test_spec), :,
-            ]
+
+            subset_df = subset_df[test_order, :]
 
             optim_arr[i, j] = StructVector(
                 OptimalThresholdCharacteristics.(
