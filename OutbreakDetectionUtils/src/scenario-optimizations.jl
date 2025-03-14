@@ -29,7 +29,7 @@ function run_scenario_optimizations(
     force = false,
     return_df = true,
     disable_time_check = false,
-    time_per_run_s = 45,
+    time_per_run_s = 98,
     kwargs...,
 ) where {TMethod<:Type{<:OptimizationMethods}}
     if !isdir(filedir)
@@ -44,7 +44,7 @@ function run_scenario_optimizations(
     optim_df = nothing
 
     if Try.isok(load_filepath) && !force
-        optim_df = load(Try.unwrap(load_filepath))["threshold_optim_df"]
+        optim_df = JLD2.load(Try.unwrap(load_filepath))["threshold_optim_df"]
     else
         optim_df = DataFrames.DataFrame((
             ensemble_spec = typeof(ensemble_specifications[1])[],
