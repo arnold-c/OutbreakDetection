@@ -173,6 +173,16 @@ optim_df = OutbreakDetectionUtils.run_scenario_optimizations(
     executor = SequentialEx(),
 )
 
+#%%
+most_recent_optim_df = get_most_recent_optimization_filepath(
+	"alert-threshold-optimization.jld2",
+    outdir("ensemble", "scenario-optimizations"),
+) |>
+	fp -> Try.unwrap(fp) |>
+	fp -> JLD2.load(fp)
+
+most_recent_optim_df["threshold_optim_df"]
+
 # #%%
 # missing_optimizations = check_missing_scenario_optimizations(
 # 	optim_df,
