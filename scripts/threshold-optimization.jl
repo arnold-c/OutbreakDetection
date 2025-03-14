@@ -325,6 +325,109 @@ for thresholds_vec in original_optims_threshold_chars
     )
 end
 
+#%%
+all_visit_clinic_optims = filter(
+	:outbreak_detection_spec => x -> getproperty(x, :percent_visit_clinic) .== 1.0,
+	optim_df
+)
+
+#%%
+all_visit_clinic_optims_threshold_chars = reshape_optim_df_to_matrix(all_visit_clinic_optims);
+
+#%%
+line_plot(
+    all_visit_clinic_optims_threshold_chars;
+    outcome = :accuracy,
+    ylabel = "Detection Accuracy",
+    alpha = alpha,
+    facet_fontsize = 28,
+    legendsize = legendsize,
+    xlabelsize = xlabelsize,
+    ylabelsize = ylabelsize,
+    show_x_facet_label = true,
+    show_y_facet_label = false,
+    ylims = (0.5, 1.0),
+    force = true,
+    save_plot = true,
+	clinical_hline = false,
+	colors = lineplot_colors,
+	plotdirpath = DrWatson.plotsdir("ensemble", "scenario-optimizations", "perc_visit_clinic_1.0"),
+    plotname = "line_accuracy_plot",
+    plotformat = "png",
+    size = (1300, 800),
+)
+
+#%%
+ line_plot(
+    all_visit_clinic_optims_threshold_chars;
+    outcome = :detectiondelays,
+    ylabel = "Detection Delays\n(Days)",
+    alpha = alpha,
+    hlines = (0.0),
+    facet_fontsize = facet_fontsize,
+    legendsize = legendsize,
+    xlabelsize = xlabelsize,
+    ylabelsize = ylabelsize,
+    show_x_facet_label = true,
+    show_y_facet_label = false,
+    ylims = (-100, 100),
+    force = true,
+    save_plot = true,
+    clinical_hline = false,
+	colors = lineplot_colors,
+	plotdirpath = DrWatson.plotsdir("ensemble", "scenario-optimizations", "perc_visit_clinic_1.0"),
+    plotname = "line_delays_plot",
+    plotformat = "png",
+    size = (1300, 800),
+)
+
+#%%
+line_plot(
+    all_visit_clinic_optims_threshold_chars;
+    outcome = :proportion_timeseries_in_alert,
+    ylabel = "Proportion of Time\nIn Alert",
+    alpha = alpha,
+    hlines = (0.0),
+    facet_fontsize = facet_fontsize,
+    legendsize = legendsize,
+    xlabelsize = xlabelsize,
+    ylabelsize = ylabelsize,
+    show_x_facet_label = true,
+    show_y_facet_label = false,
+    ylims = (0, 0.35),
+    force = true,
+    save_plot = true,
+    clinical_hline = false,
+	colors = lineplot_colors,
+	plotdirpath = DrWatson.plotsdir("ensemble", "scenario-optimizations", "perc_visit_clinic_1.0"),
+    plotname = "line_prop_alert_plot",
+    plotformat = "png",
+    size = (1300, 800),
+)
+
+#%%
+line_plot(
+    all_visit_clinic_optims_threshold_chars;
+    outcome = :unavoidable_cases,
+    ylabel = "Unavoidable Cases",
+    alpha = alpha,
+    facet_fontsize = facet_fontsize,
+    legendsize = legendsize,
+    xlabelsize = xlabelsize,
+    ylabelsize = ylabelsize,
+    show_x_facet_label = true,
+    show_y_facet_label = false,
+    ylims = (0, 2.4e4),
+    force = true,
+    save_plot = true,
+    clinical_hline = false,
+	colors = lineplot_colors,
+    cases_scaling = gha_2022_scale_population_per_annum,
+	plotdirpath = DrWatson.plotsdir("ensemble", "scenario-optimizations", "perc_visit_clinic_1.0"),
+    plotname = "line_unavoidable_plot",
+    plotformat = "png",
+    size = (1300, 800),
+)
 
 # #%%
 # missing_optimizations = check_missing_scenario_optimizations(
