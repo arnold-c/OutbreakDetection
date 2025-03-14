@@ -124,7 +124,7 @@ dynamical_noise_spec_vec = create_combinations_vec(
 
 noise_spec_vec = vcat(
 	poisson_noise_spec_vec,
-	# dynamical_noise_spec_vec
+	dynamical_noise_spec_vec
 )
 
 #%%
