@@ -58,7 +58,7 @@ function run_optimization(
     objective_function,
     OT_chars_param_dict,
     optim_method::TMethod = MSO,
-    accuracy_measure::TAccuracy =
+    accuracy_measure = arithmetic_mean,
     kwargs...,
 ) where {TMethod<:Type{<:OptimizationMethods}}
     UnPack.@unpack scenario_spec, ensemble_inc_arr, thresholds_vec, seed =
