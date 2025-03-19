@@ -455,10 +455,16 @@ function calculate_outbreak_detection_characteristics(
     perc_alerts_false = n_false_alerts / nalerts
     perc_alerts_correct = n_correct_alerts / nalerts # c.f. PPV
 
-    accuracy = NaNMath.mean([perc_true_outbreaks_detected, perc_alerts_correct])
+    accuracy = arithmetic_mean(
+        perc_alerts_correct, perc_true_outbreaks_detected
+    )
+    f1_score = calculate_f_beta_score(
+        perc_alerts_correct, perc_true_outbreaks_detected
+    )
 
     return (
         accuracy = accuracy,
+        f1_score = f1_score,
         matched_bounds = filtered_matched_bounds,
         noutbreaks = noutbreaks,
         nalerts = nalerts,
