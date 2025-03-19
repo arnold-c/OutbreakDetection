@@ -17,7 +17,8 @@ function run_scenario_optimizations(
     noise_specifications,
     outbreak_detection_specifications,
     individual_test_specifications,
-    optim_method::TMethod = MSO;
+    optim_method::TMethod = MSO,
+    accuracy_functions = [arithmetic_mean, calculate_f_beta_score];
     seed = 1234,
     executor = FLoops.SequentialEx(),
     filedir = outdir("ensemble", "scenario-optimizations"),
@@ -59,6 +60,9 @@ function run_scenario_optimizations(
             optimal_threshold = Float64[],
             optimal_accuracy = Float64[],
             optimization_method = Union{Type{QD},Type{MSO}}[],
+            accuracy_function = Union{
+                typeof(arithmetic_mean),typeof(calculate_f_beta_score)
+            }[],
             OT_chars = StructVector{<:OutbreakThresholdChars}[],
         ))
     end
@@ -70,7 +74,8 @@ function run_scenario_optimizations(
         noise_specifications,
         outbreak_detection_specifications,
         individual_test_specifications,
-        optim_method;
+        optim_method,
+        accuracy_functions;
         disable_time_check = disable_time_check,
         time_per_run_s = time_per_run_s,
     )
@@ -118,7 +123,8 @@ function check_missing_scenario_optimizations(
     noise_specifications,
     outbreak_detection_specifications,
     individual_test_specifications,
-    optim_method::TMethod = MSO;
+    optim_method::TMethod = MSO,
+    accuracy_functions = [arithmetic_mean, calculate_f_beta_score];
     disable_time_check = false,
     time_per_run_s = 45,
 ) where {TMethod<:Type{<:OptimizationMethods}}
@@ -139,6 +145,7 @@ function check_missing_scenario_optimizations(
             outbreak_detection_specifications,
             individual_test_specifications,
             [optim_method],
+            accuracy_functions,
         ),
         scenario_parameter_symbols,
     )
@@ -237,67 +244,80 @@ function run_missing_scenario_optimizations!(
                     styled"\t\t-> Test specification: {blue: $(get_test_description(individual_test_spec))}, Percent tested: {red,inverse: $(outbreak_detection_spec.percent_tested)}"
                 )
 
-                obj_inputs = (;
-                    ensemble_inc_arr,
-                    noise_array,
-                    outbreak_detection_specification = outbreak_detection_spec,
-                    individual_test_specification = individual_test_spec,
-                    thresholds_vec,
+                for accuracy_function_df in DataFrames.groupby(
+                    detect_test_gp, [:accuracy_function]
                 )
+                    accuracy_function = accuracy_function_df[
+                        1, :accuracy_function
+                    ]
+                    println(
+                        styled"\t\t\t\t-> Accuracy Function: {yellow,inverse: $(accuracy_function)}"
+                    )
 
-                objective_function_closure =
-                    x -> objective_function(x, obj_inputs)
+                    obj_inputs = (;
+                        ensemble_inc_arr,
+                        noise_array,
+                        outbreak_detection_specification = outbreak_detection_spec,
+                        individual_test_specification = individual_test_spec,
+                        thresholds_vec,
+                        accuracy_function,
+                    )
 
-                @assert length(
-                    unique(detect_test_gp[:, :optimization_method])
-                ) == 1
+                    objective_function_closure =
+                        x -> objective_function(x, obj_inputs)
 
-                optim_method = detect_test_gp[1, :optimization_method]
+                    @assert length(
+                        unique(detect_test_gp[:, :optimization_method])
+                    ) == 1
 
-                optim_minimizer, optim_minimum = optimization_wrapper(
-                    objective_function_closure,
-                    optim_method;
-                    kwargs...,
-                )
+                    optim_method = detect_test_gp[1, :optimization_method]
 
-                optimal_outbreak_detection_spec = OutbreakDetectionSpecification(
-                    optim_minimizer,
-                    outbreak_detection_spec.moving_average_lag,
-                    outbreak_detection_spec.percent_visit_clinic,
-                    outbreak_detection_spec.percent_clinic_tested,
-                    outbreak_detection_spec.alert_method.method_name,
-                )
+                    optim_minimizer, optim_minimum = optimization_wrapper(
+                        objective_function_closure,
+                        optim_method;
+                        kwargs...,
+                    )
 
-                testarr = create_testing_arrs(
-                    ensemble_inc_arr,
-                    noise_array,
-                    optimal_outbreak_detection_spec,
-                    individual_test_spec,
-                )[1]
-
-                OT_chars = calculate_OutbreakThresholdChars(
-                    testarr, ensemble_inc_arr, thresholds_vec, noise_means
-                )
-
-                lock(lk)
-                push!(
-                    optim_df,
-                    (
-                        ensemble_spec,
-                        outbreak_spec,
-                        noise_spec,
-                        outbreak_detection_spec,
-                        individual_test_spec,
+                    optimal_outbreak_detection_spec = OutbreakDetectionSpecification(
                         optim_minimizer,
-                        1 - optim_minimum,
-                        optim_method,
-                        OT_chars,
-                    ),
-                )
-                unlock(lk)
+                        outbreak_detection_spec.moving_average_lag,
+                        outbreak_detection_spec.percent_visit_clinic,
+                        outbreak_detection_spec.percent_clinic_tested,
+                        outbreak_detection_spec.alert_method.method_name,
+                    )
 
-                next!(prog)
-                println("")
+                    testarr = create_testing_arrs(
+                        ensemble_inc_arr,
+                        noise_array,
+                        optimal_outbreak_detection_spec,
+                        individual_test_spec,
+                    )[1]
+
+                    OT_chars = calculate_OutbreakThresholdChars(
+                        testarr, ensemble_inc_arr, thresholds_vec, noise_means
+                    )
+
+                    lock(lk)
+                    push!(
+                        optim_df,
+                        (
+                            ensemble_spec,
+                            outbreak_spec,
+                            noise_spec,
+                            outbreak_detection_spec,
+                            individual_test_spec,
+                            optim_minimizer,
+                            1 - optim_minimum,
+                            optim_method,
+                            accuracy_function,
+                            OT_chars,
+                        ),
+                    )
+                    unlock(lk)
+
+                    next!(prog)
+                    println("")
+                end
             end
         end
     end

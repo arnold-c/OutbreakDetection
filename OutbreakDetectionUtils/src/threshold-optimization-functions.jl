@@ -57,7 +57,8 @@ end
 function run_optimization(
     objective_function,
     OT_chars_param_dict,
-    optim_method::TMethod = QD;
+    optim_method::TMethod = MSO,
+    accuracy_measure::TAccuracy =
     kwargs...,
 ) where {TMethod<:Type{<:OptimizationMethods}}
     UnPack.@unpack scenario_spec, ensemble_inc_arr, thresholds_vec, seed =
@@ -217,7 +218,8 @@ function objective_function(
     noise_array,
     outbreak_detection_specification,
     individual_test_specification,
-    thresholds_vec = inputs
+    thresholds_vec,
+    accuracy_function = inputs
 
     outbreak_detection_specification = OutbreakDetectionSpecification(
         alert_threshold_vec[1],
@@ -235,14 +237,14 @@ function objective_function(
     )[1]
 
     objective = calculate_ensemble_objective_metric(
-        testarr, ensemble_inc_arr, thresholds_vec
+        accuracy_function, testarr, ensemble_inc_arr, thresholds_vec
     )
 
     return objective
 end
 
 function calculate_ensemble_objective_metric(
-    testarr, infecarr, thresholds_vec
+    accuracy_function, testarr, infecarr, thresholds_vec
 )
     mean_accuracy = map(axes(infecarr, 3)) do sim
         dailychars = calculate_daily_detection_characteristics(
@@ -253,7 +255,7 @@ function calculate_ensemble_objective_metric(
         alertbounds = calculate_outbreak_thresholds(alertrle; ncols = 3)
 
         accuracy = calculate_outbreak_detection_accuracy(
-            outbreakbounds, alertbounds
+            accuracy_function, outbreakbounds, alertbounds
         )
     end
 
@@ -261,7 +263,7 @@ function calculate_ensemble_objective_metric(
 end
 
 function calculate_outbreak_detection_accuracy(
-    outbreakbounds, alertbounds
+    accuracy_function, outbreakbounds, alertbounds
 )
     filtered_matched_bounds = match_outbreak_detection_bounds(
         outbreakbounds, alertbounds
@@ -278,7 +280,9 @@ function calculate_outbreak_detection_accuracy(
     perc_true_outbreaks_detected = n_true_outbreaks_detected / noutbreaks
     perc_alerts_correct = n_correct_alerts / nalerts # c.f. PPV
 
-    accuracy = NaNMath.mean([perc_true_outbreaks_detected, perc_alerts_correct])
+    accuracy = accuracy_function(
+        perc_alerts_correct, perc_true_outbreaks_detected
+    )
 
     return accuracy
 end
