@@ -1,6 +1,5 @@
 module OutbreakDetectionUtils
 
-using Optim: MultivariateOptimizationResults
 include("DrWatson-helpers.jl")
 export outdir
 
@@ -51,7 +50,8 @@ export create_testing_arrs, create_testing_arrs!, calculate_tested!,
     calculate_OutbreakThresholdChars,
     calculate_test_positivity, calculate_outbreak_detection_characteristics,
     filter_first_matched_bounds, calculate_first_matched_bounds_index,
-    calculate_cases_before_after_alert!, calculate_cases_before_after_alert
+    calculate_cases_before_after_alert!, calculate_cases_before_after_alert,
+    calculate_f_beta_score, arithmetic_mean
 
 include("ensemble-functions.jl")
 export create_combinations_vec, create_ensemble_spec_combinations,
