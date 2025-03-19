@@ -163,14 +163,18 @@ test_spec_vec = [
 ]
 
 #%%
+accuracy_functions = [arithmetic_mean, calculate_f_beta_score]
+
+#%%
 optim_df = OutbreakDetectionUtils.run_scenario_optimizations(
     ensemble_spec_vec,
     outbreak_spec_vec,
     noise_spec_vec,
     outbreak_detection_spec_vec,
     test_spec_vec,
-    MSO;
-    executor = SequentialEx(),
+    MSO,
+	accuracy_functions;
+    executor = ThreadedEx(),
 )
 
 #%%
