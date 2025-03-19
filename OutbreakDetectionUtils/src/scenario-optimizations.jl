@@ -135,6 +135,7 @@ function check_missing_scenario_optimizations(
         :outbreak_detection_spec,
         :test_spec,
         :optimization_method,
+        :accuracy_function,
     ]
 
     combinations_to_run = DataFrames.DataFrame(
