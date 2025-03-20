@@ -88,8 +88,8 @@ outbreak_spec_vec = create_combinations_vec(
 # scenario's noise mean, but that would break implementation using NoiseSpecification
 # struct currently
 poisson_noise_mean_scaling_vec = [
-	1.0,
-	# collect(2.0:2.0:8.0)...
+    1.0, 2.0
+    # collect(2.0:2.0:8.0)...,
 ]
 
 poisson_noise_spec_vec = create_combinations_vec(
@@ -123,8 +123,8 @@ dynamical_noise_spec_vec = create_combinations_vec(
 )
 
 noise_spec_vec = vcat(
-	poisson_noise_spec_vec,
-	# dynamical_noise_spec_vec
+    poisson_noise_spec_vec,
+    dynamical_noise_spec_vec[1:2],
 )
 
 #%%
@@ -132,7 +132,7 @@ noise_spec_vec = vcat(
 alertthreshold_vec = 5.0
 moveavglag_vec = [7]
 perc_clinic_vec = [1.0]
-perc_clinic_test_vec = collect(0.1)
+perc_clinic_test_vec = collect(0.1:0.1:1.0)
 alert_method_vec = ["movingavg"]
 
 outbreak_detection_spec_vec = create_combinations_vec(
@@ -149,21 +149,24 @@ outbreak_detection_spec_vec = create_combinations_vec(
 #%%
 test_spec_vec = [
     # PROTOTYPE_RDT_TEST_SPECS...,
-    # IndividualTestSpecification(0.85, 0.85, 0),
-    # IndividualTestSpecification(0.9, 0.9, 0),
+    IndividualTestSpecification(0.85, 0.85, 0),
+    IndividualTestSpecification(0.9, 0.9, 0),
     # CLINICAL_TEST_SPECS...,
     # IndividualTestSpecification(0.98, 0.98, 0),
     # IndividualTestSpecification(0.98, 0.98, 3),
     # IndividualTestSpecification(0.98, 0.98, 7),
     # IndividualTestSpecification(0.98, 0.98, 14),
-    # IndividualTestSpecification(1.0, 1.0, 0),
+    IndividualTestSpecification(1.0, 1.0, 0),
     # IndividualTestSpecification(1.0, 1.0, 3),
     # IndividualTestSpecification(1.0, 1.0, 7),
     IndividualTestSpecification(1.0, 1.0, 14),
 ]
 
 #%%
-accuracy_functions = [calculate_f_beta_score]
+accuracy_functions = [
+    # arithmetic_mean
+    calculate_f_beta_score
+]
 
 #%%
 optim_df = OutbreakDetectionUtils.run_scenario_optimizations(
@@ -173,22 +176,28 @@ optim_df = OutbreakDetectionUtils.run_scenario_optimizations(
     outbreak_detection_spec_vec,
     test_spec_vec,
     MSO,
-	accuracy_functions;
+    accuracy_functions;
     executor = ThreadedEx(),
-	force = true
+    force = true,
+    save_df = true,
+    return_df = true,
 )
 
 #%%
 filter(
-	:outbreak_detection_spec => x -> getproperty(x, :percent_visit_clinic) .== 0.6,
-	optim_df
+    :outbreak_detection_spec =>
+        x -> getproperty(x, :percent_visit_clinic) .== 0.6,
+    optim_df,
 )
 
 #%%
 original_optims = subset(
-	optim_df,
-	:outbreak_detection_spec => x -> getproperty.(x, :percent_visit_clinic) .== 0.6 .&& getproperty.(x, :percent_clinic_tested) .!= 1.0,
-	# :test_spec => ByRow(in([IndividualTestSpecification(1.0, 1.0, 0)]))
+    optim_df,
+    :outbreak_detection_spec =>
+        x ->
+            getproperty.(x, :percent_visit_clinic) .== 0.6 .&&
+            getproperty.(x, :percent_clinic_tested) .!= 1.0,
+    # :test_spec => ByRow(in([IndividualTestSpecification(1.0, 1.0, 0)]))
 )
 
 #%%
@@ -209,8 +218,8 @@ line_plot(
     ylims = (0.5, 1.0),
     force = true,
     save_plot = false,
-	clinical_hline = false,
-	colors = lineplot_colors
+    clinical_hline = false,
+    colors = lineplot_colors,
 )
 
 #%%
@@ -228,12 +237,12 @@ line_plot(
     ylims = (0.5, 1.0),
     force = true,
     save_plot = false,
-	clinical_hline = false,
-	colors = lineplot_colors
+    clinical_hline = false,
+    colors = lineplot_colors,
 )
 
 #%%
- line_plot(
+line_plot(
     original_optims_threshold_chars;
     outcome = :detectiondelays,
     ylabel = "Detection Delays\n(Days)",
@@ -249,7 +258,7 @@ line_plot(
     force = true,
     save_plot = false,
     clinical_hline = false,
-	colors = lineplot_colors
+    colors = lineplot_colors,
 )
 
 #%%
@@ -269,7 +278,7 @@ line_plot(
     force = true,
     save_plot = false,
     clinical_hline = false,
-	colors = lineplot_colors
+    colors = lineplot_colors,
 )
 
 #%%
@@ -302,26 +311,26 @@ line_plot(
     force = true,
     save_plot = false,
     clinical_hline = false,
-	colors = lineplot_colors,
+    colors = lineplot_colors,
     cases_scaling = gha_2022_scale_population_per_annum,
 )
 
 #%%
 create_optimal_thresholds_df(
-	original_optims_threshold_chars[1]
-    )
+    original_optims_threshold_chars[1]
+)
 
 #%%
 for thresholds_vec in original_optims_threshold_chars
-	noise_spec = unique(thresholds_vec.noise_specification)
-	@assert length(noise_spec) == 1
+    noise_spec = unique(thresholds_vec.noise_specification)
+    @assert length(noise_spec) == 1
 
     tabledirpath = outdir("ensemble", "scenario-optimization-summaries")
-	if !isdir(tabledirpath)
-		mkpath(tabledirpath)
-	end
+    if !isdir(tabledirpath)
+        mkpath(tabledirpath)
+    end
 
-	tablefilename = "$(noise_spec[1])_thresholds"
+    tablefilename = "$(noise_spec[1])_thresholds"
 
     create_and_save_xlsx_optimal_threshold_summaries(
         thresholds_vec;
@@ -332,12 +341,15 @@ end
 
 #%%
 all_visit_clinic_optims = filter(
-	:outbreak_detection_spec => x -> getproperty(x, :percent_visit_clinic) .== 1.0,
-	optim_df
+    :outbreak_detection_spec =>
+        x -> getproperty(x, :percent_visit_clinic) .== 1.0,
+    optim_df,
 )
 
 #%%
-all_visit_clinic_optims_threshold_chars = reshape_optim_df_to_matrix(all_visit_clinic_optims);
+all_visit_clinic_optims_threshold_chars = reshape_optim_df_to_matrix(
+    all_visit_clinic_optims
+);
 
 #%%
 line_plot(
@@ -354,16 +366,18 @@ line_plot(
     ylims = (0.5, 1.0),
     force = true,
     save_plot = true,
-	clinical_hline = false,
-	colors = lineplot_colors,
-	plotdirpath = DrWatson.plotsdir("ensemble", "scenario-optimizations", "perc_visit_clinic_1.0"),
+    clinical_hline = false,
+    colors = lineplot_colors,
+    plotdirpath = DrWatson.plotsdir(
+        "ensemble", "scenario-optimizations", "perc_visit_clinic_1.0"
+    ),
     plotname = "line_accuracy_plot",
     plotformat = "png",
     size = (1300, 800),
 )
 
 #%%
- line_plot(
+line_plot(
     all_visit_clinic_optims_threshold_chars;
     outcome = :detectiondelays,
     ylabel = "Detection Delays\n(Days)",
@@ -379,8 +393,10 @@ line_plot(
     force = true,
     save_plot = true,
     clinical_hline = false,
-	colors = lineplot_colors,
-	plotdirpath = DrWatson.plotsdir("ensemble", "scenario-optimizations", "perc_visit_clinic_1.0"),
+    colors = lineplot_colors,
+    plotdirpath = DrWatson.plotsdir(
+        "ensemble", "scenario-optimizations", "perc_visit_clinic_1.0"
+    ),
     plotname = "line_delays_plot",
     plotformat = "png",
     size = (1300, 800),
@@ -403,8 +419,10 @@ line_plot(
     force = true,
     save_plot = true,
     clinical_hline = false,
-	colors = lineplot_colors,
-	plotdirpath = DrWatson.plotsdir("ensemble", "scenario-optimizations", "perc_visit_clinic_1.0"),
+    colors = lineplot_colors,
+    plotdirpath = DrWatson.plotsdir(
+        "ensemble", "scenario-optimizations", "perc_visit_clinic_1.0"
+    ),
     plotname = "line_prop_alert_plot",
     plotformat = "png",
     size = (1300, 800),
@@ -426,9 +444,11 @@ line_plot(
     force = true,
     save_plot = true,
     clinical_hline = false,
-	colors = lineplot_colors,
+    colors = lineplot_colors,
     cases_scaling = gha_2022_scale_population_per_annum,
-	plotdirpath = DrWatson.plotsdir("ensemble", "scenario-optimizations", "perc_visit_clinic_1.0"),
+    plotdirpath = DrWatson.plotsdir(
+        "ensemble", "scenario-optimizations", "perc_visit_clinic_1.0"
+    ),
     plotname = "line_unavoidable_plot",
     plotformat = "png",
     size = (1300, 800),
