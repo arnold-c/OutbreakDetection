@@ -204,7 +204,7 @@ function run_missing_scenario_optimizations!(
     )
 
     lk = ReentrantLock()
-    FLoops.@floop executor for inc_gp in incidence_sim_grouped_df
+    for inc_gp in incidence_sim_grouped_df
         ensemble_spec = inc_gp[1, :ensemble_spec]
         outbreak_spec = inc_gp[1, :outbreak_spec]
 
@@ -218,7 +218,8 @@ function run_missing_scenario_optimizations!(
             base_param_dict
         )
 
-        for noise_gp in DataFrames.groupby(inc_gp, [:noise_spec])
+        FLoops.@floop executor for noise_gp in
+                                   DataFrames.groupby(inc_gp, [:noise_spec])
             noise_spec = noise_gp[1, :noise_spec]
 
             println(
