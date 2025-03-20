@@ -40,6 +40,7 @@ XLSX = "fdbf4ff8-1666-58a4-91e7-1b58723a45e0"
 
 [compat]
 Dates = "1.11.0"
+Match = "2.4.0"
 MultistartOptimization = "0.2.2"
 NLopt = "0.6.5"
 Optim = "1.11.0"
