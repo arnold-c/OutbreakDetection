@@ -30,10 +30,17 @@ function run_scenario_optimizations(
     ),
     force = false,
     return_df = true,
+    save_df = true,
     disable_time_check = false,
     time_per_run_s = 98,
     kwargs...,
 ) where {TMethod<:Type{<:OptimizationMethods}}
+    if length(save_df + return_df) == 0
+        error(
+            "At least one of `save_df` and `return_df` must be `true`. Instead, got `save_df = ` $save_df, and `return_df = ` $return_df",
+        )
+    end
+
     if !isdir(filedir)
         mkpath(filedir)
     end
@@ -102,11 +109,13 @@ function run_scenario_optimizations(
         kwargs...,
     )
 
-    @tagsave(
-        optimization_output_filepath,
-        Dict("threshold_optim_df" => optim_df)
-    )
-    @info "🟢 Saved optimal ews_df to $(optimization_output_filepath) 🟢"
+    if save_df
+        @tagsave(
+            optimization_output_filepath,
+            Dict("threshold_optim_df" => optim_df)
+        )
+        @info "🟢 Saved optimal ews_df to $(optimization_output_filepath) 🟢"
+    end
 
     if return_df
         return optim_df
