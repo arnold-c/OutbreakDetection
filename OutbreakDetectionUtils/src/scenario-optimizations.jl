@@ -22,8 +22,8 @@ function run_scenario_optimizations(
     accuracy_functions = [arithmetic_mean, calculate_f_beta_score];
     seed = 1234,
     executor = FLoops.SequentialEx(),
-    filedir = outdir("ensemble", "scenario-optimizations"),
     optimization_filename_base = "alert-threshold-optimization.jld2",
+    filedir = outdir("ensemble", "scenario-optimizations"),
     optimization_output_filepath = joinpath(
         filedir,
         string(Dates.now()) * "_" * optimization_filename_base,
