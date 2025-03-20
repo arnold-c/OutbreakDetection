@@ -565,7 +565,14 @@ Implement as `calculate_f_beta_score(perc_alerts_correct, perc_true_outbreaks_de
 function calculate_f_beta_score(
     precision, recall; beta = 1
 )
-    return (1 + beta^2) * (precision * recall) / ((beta^2 * precision) + recall)
+    f_beta =
+        (1 + beta^2) * (precision * recall) / ((beta^2 * precision) + recall)
+
+    if isnan(f_beta)
+        f_beta = 0.0
+    end
+
+    return f_beta
 end
 
 function calculate_delay_vec(first_matchedbounds)
