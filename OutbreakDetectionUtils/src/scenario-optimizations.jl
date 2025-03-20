@@ -10,6 +10,7 @@ using REPL: REPL
 using REPL.TerminalMenus: RadioMenu, request
 using StyledStrings
 using Dates: Dates
+using Match: Match
 
 function run_scenario_optimizations(
     ensemble_specifications,
@@ -144,7 +145,7 @@ function check_missing_scenario_optimizations(
             outbreak_detection_specifications,
             individual_test_specifications,
             [optim_method],
-            accuracy_functions,
+            nameof.(accuracy_functions),
         ),
         scenario_parameter_symbols,
     )
@@ -249,9 +250,14 @@ function run_missing_scenario_optimizations!(
                 for accuracy_function_df in DataFrames.groupby(
                     detect_test_gp, [:accuracy_function]
                 )
-                    accuracy_function = accuracy_function_df[
+                    accuracy_function_symbol = accuracy_function_df[
                         1, :accuracy_function
                     ]
+                    accuracy_function = Match.@match accuracy_function_symbol begin
+                        :arithmetic_mean => arithmetic_mean
+                        :calculate_f_beta_score => calculate_f_beta_score
+                    end
+
                     println(
                         styled"\t\t\t\t-> Accuracy Function: {yellow,inverse: $(accuracy_function)}"
                     )
@@ -311,7 +317,7 @@ function run_missing_scenario_optimizations!(
                             optim_minimizer,
                             1 - optim_minimum,
                             optim_method,
-                            nameof(accuracy_function),
+                            accuracy_function_symbol,
                             OT_chars,
                         ),
                     )
