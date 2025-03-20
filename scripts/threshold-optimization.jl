@@ -163,7 +163,7 @@ test_spec_vec = [
 ]
 
 #%%
-accuracy_functions = [arithmetic_mean, calculate_f_beta_score]
+accuracy_functions = [calculate_f_beta_score]
 
 #%%
 optim_df = OutbreakDetectionUtils.run_scenario_optimizations(
