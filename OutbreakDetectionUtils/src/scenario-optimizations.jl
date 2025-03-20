@@ -163,12 +163,15 @@ function check_missing_scenario_optimizations(
     if missing_runs > 0 && !disable_time_check
         nrun_time_s = missing_runs * time_per_run_s
         nrun_time_minutes = round(nrun_time_s / 60; digits = 2)
+        nrun_time_hours = divrem(nrun_time_minutes, 60)
         nrun_time_message = if nrun_time_s < 10
             "less than 10 seconds"
         elseif nrun_time_s < 60
             "approximately $(round(nrun_time_s; digits = 0)) seconds"
-        else
+        elseif nrun_time_minutes < 120
             "approximately $(nrun_time_minutes) minutes"
+        else
+            "approximately $(nrun_time_hours[1]) hours and $(nrun_time_hours[2]) minutes"
         end
         choice = request(
             "There are $(missing_runs) missing simulations. This is estimated to take $(nrun_time_message). Do you want to continue?",
