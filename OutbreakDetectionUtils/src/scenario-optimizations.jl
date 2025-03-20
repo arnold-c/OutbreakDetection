@@ -37,7 +37,7 @@ function run_scenario_optimizations(
 ) where {TMethod<:Type{<:OptimizationMethods}}
     if length(save_df + return_df) == 0
         error(
-            "At least one of `save_df` and `return_df` must be `true`. Instead, got `save_df = ` $save_df, and `return_df = ` $return_df",
+            "At least one of `save_df` and `return_df` must be `true`. Instead, got `save_df = ` $save_df, and `return_df = ` $return_df"
         )
     end
 
@@ -68,7 +68,7 @@ function run_scenario_optimizations(
             optimal_threshold = Float64[],
             optimal_accuracy = Float64[],
             optimization_method = Union{Type{QD},Type{MSO}}[],
-            accuracy_function = Symbol[],
+            accuracy_function = Function[],
             OT_chars = StructVector{<:OutbreakThresholdChars}[],
         ))
     end
@@ -146,6 +146,12 @@ function check_missing_scenario_optimizations(
         :accuracy_function,
     ]
 
+    @assert mapreduce(
+        f -> in(f, [arithmetic_mean, calculate_f_beta_score]),
+        +,
+        unique(accuracy_functions),
+    ) == length(unique(accuracy_functions))
+
     combinations_to_run = DataFrames.DataFrame(
         Iterators.product(
             ensemble_specifications,
@@ -154,7 +160,7 @@ function check_missing_scenario_optimizations(
             outbreak_detection_specifications,
             individual_test_specifications,
             [optim_method],
-            nameof.(accuracy_functions),
+            accuracy_functions,
         ),
         scenario_parameter_symbols,
     )
@@ -260,14 +266,9 @@ function run_missing_scenario_optimizations!(
                 for accuracy_function_df in DataFrames.groupby(
                     detect_test_gp, [:accuracy_function]
                 )
-                    accuracy_function_symbol = accuracy_function_df[
+                    accuracy_function = accuracy_function_df[
                         1, :accuracy_function
                     ]
-                    accuracy_function = Match.@match accuracy_function_symbol begin
-                        :arithmetic_mean => arithmetic_mean
-                        :calculate_f_beta_score => calculate_f_beta_score
-                    end
-
                     println(
                         styled"\t\t\t\t-> Accuracy Function: {yellow,inverse: $(accuracy_function)}"
                     )
@@ -327,7 +328,7 @@ function run_missing_scenario_optimizations!(
                             optim_minimizer,
                             1 - optim_minimum,
                             optim_method,
-                            accuracy_function_symbol,
+                            accuracy_function,
                             OT_chars,
                         ),
                     )
