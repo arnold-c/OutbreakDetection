@@ -89,7 +89,7 @@ outbreak_spec_vec = create_combinations_vec(
 # struct currently
 poisson_noise_mean_scaling_vec = [
 	1.0,
-	collect(2.0:2.0:8.0)...
+	# collect(2.0:2.0:8.0)...
 ]
 
 poisson_noise_spec_vec = create_combinations_vec(
@@ -124,7 +124,7 @@ dynamical_noise_spec_vec = create_combinations_vec(
 
 noise_spec_vec = vcat(
 	poisson_noise_spec_vec,
-	dynamical_noise_spec_vec
+	# dynamical_noise_spec_vec
 )
 
 #%%
@@ -132,7 +132,7 @@ noise_spec_vec = vcat(
 alertthreshold_vec = 5.0
 moveavglag_vec = [7]
 perc_clinic_vec = [1.0]
-perc_clinic_test_vec = collect(0.1:0.1:1.0)
+perc_clinic_test_vec = collect(0.1)
 alert_method_vec = ["movingavg"]
 
 outbreak_detection_spec_vec = create_combinations_vec(
@@ -149,14 +149,14 @@ outbreak_detection_spec_vec = create_combinations_vec(
 #%%
 test_spec_vec = [
     # PROTOTYPE_RDT_TEST_SPECS...,
-    IndividualTestSpecification(0.85, 0.85, 0),
-    IndividualTestSpecification(0.9, 0.9, 0),
+    # IndividualTestSpecification(0.85, 0.85, 0),
+    # IndividualTestSpecification(0.9, 0.9, 0),
     # CLINICAL_TEST_SPECS...,
     # IndividualTestSpecification(0.98, 0.98, 0),
     # IndividualTestSpecification(0.98, 0.98, 3),
     # IndividualTestSpecification(0.98, 0.98, 7),
     # IndividualTestSpecification(0.98, 0.98, 14),
-    IndividualTestSpecification(1.0, 1.0, 0),
+    # IndividualTestSpecification(1.0, 1.0, 0),
     # IndividualTestSpecification(1.0, 1.0, 3),
     # IndividualTestSpecification(1.0, 1.0, 7),
     IndividualTestSpecification(1.0, 1.0, 14),
