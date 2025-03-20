@@ -32,7 +32,7 @@ function run_scenario_optimizations(
     return_df = true,
     save_df = true,
     disable_time_check = false,
-    time_per_run_s = 98,
+    time_per_run_s = 45,
     kwargs...,
 ) where {TMethod<:Type{<:OptimizationMethods}}
     if length(save_df + return_df) == 0
