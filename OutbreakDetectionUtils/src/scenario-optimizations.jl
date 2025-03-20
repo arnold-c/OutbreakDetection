@@ -60,9 +60,7 @@ function run_scenario_optimizations(
             optimal_threshold = Float64[],
             optimal_accuracy = Float64[],
             optimization_method = Union{Type{QD},Type{MSO}}[],
-            accuracy_function = Union{
-                typeof(arithmetic_mean),typeof(calculate_f_beta_score)
-            }[],
+            accuracy_function = Symbol[],
             OT_chars = StructVector{<:OutbreakThresholdChars}[],
         ))
     end
@@ -310,7 +308,7 @@ function run_missing_scenario_optimizations!(
                             optim_minimizer,
                             1 - optim_minimum,
                             optim_method,
-                            accuracy_function,
+                            nameof(accuracy_function),
                             OT_chars,
                         ),
                     )
