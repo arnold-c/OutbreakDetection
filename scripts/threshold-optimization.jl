@@ -178,7 +178,7 @@ optim_df = OutbreakDetectionUtils.run_scenario_optimizations(
     test_spec_vec,
     MSO,
     accuracy_functions;
-    executor = SequentialEx(),
+    executor = ThreadedEx(),
     force = true,
     save_df = true,
     return_df = true,
