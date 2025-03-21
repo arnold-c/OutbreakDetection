@@ -1,5 +1,6 @@
 using DataFrames: DataFrames
 using DrWatson: @dict, @tagsave
+using Base: unique_from
 using DataFramesMeta: exec
 using StructArrays: StructVector
 using ProgressMeter: Progress, next!
@@ -233,9 +234,9 @@ function run_missing_scenario_optimizations!(
             base_param_dict
         )
 
-        FLoops.@floop executor for noise_gp in
-                                   DataFrames.groupby(inc_gp, [:noise_spec])
-            noise_spec = noise_gp[1, :noise_spec]
+        unique_noise_specs = unique(inc_gp[:, :noise_spec])
+        FLoops.@floop executor for noise_spec in unique_noise_specs
+            noise_gp = filter(:noise_spec => x -> x == noise_spec, inc_gp)
 
             println(
                 styled"{green:\n=================================================================}"
