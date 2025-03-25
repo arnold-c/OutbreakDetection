@@ -55,7 +55,8 @@ export isocline_accuracy_plot
 include("line_plots.jl")
 export line_plot,
     collect_OptimalThresholdCharacteristics,
-    reshape_optim_df_to_matrix
+    reshape_optim_df_to_matrix,
+    sort_noise_specifications
 
 @static if false
     include("../scripts/single-sim_plots.jl")

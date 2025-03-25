@@ -514,7 +514,8 @@ function reshape_optim_df_to_matrix(
                 noise_spec ->
                     noise_description == get_noise_description(noise_spec),
                 noise_spec_vec,
-            )
+            ) |>
+            v -> sort_noise_specifications(convert(Vector{typeof(v[1])}, v))
         end
 
     num_shape_noise_specifications = length(shape_noise_specifications[1])
@@ -577,4 +578,24 @@ function reshape_optim_df_to_matrix(
     end
 
     return optim_arr
+end
+
+function sort_noise_specifications(
+    v::AbstractVector{T}
+) where {T<:PoissonNoiseSpecification}
+    noise_magnitudes = getproperty.(v, :noise_mean_scaling)
+
+    noise_orders = sortperm(noise_magnitudes)
+
+    return v[noise_orders]
+end
+
+function sort_noise_specifications(
+    v::AbstractVector{T}
+) where {T<:DynamicalNoiseSpecification}
+    noise_magnitudes = getproperty.(v, :vaccination_coverage)
+
+    noise_orders = sortperm(noise_magnitudes; rev = true)
+
+    return v[noise_orders]
 end
