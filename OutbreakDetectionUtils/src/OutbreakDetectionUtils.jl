@@ -15,7 +15,8 @@ export SimTimeParameters, EnsembleSpecification, DynamicsParameters,
     table_test_type, plot_test_description,
     PoissonNoiseSpecification, DynamicalNoiseSpecification, NoiseSpecification,
     get_noise_description, get_noise_magnitude, getdirpath,
-    ScenarioSpecification, TestPositivity, OptimalThresholdCharacteristics
+    ScenarioSpecification, TestPositivity, OptimalThresholdCharacteristics,
+    OptimizationMethods, QD, MSO
 
 include("dynamics-constants.jl")
 export POPULATION_N, LATENT_PER_DAYS, DUR_INF_DAYS, R0, SIGMA, GAMMA,
@@ -49,7 +50,8 @@ export create_testing_arrs, create_testing_arrs!, calculate_tested!,
     calculate_OutbreakThresholdChars,
     calculate_test_positivity, calculate_outbreak_detection_characteristics,
     filter_first_matched_bounds, calculate_first_matched_bounds_index,
-    calculate_cases_before_after_alert!, calculate_cases_before_after_alert
+    calculate_cases_before_after_alert!, calculate_cases_before_after_alert,
+    calculate_f_beta_score, arithmetic_mean
 
 include("ensemble-functions.jl")
 export create_combinations_vec, create_ensemble_spec_combinations,
@@ -75,5 +77,19 @@ export calculate_optimal_threshold, calculate_OptimalThresholdCharacteristics,
     save_xlsx_optimal_threshold_summaries,
     create_and_save_xlsx_optimal_threshold_summaries,
     gt_table
+
+include("threshold-optimization-functions.jl")
+export run_optimization,
+    setup_optimization,
+    objective_function,
+    calculate_ensemble_objective_metric,
+    calculate_outbreak_detection_accuracy,
+    optimization_wrapper
+
+include("scenario-optimizations.jl")
+export run_scenario_optimizations,
+    check_missing_scenario_optimizations,
+    run_missing_scenario_optimizations!,
+    get_most_recent_optimization_filepath
 
 end

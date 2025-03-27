@@ -455,10 +455,16 @@ function calculate_outbreak_detection_characteristics(
     perc_alerts_false = n_false_alerts / nalerts
     perc_alerts_correct = n_correct_alerts / nalerts # c.f. PPV
 
-    accuracy = NaNMath.mean([perc_true_outbreaks_detected, perc_alerts_correct])
+    accuracy = arithmetic_mean(
+        perc_alerts_correct, perc_true_outbreaks_detected
+    )
+    f1_score = calculate_f_beta_score(
+        perc_alerts_correct, perc_true_outbreaks_detected
+    )
 
     return (
         accuracy = accuracy,
+        f1_score = f1_score,
         matched_bounds = filtered_matched_bounds,
         noutbreaks = noutbreaks,
         nalerts = nalerts,
@@ -530,6 +536,43 @@ function match_outbreak_detection_bounds(outbreakbounds, alertbounds)
     return filtered_matched_bounds,
     outbreak_dur_vec, alert_dur_vec, periodssum_vec,
     alerts_per_outbreak_vec
+end
+
+"""
+    arithmetic_mean(precision, recall)
+
+Generic formula to calculate the arithmetic mean. Used for the `accuracy` measure for outbreak detection.
+
+  - Precision = PPV (% alerts that are correct)
+  - Recall = sensitivity (% of outbreaks detected)
+
+Implement as `arithmetic_mean(perc_alerts_correct, perc_true_outbreaks_detected)`
+"""
+function arithmetic_mean(precision, recall)
+    return NaNMath.mean([precision, recall])
+end
+
+"""
+    calculate_f_beta_score(precision, recall; beta = 1)
+
+Generic formula to calculate the F-score. When beta=1, calculates the F1 score, which weights precision and recall equally (the harmonic mean). beta=2 weights precision more than recall, and beta=0.5 weights recall more.
+
+  - Precision = PPV (% alerts that are correct)
+  - Recall = sensitivity (% of outbreaks detected)
+
+Implement as `calculate_f_beta_score(perc_alerts_correct, perc_true_outbreaks_detected; beta = 1)`
+"""
+function calculate_f_beta_score(
+    precision, recall; beta = 1
+)
+    f_beta =
+        (1 + beta^2) * (precision * recall) / ((beta^2 * precision) + recall)
+
+    if isnan(f_beta)
+        f_beta = 0.0
+    end
+
+    return f_beta
 end
 
 function calculate_delay_vec(first_matchedbounds)
