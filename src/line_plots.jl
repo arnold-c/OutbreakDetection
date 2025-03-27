@@ -326,24 +326,33 @@ function _line_plot(
 )
     kwargs_dict = Dict{Symbol,Any}(kwargs)
 
-    long_df = create_optimal_threshold_summary_df(
-        optimal_thresholds_vec,
-        outcome;
-        percentiles = [0.1, 0.9],
-        nboots = nothing,
-    )
+    if outcome != :alert_threshold
+        long_df = create_optimal_threshold_summary_df(
+            optimal_thresholds_vec,
+            outcome;
+            percentiles = [0.1, 0.9],
+            nboots = nothing,
+        )
 
-    select!(
-        long_df,
-        Cols(
-            :percent_clinic_tested,
-            :sensitivity,
-            :specificity,
-            :test_lag,
-            string(outcome) * "_mean",
-            x -> endswith(x, "th"),
-        ),
-    )
+        DataFrames.select!(
+            long_df,
+            DataFrames.Cols(
+                :percent_clinic_tested,
+                :sensitivity,
+                :specificity,
+                :test_lag,
+                string(outcome) * "_mean",
+                x -> endswith(x, "th"),
+            ),
+        )
+
+    else
+        long_df = create_optimal_thresholds_df(optimal_thresholds_vec)
+        DataFrames.select!(
+            long_df,
+            DataFrames.Not(:accuracy),
+        )
+    end
 
     if in(outcome, [:avoidable_cases, :unavoidable_cases])
         DataFrames.transform!(
@@ -434,9 +443,13 @@ function _line_plot_facet(
     ypos = haskey(kwargs_dict, :x_facet_label) ? 2 : 1
     xpos = 1
 
-    outcome_mean = string(outcome) * "_mean"
-    outcome_10th = string(outcome) * "_10th"
-    outcome_90th = string(outcome) * "_90th"
+    if outcome != :alert_threshold
+		outcome_mean = string(outcome) * "_mean"
+        outcome_10th = string(outcome) * "_10th"
+        outcome_90th = string(outcome) * "_90th"
+	else
+		outcome_mean = string(outcome)
+    end
 
     ax = Axis(
         gl[ypos, xpos];
@@ -482,13 +495,15 @@ function _line_plot_facet(
             linestyle = linestyle,
         )
 
-        band!(
-            ax,
-            subsetted_df.percent_clinic_tested,
-            subsetted_df[!, outcome_10th],
-            subsetted_df[!, outcome_90th];
-            color = (colors[i], alpha),
-        )
+        if outcome != :alert_threshold
+            band!(
+                ax,
+                subsetted_df.percent_clinic_tested,
+                subsetted_df[!, outcome_10th],
+                subsetted_df[!, outcome_90th];
+                color = (colors[i], alpha),
+            )
+        end
 
         ylims!(ax, ylims)
     end
