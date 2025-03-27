@@ -352,6 +352,31 @@ for accuracy_function in unique(optim_df.accuracy_function)
 
     line_plot(
         all_visit_clinic_optims_threshold_chars;
+        outcome = :alert_threshold,
+        ylabel = "Alert Threshold",
+        alpha = alpha,
+        facet_fontsize = 28,
+        legendsize = legendsize,
+        xlabelsize = xlabelsize,
+        ylabelsize = ylabelsize,
+        show_x_facet_label = true,
+        show_y_facet_label = false,
+        ylims = (0.0, 18.0),
+        force = true,
+        save_plot = true,
+        clinical_hline = false,
+        colors = OutbreakDetection.lineplot_colors,
+        plotdirpath = DrWatson.plotsdir(
+            "ensemble", "scenario-optimizations", "perc_visit_clinic_1.0",
+            accuracy_function_str,
+        ),
+        plotname = "line_threshold_plot",
+        plotformat = "png",
+        size = (1300, 800),
+    )
+
+    line_plot(
+        all_visit_clinic_optims_threshold_chars;
         outcome = :accuracy,
         ylabel = "Detection Accuracy",
         alpha = alpha,
