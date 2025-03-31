@@ -23,7 +23,7 @@ function line_plot(
     size = (1300, 800),
     colors = lineplot_colors,
     alpha = 0.5,
-    xlabel = "Proportion Of Clinic Visits Tested",
+    xlabel = "Proportion Of Infected Individuals Tested",
     ylabel = "Outbreak Detection\nAccuracy",
     facet_fontsize = 24,
     legendsize = 28,
@@ -95,7 +95,7 @@ function line_plot(
     size = (1300, 800),
     colors = lineplot_colors,
     alpha = 0.5,
-    xlabel = "Proportion Of Clinic Visits Tested",
+    xlabel = "Proportion Of Infected Individuals Tested",
     ylabel = "Outbreak Detection\nAccuracy",
     facet_fontsize = 24,
     legendsize = 28,
@@ -444,11 +444,11 @@ function _line_plot_facet(
     xpos = 1
 
     if outcome != :alert_threshold
-		outcome_mean = string(outcome) * "_mean"
+        outcome_mean = string(outcome) * "_mean"
         outcome_10th = string(outcome) * "_10th"
         outcome_90th = string(outcome) * "_90th"
-	else
-		outcome_mean = string(outcome)
+    else
+        outcome_mean = string(outcome)
     end
 
     ax = Axis(
