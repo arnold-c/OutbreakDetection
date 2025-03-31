@@ -90,6 +90,8 @@ include("scenario-optimizations.jl")
 export run_scenario_optimizations,
     check_missing_scenario_optimizations,
     run_missing_scenario_optimizations!,
-    get_most_recent_optimization_filepath
+    get_most_recent_optimization_filepath,
+    reshape_optim_df_to_matrix,
+    sort_noise_specifications
 
 end
