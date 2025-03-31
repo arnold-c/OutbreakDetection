@@ -157,8 +157,7 @@ Here we simulate time series of 100 years and we define a measles outbreak as a 
 Only events meeting all 3 criteria are classified as outbreaks.
 The incidence of non-measles febrile rash (i.e., noise) does not affect the outbreak status of a region but may affect the alert status triggered by the testing protocol.
 
-Each day, 60% of the measles and non-measles febrile rash cases visit the clinic for treatment, and a percentage (P) of these clinic visits are tested; all clinic visits are deemed to be suspected measles cases because they meet the clinical case definition.
-The percentage of clinic visits (P) that are tested is varied between 10% and 60%, in 10% increments.
+Each day, a percentage (P) of clinically-compatible cases of febrile rash are tested; P is fixed in a given scenario to a value between 10% and 100%, in 10% increments.
 Each "testing scenario" combines a testing rate (P) with one of the following tests:
 
 - An imperfect test with 85% sensitivity and specificity, and 0-day lag in result return. That is, 85% of true measles cases will be correctly labeled as positive, and 15% of non-measles febrile rash individuals that are tested will be incorrectly labeled as positive for measles. This acts as a lower bound of acceptability for a hypothetical measles RDT @20240613_tpp_measles_rubell_FV_EN
