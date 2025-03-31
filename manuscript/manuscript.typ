@@ -211,13 +211,13 @@ Notably, the surveillance accuracy declines with increasing noise and, at all no
 #let optimal_thresholds = csv("manuscript_files/tables/optimal-thresholds.csv")
 #figure(
     table(
-    columns: 9,
+    columns: 13,
     fill: (x, y) => {
       if y == 0 {gray}
       if y == 1 {gray}
     },
     align: center,
-    [], table.cell(colspan: 2, align: center, "Test Characteristic"), table.cell(colspan: 6, align: center, "Testing Rate"),
+    [], table.cell(colspan: 2, align: center, "Test Characteristic"), table.cell(colspan: 10, align: center, "Testing Rate"),
     ..optimal_thresholds.flatten()
   ),
   caption: [Optimal outbreak alert thresholds for imperfect and perfect diagnostic tests, under dynamical and static noise structures where the average daily noise incidence is 8 times the average daily measles incidence $Lambda(8)$. The test sensitivity equals the test specificity for all diagnostic tests.]

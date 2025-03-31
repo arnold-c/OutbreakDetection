@@ -34,8 +34,12 @@
 	),
 )
 
-#show figure.where(kind: table): set figure(supplement: [Supplemental Table])
-#show figure.where(kind: image): set figure(supplement: [Supplemental Figure])
+#show figure.where(kind: image): set figure(supplement: "Supplemental Figure")
+#show figure.where(kind: table): set figure(supplement: "Supplemental Table")
+#set math.equation(
+  numbering: "1",
+  supplement: "Supplemental Equation"
+)
 
 == Tables
 
