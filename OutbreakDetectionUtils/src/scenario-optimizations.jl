@@ -31,6 +31,7 @@ function run_scenario_optimizations(
     ),
     force = false,
     return_df = true,
+    filter_df_results = false,
     save_df = true,
     disable_time_check = false,
     time_per_run_s = 45,
@@ -74,15 +75,19 @@ function run_scenario_optimizations(
         ))
     end
 
-    missing_optimizations = check_missing_scenario_optimizations(
-        optim_df,
+    combinations_to_run = calculate_combination_to_run(
         ensemble_specifications,
         outbreak_specifications,
         noise_specifications,
         outbreak_detection_specifications,
         individual_test_specifications,
         optim_method,
-        accuracy_functions;
+        accuracy_functions,
+    )
+
+    missing_optimizations = check_missing_scenario_optimizations(
+        optim_df,
+        combinations_to_run;
         disable_time_check = disable_time_check,
         time_per_run_s = time_per_run_s,
     )
@@ -90,6 +95,15 @@ function run_scenario_optimizations(
     if Try.iserr(missing_optimizations)
         println(Try.unwrap_err(missing_optimizations))
         if return_df
+            if filter_df_results
+                println(
+                    "Returning previously computed threshold_optim_df, filtered for selected combinations"
+                )
+                return filter_optim_results(
+                    optim_df,
+                    combinations_to_run,
+                )
+            end
             println("Returning previously computed threshold_optim_df")
             return optim_df
         end
@@ -119,6 +133,12 @@ function run_scenario_optimizations(
     end
 
     if return_df
+        if filter_df_results
+            return filter_optim_results(
+                optim_df,
+                combinations_to_run,
+            )
+        end
         return optim_df
     end
 
@@ -127,16 +147,9 @@ end
 
 function check_missing_scenario_optimizations(
     optim_df,
-    ensemble_specifications,
-    outbreak_specifications,
-    noise_specifications,
-    outbreak_detection_specifications,
-    individual_test_specifications,
-    optim_method::TMethod = MSO,
-    accuracy_functions = [arithmetic_mean, calculate_f_beta_score];
+    combinations_to_run;
     disable_time_check = false,
     time_per_run_s = 45,
-) where {TMethod<:Type{<:OptimizationMethods}}
     scenario_parameter_symbols = [
         :ensemble_spec,
         :outbreak_spec,
@@ -145,27 +158,8 @@ function check_missing_scenario_optimizations(
         :test_spec,
         :optimization_method,
         :accuracy_function,
-    ]
-
-    @assert mapreduce(
-        f -> in(f, [arithmetic_mean, calculate_f_beta_score]),
-        +,
-        unique(accuracy_functions),
-    ) == length(unique(accuracy_functions))
-
-    combinations_to_run = DataFrames.DataFrame(
-        Iterators.product(
-            ensemble_specifications,
-            outbreak_specifications,
-            noise_specifications,
-            outbreak_detection_specifications,
-            individual_test_specifications,
-            [optim_method],
-            accuracy_functions,
-        ),
-        scenario_parameter_symbols,
-    )
-
+    ],
+)
     missing_combinations = DataFrames.antijoin(
         combinations_to_run,
         optim_df;
@@ -409,4 +403,62 @@ function get_most_recent_optimization_filepath(
         "_$(filename_base)",
     )
     return Try.Ok(most_recent_filepath)
+end
+
+function filter_optim_results(
+    optim_df,
+    combinations_to_run;
+    scenario_parameter_symbols = [
+        :ensemble_spec,
+        :outbreak_spec,
+        :noise_spec,
+        :outbreak_detection_spec,
+        :test_spec,
+        :optimization_method,
+        :accuracy_function,
+    ],
+)
+    return DataFrames.innerjoin(
+        optim_df,
+        combinations_to_run;
+        on = scenario_parameter_symbols,
+    )
+end
+
+function calculate_combination_to_run(
+    ensemble_specifications,
+    outbreak_specifications,
+    noise_specifications,
+    outbreak_detection_specifications,
+    individual_test_specifications,
+    optim_method::TMethod = MSO,
+    accuracy_functions = [arithmetic_mean, calculate_f_beta_score];
+    scenario_parameter_symbols = [
+        :ensemble_spec,
+        :outbreak_spec,
+        :noise_spec,
+        :outbreak_detection_spec,
+        :test_spec,
+        :optimization_method,
+        :accuracy_function,
+    ],
+) where {TMethod<:Type{<:OptimizationMethods}}
+    @assert mapreduce(
+        f -> in(f, [arithmetic_mean, calculate_f_beta_score]),
+        +,
+        unique(accuracy_functions),
+    ) == length(unique(accuracy_functions))
+
+    return DataFrames.DataFrame(
+        Iterators.product(
+            ensemble_specifications,
+            outbreak_specifications,
+            noise_specifications,
+            outbreak_detection_specifications,
+            individual_test_specifications,
+            [optim_method],
+            accuracy_functions,
+        ),
+        scenario_parameter_symbols,
+    )
 end
