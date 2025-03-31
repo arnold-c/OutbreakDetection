@@ -117,13 +117,18 @@ optim_df = OutbreakDetectionUtils.run_scenario_optimizations(
 
 #%%
 poisson_noise_optimal_solutions = DataFrames.filter(
-	:noise_spec => n -> n == PoissonNoiseSpecification("poisson", 8.0),
-	optim_df,
+    :noise_spec => n -> n == PoissonNoiseSpecification("poisson", 8.0),
+    optim_df,
 );
 
 dynamical_noise_optimal_solutions = DataFrames.filter(
-	:noise_spec => n -> n == DynamicalNoiseSpecification(
-        "dynamical", 5.0, 7, 14, "in-phase", 0.15, 0.0492
-    ),
-	optim_df,
+    :noise_spec =>
+        n ->
+            n == DynamicalNoiseSpecification(
+                "dynamical", 5.0, 7, 14, "in-phase", 0.15, 0.0492
+            ),
+    optim_df,
 );
+
+#%%
+optimal_threshold_characteristics = reshape_optim_df_to_matrix(optim_df);

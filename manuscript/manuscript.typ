@@ -198,7 +198,7 @@ We then compare testing scenarios at their respective optimal alert threshold.
 This allows for conclusions to be made about the surveillance system as a whole, rather than just single components.
 
 = Results
-The threshold that maximized surveillance accuracy depends on diagnostic test characteristics, the testing rate, and the structure of the non-measles noise (@tbl_od-optimal-thresholds).
+The threshold that maximized surveillance accuracy depends on diagnostic test characteristics, the testing rate, and the structure of the non-measles noise (@tbl_od-optimal-thresholds, @fig-alert-threshold).
 When the average noise incidence was 8 times higher than the average measles incidence ($Lambda (8)$), the optimal threshold (T#sub([O])) ranged between 1 and 7 test positive cases per day.
 Not surprisingly, the biggest driver of this difference was the testing rate; as a larger fraction of suspected cases are tested, the optimal threshold increases monotonically for all test and noise types (@tbl_od-optimal-thresholds).
 
@@ -224,6 +224,11 @@ Notably, the surveillance accuracy declines with increasing noise and, at all no
 )
 <tbl_od-optimal-thresholds>
 
+#figure(
+  image("manuscript_files/plots/optimal-thresholds_alert-threshold-plot.svg"),
+  caption: [The optimal alert threshold of outbreak detection systems under different testing rates and noise structures. Imperfect tests have the same values for sensitivity and specificity. Solid lines represent tests with 0-day turnaround times, and dashed lines represent tests with result delays. $Lambda(4)$ indicates the mean noise incidence is 4 times higher than the mean measles incidence, for example.]
+)
+<fig-alert-threshold>
 
 #figure(
   image("manuscript_files/plots/optimal-thresholds_accuracy-plot.svg"),
