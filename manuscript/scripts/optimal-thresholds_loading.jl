@@ -19,26 +19,17 @@ rdt_test_spec_vec = [
     IndividualTestSpecification(0.9, 0.9, 0),
 ]
 
-elisa_test_spec_vec = [
-#     # IndividualTestSpecification(0.98, 0.98, 0),
-#     IndividualTestSpecification(0.98, 0.98, 3),
-#     # IndividualTestSpecification(0.98, 0.98, 7),
-#     IndividualTestSpecification(0.98, 0.98, 14),
-]
-
 perfect_test_spec_vec = [
     IndividualTestSpecification(1.0, 1.0, 0),
-    # IndividualTestSpecification(1.0, 1.0, 3),
-    # IndividualTestSpecification(1.0, 1.0, 7),
     IndividualTestSpecification(1.0, 1.0, 14),
 ]
 
-optimal_threshold_test_spec_vec = vcat(
-    rdt_test_spec_vec, elisa_test_spec_vec, perfect_test_spec_vec
+test_spec_vec = vcat(
+    rdt_test_spec_vec,
+    perfect_test_spec_vec,
 )
 
-optimal_threshold_alertthreshold_vec = collect(1:1:15)
-
+#%%
 R_0_vec = [16.0]
 
 ensemble_dynamics_spec_vec = create_combinations_vec(
@@ -65,10 +56,38 @@ ensemble_spec_vec = create_combinations_vec(
     ),
 )
 
-alert_method_vec = ["movingavg"]
+#%%
+outbreak_threshold_vec = [5]
+min_outbreak_dur_vec = [30]
+min_outbreak_size_vec = [500]
+
+outbreak_spec_vec = create_combinations_vec(
+    OutbreakSpecification,
+    (outbreak_threshold_vec, min_outbreak_dur_vec, min_outbreak_size_vec),
+)
 
 #%%
-ensemble_noise_specification =
+#%%
+# This will get updated in optimization so just use placeholder
+alertthreshold_vec = 5.0
+moveavglag_vec = [7]
+perc_clinic_vec = [1.0]
+perc_clinic_test_vec = collect(0.1:0.1:1.0)
+alert_method_vec = ["movingavg"]
+
+outbreak_detection_spec_vec = create_combinations_vec(
+    OutbreakDetectionSpecification,
+    (
+        alertthreshold_vec,
+        moveavglag_vec,
+        perc_clinic_vec,
+        perc_clinic_test_vec,
+        alert_method_vec,
+    ),
+)
+
+#%%
+noise_spec_vec =
     filter(ensemble_noise_specification_vec) do noise_spec
         noise_spec.noise_type == "poisson" ||
             noise_spec.correlation == "in-phase"
@@ -77,25 +96,32 @@ ensemble_noise_specification =
 ensemble_specification = ensemble_spec_vec[1]
 alertmethod = alert_method_vec[1]
 
-optimal_threshold_core_params = (
-    alertthreshold_vec = optimal_threshold_alertthreshold_vec,
-    ensemble_specification = ensemble_specification,
-    outbreak_specification = ensemble_outbreak_specification,
-    moving_avg_detection_lag = ensemble_moving_avg_detection_lag,
-    percent_visit_clinic = ensemble_percent_visit_clinic,
-    alertmethod = alertmethod,
-)
-
 clinical_hline = false
 
+accuracy_functions = [arithmetic_mean]
+
 #%%
-optimal_threshold_characteristics = collect_OptimalThresholdCharacteristics(
-    ensemble_noise_specification,
-    ensemble_percent_clinic_tested_vec,
-    optimal_threshold_test_spec_vec,
-    optimal_threshold_core_params;
-    clinical_hline = clinical_hline,
-);
+optim_df = OutbreakDetectionUtils.run_scenario_optimizations(
+    ensemble_spec_vec,
+    outbreak_spec_vec,
+    noise_spec_vec,
+    outbreak_detection_spec_vec,
+    test_spec_vec,
+    MSO,
+    accuracy_functions;
+    force = false,
+    save_df = true,
+    return_df = true,
+)
+
+#%%
+# optimal_threshold_characteristics = collect_OptimalThresholdCharacteristics(
+#     ensemble_noise_specification,
+#     ensemble_percent_clinic_tested_vec,
+#     optimal_threshold_test_spec_vec,
+#     optimal_threshold_core_params;
+#     clinical_hline = clinical_hline,
+# );
 
 #%%
 function filter_optimal_threshold_characteristics_by_noise(
