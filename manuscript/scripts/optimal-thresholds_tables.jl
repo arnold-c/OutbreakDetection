@@ -25,30 +25,26 @@ gha_2022_scale_population =
 gha_2022_scale_population_per_annum = gha_2022_scale_population / 100
 
 #%%
-dynamical_noise_rdt_optimal_solutions = filter(
-    chars -> in(chars.individual_test_specification, rdt_test_spec_vec),
-    dynamical_noise_optimal_solutions,
-);
+dynamical_noise_rdt_optimal_solutions =
+    DataFrames.filter(
+        :test_spec => t -> in(t, rdt_test_spec_vec),
+        dynamical_noise_optimal_solutions,
+    ) |>
+    df -> reshape_optim_df_to_matrix(df)[1];
 
-poisson_noise_rdt_optimal_solutions = filter(
-    chars -> in(chars.individual_test_specification, rdt_test_spec_vec),
-    poisson_noise_optimal_solutions,
-);
+poisson_noise_rdt_optimal_solutions =
+    DataFrames.filter(
+        :test_spec => t -> in(t, rdt_test_spec_vec),
+        poisson_noise_optimal_solutions,
+    ) |>
+    df -> reshape_optim_df_to_matrix(df)[1];
 
-# dynamical_noise_elisa_optimal_solutions = filter(
-#     chars -> in(chars.individual_test_specification, elisa_test_spec_vec),
-#     dynamical_noise_optimal_solutions,
-# );
-#
-# poisson_noise_elisa_optimal_solutions = filter(
-#     chars -> in(chars.individual_test_specification, elisa_test_spec_vec),
-#     poisson_noise_optimal_solutions,
-# );
-
-perfect_test_optimal_solutions = filter(
-    chars -> in(chars.individual_test_specification, perfect_test_spec_vec),
-    poisson_noise_optimal_solutions,
-);
+perfect_test_optimal_solutions =
+    DataFrames.filter(
+        :test_spec => t -> in(t, perfect_test_spec_vec),
+        poisson_noise_optimal_solutions,
+    ) |>
+    df -> reshape_optim_df_to_matrix(df)[1];
 
 #%%
 perfect_test_df = create_optimal_threshold_summary_df(
@@ -76,27 +72,9 @@ rdt_poisson_df = create_optimal_threshold_summary_df(
 )
 rdt_poisson_df[!, :noise_spec] .= "Static noise"
 
-# elisa_dynamical_df = create_optimal_threshold_summary_df(
-#     dynamical_noise_elisa_optimal_solutions,
-#     [:unavoidable_cases, :detectiondelays, :alert_duration_vec];
-#     percentiles = nothing,
-#     nboots = nothing,
-# )
-# elisa_dynamical_df[!, :noise_spec] .= "Dynamical noise: in-phase"
-#
-# elisa_poisson_df = create_optimal_threshold_summary_df(
-#     poisson_noise_elisa_optimal_solutions,
-#     [:unavoidable_cases, :detectiondelays, :alert_duration_vec];
-#     percentiles = nothing,
-#     nboots = nothing,
-# )
-# elisa_poisson_df[!, :noise_spec] .= "Static noise"
-
 thresholds_df = vcat(
     rdt_dynamical_df,
     rdt_poisson_df,
-    # elisa_dynamical_df,
-    # elisa_poisson_df,
     perfect_test_df,
 )
 
@@ -182,7 +160,8 @@ function create_wide_df(
 end
 
 #%%
-wide_thresholds_df = create_wide_df(thresholds_df, :alert_threshold; digits = 0)
+wide_thresholds_df = create_wide_df(thresholds_df, :alert_threshold; digits = 3)
+
 CSV.write(
     manuscript_tabledir("optimal-thresholds.csv"),
     wide_thresholds_df,

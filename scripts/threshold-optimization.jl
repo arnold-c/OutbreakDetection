@@ -201,138 +201,102 @@ gha_2022_scale_population =
 
 gha_2022_scale_population_per_annum = gha_2022_scale_population / 100
 
-# #%%
-# original_optims = subset(
-#     optim_df,
-#     :outbreak_detection_spec =>
-#         x ->
-#             getproperty.(x, :percent_visit_clinic) .== 0.6 .&&
-#             getproperty.(x, :percent_clinic_tested) .!= 1.0,
-#     # :test_spec => ByRow(in([IndividualTestSpecification(1.0, 1.0, 0)]))
-# )
-#
-# #%%
-# original_optims_threshold_chars = reshape_optim_df_to_matrix(original_optims);
-#
-# #%%
-# line_plot(
-#     optimal_threshold_characteristics;
-#     outcome = :accuracy,
-#     ylabel = "Detection Accuracy",
-#     alpha = alpha,
-#     facet_fontsize = 28,
-#     legendsize = legendsize,
-#     xlabelsize = xlabelsize,
-#     ylabelsize = ylabelsize,
-#     show_x_facet_label = true,
-#     show_y_facet_label = false,
-#     ylims = (0.5, 1.0),
-#     force = true,
-#     save_plot = false,
-#     clinical_hline = false,
-#     colors = lineplot_colors,
-# )
-#
-# #%%
-# line_plot(
-#     original_optims_threshold_chars;
-#     outcome = :accuracy,
-#     ylabel = "Detection Accuracy",
-#     alpha = alpha,
-#     facet_fontsize = 28,
-#     legendsize = legendsize,
-#     xlabelsize = xlabelsize,
-#     ylabelsize = ylabelsize,
-#     show_x_facet_label = true,
-#     show_y_facet_label = false,
-#     ylims = (0.5, 1.0),
-#     force = true,
-#     save_plot = false,
-#     clinical_hline = false,
-#     colors = lineplot_colors,
-# )
-#
-# #%%
-# line_plot(
-#     original_optims_threshold_chars;
-#     outcome = :detectiondelays,
-#     ylabel = "Detection Delays\n(Days)",
-#     alpha = alpha,
-#     hlines = (0.0),
-#     facet_fontsize = facet_fontsize,
-#     legendsize = legendsize,
-#     xlabelsize = xlabelsize,
-#     ylabelsize = ylabelsize,
-#     show_x_facet_label = true,
-#     show_y_facet_label = false,
-#     ylims = (-100, 100),
-#     force = true,
-#     save_plot = false,
-#     clinical_hline = false,
-#     colors = lineplot_colors,
-# )
-#
-# #%%
-# line_plot(
-#     original_optims_threshold_chars;
-#     outcome = :proportion_timeseries_in_alert,
-#     ylabel = "Proportion of Time\nIn Alert",
-#     alpha = alpha,
-#     hlines = (0.0),
-#     facet_fontsize = facet_fontsize,
-#     legendsize = legendsize,
-#     xlabelsize = xlabelsize,
-#     ylabelsize = ylabelsize,
-#     show_x_facet_label = true,
-#     show_y_facet_label = false,
-#     ylims = (0, 0.35),
-#     force = true,
-#     save_plot = false,
-#     clinical_hline = false,
-#     colors = lineplot_colors,
-# )
-#
-# #%%
-# line_plot(
-#     original_optims_threshold_chars;
-#     outcome = :unavoidable_cases,
-#     ylabel = "Unavoidable Cases",
-#     alpha = alpha,
-#     facet_fontsize = facet_fontsize,
-#     legendsize = legendsize,
-#     xlabelsize = xlabelsize,
-#     ylabelsize = ylabelsize,
-#     show_x_facet_label = true,
-#     show_y_facet_label = false,
-#     ylims = (0, 2.4e4),
-#     force = true,
-#     save_plot = false,
-#     clinical_hline = false,
-#     colors = lineplot_colors,
-#     cases_scaling = gha_2022_scale_population_per_annum,
-# )
-#
-# #%%
-# for thresholds_vec in original_optims_threshold_chars
-#     noise_spec = unique(thresholds_vec.noise_specification)
-#     @assert length(noise_spec) == 1
-#
-#     tabledirpath = outdir("ensemble", "scenario-optimization-summaries")
-#     if !isdir(tabledirpath)
-#         mkpath(tabledirpath)
-#     end
-#
-#     tablefilename = "$(noise_spec[1])_thresholds"
-#
-#     create_and_save_xlsx_optimal_threshold_summaries(
-#         thresholds_vec;
-#         tabledirpath = tabledirpath,
-#         filename = tablefilename,
-#     )
-# end
+#%%
+all_visit_clinic_optims_mean = subset(
+    optim_df, :accuracy_function => f -> f .== arithmetic_mean
+)
+all_visit_clinic_optims_mean_thresholds_chars = reshape_optim_df_to_matrix(
+    all_visit_clinic_optims_mean
+);
 
 #%%
-reshape_optim_df_to_matrix(all_visit_clinic_optims_f1)
+imp_85_test_100pc_tested_threshold_chars = filter(
+    c ->
+        c.individual_test_specification ==
+        IndividualTestSpecification(0.85, 0.85, 0) &&
+            c.percent_clinic_tested == 1.0,
+    all_visit_clinic_optims_mean_thresholds_chars[2, 4],
+)[1];
+
+imp_90_test_100pc_tested_threshold_chars = filter(
+    c ->
+        c.individual_test_specification ==
+        IndividualTestSpecification(0.90, 0.90, 0) &&
+            c.percent_clinic_tested == 1.0,
+    all_visit_clinic_optims_mean_thresholds_chars[2, 4],
+)[1];
+
+#%%
+mean(
+    imp_85_test_100pc_tested_threshold_chars.outbreak_threshold_chars.proportion_timeseries_in_alert,
+)
+mean(
+    imp_90_test_100pc_tested_threshold_chars.outbreak_threshold_chars.proportion_timeseries_in_alert,
+)
+
+#%%
+mean(
+    imp_85_test_100pc_tested_threshold_chars.outbreak_threshold_chars.noutbreaks
+)
+mean(
+    imp_90_test_100pc_tested_threshold_chars.outbreak_threshold_chars.noutbreaks
+)
+
+#%%
+mean(imp_85_test_100pc_tested_threshold_chars.outbreak_threshold_chars.nalerts)
+mean(imp_90_test_100pc_tested_threshold_chars.outbreak_threshold_chars.nalerts)
+
+#%%
+mean(
+    imp_85_test_100pc_tested_threshold_chars.outbreak_threshold_chars.n_false_alerts,
+)
+mean(
+    imp_90_test_100pc_tested_threshold_chars.outbreak_threshold_chars.n_false_alerts,
+)
+
+#%%
+mean(
+    imp_85_test_100pc_tested_threshold_chars.outbreak_threshold_chars.n_missed_outbreaks,
+)
+mean(
+    imp_90_test_100pc_tested_threshold_chars.outbreak_threshold_chars.n_missed_outbreaks,
+)
+
+#%%
+mean(
+    mapreduce(
+        mean,
+        vcat,
+        imp_85_test_100pc_tested_threshold_chars.outbreak_threshold_chars.detectiondelays,
+    ),
+)
+mean(
+    mapreduce(
+        mean,
+        vcat,
+        imp_90_test_100pc_tested_threshold_chars.outbreak_threshold_chars.detectiondelays,
+    ),
+)
+
+#%%
+mean(
+    imp_85_test_100pc_tested_threshold_chars.outbreak_threshold_chars.perc_true_outbreaks_detected,
+)
+mean(
+    imp_90_test_100pc_tested_threshold_chars.outbreak_threshold_chars.perc_true_outbreaks_detected,
+)
+
+#%%
+mean(
+    imp_85_test_100pc_tested_threshold_chars.outbreak_threshold_chars.perc_alerts_correct,
+)
+mean(
+    imp_90_test_100pc_tested_threshold_chars.outbreak_threshold_chars.perc_alerts_correct,
+)
+
+#%%
+imp_85_test_100pc_tested_threshold_chars.accuracy
+imp_90_test_100pc_tested_threshold_chars.accuracy
 
 #%%
 for accuracy_function in unique(optim_df.accuracy_function)
@@ -437,7 +401,7 @@ for accuracy_function in unique(optim_df.accuracy_function)
         ylabelsize = ylabelsize,
         show_x_facet_label = true,
         show_y_facet_label = false,
-        ylims = (-500, 100),
+        ylims = (-50, 100),
         force = true,
         save_plot = true,
         clinical_hline = false,
@@ -463,7 +427,7 @@ for accuracy_function in unique(optim_df.accuracy_function)
         ylabelsize = ylabelsize,
         show_x_facet_label = true,
         show_y_facet_label = false,
-        ylims = (0, 1.0),
+        ylims = (0, 0.5),
         force = true,
         save_plot = true,
         clinical_hline = false,

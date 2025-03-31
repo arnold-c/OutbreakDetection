@@ -112,41 +112,18 @@ optim_df = OutbreakDetectionUtils.run_scenario_optimizations(
     force = false,
     save_df = true,
     return_df = true,
+    filter_df_results = true,
 )
 
 #%%
-# optimal_threshold_characteristics = collect_OptimalThresholdCharacteristics(
-#     ensemble_noise_specification,
-#     ensemble_percent_clinic_tested_vec,
-#     optimal_threshold_test_spec_vec,
-#     optimal_threshold_core_params;
-#     clinical_hline = clinical_hline,
-# );
-
-#%%
-function filter_optimal_threshold_characteristics_by_noise(
-    optimal_threshold_characteristics,
-    noise_specification,
-)
-    noise_optimal_solutions = filter(
-        chars ->
-            chars.noise_specification[1] == noise_specification,
-        vec(optimal_threshold_characteristics),
-    )
-    @assert length(noise_optimal_solutions) == 1
-    return noise_optimal_solutions[1]
-end
-
-#%%
-poisson_noise_optimal_solutions = filter_optimal_threshold_characteristics_by_noise(
-    optimal_threshold_characteristics,
-    PoissonNoiseSpecification("poisson", 8.0);
+poisson_noise_optimal_solutions = DataFrames.filter(
+	:noise_spec => n -> n == PoissonNoiseSpecification("poisson", 8.0),
+	optim_df,
 );
 
-#%%
-dynamical_noise_optimal_solutions = filter_optimal_threshold_characteristics_by_noise(
-    optimal_threshold_characteristics,
-    DynamicalNoiseSpecification(
+dynamical_noise_optimal_solutions = DataFrames.filter(
+	:noise_spec => n -> n == DynamicalNoiseSpecification(
         "dynamical", 5.0, 7, 14, "in-phase", 0.15, 0.0492
     ),
+	optim_df,
 );
