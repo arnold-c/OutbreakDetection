@@ -177,7 +177,7 @@ We then add non-measles noise (@fig-outbreak-schematic\b) and test according to 
 <fig-outbreak-schematic>
 
 == Triggering Alerts
-We define an "alert" as any consecutive string of 1 or more days where the 7-day moving average of the test positive cases is greater than, or equal to, a pre-specified alert threshold, T.
+We define an "alert" as any consecutive string of 1 or more days where the 7-day (trailing) moving average of the test positive cases is greater than, or equal to, a pre-specified alert threshold, T.
 For each time series of test positive cases, we calculate the percentage of alerts that are "correct", defined as any overlap of 1 or more days between the outbreak and alert periods (@fig-outbreak-schematic\c).
 This is analogous to the PPV of the alert system, and will be referred to as such for the rest of the manuscript.
 Note that it is possible to have multiple alerts within a single outbreak if the 7-day moving average of test positive cases drops below, and then re-crosses, the threshold, T, and we count each as correct.
@@ -190,11 +190,19 @@ Unavoidable cases are those that occur before a correct alert, or those that occ
 Avoidable cases are defined as those that occur within an outbreak on and after the day of the first correct alert i.e., cases that could theoretically be prevented with a perfectly effective and timely response.
 Not all cases defined as avoidable would be in practice (due to delays in, and the imperfect nature of, responses); the specifics of operation response are beyond the scope of this work.
 
-We define the accuracy of the surveillance system for a given time series as the mean of the system’s PPV and sensitivity.
-To examine the interaction of the test with the surveillance system's characteristics (i.e., testing rate, noise structure and magnitude), we varied the alert threshold, T, between 1 and 15 cases per day.
-Each of the 100 simulations per scenario produces an accuracy, and we identified the optimal alert threshold, T#sub([O]), as the value that produced the highest median accuracy for a given scenario.
+We define the accuracy of the surveillance system for a given time series as the arithmetic mean of the system’s PPV and sensitivity.
+To examine the interaction of the test with the surveillance system's characteristics (i.e., testing rate, noise structure and magnitude), we optimized the alert threshold, T, for a given "testing scenario".
+Each of the 100 simulations per scenario produces an accuracy, and we identified the optimal alert threshold, T#sub([O]), as the value that produced the highest mean accuracy for a given scenario.
+To identify T#sub([O]) we implemented the TikTak multistart optimization algorithm @arnoudBenchmarkingGlobalOptimizers2023, using 100 (N) starting points (alert thresholds) selected from a Sobol' low-discrepancy sequence @sobolDistributionPointsCube1967 initialized with lower and upper bounds on the alert threshold set to 0.0 and 50.0, respectively.
+In brief, the Sobol' sequence is a deterministic, quasi-random sequence of numbers that maximizes the uniformity of the explored parameter space by approximately iteratively bisecting the parameter space @sobolDistributionPointsCube1967 @lemieuxQuasiMonteCarlo2009.
+After 100 initial alert thresholds are generated, the accuracy is evaluated and the 10 (N\*) alert thresholds (points) with the highest accuracy are retained.
+The 10 retained alert thresholds are sorted in descending order of accuracy, creating the sequence of Sobol' points ($upright(bold(s#sub[1])) dots upright(bold(s#sub[10])))$) that are used to calculate the seed points for local optimization that subsequently performed using the BOBYQA derivative-free algorithm @powellBOBYQAAlgorithmBound.
+At each iteration, i, of the local optimization phase, the starting seed is computed as the convex combination of the Sobol' point $upright(bold(s#sub[i]))$ and the parameter value (alert threshold) that produced the maximum accuracy so far ($upright(bold(p#sub[i]#super([max])))$), with increasing weight provided to the alert threshold that maximized accuracy; more information can be found in Appendix B.6 of @arnoudBenchmarkingGlobalOptimizers2023.
+The TikTak algorithm is implemented in the #link("https://github.com/tpapp/MultistartOptimization.jl")[MultistartOptimization.jl] package @pappTpappMultistartOptimizationjl2025, with local optimization (BOBYQA) implemented in the #link("https://github.com/jump-dev/NLopt.jl")[NLOpt.jl] package @johnsonNLoptNonlinearoptimizationPackage2025.
+
 We then compare testing scenarios at their respective optimal alert threshold.
 This allows for conclusions to be made about the surveillance system as a whole, rather than just single components.
+We also present results for optimizations based upon the harmonic mean (F-1 score) of the system's PPV and sensitivity in the Supplement (#highlight[*REF*]).
 
 = Results
 The threshold that maximized surveillance accuracy depends on diagnostic test characteristics, the testing rate, and the structure of the non-measles noise (@tbl_od-optimal-thresholds, @fig-alert-threshold).
