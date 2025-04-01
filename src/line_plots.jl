@@ -214,13 +214,25 @@ function line_plot(
             map(
                 enumerate(reverse(unique_test_specifications))
             ) do (i, test_spec)
-                linestyle = test_spec.test_result_lag == 0 ? :solid : :dot
-                return [
-                    PolyElement(; color = (reverse(colors)[i], 0.3)),
-                    LineElement(;
-                        color = reverse(colors)[i], linestyle = linestyle
-                    ),
-                ]
+                if outcome == :alert_threshold
+                    markerstyle =
+                        test_spec.test_result_lag == 0 ? :circle : :utriangle
+                    return [
+                        MarkerElement(;
+                            color = reverse(colors)[i],
+                            marker = markerstyle,
+                            markersize = markersize * 2,
+                        ),
+                    ]
+                else
+                    linestyle = test_spec.test_result_lag == 0 ? :solid : :dot
+                    return [
+                        PolyElement(; color = (reverse(colors)[i], 0.3)),
+                        LineElement(;
+                            color = reverse(colors)[i], linestyle = linestyle
+                        ),
+                    ]
+                end
             end,
             plot_test_description.(reverse(unique_test_specifications));
             labelsize = legendsize,
@@ -489,37 +501,29 @@ function _line_plot_facet(
             continue
         end
 
-        linestyle = test.test_result_lag == 0 ? :solid : :dash
-
         if outcome == :alert_threshold
+            if test.test_result_lag == 0
+                markerstyle = :circle
+                msize = markersize
+            else
+                markerstyle = :utriangle
+                msize = markersize * 1.5
+            end
+
             scatterlines!(
                 ax,
                 subsetted_df.percent_clinic_tested,
                 subsetted_df[!, outcome_mean];
                 color = (colors[i], alpha),
-                linestyle = linestyle,
                 strokecolor = colors[i],
-                markersize = markersize,
+                marker = markerstyle,
+                markersize = msize,
             )
-            # lines!(
-            #     ax,
-            #     subsetted_df.percent_clinic_tested,
-            #     subsetted_df[!, outcome_mean];
-            #     color = (colors[i], alpha),
-            #     linestyle = linestyle,
-            # )
-            #
-            # scatter!(
-            #     ax,
-            #     subsetted_df.percent_clinic_tested,
-            #     subsetted_df[!, outcome_mean];
-            #     color = (colors[i], alpha),
-            #     strokecolor = colors[i],
-            #     markersize = markersize,
-            # )
         end
 
         if outcome != :alert_threshold
+            linestyle = test.test_result_lag == 0 ? :solid : :dash
+
             lines!(
                 ax,
                 subsetted_df.percent_clinic_tested,
