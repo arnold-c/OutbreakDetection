@@ -1,4 +1,34 @@
+using StyledStrings
+
 #%%
+function compare_optimal_solution_extrema(
+    noise_optimal_solutions_vec,
+    common_optimal_solutions_vec,
+    characteristic_vec::AbstractVector{T},
+    test_spec_vec = [
+        IndividualTestSpecification(1.0, 1.0, 0),
+        IndividualTestSpecification(0.9, 0.9, 0),
+        IndividualTestSpecification(0.85, 0.85, 0),
+    ],
+) where {T<:Symbol}
+    num_rdt_tests =
+        length(test_spec_vec) -
+        sum(contains.(get_test_description.(test_spec_vec), "Perfect test"))
+
+    for n in noise_optimal_solutions_vec
+        println(styled"{red: $(get_noise_magnitude(n[1].noise_specification))}")
+
+        compare_optimal_solution_extrema(
+            vcat(
+                common_optimal_solutions_vec,
+                repeat([n], num_rdt_tests),
+            ),
+            characteristic_vec,
+            test_spec_vec,
+        )
+    end
+end
+
 function compare_optimal_solution_extrema(
     optimal_solutions_vec,
     characteristic_vec::AbstractVector{T},
@@ -75,9 +105,10 @@ end
 
 #%%
 compare_optimal_solution_extrema(
-    vcat(
-        [perfect_test_optimal_solutions],
-        repeat([dynamical_noise_rdt_optimal_solutions], 2),
-    ),
+    [
+        poisson_noise_rdt_optimal_solutions,
+        dynamical_noise_rdt_optimal_solutions,
+    ],
+    [perfect_test_optimal_solutions],
     [:detectiondelays, :alert_duration_vec],
 )
