@@ -95,6 +95,7 @@ function line_plot(
     size = (1300, 800),
     colors = lineplot_colors,
     alpha = 0.5,
+    markersize = 15,
     xlabel = "Proportion Of Infected Individuals Tested",
     ylabel = "Outbreak Detection\nAccuracy",
     facet_fontsize = 24,
@@ -112,6 +113,7 @@ function line_plot(
     xlabel_rowsize = Makie.Relative(0.03),
     force = false,
     save_plot = true,
+    dots = false,
     kwargs...,
 )
     mkpath(plotdirpath)
@@ -174,6 +176,7 @@ function line_plot(
                     num_noise_descriptions = num_noise_descriptions,
                     colors = colors,
                     alpha = alpha,
+                    markersize = markersize,
                     ylabel = "$label_noise_description\n" * ylabel,
                     ylabelsize = ylabelsize,
                     ylims = ylims,
@@ -181,6 +184,7 @@ function line_plot(
                     facet_fontsize = facet_fontsize,
                     show_x_facet_label = show_x_facet_label,
                     hlines = hlines,
+                    dots = dots,
                     kwargs...,
                 )
             end
@@ -312,9 +316,8 @@ function _line_plot(
     outcome = :accuracy,
     colors = lineplot_colors,
     alpha = 0.3,
-    # xlabel = "",
+    markersize = 15,
     ylabel = "Accuracy",
-    # xlabelsize = 28,
     ylabelsize = 28,
     show_x_facet_label = true,
     facet_fontsize = 24,
@@ -322,6 +325,7 @@ function _line_plot(
     ylims = (nothing, nothing),
     hidedecorations = (true, true),
     hlines = nothing,
+    dots = false,
     kwargs...,
 )
     kwargs_dict = Dict{Symbol,Any}(kwargs)
@@ -400,9 +404,8 @@ function _line_plot(
         outcome = outcome,
         colors = colors,
         alpha = alpha,
-        # xlabel = xlabel,
+        markersize = markersize,
         ylabel = ylabel,
-        # xlabelsize = xlabelsize,
         ylabelsize = ylabelsize,
         facet_fontsize = facet_fontsize,
         ylims = ylims,
@@ -429,6 +432,7 @@ function _line_plot_facet(
     outcome = :accuracy,
     colors = lineplot_colors,
     alpha = 0.3,
+    markersize = 15,
     xlabel = "Proportion Tested",
     ylabel = "Accuracy",
     xlabelsize = 28,
@@ -487,15 +491,43 @@ function _line_plot_facet(
 
         linestyle = test.test_result_lag == 0 ? :solid : :dash
 
-        lines!(
-            ax,
-            subsetted_df.percent_clinic_tested,
-            subsetted_df[!, outcome_mean];
-            color = colors[i],
-            linestyle = linestyle,
-        )
+        if outcome == :alert_threshold
+            scatterlines!(
+                ax,
+                subsetted_df.percent_clinic_tested,
+                subsetted_df[!, outcome_mean];
+                color = (colors[i], alpha),
+                linestyle = linestyle,
+                strokecolor = colors[i],
+                markersize = markersize,
+            )
+            # lines!(
+            #     ax,
+            #     subsetted_df.percent_clinic_tested,
+            #     subsetted_df[!, outcome_mean];
+            #     color = (colors[i], alpha),
+            #     linestyle = linestyle,
+            # )
+            #
+            # scatter!(
+            #     ax,
+            #     subsetted_df.percent_clinic_tested,
+            #     subsetted_df[!, outcome_mean];
+            #     color = (colors[i], alpha),
+            #     strokecolor = colors[i],
+            #     markersize = markersize,
+            # )
+        end
 
         if outcome != :alert_threshold
+            lines!(
+                ax,
+                subsetted_df.percent_clinic_tested,
+                subsetted_df[!, outcome_mean];
+                color = colors[i],
+                linestyle = linestyle,
+            )
+
             band!(
                 ax,
                 subsetted_df.percent_clinic_tested,
