@@ -92,7 +92,7 @@ function create_wide_df(
     long_df,
     outcome::Symbol;
     noise_order = [
-        "Dynamical noise", "Static noise", "All noise structures"
+        "Static noise", "Dynamical noise", "All noise structures"
     ],
     digits = 3,
 )
