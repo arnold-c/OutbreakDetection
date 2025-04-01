@@ -1,83 +1,67 @@
 #%%
-mean_elisa_0d_delays = map(
-    test_chars -> mean(vcat(getproperty(test_chars, :detectiondelays)...)),
-    filter(
-        chars ->
-            chars.individual_test_specification ==
-            IndividualTestSpecification(1.0, 1.0, 0),
-        dynamical_noise_optimal_solutions,
-    ).outbreak_threshold_chars,
+function compare_optimal_solution_extrema(
+    optimal_solutions_vec,
+    characteristic::Symbol,
+    test_spec_vec = [
+        IndividualTestSpecification(1.0, 1.0, 0),
+        IndividualTestSpecification(0.9, 0.9, 0),
+        IndividualTestSpecification(0.85, 0.85, 0),
+    ],
 )
+    @assert length(optimal_solutions_vec) == length(test_spec_vec)
 
-mean_rdt_90_8x_dynamical_delays = map(
-    test_chars -> mean(vcat(getproperty(test_chars, :detectiondelays)...)),
-    filter(
-        chars ->
-            chars.individual_test_specification ==
-            IndividualTestSpecification(0.9, 0.9, 0),
-        dynamical_noise_optimal_solutions,
-    ).outbreak_threshold_chars,
+    return mapreduce(
+        ((optimal_solutions, test_spec),) -> extract_optimal_solution_extrema(
+            optimal_solutions,
+            characteristic,
+            test_spec,
+        ),
+        vcat,
+        zip(optimal_solutions_vec, test_spec_vec),
+    )
+end
+
+function extract_optimal_solution_extrema(
+    optimal_solutions,
+    characteristic::Symbol,
+    test_spec;
+    digits = 1,
 )
+    test_extrema =
+        round.(
+            extrema(
+                map(
+                    test_chars ->
+                        mean(vcat(getproperty(test_chars, characteristic)...)),
+                    extract_test_optimal_solutions(
+                        optimal_solutions, test_spec
+                    ),
+                ),
+            );
+            digits = digits,
+        )
+    return eval(:(Dict($test_spec => $test_extrema)))
+end
 
-mean_rdt_85_8x_dynamical_delays = map(
-    test_chars -> mean(vcat(getproperty(test_chars, :detectiondelays)...)),
-    filter(
+function extract_test_optimal_solutions(optimal_solutions, test_spec)
+    return filter(
         chars ->
-            chars.individual_test_specification ==
-            IndividualTestSpecification(0.85, 0.85, 0),
-        dynamical_noise_optimal_solutions,
-    ).outbreak_threshold_chars,
-)
-
-mapreduce(
-    vcat,
-    (
-        ("ELISA", mean_elisa_0d_delays),
-        ("90%", mean_rdt_90_8x_dynamical_delays),
-        ("85%", mean_rdt_85_8x_dynamical_delays),
-    ),
-) do (label, mean_delays_vec)
-    Dict(label => round.(extrema(mean_delays_vec); digits = 1))
+            chars.individual_test_specification == test_spec,
+        optimal_solutions,
+    ).outbreak_threshold_chars
 end
 
 #%%
-mean_elisa_0d_alert_duration = map(
-    test_chars -> mean(vcat(getproperty(test_chars, :alert_duration_vec)...)),
-    filter(
-        chars ->
-            chars.individual_test_specification ==
-            IndividualTestSpecification(1.0, 1.0, 0),
-        dynamical_noise_optimal_solutions,
-    ).outbreak_threshold_chars,
+compare_optimal_solution_extrema(
+    vcat(
+        [perfect_test_optimal_solutions],
+        repeat([dynamical_noise_rdt_optimal_solutions], 2),
+    ), :detectiondelays
 )
 
-mean_rdt_90_8x_dynamical_alert_duration = map(
-    test_chars -> mean(vcat(getproperty(test_chars, :alert_duration_vec)...)),
-    filter(
-        chars ->
-            chars.individual_test_specification ==
-            IndividualTestSpecification(0.9, 0.9, 0),
-        dynamical_noise_optimal_solutions,
-    ).outbreak_threshold_chars,
+compare_optimal_solution_extrema(
+    vcat(
+        [perfect_test_optimal_solutions],
+        repeat([dynamical_noise_rdt_optimal_solutions], 2),
+    ), :alert_duration_vec
 )
-
-mean_rdt_85_8x_dynamical_alert_duration = map(
-    test_chars -> mean(vcat(getproperty(test_chars, :alert_duration_vec)...)),
-    filter(
-        chars ->
-            chars.individual_test_specification ==
-            IndividualTestSpecification(0.85, 0.85, 0),
-        dynamical_noise_optimal_solutions,
-    ).outbreak_threshold_chars,
-)
-
-mapreduce(
-    vcat,
-    (
-        ("ELISA", mean_elisa_0d_alert_duration),
-        ("90%", mean_rdt_90_8x_dynamical_alert_duration),
-        ("85%", mean_rdt_85_8x_dynamical_alert_duration),
-    ),
-) do (label, mean_alert_duration_vec)
-    Dict(label => round.(extrema(mean_alert_duration_vec); digits = 1))
-end
