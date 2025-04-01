@@ -9,7 +9,8 @@ function compare_optimal_solution_extrema(
         IndividualTestSpecification(1.0, 1.0, 0),
         IndividualTestSpecification(0.9, 0.9, 0),
         IndividualTestSpecification(0.85, 0.85, 0),
-    ],
+    ];
+    digits = 1,
 ) where {T<:Symbol}
     num_rdt_tests =
         length(test_spec_vec) -
@@ -24,7 +25,8 @@ function compare_optimal_solution_extrema(
                 repeat([n], num_rdt_tests),
             ),
             characteristic_vec,
-            test_spec_vec,
+            test_spec_vec;
+            digits = digits,
         )
     end
 end
@@ -36,14 +38,16 @@ function compare_optimal_solution_extrema(
         IndividualTestSpecification(1.0, 1.0, 0),
         IndividualTestSpecification(0.9, 0.9, 0),
         IndividualTestSpecification(0.85, 0.85, 0),
-    ],
+    ];
+    digits = 1,
 ) where {T<:Symbol}
     for c in characteristic_vec
         Base.display(
             compare_optimal_solution_extrema(
                 optimal_solutions_vec,
                 c,
-                test_spec_vec,
+                test_spec_vec;
+                digits = digits,
             ),
         )
         println()
@@ -57,7 +61,8 @@ function compare_optimal_solution_extrema(
         IndividualTestSpecification(1.0, 1.0, 0),
         IndividualTestSpecification(0.9, 0.9, 0),
         IndividualTestSpecification(0.85, 0.85, 0),
-    ],
+    ];
+    digits = 1,
 )
     @assert length(optimal_solutions_vec) == length(test_spec_vec)
 
@@ -66,7 +71,8 @@ function compare_optimal_solution_extrema(
         ((optimal_solutions, test_spec),) -> extract_optimal_solution_extrema(
             optimal_solutions,
             characteristic,
-            test_spec,
+            test_spec;
+            digits = digits,
         ),
         merge,
         zip(optimal_solutions_vec, test_spec_vec),
@@ -110,5 +116,6 @@ compare_optimal_solution_extrema(
         dynamical_noise_rdt_optimal_solutions,
     ],
     [perfect_test_optimal_solutions],
-    [:detectiondelays, :alert_duration_vec],
+    [:detectiondelays, :alert_duration_vec, :accuracy];
+    digits = 2,
 )
