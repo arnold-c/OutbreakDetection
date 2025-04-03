@@ -59,7 +59,7 @@ nalerts_plot = line_plot(
     ylabelsize = ylabelsize,
     show_x_facet_label = true,
     show_y_facet_label = false,
-    ylims = (0, 350),
+    ylims = (0, 250),
     force = true,
     save_plot = false,
     clinical_hline = clinical_hline,
@@ -70,4 +70,28 @@ nalerts_plot = line_plot(
 save(
     appendix_plotdir("optimal-thresholds_n-alerts-plot.svg"),
     nalerts_plot,
+)
+
+#%%
+unavoidable_plot = line_plot(
+    optimal_threshold_characteristics;
+    outcome = :unavoidable_cases,
+    ylabel = "Unavoidable Cases",
+    alpha = alpha,
+    facet_fontsize = facet_fontsize,
+    legendsize = legendsize,
+    xlabelsize = xlabelsize,
+    ylabelsize = ylabelsize,
+    show_x_facet_label = true,
+    show_y_facet_label = false,
+    ylims = (0, 2.4e4),
+    force = true,
+    plotdirpath = appendix_plotdir(),
+    plotname = "optimal-thresholds_unavoidable-plot",
+    plotformat = "svg",
+    save_plot = true,
+    clinical_hline = clinical_hline,
+    cases_scaling = gha_2022_scale_population_per_annum,
+    nbanks = nbanks,
+    legend_rowsize = legend_rowsize,
 )
