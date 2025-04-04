@@ -41,56 +41,56 @@
   supplement: "Supplemental Equation"
 )
 
-== Tables
+// == Tables
+//
+// #let accuracy = csv("supplemental_files/tables/optimal-thresholds_accuracy.csv")
+// #figure(
+//     table(
+//     columns: 13,
+//     fill: (x, y) => {
+//       if y == 0 {gray}
+//       if y == 1 {gray}
+//     },
+//     align: center,
+//     [], table.cell(colspan: 2, align: center, "Test Characteristic"), table.cell(colspan: 10, align: center, "Testing Rate"),
+//     ..accuracy.flatten()
+//   ),
+//   caption: [Mean outbreak detection accuracy for imperfect and perfect diagnostic tests, at their respective optimal alert thresholds, under dynamical and Poisson noise structures where the average daily noise incidence is 8 times the average daily measles incidence $Lambda(8)$. The test sensitivity equals the test specificity for all diagnostic tests.]
+// )
+// <tbl-optimal-thresholds-accuracy>
 
-#let accuracy = csv("supplemental_files/tables/optimal-thresholds_accuracy.csv")
-#figure(
-    table(
-    columns: 9,
-    fill: (x, y) => {
-      if y == 0 {gray}
-      if y == 1 {gray}
-    },
-    align: center,
-    [], table.cell(colspan: 2, align: center, "Test Characteristic"), table.cell(colspan: 6, align: center, "Testing Rate"),
-    ..accuracy.flatten()
-  ),
-  caption: [Mean outbreak detection accuracy for imperfect and perfect diagnostic tests, at their respective optimal alert thresholds, under dynamical and Poisson noise structures where the average daily noise incidence is 8 times the average daily measles incidence $Lambda(8)$. The test sensitivity equals the test specificity for all diagnostic tests.]
-)
-<tbl-optimal-thresholds-accuracy>
-
-#let delays = csv("supplemental_files/tables/optimal-thresholds_detection-delays.csv")
-#figure(
-    table(
-    columns: 9,
-    fill: (x, y) => {
-      if y == 0 {gray}
-      if y == 1 {gray}
-    },
-    align: center,
-    [], table.cell(colspan: 2, align: center, "Test Characteristic"), table.cell(colspan: 6, align: center, "Testing Rate"),
-    ..delays.flatten()
-  ),
-  caption: [Mean outbreak detection delays (days) for imperfect and perfect diagnostic tests, at their respective optimal alert thresholds, under dynamical and Poisson noise structures where the average daily noise incidence is 8 times the average daily measles incidence $Lambda(8)$. The test sensitivity equals the test specificity for all diagnostic tests.]
-)
-<tbl-optimal-thresholds-delays>
-
-#let unavoidable = csv("supplemental_files/tables/optimal-thresholds_unavoidable-cases.csv")
-#figure(
-    table(
-    columns: 9,
-    fill: (x, y) => {
-      if y == 0 {gray}
-      if y == 1 {gray}
-    },
-    align: center,
-    [], table.cell(colspan: 2, align: center, "Test Characteristic"), table.cell(colspan: 6, align: center, "Testing Rate"),
-    ..unavoidable.flatten()
-  ),
-  caption: [Mean unavoidable cases per annum (scaled to Ghana's 2022 population) for imperfect and perfect diagnostic tests, at their respective optimal alert thresholds, under dynamical and Poisson noise structures where the average daily noise incidence is 8 times the average daily measles incidence $Lambda(8)$. The test sensitivity equals the test specificity for all diagnostic tests.]
-)
-<tbl-optimal-thresholds-unavoidable>
-
+// #let delays = csv("supplemental_files/tables/optimal-thresholds_detection-delays.csv")
+// #figure(
+//     table(
+//     columns: 13,
+//     fill: (x, y) => {
+//       if y == 0 {gray}
+//       if y == 1 {gray}
+//     },
+//     align: center,
+//     [], table.cell(colspan: 2, align: center, "Test Characteristic"), table.cell(colspan: 10, align: center, "Testing Rate"),
+//     ..delays.flatten()
+//   ),
+//   caption: [Mean outbreak detection delays (days) for imperfect and perfect diagnostic tests, at their respective optimal alert thresholds, under dynamical and Poisson noise structures where the average daily noise incidence is 8 times the average daily measles incidence $Lambda(8)$. The test sensitivity equals the test specificity for all diagnostic tests.]
+// )
+// <tbl-optimal-thresholds-delays>
+//
+// #let unavoidable = csv("supplemental_files/tables/optimal-thresholds_unavoidable-cases.csv")
+// #figure(
+//     table(
+//     columns: 9,
+//     fill: (x, y) => {
+//       if y == 0 {gray}
+//       if y == 1 {gray}
+//     },
+//     align: center,
+//     [], table.cell(colspan: 2, align: center, "Test Characteristic"), table.cell(colspan: 6, align: center, "Testing Rate"),
+//     ..unavoidable.flatten()
+//   ),
+//   caption: [Mean unavoidable cases per annum (scaled to Ghana's 2022 population) for imperfect and perfect diagnostic tests, at their respective optimal alert thresholds, under dynamical and Poisson noise structures where the average daily noise incidence is 8 times the average daily measles incidence $Lambda(8)$. The test sensitivity equals the test specificity for all diagnostic tests.]
+// )
+// <tbl-optimal-thresholds-unavoidable>
+//
 
 == Figures
 
