@@ -94,6 +94,8 @@
 
 == Figures
 
+=== Arithmetic Mean Optimizations
+
 #figure(
   image("supplemental_files/plots/optimal-thresholds_n-alerts-plot.svg"),
   caption: [The number of alerts of outbreak detection systems under different testing rates and noise structures, at their respective optimal alert thresholds. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate. Imperfect tests have the same values for sensitivity and specificity. Solid lines represent tests with 0-day turnaround times, and dashed lines represent tests with result delays. $Lambda(4)$ indicates the mean noise incidence is 4 times higher than the mean measles incidence, for example.]
@@ -112,3 +114,29 @@
   caption: [The number of unavoidable cases of an outbreak detection systems under different testing rates and noise structures, at their respective optimal alert thresholds. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate. Imperfect tests have the same values for sensitivity and specificity. Solid lines represent tests with 0-day turnaround times, and dashed lines represent tests with result delays. $Lambda(4)$ indicates the mean noise incidence is 4 times higher than the mean measles incidence.]
 )
 <fig-unavoidable>
+
+=== F-1 Score Optimizations
+
+#figure(
+  image("supplemental_files/plots/f1_optimal-thresholds_alert-threshold-plot.svg"),
+  caption: [The optimal alert threshold of outbreak detection systems (that maximizes outbreak detection F-1 score) under different testing rates and noise structures. Imperfect tests have the same values for sensitivity and specificity. Circular markers represent tests with 0-day turnaround times, and triangular markers represent tests with result delays. $Lambda(4)$ indicates the mean noise incidence is 4 times higher than the mean measles incidence, for example.]
+)
+<fig-f1-alert-threshold>
+
+#figure(
+  image("supplemental_files/plots/f1_optimal-thresholds_accuracy-plot.svg"),
+  caption: [The accuracy of outbreak detection systems under different testing rates and noise structures, at their respective (F-1 score) optimal alert thresholds. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate. Imperfect tests have the same values for sensitivity and specificity. Solid lines represent tests with 0-day turnaround times, and dashed lines represent tests with result delays. $Lambda(4)$ indicates the mean noise incidence is 4 times higher than the mean measles incidence, for example.]
+)
+<fig-f1-accuracy>
+
+#figure(
+  image("supplemental_files/plots/f1_optimal-thresholds_delays-plot.svg"),
+  caption: [The detection delay of outbreak detection systems under different testing rates and noise structures, at their respective (F-1 score) optimal alert thresholds. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate. Imperfect tests have the same values for sensitivity and specificity. Solid lines represent tests with 0-day turnaround times, and dashed lines represent tests with result delays. $Lambda(4)$ indicates the mean noise incidence is 4 times higher than the mean measles incidence.]
+)
+<fig-f1-delay>
+
+#figure(
+  image("supplemental_files/plots/f1_optimal-thresholds_prop-alert-plot.svg"),
+  caption: [The proportion of the time series in alert of outbreak detection systems under different testing rates and noise structures, at their respective (F-1 score) optimal alert thresholds. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate. Imperfect tests have the same values for sensitivity and specificity. Solid lines represent tests with 0-day turnaround times, and dashed lines represent tests with result delays. $Lambda(4)$ indicates the mean noise incidence is 4 times higher than the mean measles incidence.]
+)
+<fig-f1-alert-proportion>

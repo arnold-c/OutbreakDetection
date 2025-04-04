@@ -98,10 +98,10 @@ alertmethod = alert_method_vec[1]
 
 clinical_hline = false
 
-accuracy_functions = [arithmetic_mean]
+accuracy_functions = [arithmetic_mean, calculate_f_beta_score]
 
 #%%
-optim_df = OutbreakDetectionUtils.run_scenario_optimizations(
+all_optim_df = OutbreakDetectionUtils.run_scenario_optimizations(
     ensemble_spec_vec,
     outbreak_spec_vec,
     noise_spec_vec,
@@ -113,6 +113,16 @@ optim_df = OutbreakDetectionUtils.run_scenario_optimizations(
     save_df = true,
     return_df = true,
     filter_df_results = true,
+)
+
+optim_df = DataFrames.subset(
+    all_optim_df,
+    :accuracy_function => f -> f .== arithmetic_mean,
+)
+
+f1_optim_df = DataFrames.subset(
+    all_optim_df,
+    :accuracy_function => f -> f .== calculate_f_beta_score,
 )
 
 #%%
@@ -132,3 +142,5 @@ dynamical_noise_optimal_solutions = DataFrames.filter(
 
 #%%
 optimal_threshold_characteristics = reshape_optim_df_to_matrix(optim_df);
+
+f1_optimal_threshold_characteristics = reshape_optim_df_to_matrix(f1_optim_df);

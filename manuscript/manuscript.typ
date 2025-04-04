@@ -202,7 +202,7 @@ The TikTak algorithm is implemented in the #link("https://github.com/tpapp/Multi
 
 We then compare testing scenarios at their respective optimal alert threshold.
 This allows for conclusions to be made about the surveillance system as a whole, rather than just single components.
-We also present results for optimizations based upon the harmonic mean (F-1 score) of the system's PPV and sensitivity in the Supplement (#highlight[*REF*]).
+We also present results for optimizations based upon the harmonic mean (F-1 score) of the system's PPV and sensitivity in the Supplement (@fig-f1-alert-threshold, @fig-f1-accuracy, @fig-f1-delay, @fig-f1-alert-proportion).
 
 = Results
 The threshold that maximized surveillance accuracy depends on diagnostic test characteristics, the testing rate, and the structure of the non-measles noise (@tbl_od-optimal-thresholds, @fig-alert-threshold).
