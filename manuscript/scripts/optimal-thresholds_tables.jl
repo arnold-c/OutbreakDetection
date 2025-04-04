@@ -162,7 +162,12 @@ end
 #%%
 wide_thresholds_df = create_wide_df(thresholds_df, :alert_threshold; digits = 3)
 
-CSV.write(
-    manuscript_tabledir("optimal-thresholds.csv"),
+DataFrames.transform(
     wide_thresholds_df,
+    Cols(r"\d+\%") .=> t -> round.(t; digits = 2);
+    renamecols = false,
+) |>
+df -> CSV.write(
+    manuscript_tabledir("optimal-thresholds.csv"),
+    df,
 );
