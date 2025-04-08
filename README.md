@@ -35,130 +35,202 @@ which auto-activate the project and enable local path handling from DrWatson.
 
 ### Running the project
 
-To run the project, you can use the Makefile.
-First, you should make sure you have Make installed on your computer.
-If you have macOS, it should be pre-installed, but if you'd like to use the most up-to-date version, you can  install it using homebrew.
+To run the project, you can use the Justfile.
+First, you should make sure you have Just installed on your computer.
+If you have macOS you can  install it using homebrew.
 
 ```bash
-brew install make
+brew install just
 ```
 
-> If you use the homebrew version of Make then you will need to use `gmake` instead of `make` to run the Makefile.
+If you are on Linux, you can install Just with your package manager.
+If you are on Windows, you can use the [Chocolatey](https://chocolatey.org/) package manager, or use the ubuntu package manager on [WSL](https://learn.microsoft.com/en-us/windows/wsl/install) (recommended as it will give you access to a linux terminal).
 
-If you are on Linux, you can install Make with your package manager.
-If you are on Windows, you can use the [Chocolatey](https://chocolatey.org/) package manager, download it [directly](https://gnuwin32.sourceforge.net/packages/make.html), or use the ubuntu package manager on [WSL](https://learn.microsoft.com/en-us/windows/wsl/install) (recommended as it will give you access to a linux terminal).
+A full list of download options for each OS can be found at the [Just GitHub repository](https://github.com/casey/just).
 
-Once you have a version of Make installed you can use the following terminal command to run the Makefile:
+Once you have a version of Just installed you can use the following terminal command to run the Justfile:
 
 ```bash
-make
+just
 ```
 
-If you would like to run a specific target, you can specify it after the `make` command e.g. `make ensemble-sim`
+If you would like to run a specific target, you can specify it after the `just` command e.g. `just manuscript`.
+To list all available tasks, you can use the command `just --list` (or open the Justfile).
 
-Make will track when each file was last run and save a temporary file to the `tmp/` directory.
-If you want to force a re-run then you can delete the associated temporary file, either manually, or by running the associated Make clean command e.g. `make clean-ensemble-sims` to delete all ensemble simulation files.
 
 ## Project Structure
 
 ```bash
+OutbreakDetection  main  v1.11.3
+❯ tree -L 3
 .
-├── Makefile
+├── _research
+├── archived
+├── data
+│   ├── cases_and_deaths_estimates_2022.csv
+│   ├── CFR_2022.csv
+│   ├── input-gbd_region.csv
+│   └── input-populations.csv
+├── Justfile
 ├── Manifest.toml
+├── manuscript
+│   ├── ARCHIVE
+│   │   ├── _extensions/
+│   │   ├── manuscript.qmd
+│   │   └── supplemental-appendix.qmd
+│   ├── combined-manuscript.pdf
+│   ├── combined-manuscript.typ
+│   ├── manuscript_files
+│   │   ├── plots/
+│   │   └── tables/
+│   ├── manuscript.typ
+│   ├── OD.bib
+│   ├── scripts
+│   │   ├── optimal-thresholds_checks.jl
+│   │   ├── optimal-thresholds_loading.jl
+│   │   ├── optimal-thresholds_plots.jl
+│   │   ├── optimal-thresholds_tables.jl
+│   │   ├── optimal-thresholds.jl
+│   │   ├── plotting-setup.jl
+│   │   ├── schematic-plot.jl
+│   │   ├── supplemental_plots.jl
+│   │   └── supplemental_tables.jl
+│   ├── supplemental_files
+│   │   ├── plots
+│   │   └── tables
+│   ├── supplemental-appendix.typ
+│   └── template.typ
+├── notebooks
+│   ├── Julia
+│   └── R
+│       ├── RDT-equivalence_files/
+│       ├── RDT-equivalence.html
+│       └── RDT-equivalence.rmd
+├── out
+│   ├── 2025-03-13_11:00:00_optimization-df.jld2
+│   ├── ensemble
+│   │   ├── optimal-threshold-results
+│   │   ├── scenario-optimization-summaries
+│   │   ├── scenario-optimizations
+│   │   └── seasonal-infectivity-import
+│   ├── optimization-df.jld2
+│   ├── singlesim
+│   │   ├── single-sim_arrays.jld2
+│   │   └── single-sim_setup.jld2
+│   └── TEST_optimization-df.jld2
+├── OutbreakDetectionUtils
+│   ├── LICENSE
+│   ├── Manifest.toml
+│   ├── Project.toml
+│   ├── README.md
+│   ├── src
+│   │   ├── cleaning-functions.jl
+│   │   ├── collect-thresholds-vec_functions.jl
+│   │   ├── detection-thresholds.jl
+│   │   ├── diag-testing-functions.jl
+│   │   ├── DrWatson-helpers.jl
+│   │   ├── dynamics-constants.jl
+│   │   ├── ensemble-functions.jl
+│   │   ├── noise-functions.jl
+│   │   ├── optimal-threshold-functions.jl
+│   │   ├── OutbreakDetectionUtils.jl
+│   │   ├── scenario-optimizations.jl
+│   │   ├── SEIR-model.jl
+│   │   ├── structs.jl
+│   │   ├── test-constants.jl
+│   │   ├── threshold-optimization-functions.jl
+│   │   └── transmission-functions.jl
+│   └── test
+│       ├── cleaning-functions.jl
+│       ├── collect-thresholds-vec_functions.jl
+│       ├── detection-thresholds.jl
+│       ├── diag-testing-functions.jl
+│       ├── ensemble-functions.jl
+│       ├── Manifest.toml
+│       ├── noise-functions.jl
+│       ├── optimal-threshold-functions.jl
+│       ├── Project.toml
+│       ├── runtests.jl
+│       └── SEIR-model.jl
+├── plots
+│   ├── dynamical-noise-schematic.svg
+│   ├── ensemble
+│   │   ├── optimal-thresholds
+│   │   ├── scenario-optimizations
+│   │   ├── single-scenario
+│   │   └── testing-comparison
+│   ├── ensemble.bak
+│   │   ├── 2024-01-19_testing-comparison.zip
+│   │   ├── constant-thresholds
+│   │   ├── optimal-thresholds
+│   │   ├── single-scenario
+│   │   └── testing-comparison
+│   ├── ensemble.zip
+│   ├── optimal-thresholds_accuracy-plot_dynamical.svg
+│   ├── optimal-thresholds_accuracy-plot_poisson.svg
+│   ├── poisson-noise-schematic.svg
+│   ├── schematic-plot_incidence-threshold-6.svg
+│   ├── schematic-plot_incidence-threshold.svg
+│   ├── schematic-plot_incidence.svg
+│   ├── schematic-plot_no-threshold.svg
+│   ├── schematic-plot_threshold-3.svg
+│   ├── schematic-plot_threshold-5.svg
+│   ├── schematic-plot_threshold-6.svg
+│   ├── schematic-plot_threshold-8.svg
+│   ├── schematic-plot.svg
+│   ├── schematic-simulation_no-shade.png
+│   ├── schematic-simulation_with-shade.png
+│   ├── schematic-simulation.png
+│   └── singlesim
+│       ├── single-sim_beta.png
+│       ├── single-sim_SI-state-space.png
+│       └── single-sim_timeseries.png
+├── profile.pb.gz
 ├── Project.toml
 ├── README.md
-├── _research
-├── data
-│   ├── CFR_2022.csv
-│   ├── input-populations.csv
-│   ├── optimal-threshold-results
-│   │   ├── R0_12.0
-│   │   │   ├── noise_type_dynamical
-│   │   │   └── noise_type_poisson
-│   │   ├── R0_16.0
-│   │   │   ├── noise_type_dynamical
-│   │   │   └── noise_type_poisson
-│   │   ├── R0_20.0
-│   │   │   ├── noise_type_dynamical
-│   │   │   └── noise_type_poisson
-│   │   └── R0_8.0
-│   │       ├── noise_type_dynamical
-│   │       └── noise_type_poisson
-│   ├── seasonal-infectivity-import
-│   │   └── tau-leaping
-│   └── singlesim
-├── notebooks
-│   ├── Julia
-│   └── R
-├── plots
-│   ├── ensemble
-│   │   ├── optimal-thresholds
-│   │   │   ├── R0_12.0
-│   │   │   │   ├── noise_type_dynamical
-│   │   │   │   └── noise_type_poisson
-│   │   │   │       └── ...
-│   │   │   │           ├── clinic-tested
-│   │   │   │           └── tests
-│   │   │   ├── R0_16.0
-│   │   │   │   ├── noise_type_dynamical
-│   │   │   │   └── noise_type_poisson
-│   │   │   │       └── ...
-│   │   │   │           ├── clinic-tested
-│   │   │   │           └── tests
-│   │   │   ├── R0_20.0
-│   │   │   │   ├── noise_type_dynamical
-│   │   │   │   └── noise_type_poisson
-│   │   │   │       └── ...
-│   │   │   │           ├── clinic-tested
-│   │   │   │           └── tests
-│   │   │   └── R0_8.0
-│   │   │   │   ├── noise_type_dynamical
-│   │   │   │   └── noise_type_poisson
-│   │   │   │       └── ...
-│   │   │   │           ├── clinic-tested
-│   │   │   │           └── tests
-│   │   ├── single-scenario
-│   │   └── testing-comparison
-│   │       ├── noise_type_dynamical
-│   │       └── noise_type_poisson
-│   └── singlesim
+├── renv/
 ├── renv.lock
 ├── scripts
-│   ├── debugging.jl
-│   ├── ensemble-diag-testing_optimal-thresholds.jl
-│   ├── ensemble-diag-testing_scenarios_plots.jl
-│   ├── ensemble-sim.jl
-│   ├── ensemble-sim_noise-visualizations.jl
-│   ├── ensemble-sim_single-scenario.jl
-│   ├── single-sim.jl
-│   ├── single-sim_bifurcation.jl
-│   └── single-sim_plots.jl
+│   ├── calculate-dynamical-noise-vaccintion-rates.jl
+│   ├── debugging.jl
+│   ├── ensemble-diag-testing_constant-thresholds.jl
+│   ├── ensemble-diag-testing_optimal-thresholds_single-timeseries.jl
+│   ├── ensemble-diag-testing_optimal-thresholds.jl
+│   ├── ensemble-diag-testing_scenarios_plots.jl
+│   ├── ensemble-sim_noise-visualizations.jl
+│   ├── ensemble-sim_optimal-accuracy-isocline.jl
+│   ├── ensemble-sim_optimal-accuracy-lineplot.jl
+│   ├── ensemble-sim_single-scenario.jl
+│   ├── ensemble-sim.jl
+│   ├── line-plots.jl
+│   ├── outbreak-detection-schematic.jl
+│   ├── schematic-plots.jl
+│   ├── scratch.jl
+│   ├── scratch.R
+│   ├── single-sim_plots.jl
+│   ├── single-sim_setup.jl
+│   ├── single-sim.jl
+│   └── threshold-optimization.jl
 ├── src
-│   ├── DrWatson-helpers.jl
-│   ├── OutbreakDetection.jl
-│   ├── R
-│   │   └── app.R
-│   ├── SEIR-model.jl
-│   ├── bifurcation-functions.jl
-│   ├── cleaning-functions.jl
-│   ├── detection-thresholds.jl
-│   ├── diag-testing-functions.jl
-│   ├── dynamics-constants.jl
-│   ├── ensemble-functions.jl
-│   ├── ensemble-parameters.jl
-│   ├── ensemble-sim_single-scenario_plots.jl
-│   ├── makie-plotting-setup.jl
-│   ├── noise-functions.jl
-│   ├── optimal-threshold-functions.jl
-│   ├── plotting-functions.jl
-│   ├── single-sim_setup.jl
-│   ├── structs.jl
-│   ├── test-constants.jl
-│   ├── threshold_comparison_plots.jl
-│   └── transmission-functions.jl
+│   ├── ensemble-inspection_plots.jl
+│   ├── ensemble-parameters.jl
+│   ├── isocline_plots.jl
+│   ├── line_plots.jl
+│   ├── makie-plotting-setup.jl
+│   ├── noise_plots.jl
+│   ├── optimal-thresholds_plots.jl
+│   ├── outbreak-threshold-chars_plots.jl
+│   ├── OutbreakDetection.jl
+│   ├── plotting-functions.jl
+│   ├── plotting-helpers.jl
+│   ├── quantile_plots.jl
+│   ├── R
+│   │   └── app.R
+│   ├── single-scenario_plots.jl
+│   ├── single-sim_plots.jl
+│   └── threshold_comparison_plots.jl
 ├── test
-│   └── runtests.jl
-├── tmp
+│   └── runtests.jl
 └── workflows
     └── CI.yml
 ```
@@ -183,5 +255,4 @@ If you want to force a re-run then you can delete the associated temporary file,
 - `scripts` contains the Julia scripts used to examine single and ensemble simulations, using plotting and other functions defined in `src/*.jl` files
 - `src` contains all Julia source files and functions used in the analysis pipeline and exploration scripts. These files are separated by purpose e.g., `cleaning-functions.jl` contains functions for cleaning the simulation arrays into dataframes for simpler plotting and manipulation, and `ensemble-functions.jl` contains all functions related to running the ensemble simulations. There is also an `R/` directory that runs the prototype R shiny app
 - `test` contains all test scripts
-- `tmp` contains all temporary files created to track dependencies for Make. This will likely be removed when the shifting to use [Just](https://github.com/casey/just) for the pipeline
 - `workflows` contains the CI workflow using GitHub Actions. Currently it only contains a file that can run tests on push to the `main` branch, but it is not active
