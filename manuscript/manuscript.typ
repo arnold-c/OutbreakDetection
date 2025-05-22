@@ -126,7 +126,7 @@ The population was initialized with 500,000 individuals with Ghana-like birth an
 Ghana was chosen to reflect a setting with a high-performing measles vaccination program that has not yet achieved elimination status (c. 80% coverage for two doses of measles-containing vaccine), and must remain vigilant to outbreaks @WHOImmunizationData @masreshaTrackingMeaslesRubella2024.
 We assumed commuter-style imports at each time step to avoid extinction; the number of imports each day were drawn from a Poisson distribution with mean proportional to the size of the population and $R_0$ @keelingModelingInfectiousDiseases2008.
 The full table of parameters can be found in @tbl_od-model-parameters.
-All simulations and analyses were completed in Julia version 1.11.3 @bezansonJuliaFreshApproach2017, with all code stored at #link("https://github.com/arnold-c/OutbreakDetection").
+All simulations and analyses were completed in Julia version 1.11.5 @bezansonJuliaFreshApproach2017, with all code stored at #link("https://github.com/arnold-c/OutbreakDetection").
 
 #let table_math(inset: 6pt, size: 14pt, content) = table.cell(
   inset: inset,
