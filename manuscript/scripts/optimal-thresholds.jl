@@ -33,9 +33,6 @@ include(manuscript_scripts("schematic-plot.jl"))
 include(manuscript_scripts("optimal-thresholds_loading.jl"));
 
 #%%
-include(manuscript_scripts("optimal-thresholds_tables.jl"));
-
-#%%
 include(manuscript_scripts("optimal-thresholds_plots.jl"));
 
 #%%
