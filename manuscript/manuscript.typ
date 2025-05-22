@@ -1,5 +1,6 @@
 #import "template.typ": article
 
+
 #show: article.with(
   title: "Individual and Population Level Uncertainty Interact to Determine Performance of Outbreak Surveillance Systems",
   header-title: "true",
@@ -10,7 +11,7 @@
       email: "contact\@callumarnold.com",
     ),
     "Alex C. Kong": (
-      affiliation: ("Hopkins-IH"),
+      affiliation: "Hopkins-IH",
     ),
     "Amy K. Winter": (
       affiliation: ("UGA-Epi", "UGA-Eco"),
@@ -18,8 +19,8 @@
     "William J. Moss": (
       affiliation: ("Hopkins-IH", "Hopkins-Epi"),
     ),
-   "Bryan N. Patenaude": (
-      affiliation: ("Hopkins-IH"),
+    "Bryan N. Patenaude": (
+      affiliation: "Hopkins-IH",
     ),
     "Matthew J. Ferrari": (
       affiliation: ("PSU-Bio", "CIDD"),
@@ -31,23 +32,45 @@
     "Hopkins-IH": "Department of International Health, Johns Hopkins Bloomberg School of Public Health, Baltimore, MD, USA 21205",
     "UGA-Epi": "Department of Epidemiology and Biostatistics, College of Public Health, University of Georgia, Athens, GA, USA 30602",
     "UGA-Eco": "Center for the Ecology of Infectious Disease, University of Georgia, Athens, GA, UGA 30602",
-    "Hopkins-Epi": "Department of Epidemiology, Johns Hopkins Bloomberg School of Public Health, Baltimore, MD, USA 21205"
+    "Hopkins-Epi": "Department of Epidemiology, Johns Hopkins Bloomberg School of Public Health, Baltimore, MD, USA 21205",
   ),
-  keywords: ("Rapid-Diagnostic Tests","ELISA","Infectious Disease Surveillance","Outbreak Detection", "Measles", "Serology"),
+  keywords: (
+    "Rapid-Diagnostic Tests",
+    "ELISA",
+    "Infectious Disease Surveillance",
+    "Outbreak Detection",
+    "Measles",
+    "Serology",
+  ),
   abstract: [
     == Background
-    Infectious disease surveillance and outbreak detection systems often utilize diagnostic testing to validate case identification. The metrics of sensitivity, specificity, and positive predictive value are commonly discussed when evaluating the performance of diagnostic tests, and to a lesser degree, the performance of outbreak detection systems. However, the interaction between the test performance and the alert system is often overlooked. Here, we describe how similar outbreak detection performance can exist over a range of diagnostic test characteristics, examining the sensitivity to background noise structure and magnitude.
+    Outbreak detection frequently rely on imperfect individual-level case diagnosis.
+    Both outbreaks and cases are discrete events that can be misclassified and uncertainty at the case level may impact the performance of outbreak alert and detection systems.
+    Here, we describe how the performance of outbreak detection depends on individual-level diagnostic test characteristics and population-level epidemiology and describe settings where imperfect individual-level tests can achieve consistent performance to “perfect” diagnostics.
 
-    == Methods
-  We generated a stochastic SEIR model with importation to simulate measles sources (i.e., true) and non-measles sources (i.e., noise) of febrile rash daily incidence. We generated time series of febrile rash (i.e., measles clinical case definition) by summing the daily incidence of measles and either independent Poisson (static) noise or non-measles dynamical noise (consistent with rubella virus). For each time series a subset of those were diagnostically confirmed using a test with sensitivity and specificity consistent with either a measles rapid diagnostic test (RDT) or perfect diagnostic test. From the resulting time series of test-positive cases, we defined an outbreak alert as the exceedance of a threshold by the 7-day rolling average of observed (test positive) cases. For each threshold level, we calculated percentages of alerts that were aligned with an outbreak (analogous to the positive predictive value) and the percentage of outbreaks detected (analogous to the sensitivity), and we combined these two measures into an accuracy metric for outbreak detection. We optimized for the threshold that maximized accuracy. We show how the optimal threshold and resulting accuracy depend on the diagnostic test, testing rate, and the type and magnitude of the non-measles noise.
-
-    == Results
-    The optimal threshold for each test typically increased monotonically as the percentage of infected individuals who were tested increased. With static noise, similar outbreak detection accuracies could be achieved with imperfect RDT-like tests as with perfect diagnostic tests ($approx$ 90%). Similar numbers of unavoidable cases and outbreak alert delays could be achieved between the test types. With dynamical noise, the accuracy of perfect test scenarios was superior to those achieved with RDTs ($approx$ 90% vs. $approx$ 80%), with degrading performance with increasing noise magnitude. For high dynamical noise, RDT-based scenarios optimized outbreak detection accuracy through overly sensitive alert thresholds, observed with lower numbers of unavoidable cases and detection delays.
+    == Methodology
+    We generated a stochastic SEIR model to simulate daily incidence of measles (i.e., true) and non-measles (i.e., noise) febrile rash.
+    We modeled non-measles sources as either independent static (Poisson) noise, or dynamical noise consistent with an independent SEIR process (e.g., rubella).
+    Defining outbreak alerts as the exceedance of a threshold by the 7-day rolling average of observed test positives, we optimized the threshold that maximized outbreak detection accuracy across set of noise structures and magnitudes, diagnostic test accuracy (consistent with either a perfect test, or proposed rapid diagnostic tests), and testing rates combinations.
 
     == Conclusions
-    The performance of an outbreak detection system is highly sensitive to the structure and the magnitude of background noise. Under the assumption that the noise is relatively static over time, RDTs can perform as well as perfect tests in a surveillance system. However, when the noise is temporally correlated, as from a separate SEIR process, imperfect tests cannot overcome their accuracy limitations through higher testing rates.
+
+    The optimal threshold for each test typically increased monotonically with testing rate.
+    With static noise, outbreak detection with RDT-like and perfect tests achieve accuracies of 90%, with comparable delays to outbreak detection.
+    With dynamical noise, the accuracy of perfect test scenarios was superior to those achieved with RDTs ($approx$ 90% vs. $approx$ 80%).
+    Outbreak detection accuracy declined as dynamical noise increased and leads to permanent alert status with RDT-like tests at very high noise.
+    The performance of an outbreak detection system is highly sensitive to the structure and the magnitude of background noise.
+    Depending on the epidemiological context, outbreak detection using RDTs can perform as well as perfect tests.
   ],
-  word-count: true
+  author-summary: [
+    To respond to outbreaks, we first need to detect them.
+    This detection is inherently flawed, in part, due to imperfect tests used to indicate individuals as positive or negative for a disease.
+    We evaluate the impact of imperfect diagnostic tests for infectious disease on the accuracy and timeliness of outbreak detection in the context of a set of background infections that could be mistaken for the disease of interest to the surveillance program, and consequently cause false positive test results.
+    We find that when outbreak detection performance is highly dependent on the structure and magnitude of the "noise" infections.
+    When rate of background infections far exceeds that of the target infection, and are dynamical, such that there are large peaks and troughs of "noise infections", imperfect diagnostic tests are not able to accurately distinguish the "signal" (target infections) from the "noise".
+    If the "noise" infections are either less cyclical in their dynamics, or do not outnumber true infections by a great deal, imperfect diagnostic tests can perform well.
+  ],
+  word-count: true,
 )
 
 = Background
@@ -63,7 +86,7 @@ However, this may lead to low specificity due to an increase in spurious false p
 To account for these differences, the target product profile (TPP) of a diagnostic provides a minimum set of characteristics that should be met, helping to guide the development and use @worldhealthorganizationTargetProductProfiles.
 
 The choice to prioritize sensitivity or specificity will be pathogen and context specific.
-When the cost of a false negative result is disproportionately high relative to a false positive, such as for Ebola @chuaCaseImprovedDiagnostic2015, highly specific tests are required.
+When the cost of a false negative result is disproportionately high relative to a false positive, such as for Ebola @chuaCaseImprovedDiagnostic2015, highly specific tests may be preferred.
 This balance will, however, vary as the prevalence of infection in a population varies.
 Higher presence of infection in a population will increase the positive predictive value (PPV) of the test i.e., the probability that a positive test reflects a positive individual, that unlike the sensitivity of the test, is not conditioned upon the infection status of the tested individual @westreichDiagnosticTestingScreening2019 @shrefflerDiagnosticTestingAccuracy2024.
 Regions of high disease burden may therefore prioritize test sensitivity, in contrast to a lower burden location's preference for test specificity and PPV, all else being equal.
@@ -72,10 +95,10 @@ At the heart of an outbreak detection system is a surveillance program that enum
 As many disease symptoms reflect generic host responses to infection e.g., febrile rash, and infection with a given pathogen can give rise to a wide range of disease symptoms and severity across individuals, accurate methods of case identification are required.
 Given the imperfect nature of diagnostic classification, any result for an individual is uncertain.
 Accumulating multiple individual test results to produce population-level counts will propagate this uncertainty, and may result in over- or under-counts due to a preponderance of the diagnostic to produce false positive and negative individual test results, respectively.
-This process becomes increasingly important when the prevalence of the surveillance program's target disease is low relative to the presence of other sources of clinically-compatible cases; the PPV of an individual diagnostic decreases, increasing the number of false positives, making it harder to identify true anomalies in disease incidence.
-As a result, it has been commonplace for surveillance systems to be developed around high-accuracy tests, such as PCR and ELISA tests, when financially and logistically feasible @gastanaduyMeasles2019 @commissionerCoronavirusCOVID19Update2020@grasslyComparisonMolecularTesting2020@ezhilanSARSCoVMERSCoVSARSCoV22021 @worldhealthorganizationCholera2023 @essentialprogrammeonimmunizationepiimmunizationClinicalSpecimensLaboratory2018.
+When the prevalence of a surveillance program's target disease is low relative to the prevalence of other sources of clinically-compatible cases (as might be expected at the start of an outbreak), the PPV of an individual diagnostic will decrease, increasing the number of false positives, making it harder to identify true anomalies in disease incidence.
+As a result, it has been commonplace for infectious disease surveillance systems to be developed around high-accuracy tests, such as PCR and ELISA tests, when financially and logistically feasible @gastanaduyMeasles2019 @commissionerCoronavirusCOVID19Update2020@grasslyComparisonMolecularTesting2020@ezhilanSARSCoVMERSCoVSARSCoV22021 @worldhealthorganizationCholera2023 @essentialprogrammeonimmunizationepiimmunizationClinicalSpecimensLaboratory2018.
 
-Outbreak detection systems, like diagnostic tests, must prioritize the sensitivity or specificity of an alert @germanSensitivityPredictiveValue2000@worldhealthorganizationOperationalThresholds2014 @lewisTimelyDetectionMeningococcal2001.
+Outbreak detection systems, like diagnostic tests, must prioritize the sensitivity or specificity of an alert to detect an outcome (the outbreak) @germanSensitivityPredictiveValue2000@worldhealthorganizationOperationalThresholds2014 @lewisTimelyDetectionMeningococcal2001.
 For many disease systems, particularly in resource constrained environments where the burden of infectious diseases is typically highest @gbd2019childandadolescentcommunicablediseasecollaboratorsUnfinishedAgendaCommunicable2023 @roserBurdenDisease2023, cases are counted and if a pre-determined threshold is breached #sym.dash.em be that weekly, monthly #sym.dash.em or some combination of the two, an alert is triggered that may launch a further investigation and/or a response @worldhealthorganizationMeaslesOutbreakGuide2022 @worldhealthorganizationOperationalThresholds2014.
 In effect, this discretizes a distinctly continuous phenomenon (observed cases) into a binary measure (outbreak or no outbreak) for decision making purposes.
 For reactive management approaches, such as vaccination campaigns and non-pharmaceutical based interventions that are designed to reduce transmission or limit and suppress outbreaks, early action has the potential to avert the most cases @atkinsAnticipatingFutureLearning2020@taoLogisticalConstraintsLead @graisTimeEssenceExploring2008 @ferrariTimeStillEssence2014 @worldhealthorganizationConfirmingInvestigatingManaging2009 @minettiLessonsChallengesMeasles2013.
@@ -105,26 +128,49 @@ We assumed commuter-style imports at each time step to avoid extinction; the num
 The full table of parameters can be found in @tbl_od-model-parameters.
 All simulations and analyses were completed in Julia version 1.11.3 @bezansonJuliaFreshApproach2017, with all code stored at #link("https://github.com/arnold-c/OutbreakDetection").
 
-#let table_math(inset: 6pt, size: 14pt, content) = table.cell(inset: inset, text(size: size, content))
+#let table_math(inset: 6pt, size: 14pt, content) = table.cell(
+  inset: inset,
+  text(size: size, content),
+)
 
 #let import_rate = $(1.06*μ*R_0)/(√(N))$
 
 #figure(
   table(
     columns: 3, align: horizon,
-    [Parameters],[Measles],[Dynamical noise],
-    [R0],[16],[5],
-    [Latent period (s)],[10 days],[7 days],
-    [Infectious period (g)],[8 days],[14 days],
-    [Seasonal amplitude],[0.2],[0.2],
-    [Vaccination rate at birth (r)],[80%],[(5-85)%],
-    [Birth/death rate (m)],table.cell(colspan: 2, align: center, "27 per 1000 per annum"),
-    [Importation rate], table.cell(colspan: 2, align: center, table_math[$(1.06*μ*R_0)/(√(N))$]),
-    [Population size (N)], table.cell(colspan: 2, align: center, "500,000, scaled to 33M"),
-    [Initial proportion susceptible], table.cell(colspan: 2, align: center, "0.05"),
+    [Parameters], [Measles], [Dynamical noise],
+    [R0], [16], [5],
+    [Latent period (s)], [10 days], [7 days],
+    [Infectious period (g)], [8 days], [14 days],
+    [Seasonal amplitude], [0.2], [0.2],
+    [Vaccination rate at birth (r)], [80%], [(5-85)%],
+    [Birth/death rate (m)], table.cell(
+      colspan: 2,
+      align: center,
+      "27 per 1000 per annum",
+    ),
+    [Importation rate], table.cell(
+      colspan: 2,
+      align: center,
+      table_math[$(1.06*μ*R_0)/(√(N))$],
+    ),
+    [Population size (N)], table.cell(
+      colspan: 2,
+      align: center,
+      "500,000, scaled to 33M",
+    ),
+    [Initial proportion susceptible], table.cell(
+      colspan: 2,
+      align: center,
+      "0.05",
+    ),
     [Initial proportion exposed], table.cell(colspan: 2, align: center, "0.0"),
     [Initial proportion infected], table.cell(colspan: 2, align: center, "0.0"),
-    [Initial proportion recovered], table.cell(colspan: 2, align: center, "0.95"),
+    [Initial proportion recovered], table.cell(
+      colspan: 2,
+      align: center,
+      "0.95",
+    ),
   ),
   caption: [Compartmental model parameters],
 )
@@ -171,8 +217,8 @@ We then add non-measles noise (@fig-outbreak-schematic\b) and test according to 
 #figure(
   image("manuscript_files/plots/schematic-plot.svg"),
   caption: [
-   A schematic of the outbreak definition and alert detection system. A) Measles incidence time series. B) Noise incidence time series. C) Observed time series of test positive cases according to a given testing scenario. The orange bands present in all 3 panels represent regions of the measles time series that meet the outbreak definition criteria. In panel C, the dark blue bands represent regions of the test positive time series that breach the alert threshold (the horizontal dashed line), and constitute an alert.
-    ]
+    A schematic of the outbreak definition and alert detection system. A) Measles incidence time series. B) Noise incidence time series. C) Observed time series of test positive cases according to a given testing scenario. The orange bands present in all 3 panels represent regions of the measles time series that meet the outbreak definition criteria. In panel C, the dark blue bands represent regions of the test positive time series that breach the alert threshold (the horizontal dashed line), and constitute an alert.
+  ],
 )
 <fig-outbreak-schematic>
 
@@ -187,8 +233,7 @@ We also calculate the detection delay as the time from the start of an outbreak 
 If the alert period starts before the outbreak and continues past the start date of the outbreak, this would be considered a correct alert with a negative delay i.e., an early warning triggered by false positive test results.
 Finally, for each time series we calculate the number of unavoidable and avoidable outbreak cases.
 Unavoidable cases are those that occur before a correct alert, or those that occur in an undetected outbreak.
-Avoidable cases are defined as those that occur within an outbreak on and after the day of the first correct alert i.e., cases that could theoretically be prevented with a perfectly effective and timely response.
-Not all cases defined as avoidable would be in practice (due to delays in, and the imperfect nature of, responses); the specifics of operation response are beyond the scope of this work.
+Avoidable cases are those that occur within an outbreak and after the first alert; we do not quantity avoidable cases here as the value depends critically on the explicit details of the response, which we do not model.
 
 We define the accuracy of the surveillance system for a given time series as the arithmetic mean of the system’s PPV and sensitivity.
 To examine the interaction of the test with the surveillance system's characteristics (i.e., testing rate, noise structure and magnitude), we optimized the alert threshold, T, for a given "testing scenario".
@@ -216,35 +261,20 @@ For imperfect diagnostic tests, which have lower individual sensitivity and spec
 Notably, the surveillance accuracy typically declines with more noise, and is not consistently improved with higher testing rates as the signal becomes increasingly dominated by false positive test results (@fig-accuracy).
 At high levels of dynamical noise ($gt.eq Lambda (6)$), high testing rates ($gt.eq$ 50%) result in a marked increase in outbreak detection accuracy; however, in these scenarios the optimal alert threshold is $approx$ 0 (@fig-alert-threshold, @fig-accuracy).
 
-#let optimal_thresholds = csv("manuscript_files/tables/optimal-thresholds.csv")
-#figure(
-    table(
-    columns: 13,
-    fill: (x, y) => {
-      if y == 0 {gray}
-      if y == 1 {gray}
-    },
-    align: center,
-    [], table.cell(colspan: 2, align: center, "Test Characteristic"), table.cell(colspan: 10, align: center, "Testing Rate"),
-    ..optimal_thresholds.flatten()
-  ),
-  caption: [The optimal outbreak alert thresholds for imperfect and perfect diagnostic tests (that maximizes outbreak detection accuracy) under dynamical and static noise structures where the average daily noise incidence is 8 times the average daily measles incidence $Lambda(8)$. The test sensitivity equals the test specificity for all diagnostic tests.]
-)
-<tbl_od-optimal-thresholds>
-
 #figure(
   image("manuscript_files/plots/optimal-thresholds_alert-threshold-plot.svg"),
-  caption: [The optimal alert threshold of outbreak detection systems (that maximizes outbreak detection accuracy) under different testing rates and noise structures. Imperfect tests have the same values for sensitivity and specificity. Circular markers represent tests with 0-day turnaround times, and triangular markers represent tests with result delays. $Lambda(4)$ indicates the mean noise incidence is 4 times higher than the mean measles incidence, for example.]
+  caption: [The optimal alert threshold of outbreak detection systems (that maximizes outbreak detection accuracy) under different testing rates and noise structures. Imperfect tests have the same values for sensitivity and specificity. Circular markers represent tests with 0-day turnaround times, and triangular markers represent tests with result delays. $Lambda(4)$ indicates the mean noise incidence is 4 times higher than the mean measles incidence, for example. @tbl_od-optimal-thresholds provides the underlying values in a table format to help distinguish between lines that may overlap.],
 )
 <fig-alert-threshold>
 
 #figure(
   image("manuscript_files/plots/optimal-thresholds_accuracy-plot.svg"),
-  caption: [The accuracy of outbreak detection systems under different testing rates and noise structures, at their respective optimal alert thresholds. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate. Imperfect tests have the same values for sensitivity and specificity. Solid lines represent tests with 0-day turnaround times, and dashed lines represent tests with result delays. $Lambda(4)$ indicates the mean noise incidence is 4 times higher than the mean measles incidence, for example.]
+  caption: [The accuracy of outbreak detection systems under different testing rates and noise structures, at their respective optimal alert thresholds. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate. Imperfect tests have the same values for sensitivity and specificity. Solid lines represent tests with 0-day turnaround times, and dashed lines represent tests with result delays. $Lambda(4)$ indicates the mean noise incidence is 4 times higher than the mean measles incidence, for example.],
 )
 <fig-accuracy>
 
 Introducing a lag in test result reporting necessarily decreases surveillance accuracy because an alert can only begin once the test results are in-hand, which increases the chance that an outbreak, that on average last for 149 days, will end before results can be translated to an alert.
+It does not, however, result in a different optimized threshold (T#sub([O])) (@fig-alert-threshold).
 For the conditions simulated here, introducing a 14-day lag in test reporting for a perfect test reduces the surveillance accuracy by $approx$ 3%.
 For all dynamical noise simulated scenarios, this is consistent with, or higher than, the accuracy achievable with an RDT-like imperfect test, but lower than achievable under static background noise.
 This always leads to an increase in the median delay from outbreak start to alert, relative to a perfect test with no result delays, as well as imperfect tests (@fig-delay).
@@ -252,7 +282,7 @@ Under high dynamical noise ($gt.eq Lambda (6)$) and high testing rates ($gt.eq$ 
 
 #figure(
   image("manuscript_files/plots/optimal-thresholds_delays-plot.svg"),
-  caption: [The detection delay of outbreak detection systems under different testing rates and noise structures, at their respective optimal alert thresholds. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate. Imperfect tests have the same values for sensitivity and specificity. Solid lines represent tests with 0-day turnaround times, and dashed lines represent tests with result delays. $Lambda(4)$ indicates the mean noise incidence is 4 times higher than the mean measles incidence.]
+  caption: [The detection delay of outbreak detection systems under different testing rates and noise structures, at their respective optimal alert thresholds. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate. Imperfect tests have the same values for sensitivity and specificity. Solid lines represent tests with 0-day turnaround times, and dashed lines represent tests with result delays. $Lambda(4)$ indicates the mean noise incidence is 4 times higher than the mean measles incidence.],
 )
 <fig-delay>
 
@@ -269,7 +299,7 @@ However, the large negative detection delays associated with high dynamical nois
 
 #figure(
   image("manuscript_files/plots/optimal-thresholds_prop-alert-plot.svg"),
-  caption: [The proportion of the time series in alert of outbreak detection systems under different testing rates and noise structures, at their respective optimal alert thresholds. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate. Imperfect tests have the same values for sensitivity and specificity. Solid lines represent tests with 0-day turnaround times, and dashed lines represent tests with result delays. $Lambda(4)$ indicates the mean noise incidence is 4 times higher than the mean measles incidence.]
+  caption: [The proportion of the time series in alert of outbreak detection systems under different testing rates and noise structures, at their respective optimal alert thresholds. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate. Imperfect tests have the same values for sensitivity and specificity. Solid lines represent tests with 0-day turnaround times, and dashed lines represent tests with result delays. $Lambda(4)$ indicates the mean noise incidence is 4 times higher than the mean measles incidence.],
 )
 <fig-alert-proportion>
 
@@ -278,7 +308,8 @@ However, the large negative detection delays associated with high dynamical nois
 The performance of an outbreak detection system is highly sensitive to the structure and level of background noise in the simulation.
 Despite setting the mean daily noise incidence to equivalent values for the dynamical and static simulations, we observed drastically different results.
 
-Under the assumption that non-measles febrile rash is relatively static in time (static noise scenarios), imperfect (RDT-like) diagnostics can perform as well as, if not better than, perfect (ELISA-like) tests at moderate to high testing rates, and at a fraction of the cost @brownRapidDiagnosticTests2020.
+Under the assumption that non-measles febrile rash is relatively static in time (static noise scenarios), imperfect (RDT-like) diagnostics can perform as well as, if not better than, perfect (ELISA-like) tests at moderate to high testing rates.
+RDTs for measles are expected to be less expensive than ELISAs, which could lead to overall savings in surveillance systems at a given testing rate, and/or may allow for higher testing rates for the same or lower cost in resource limited settings @brownRapidDiagnosticTests2020.
 However, if it is expected that the noise is dynamic and substantially larger in magnitude than the target infection ($gt.eq Lambda (4)$), imperfect tests cannot overcome their accuracy limitations through higher testing rates, saturating at c. 80% accuracy, relative to 93% achieved with perfect tests.
 This discrepancy occurs because, despite the same average incidence of noise in each (comparable) scenario, the relative proportion of measles to noise on any one day varies throughout the dynamical noise time series, exacerbating the increase in false positive and negative test results as the diagnostic's sensitivity and specificity declines.
 Under extremely high dynamical noise levels ($gt.eq Lambda (6)$), the relative paucity of true outbreak periods to non-outbreak periods creates a severely imbalanced data set (c. 14% of the time series is within an outbreak period), such that the optimal detection strategy with imperfect diagnostic tests and moderately high testing rates is to maintain a perpetual alert status. In a realistic scenario, this is clearly not a feasible outbreak detection and response strategy.
@@ -296,12 +327,12 @@ Additionally, by defining outbreak bounds concretely we have been able to calcul
 This provides an intuitive understanding and simple implementation of this method in resource-constrained environments, something that may not be possible with many outbreak detection and early warning system simulations in the literature.
 An evaluation of all outbreak detection algorithms is beyond the scope of this work, but a more computationally expensive approach based on nowcasting incidence may help overcome the shortcomings of imperfect diagnostics in high-noise scenarios.
 
-For computational simplicity, this paper did not include demography in the model structure; there is no evidence of age-specific differences in test performance, therefore we believe our results to be robust to population demographics.
-Furthermore, while a simulation-based approach allows for complete determination of true infection status i.e., measles vs non-measles febrile rash cases, and therefore an accurate accounting of the outbreak and alert bounds, these simulations do not specifically represent any real-world setting.
+While a simulation-based approach allows for complete determination of true infection status i.e., measles vs non-measles febrile rash cases, and therefore an accurate accounting of the outbreak and alert bounds, these simulations do not specifically represent any real-world setting.
 The evaluation of empirical data does provide this opportunity, but at the cost of not knowing the true infection status of individuals, confounding of multiple variables, limiting analysis to only those who are observed (i.e., not those in the community who do not visit a healthcare center), and removing the possibility to explore the sensitivity of the results when adjusting parameters that are central to a surveillance program e.g., testing rate, and the test itself.
 
-Additionally, it has been well documented that the performance of an individual test is highly sensitive to its timing within a person’s infection cycle @gastanaduyMeasles2019 @larremoreTestSensitivitySecondary2021 @middletonModelingTransmissionMitigation2024 @kisslerViralDynamicsAcute2021 @ratnamPerformanceIndirectImmunoglobulin2000, so it is possible that different conclusions would be drawn if temporal information about the test administration was included in the simulation.
-For example, if there is systemic sampling bias such that during the initial exponential phase of the outbreak infectious individuals are 'captured' by the surveillance program earlier in their infection cycle (as a growing epidemic has a disproportionately large number of 'young infections') @hayEstimatingEpidemiologicDynamics2021, RDTs may have higher accuracy during the earlier phase of the outbreak relative to after the peak.
+Additionally, for computational simplicity, this paper did not include demography in the model structure.
+It has been well documented that the performance of an individual test is highly sensitive to its timing within a person’s infection cycle @gastanaduyMeasles2019 @larremoreTestSensitivitySecondary2021 @middletonModelingTransmissionMitigation2024 @kisslerViralDynamicsAcute2021 @ratnamPerformanceIndirectImmunoglobulin2000, and younger individuals may be tested earlier in their infection cycle #highlight[JIM GOODSEN REF], so it is possible that different conclusions would be drawn if demographic and temporal information about test administration was included in the simulation.
+For example, if there is systemic sampling bias such that during the initial exponential phase of the outbreak infectious individuals are 'captured' by the surveillance program earlier in their infection cycle (as a growing epidemic has a disproportionately large number of 'young infections' @hayEstimatingEpidemiologicDynamics2021, or the outbreak is driven by younger cohorts), RDTs may have higher accuracy during the earlier phase of the outbreak relative to after the peak.
 Under these conditions, a diagnostic test that is 'less accurate' on average may still have utility for the purposes of detecting an outbreak under high levels of dynamical noise, which only relies on capturing the epidemic's growth past a given threshold value, in the context of this study.
 However, this assumes that the number of false positive test results generated decreases due to higher accuracy (including specificity), rather than increasing the diagnostic's sensitivity being the sole change.
 Future work should aim to capture these dynamics and characterize the resulting effect on an imperfect diagnostic test's utility for outbreak detection in a regime with high dynamical noise.
