@@ -1,38 +1,7 @@
 #import "template.typ": article
-//
-#show: article.with(
-  title: "Individual and Population Level Uncertainty Interact to Determine Performance of Outbreak Detection",
-  header-title: "true",
-  authors: (
-    "Callum R.K. Arnold": (
-      affiliation: ("PSU-Bio", "CIDD"),
-      corresponding: "true",
-      email: "contact\@callumarnold.com",
-    ),
-    "Alex C. Kong": (
-      affiliation: "Hopkins-IH",
-    ),
-    "Amy K. Winter": (
-      affiliation: "UGA",
-    ),
-    "William J. Moss": (
-      affiliation: ("Hopkins-IH", "Hopkins-Epi"),
-    ),
-    "Bryan N. Patenaude": (
-      affiliation: "Hopkins-IH",
-    ),
-    "Matthew J. Ferrari": (
-      affiliation: ("PSU-Bio", "CIDD"),
-    ),
-  ),
-  affiliations: (
-    "PSU-Bio": "Department of Biology, Pennsylvania State University, University Park, PA, USA 16802",
-    "CIDD": "Center for Infectious Disease Dynamics, Pennsylvania State University, University Park, PA, USA 16802",
-    "Hopkins-IH": "Department of International Health, Johns Hopkins Bloomberg School of Public Health, Baltimore, MD, USA 21205",
-    "UGA": "Department of Epidemiology, College of Public Health, University of Georgia, Athens, GA, USA 30602",
-    "Hopkins-Epi": "Department of Epidemiology, Johns Hopkins Bloomberg School of Public Health, Baltimore, MD, USA 21205",
-  ),
-)
+#import "metadata.typ": meta
+
+#show: article.with(..meta)
 
 #show figure.where(kind: image): set figure(supplement: "Supplemental Figure")
 #show figure.where(kind: table): set figure(supplement: "Supplemental Table")
