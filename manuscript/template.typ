@@ -1,3 +1,62 @@
+#let set_linespacing(
+  top-edge: "cap-height",
+  bottom-edge: "baseline",
+  leading: 0.65em,
+  first-line-indent: 0em,
+  spacing: 1.2em,
+  body,
+) = {
+  set text(top-edge: top-edge, bottom-edge: bottom-edge)
+  set par(
+    leading: leading,
+    first-line-indent: first-line-indent,
+    spacing: spacing,
+  )
+
+  body
+}
+
+#let set_headings(
+  top-edge: "cap-height",
+  bottom-edge: "baseline",
+  leading: 0.65em,
+  first-line-indent: 0em,
+  spacing: 1.2em,
+  h2-above-adjustment: 1.5em,
+  h2-below-adjustment: 0.5em,
+  h3-above-adjustment: 1em,
+  h3-below-adjustment: 0.5em,
+  h4-above-adjustment: 1em,
+  h4-below-adjustment: 0.5em,
+  body,
+) = {
+  show heading.where(level: 2): it => block(
+    above: spacing + h2-above-adjustment,
+    below: spacing + h2-below-adjustment,
+  )[
+    #set text(1.03em, weight: "black")
+    #it.body
+  ]
+
+  show heading.where(level: 3): it => block(
+    above: spacing + h3-above-adjustment,
+    below: spacing + h3-below-adjustment,
+  )[
+    #set text(1.01em, weight: "black")
+    #it.body
+  ]
+
+  show heading.where(level: 4): it => block(
+    above: spacing + h4-above-adjustment,
+    below: spacing + h4-below-adjustment,
+  )[
+    #set text(1.01em, weight: "bold", style: "italic")
+    #it.body
+  ]
+
+  body
+}
+
 #let article(
   // Article's Title
   title: "Article Title",
@@ -44,6 +103,7 @@
   word-count: false,
   // Line numbers
   line-numbers: false,
+  line-spacing: 1em,
   // Paper's content
   body,
 ) = {
@@ -104,7 +164,7 @@
         let au_inst_id = au_meta.affiliation
         let au_inst_primary = ""
         // Test whether the author belongs to multiple affiliations
-        if type(au_inst_id) == "array" {
+        if type(au_inst_id) == array {
           // If the author belongs to multiple affiliations,
           // record the first affiliation as the primary affiliation,
           au_inst_primary = affiliations.at(au_inst_id.first())
@@ -114,7 +174,7 @@
           ))
           // Output affiliation
           super([#(au_inst_index.map(id => [#id]).join([,]))])
-        } else if (type(au_inst_id) == "string") {
+        } else if (type(au_inst_id) == str) {
           // If the author belongs to only one affiliation,
           // set this as the primary affiliation
           au_inst_primary = affiliations.at(au_inst_id)
@@ -236,18 +296,48 @@
 
   pagebreak()
 
-  show heading.where(level: 1): it => block(above: 1.5em, below: 0.5em)[
-    #set text(13pt, weight: "black")
-    #it.body
-  ]
+  let line_spacings = if line-spacing == 1 {
+    (
+      top-edge: "cap-height",
+      bottom-edge: "baseline",
+      leading: 0.65em,
+      first-line-indent: 0em,
+      spacing: 1.2em,
+    )
+  } else if line-spacing == 1.5 {
+    (
+      top-edge: "cap-height",
+      bottom-edge: "baseline",
+      leading: 1.0em,
+      first-line-indent: 1em,
+      spacing: 1.8em,
+    )
+  } else if line-spacing == 2 {
+    (
+      top-edge: "cap-height",
+      bottom-edge: "baseline",
+      leading: 1.3em,
+      first-line-indent: 2em,
+      spacing: 2.4em,
+    )
+  }
 
-  show heading.where(level: 2): it => block(above: 1em, below: 0.5em)[
-    #set text(11pt, weight: "black")
-    #it.body
-  ]
+  show: set_linespacing.with(..line_spacings)
+  show: set_headings.with(..line_spacings)
 
 
-  set par(first-line-indent: 0em)
+  // show heading.where(level: 1): it => block(above: 1.5em, below: 0.5em)[
+  //   #set text(13pt, weight: "black")
+  //   #it.body
+  // ]
+  //
+  // show heading.where(level: 2): it => block(above: 1em, below: 0.5em)[
+  //   #set text(11pt, weight: "black")
+  //   #it.body
+  // ]
+  //
+  //
+  // set par(first-line-indent: 0em)
 
   if word-count {
     import "@preview/wordometer:0.1.4": total-words, word-count, word-count-of
