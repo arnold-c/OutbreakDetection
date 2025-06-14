@@ -97,28 +97,49 @@ unavoidable_plot = line_plot(
 )
 
 #%%
-f1_threshold_plot = line_plot(
-    f1_optimal_threshold_characteristics;
-    outcome = :alert_threshold,
-    ylabel = "Alert Threshold",
+perc_alerts_correct_plot = line_plot(
+    optimal_threshold_characteristics;
+    outcome = :perc_alerts_correct,
+    ylabel = "Proportion of\nAlerts Correct",
     alpha = alpha,
-    facet_fontsize = 28,
+    facet_fontsize = facet_fontsize,
     legendsize = legendsize,
     xlabelsize = xlabelsize,
     ylabelsize = ylabelsize,
     show_x_facet_label = true,
     show_y_facet_label = false,
-    ylims = (0.0, 18.0),
+    ylims = (0, 1.0),
     force = true,
     plotdirpath = appendix_plotdir(),
-    plotname = "f1_optimal-thresholds_alert-threshold-plot",
+    plotname = "optimal-thresholds_perc-alerts-correct-plot",
     plotformat = "svg",
     save_plot = true,
     clinical_hline = clinical_hline,
     nbanks = nbanks,
     legend_rowsize = legend_rowsize,
-    xlabel_rowsize = xlabel_rowsize,
-    size = (1300, 800),
+)
+
+#%%
+perc_outbreaks_detected_plot = line_plot(
+    optimal_threshold_characteristics;
+    outcome = :perc_true_outbreaks_detected,
+    ylabel = "Proportion of\nOutbreaks Detected",
+    alpha = alpha,
+    facet_fontsize = facet_fontsize,
+    legendsize = legendsize,
+    xlabelsize = xlabelsize,
+    ylabelsize = ylabelsize,
+    show_x_facet_label = true,
+    show_y_facet_label = false,
+    ylims = (0, 1.0),
+    force = true,
+    plotdirpath = appendix_plotdir(),
+    plotname = "optimal-thresholds_perc-outbreaks-detected-plot",
+    plotformat = "svg",
+    save_plot = true,
+    clinical_hline = clinical_hline,
+    nbanks = nbanks,
+    legend_rowsize = legend_rowsize,
 )
 
 #%%
