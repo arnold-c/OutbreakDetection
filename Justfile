@@ -5,4 +5,4 @@ manuscript:
 	typst compile ./manuscript/combined-manuscript.typ
 
 tests:
-	julia ./OutbreakDetectionUtils/test/runtests.jl
+	julia --project=./OutbreakDetectionUtils -e "using Pkg; Pkg.test()"
