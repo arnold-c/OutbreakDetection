@@ -51,7 +51,7 @@ To account for these differences, the target product profile (TPP) of a diagnost
 The choice to prioritize sensitivity or specificity will be pathogen and context specific.
 When the cost of a false negative result is disproportionately high relative to a false positive, such as for Ebola @chuaCaseImprovedDiagnostic2015, highly specific tests may be preferred.
 This balance will, however, vary as the prevalence of infection in a population varies.
-Higher prevalence of infection in a population will increase the positive predictive value (PPV) of the test i.e., the probability that a positive test reflects a positive individual, that unlike the sensitivity of the test, is not conditioned upon the positive infection status of the tested individual @westreichDiagnosticTestingScreening2019 @shrefflerDiagnosticTestingAccuracy2024.
+Higher prevalence of infection in a population will increase the positive predictive value (PPV) of the test i.e., the probability that a positive test reflects an infected individual, that unlike the sensitivity of the test, is not conditioned upon the infection status of the tested individual @westreichDiagnosticTestingScreening2019 @shrefflerDiagnosticTestingAccuracy2024.
 Regions of high disease burden may therefore prioritize test sensitivity, in contrast to a lower burden location's preference for high test specificity and PPV, all else being equal.
 
 At the heart of an outbreak detection system is a surveillance program that enumerates the baseline rate of case incidence and defines an outbreak as a time period with anomalously high incidence relative to that baseline @murrayInfectiousDiseaseSurveillance2017 @zhouEliminationTropicalDisease2013 @pahoIntegratedApproachCommunicable2000 @craggOutbreakResponse2018.
@@ -88,7 +88,7 @@ For dynamical SEIR noise, the perfect tests perform identically to the static no
 For imperfect diagnostic tests, which have lower individual sensitivity and specificity, the maximal attainable accuracy is lower than the perfect tests for all testing rates (P) at noise magnitude $gt.eq Lambda (2)$ (@fig-accuracy).
 Notably, the surveillance accuracy typically declines with more noise and is not consistently improved with higher testing rates as the signal becomes increasingly dominated by false positive test results (@fig-accuracy).
 At high levels of dynamical noise ($gt.eq Lambda (6)$), high testing rates ($gt.eq$ 50%) result in a marked increase in outbreak detection accuracy.
-However, in these scenarios the optimal outbreak alert threshold falls to 0.39 test positive cases in a 7-day moving average: 3 positive test cases in a week would be sufficient to trigger an outbreak alert (@fig-alert-threshold, @fig-accuracy, @tbl_od-optimal-thresholds).
+However, in these scenarios the optimal outbreak alert threshold falls to 0.39 (daily) test positive cases in a 7-day moving average: 3 positive test cases in a week would be sufficient to trigger an outbreak alert (@fig-alert-threshold, @fig-accuracy, @tbl_od-optimal-thresholds).
 
 #figure(
   image("manuscript_files/plots/optimal-thresholds_alert-threshold-plot.svg"),
@@ -105,9 +105,9 @@ However, in these scenarios the optimal outbreak alert threshold falls to 0.39 t
 Introducing a lag in test result reporting can decrease surveillance accuracy.
 This will occur if an alert occurs within the duration of the lag (e.g., 14 days) of the end of the outbreak.
 If it is the first alert, then it will be recorded as an outbreak for which there was no alert, reducing the proportion of outbreaks that are correctly identified (our definition of sensitivity).
-If it is a subsequent alert, recall that multiple alerts may occur within a single outbreak, then it will be recorded as an alert for which there was no outbreak, reducing the proportion of alerts that occur during an outbreak (our definition of positive predictive value).
+If it is a subsequent alert (recall that multiple alerts may occur within a single outbreak), then it will be recorded as an alert for which there was no outbreak, reducing the proportion of alerts that occur during an outbreak (our definition of positive predictive value).
 This will disproportionately affect shorter outbreaks.
-For the conditions simulated here, introducing a 14-day lag in test reporting for a perfect test reduces the surveillance accuracy by $approx$ 3%, by reducing the PPV, but not the sensitivity, of the system (@fig-alert-proportion-correct, @fig-outbreak-detect-proportion-correct).
+For the conditions simulated here, introducing a 14-day lag in test reporting for a perfect test reduces the surveillance accuracy by $approx$ 3% by reducing the PPV, but not the sensitivity, of the system (@fig-alert-proportion-correct, @fig-outbreak-detect-proportion-correct).
 In a system with static noise, imperfect tests can achieve slightly higher accuracy than perfect, lagged tests (@fig-accuracy).
 Given dynamical background noise, perfect, lagged, tests outperform imperfect tests.
 
@@ -157,7 +157,7 @@ These trade-offs must be explicitly acknowledged when designing surveillance sys
 
 == Limitations and Strengths
 To our knowledge, this is one of the first simulation studies to examine the relationship between individual test characteristics and the wider surveillance program.
-By explicitly modeling the interaction between the two, we illustrate the dependency of the performance of the surveillance system, at the population level, on the characteristics of the diagnostic tests, at the individual level.
+By explicitly modeling the interaction between the two, we illustrate the dependency of the performance of the surveillance system at the population level and on the characteristics of the diagnostic tests at the individual level.
 Thus, a change to the latter (e.g., adoption of a new diagnostic with different sensitivity and specificity) without a corresponding change to surveillance frequency or action thresholds, may lead to a reduction in outbreak detection performance.
 Additionally, by defining outbreak bounds concretely we have been able to calculate metrics of outbreak detection performance that draw parallels to those used when evaluating individual diagnostic tests.
 This provides an intuitive understanding and simplifies the implementation of this method in resource-constrained environments, something that may not be possible with many outbreak detection and early warning system simulations in the literature.
