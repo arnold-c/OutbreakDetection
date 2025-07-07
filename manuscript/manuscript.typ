@@ -102,12 +102,17 @@ However, in these scenarios the optimal outbreak alert threshold falls to 0.39 t
 )
 <fig-accuracy>
 
-Introducing a lag in test result reporting necessarily decreases surveillance accuracy because an alert can only begin once the test results are available, which increases the chance that an outbreak, that on average last for 149 days, will end before results can be translated to an alert.
-In turn, this results in a reduction of the proportion of alerts that are correct, but not the proportion of outbreaks that are detected (@fig-alert-proportion-correct, @fig-outbreak-detect-proportion-correct): as a single outbreak can be associated with multiple alerts (the rolling average of test positive case results may fluctuate above and below the outbreak alert threshold), introducing a test result lag does not impact the ability of an initial alert to be correctly linked to an outbreak, but subsequent alerts that were previously correctly linked to an outbreak can be shifted such that they no longer correspond with an outbreak.
-The delay in test results do however, result in a different optimized threshold (T#sub([O])) (@fig-alert-threshold).
-For the conditions simulated here, introducing a 14-day lag in test reporting for a perfect test reduces the surveillance accuracy by $approx$ 3%.
-For all dynamical noise simulated scenarios, this is consistent with, or higher than, the accuracy achievable with an RDT-like imperfect test, but lower than achievable under static background noise.
-This always leads to an increase in the median delay from outbreak start to alert, relative to a perfect test with no result delays, as well as imperfect tests (@fig-delay).
+Introducing a lag in test result reporting can decrease surveillance accuracy.
+This will occur if an alert occurs within the duration of the lag (e.g., 14 days) of the end of the outbreak.
+If it is the first alert, then it will be recorded as an outbreak for which there was no alert, reducing the proportion of outbreaks that are correctly identified (our definition of sensitivity).
+If it is a subsequent alert, recall that multiple alerts may occur within a single outbreak, then it will be recorded as an alert for which there was no outbreak, reducing the proportion of alerts that occur during an outbreak (our definition of positive predictive value).
+This will disproportionately affect shorter outbreaks.
+For the conditions simulated here, introducing a 14-day lag in test reporting for a perfect test reduces the surveillance accuracy by $approx$ 3%, by reducing the PPV, but not the sensitivity, of the system (@fig-alert-proportion-correct, @fig-outbreak-detect-proportion-correct).
+In a system with static noise, imperfect tests can achieve slightly higher accuracy than perfect, lagged tests (@fig-accuracy).
+Given dynamical background noise, perfect, lagged, tests outperform imperfect tests.
+
+A delay in test results reporting does not affect the optimized threshold (T#sub([O])) (@fig-alert-threshold).
+However, it always leads to an increase in the median delay from outbreak start to alert, relative to a perfect test with no result delays, as well as imperfect tests (@fig-delay).
 Under high dynamical noise ($gt.eq Lambda (6)$) and high testing rates ($gt.eq$ 50%) with imperfect tests, the extremely low optimal threshold results in a very sensitive alert system and large negative delays i.e., the alerts are triggered by false positive test results before the start of the outbreak (@fig-delay).
 
 #figure(
@@ -152,7 +157,8 @@ These trade-offs must be explicitly acknowledged when designing surveillance sys
 
 == Limitations and Strengths
 To our knowledge, this is one of the first simulation studies to examine the relationship between individual test characteristics and the wider surveillance program.
-By explicitly modeling the interaction between the two, we make a case that surveillance systems should take a holistic approach; prematurely constraining one component, such as the type of test to be used in a surveillance context without an explicit discussion of its interaction with the outbreak alert threshold and the implications for the resulting detection accuracy and associated performance metrics, can lead to drastically different, and suboptimal, results.
+By explicitly modeling the interaction between the two, we illustrate the dependency of the performance of the surveillance system, at the population level, on the characteristics of the diagnostic tests, at the individual level.
+Thus, a change to the latter (e.g., adoption of a new diagnostic with different sensitivity and specificity) without a corresponding change to surveillance frequency or action thresholds, may lead to a reduction in outbreak detection performance.
 Additionally, by defining outbreak bounds concretely we have been able to calculate metrics of outbreak detection performance that draw parallels to those used when evaluating individual diagnostic tests.
 This provides an intuitive understanding and simplifies the implementation of this method in resource-constrained environments, something that may not be possible with many outbreak detection and early warning system simulations in the literature.
 An evaluation of all outbreak detection algorithms is beyond the scope of this work, but a more computationally expensive approach based on nowcasting incidence may help overcome the shortcomings of imperfect diagnostics in high-noise scenarios.
@@ -197,36 +203,38 @@ All simulations and analyses were completed in Julia version 1.11.5 @bezansonJul
 
 #figure(
   table(
-    columns: 3, align: horizon,
+    columns: 3,
+    align: horizon,
     [Parameters], [Measles], [Dynamical noise],
     [R0], [16], [5],
     [Latent period (s)], [10 days], [7 days],
     [Infectious period (g)], [8 days], [14 days],
     [Seasonal amplitude], [0.2], [0.2],
     [Vaccination rate at birth (r)], [80%], [(5-85)%],
-    [Birth/death rate (m)], table.cell(
+    [Birth/death rate (m)],
+    table.cell(
       colspan: 2,
       align: center,
       "27 per 1000 per annum",
     ),
-    [Importation rate], table.cell(
-      colspan: 2,
-      align: center,
-      table_math[$(1.06*μ*R_0)/(√(N))$],
-    ),
-    [Population size (N)], table.cell(
+    [Importation rate],
+    table.cell(colspan: 2, align: center, table_math[$(1.06*μ*R_0)/(√(N))$]),
+    [Population size (N)],
+    table.cell(
       colspan: 2,
       align: center,
       "500,000, scaled to 33M",
     ),
-    [Initial proportion susceptible], table.cell(
+    [Initial proportion susceptible],
+    table.cell(
       colspan: 2,
       align: center,
       "0.05",
     ),
     [Initial proportion exposed], table.cell(colspan: 2, align: center, "0.0"),
     [Initial proportion infected], table.cell(colspan: 2, align: center, "0.0"),
-    [Initial proportion recovered], table.cell(
+    [Initial proportion recovered],
+    table.cell(
       colspan: 2,
       align: center,
       "0.95",
