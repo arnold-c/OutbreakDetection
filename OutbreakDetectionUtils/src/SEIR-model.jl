@@ -2,13 +2,20 @@ using Distributions: Distributions
 using Random: Random
 using StaticArrays: StaticArrays
 
+function seir_mod(
+    states::StateParameters, dynamics_params::DynamicsParameters,
+    time_params::SimTimeParameters; seed = 1234
+)
+    return seir_mod(states.init_states, dynamics_params, time_params)
+end
+
 """
     seir_mod(states, dynamics_params, trange; tstep, type = "stoch")
 
 The in-place function to run the SEIR model with a vaccinations going directly to the R compartment and produce the transmission rate array.
 """
 function seir_mod(
-    states, dynamics_params, time_params; seed=1234
+    states, dynamics_params, time_params; seed = 1234
 )
     state_vec = Vector{typeof(states)}(undef, time_params.tlength)
     beta_vec = Vector{Float64}(undef, time_params.tlength)
@@ -23,7 +30,7 @@ function seir_mod(
         states,
         dynamics_params,
         time_params;
-        seed=seed,
+        seed = seed,
     )
 
     return state_vec, inc_vec, beta_vec
@@ -41,7 +48,7 @@ function seir_mod!(
     states,
     dynamics_params,
     time_params;
-    seed=1234,
+    seed = 1234,
 )
     Random.seed!(seed)
 
@@ -62,12 +69,12 @@ function seir_mod!(
     end
 
     @. beta_vec = calculate_beta_amp(
-        beta_mean, beta_force, trange; seasonality=dynamics_params.seasonality
+        beta_mean, beta_force, trange; seasonality = dynamics_params.seasonality
     )
 
     @inbounds for i in 2:(time_params.tlength)
         state_vec[i], inc_vec[i] = seir_mod_loop!(
-            state_vec[i-1],
+            state_vec[i - 1],
             beta_vec[i],
             mu,
             epsilon,
@@ -129,7 +136,9 @@ function seir_mod_loop!(
         latent = Random.rand(Distributions.Binomial(E, sigma * timestep)) # E -> I
         E_death = Random.rand(Distributions.Binomial(E - latent, mu * timestep)) # E -> death
         recovery = Random.rand(Distributions.Binomial(I, gamma * timestep)) # I -> R
-        I_death = Random.rand(Distributions.Binomial(I - recovery, mu * timestep)) # I -> death
+        I_death = Random.rand(
+            Distributions.Binomial(I - recovery, mu * timestep)
+        ) # I -> death
 
         dS = S_births - (contact_inf + import_inf + S_death)
         dE = (contact_inf + import_inf) - (latent + E_death)
