@@ -1,5 +1,9 @@
 #%%
 using DrWatson
+using OutbreakDetectionUtils
+
+#%%
+using DrWatson
 @quickactivate "OutbreakDetection"
 
 using DataFrames
@@ -17,7 +21,9 @@ using OutbreakDetection: line_plot
 
 #%%
 manuscriptdir(args...) = DrWatson.projectdir("manuscript", args...)
-manuscript_scripts(args...) = DrWatson.projectdir("scripts", "manuscript", args...)
+function manuscript_scripts(args...)
+    return DrWatson.projectdir("scripts", "manuscript", args...)
+end
 manuscript_files(args...) = manuscriptdir("manuscript_files", args...)
 manuscript_plotdir(args...) = manuscript_files("plots", args...)
 manuscript_tabledir(args...) = manuscript_files("tables", args...)
