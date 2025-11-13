@@ -1,8 +1,21 @@
 # OutbreakDetection Dependency Analysis
 
-**Generated:** 2025-11-13
+**Generated:** 2025-11-13  
+**Cleanup Completed:** 2025-11-13
 
 This document provides a comprehensive analysis of all functions and files used by the manuscript scripts, along with recommendations for files that can be safely deleted.
+
+## Cleanup Status
+
+✅ **Completed on 2025-11-13**
+
+- Removed 16 unused scripts from `/scripts` directory
+- Reorganized manuscript scripts from `manuscript/scripts/` to `scripts/manuscript/`
+- Updated all path references in Justfile and manuscript scripts
+- Updated LSP includes in `src/OutbreakDetection.jl` for manuscript scripts
+- Created `manuscript/README.md` with generation instructions
+
+All recommendations in this document have been implemented.
 
 ---
 
@@ -18,7 +31,9 @@ This document provides a comprehensive analysis of all functions and files used 
 
 ## Manuscript Script Flow
 
-### Entry Point: `manuscript/scripts/optimal-thresholds.jl`
+### Entry Point: `scripts/manuscript/optimal-thresholds.jl`
+
+**Note:** Scripts were moved from `manuscript/scripts/` to `scripts/manuscript/` on 2025-11-13.
 
 This is the main orchestrator that includes:
 
