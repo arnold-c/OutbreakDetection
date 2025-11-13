@@ -43,9 +43,6 @@ export singlescenario_test_positivity_plot,
 include("threshold_comparison_plots.jl")
 export plot_all_threshold_comparisons
 
-include("isocline_plots.jl")
-export isocline_accuracy_plot
-
 include("line_plots.jl")
 export line_plot,
     collect_OptimalThresholdCharacteristics
