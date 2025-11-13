@@ -18,9 +18,6 @@ export ACCURACY_COLOR, DAILY_SENSITIVITY_COLOR, DAILY_SPECIFICITY_COLOR,
     PERC_OUTBREAKS_MISSED_COLOR, PERC_ALERTS_CORRECT_COLOR,
     PERC_ALERTS_FALSE_COLOR
 
-include("single-sim_plots.jl")
-export single_seir_plot, single_seir_statespace_plot, single_seir_beta_plot
-
 include("quantile_plots.jl")
 export create_seir_quantiles_plot
 
