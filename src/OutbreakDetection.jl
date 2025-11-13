@@ -34,9 +34,6 @@ include("single-scenario_plots.jl")
 export singlescenario_test_positivity_plot,
     create_testing_related_plots, plot_all_single_scenarios
 
-include("threshold_comparison_plots.jl")
-export plot_all_threshold_comparisons
-
 include("line_plots.jl")
 export line_plot,
     collect_OptimalThresholdCharacteristics
