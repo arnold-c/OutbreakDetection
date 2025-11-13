@@ -7,12 +7,6 @@ using OutbreakDetectionUtils:
     DynamicalNoiseSpecification, PoissonNoiseSpecification
 using OutbreakDetection: collect_OptimalThresholdCharacteristics
 
-include(srcdir("ensemble-parameters.jl"))
-
-if false
-    include("../src/ensemble-parameters.jl")
-end
-
 #%%
 rdt_test_spec_vec = [
     IndividualTestSpecification(0.85, 0.85, 0),
