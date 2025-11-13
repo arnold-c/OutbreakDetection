@@ -8,7 +8,6 @@ using StatsBase: StatsBase
 using Bootstrap: Bootstrap
 using Match: Match
 using XLSX: XLSX
-using RCall: RCall
 
 function calculate_OptimalThresholdCharacteristics(
         percent_clinic_tested_vec,
@@ -225,30 +224,6 @@ function create_and_save_xlsx_optimal_threshold_summaries(
             country_filename =
                 base_filename * "_$(country.code)_$(country.year)"
 
-            if haskey(kwargs_dict, :gt_kwargs)
-                gt_kwargs = kwargs_dict[:gt_kwargs]
-
-                if !haskey(gt_kwargs, :summary_stats)
-                    @error "gt_kwargs does not have summary_stats. Please provide one of the following: mean, perc_25th, perc_50th, perc_75th (or any other percentile that was calculated)"
-                end
-
-                map(gt_kwargs.summary_stats) do stat
-                    statdf = getproperty(country_wide_df_tuples, Symbol(stat))
-
-                    gt_table(
-                        statdf;
-                        testing_rates = gt_kwargs.testing_rates,
-                        colorschemes = gt_kwargs.colorschemes,
-                        save = gt_kwargs.save,
-                        show = gt_kwargs.show,
-                        filepath = tabledirpath,
-                        filename = country_filename * "_$(stat).png",
-                        decimals = gt_kwargs.decimals,
-                        gt_kwargs...,
-                    )
-                end
-            end
-
             save_xlsx_optimal_threshold_summaries(
                 (; country_info_df, country_long_df, country_wide_df_tuples...),
                 country_filename;
@@ -287,30 +262,6 @@ function create_and_save_xlsx_optimal_threshold_summaries(
             long_df;
             summary_stats = summary_stats,
         )
-
-        if haskey(kwargs_dict, :gt_kwargs)
-            gt_kwargs = kwargs_dict[:gt_kwargs]
-
-            if !haskey(gt_kwargs, :summary_stats)
-                @error "gt_kwargs does not have summary_stats. Please provide one of the following: mean, perc_25th, perc_50th, perc_75th (or any other percentile that was calculated)"
-            end
-
-            map(gt_kwargs.summary_stats) do stat
-                statdf = getproperty(wide_df_tuples, Symbol(stat))
-
-                gt_table(
-                    statdf;
-                    testing_rates = gt_kwargs.testing_rates,
-                    colorschemes = gt_kwargs.colorschemes,
-                    save = gt_kwargs.save,
-                    show = gt_kwargs.show,
-                    filepath = tabledirpath,
-                    filename = base_filename * "_$(stat).png",
-                    decimals = gt_kwargs.decimals,
-                    gt_kwargs...,
-                )
-            end
-        end
 
         save_xlsx_optimal_threshold_summaries(
             (; long_df, wide_df_tuples...), base_filename;
@@ -380,47 +331,6 @@ function create_and_save_xlsx_optimal_threshold_summaries(
         (; long_df, alert_thresholds, accuracy), filename;
         filepath = tabledirpath,
     )
-
-    if haskey(kwargs_dict, :gt_kwargs)
-        gt_kwargs = kwargs_dict[:gt_kwargs]
-
-        alert_thresholds_kwargs = (;
-            testing_rates = gt_kwargs.testing_rates,
-            colorschemes = gt_kwargs.alert_threshold_colorscheme,
-            filepath = tabledirpath,
-            filename = filename * "_alert_thresholds.png",
-            save = gt_kwargs.save,
-            show = gt_kwargs.show,
-            decimals = 0,
-        )
-
-        if haskey(gt_kwargs, :alert_threshold_domain)
-            alert_thresholds_kwargs = (;
-                alert_thresholds_kwargs...,
-                domain = gt_kwargs.alert_threshold_domain,
-            )
-        end
-
-        gt_table(alert_thresholds; alert_thresholds_kwargs...)
-
-        accuracy_kwargs = (;
-            testing_rates = gt_kwargs.testing_rates,
-            colorschemes = gt_kwargs.accuracy_colorscheme,
-            filepath = tabledirpath,
-            filename = filename * "_accuracy.png",
-            save = gt_kwargs.save,
-            show = gt_kwargs.show,
-        )
-
-        if haskey(gt_kwargs, :accuracy_domain)
-            accuracy_kwargs = (;
-                accuracy_kwargs...,
-                domain = gt_kwargs.accuracy_domain,
-            )
-        end
-
-        gt_table(accuracy; accuracy_kwargs...)
-    end
 
     @info "Saved the thresholds and accuracy table"
 
@@ -677,128 +587,4 @@ function _rename_test_scenario(x)
         0.9 => "RDT Equivalent (0.9)"
         _ => "ELISA Equivalent"
     end
-end
-
-function gt_table(
-        df;
-        testing_rates = DataFrames.Between("0.1", "0.6"),
-        colorschemes = ["ggsci::green_material"],
-        save = "no",
-        show = "yes",
-        filepath = outdir("tables"),
-        filename = "optimal_thresholds.png",
-        decimals = 2,
-        container_width_px = 960,
-        container_height_px = 660,
-        table_width_pct = 100,
-        kwargs...,
-    )
-    kwarg_dict = Dict(kwargs...)
-
-    filtered = Chain.@chain df begin
-        DataFramesMeta.@rsubset(:specificity > 0.8)
-        DataFramesMeta.@rtransform(
-            :test_scenario = _rename_test_scenario(:sensitivity)
-        )
-        DataFrames.select(:test_scenario, :test_lag, testing_rates)
-        DataFrames.rename(:test_scenario => "Test Scenario", :test_lag => "Lag")
-    end
-
-    matrix = Matrix(filtered[:, testing_rates])
-    maxval = maximum(matrix)
-    minval = minimum(matrix)
-
-    if !haskey(kwarg_dict, :domain)
-        domain = (minval, maxval)
-    else
-        domain = kwarg_dict[:domain]
-    end
-
-    if length(colorschemes) !== 1 && !haskey(kwarg_dict, :domain)
-        if length(colorschemes) > 2
-            @error "More than 2 colorschemes provided"
-            @show colorschemes
-            @show length(colorschemes)
-        end
-        domain = ((minval, 0), (0, maxval))
-    end
-
-    mkpath(filepath)
-
-    RCall.@rput filtered save show filepath filename domain colorschemes decimals container_width_px container_height_px table_width_pct
-
-    return RCall.R"""
-    library(gt)
-    library(tidyverse)
-
-    table <- filtered %>%
-     gt() %>%
-     tab_spanner(label = "Test Characteristic", columns = 1:2) %>%
-     tab_spanner(label = "Testing Rate", columns = 3:ncol(filtered)) %>%
-     fmt_number(columns = 3:ncol(filtered), decimals = decimals) %>%
-     opt_table_font(
-        font = list(
-            google_font("Lato"),
-            default_fonts()
-        ),
-        weight = 300
-     ) %>%
-     tab_options(
-        table.font.size = gt::px(23L),
-        table.width = pct(table_width_pct),
-        container.width = px(container_width_px),
-        container.height = px(container_height_px),
-     ) %>%
-     tab_style(
-        style = cell_text(weight = 900),
-        locations = list(
-            cells_column_spanners(spanners = everything()),
-            cells_column_labels(columns = everything())
-        )
-     ) %>%
-     cols_width(
-        2:ncol(filtered) ~ pct(65/(ncol(filtered) - 2))
-    ) %>%
-    cols_align(align = "center", columns = 2:ncol(filtered))
-
-
-    if (length(colorschemes) == 1) {
-    table <- table %>%
-        data_color(
-            columns = 3:ncol(filtered),
-            domain = domain,
-            palette = colorschemes
-        )
-    } else {
-        colorpalette <- function(x) {
-          f_neg <- scales::col_numeric(
-            palette = c(paletteer::paletteer_d(colorschemes[1])[9], '#ffffff'),
-            domain = domain[1],
-          )
-          f_pos <- scales::col_numeric(
-            palette = c('#ffffff', paletteer::paletteer_d(colorschemes[2])[9]),
-            domain = domain[2]
-          )
-          ifelse(x < 0, f_neg(x), f_pos(x))
-        }
-
-        table <- table %>%
-            data_color(
-                columns = 3:ncol(filtered),
-                fn = colorpalette
-            )
-    }
-
-    if (save == "yes") {
-        gt::gtsave(table, filename, filepath)
-    }
-
-    if (show == "yes") {
-        table
-    }
-
-    if (show == "no" && save == "no") {
-        print("The table should be saved or shown.")
-    }
-    """
 end
