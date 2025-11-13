@@ -30,12 +30,6 @@ export ensemble_OTChars_plot, save_compare_ensemble_OTchars_plot,
     compare_ensemble_OTchars_plots, ensemble_outbreak_detect_diff_plot,
     test_positivity_distribution_plot
 
-include("optimal-thresholds_plots.jl")
-export compare_optimal_thresholds_chars_plot,
-    create_optimal_thresholds_chars_plot,
-    compare_optimal_thresholds_test_chars_plot,
-    create_optimal_thresholds_test_chars_plot
-
 include("single-scenario_plots.jl")
 export singlescenario_test_positivity_plot,
     create_testing_related_plots, plot_all_single_scenarios
