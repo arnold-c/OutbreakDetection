@@ -21,10 +21,6 @@ export ACCURACY_COLOR, DAILY_SENSITIVITY_COLOR, DAILY_SPECIFICITY_COLOR,
 include("noise_plots.jl")
 export visualize_ensemble_noise
 
-include("ensemble-inspection_plots.jl")
-export incidence_prevalence_plot,
-    incidence_testing_plot, testing_plot, ensemble_outbreak_distribution_plot
-
 include("outbreak-threshold-chars_plots.jl")
 export ensemble_OTChars_plot, save_compare_ensemble_OTchars_plot,
     compare_ensemble_OTchars_plots, ensemble_outbreak_detect_diff_plot,
