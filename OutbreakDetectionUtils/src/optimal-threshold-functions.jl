@@ -11,30 +11,30 @@ using XLSX: XLSX
 using RCall: RCall
 
 function calculate_OptimalThresholdCharacteristics(
-    percent_clinic_tested_vec,
-    ind_test_spec_vec,
-    base_parameters,
-)
+        percent_clinic_tested_vec,
+        ind_test_spec_vec,
+        base_parameters,
+    )
     non_clinical_case_test_spec_vec = filter(
         spec -> !(spec in CLINICAL_TEST_SPECS),
         ind_test_spec_vec,
     )
 
     non_clinical_case_optimal_thresholds_vec = Vector{
-        OptimalThresholdCharacteristics
+        OptimalThresholdCharacteristics,
     }(
         undef,
         length(percent_clinic_tested_vec) *
-        length(non_clinical_case_test_spec_vec),
+            length(non_clinical_case_test_spec_vec),
     )
 
     ProgressMeter.@showprogress for (
-        i, (percent_clinic_tested, ind_test_spec)
-    ) in enumerate(
-        Iterators.product(
-            percent_clinic_tested_vec, non_clinical_case_test_spec_vec
-        ),
-    )
+            i, (percent_clinic_tested, ind_test_spec),
+        ) in enumerate(
+            Iterators.product(
+                percent_clinic_tested_vec, non_clinical_case_test_spec_vec
+            ),
+        )
         non_clinical_case_optimal_thresholds_vec[i] = calculate_optimal_threshold(
             percent_clinic_tested,
             ind_test_spec,
@@ -54,7 +54,7 @@ function calculate_OptimalThresholdCharacteristics(
     end
 
     clinical_case_optimal_thresholds_vec = Vector{
-        OptimalThresholdCharacteristics
+        OptimalThresholdCharacteristics,
     }(
         undef,
         length(clinical_case_test_spec_vec),
@@ -77,17 +77,17 @@ function calculate_OptimalThresholdCharacteristics(
 end
 
 function calculate_optimal_threshold(
-    percent_clinic_tested,
-    individual_test_specification,
-    base_parameters,
-)
+        percent_clinic_tested,
+        individual_test_specification,
+        base_parameters,
+    )
     UnPack.@unpack alertthreshold_vec,
-    ensemble_specification,
-    noise_specification,
-    outbreak_specification,
-    moving_avg_detection_lag,
-    percent_visit_clinic,
-    alertmethod = base_parameters
+        ensemble_specification,
+        noise_specification,
+        outbreak_specification,
+        moving_avg_detection_lag,
+        percent_visit_clinic,
+        alertmethod = base_parameters
 
     ensemble_scenario_spec_vec = map(
         threshold -> ScenarioSpecification(
@@ -141,15 +141,15 @@ function calculate_optimal_threshold(
 end
 
 function create_and_save_xlsx_optimal_threshold_summaries(
-    optimal_thresholds_vec,
-    characteristic;
-    percentiles = [0.25, 0.5, 0.75],
-    nboots = 10000,
-    ci = 0.95,
-    tabledirpath = outdir("ensemble/optimal-threshold-results"),
-    filename = "",
-    kwargs...,
-)
+        optimal_thresholds_vec,
+        characteristic;
+        percentiles = [0.25, 0.5, 0.75],
+        nboots = 10000,
+        ci = 0.95,
+        tabledirpath = outdir("ensemble/optimal-threshold-results"),
+        filename = "",
+        kwargs...,
+    )
     kwargs_dict = Dict(kwargs)
 
     long_df = create_optimal_threshold_summary_df(
@@ -171,10 +171,10 @@ function create_and_save_xlsx_optimal_threshold_summaries(
 
     summary_stats = [
         "mean",
-        "lower_CI_$(Int64(ci*100))",
-        "upper_CI_$(Int64(ci*100))",
+        "lower_CI_$(Int64(ci * 100))",
+        "upper_CI_$(Int64(ci * 100))",
         0.25,
-        0.50,
+        0.5,
         0.75,
     ]
 
@@ -256,7 +256,7 @@ function create_and_save_xlsx_optimal_threshold_summaries(
             )
 
             if haskey(country, :cfr) &&
-                occursin("case", String(characteristic))
+                    occursin("case", String(characteristic))
                 cfr_long_df = DataFrames.transform(
                     country_long_df,
                     DataFrames.Not(base_columns) .=> x -> x .* country.cfr;
@@ -324,8 +324,8 @@ function create_and_save_xlsx_optimal_threshold_summaries(
 end
 
 function create_all_wide_optimal_threshold_summary_dfs(
-    df; summary_stats = ["mean", "lower_CI_95", "upper_CI_95", 0.25, 0.50, 0.75]
-)
+        df; summary_stats = ["mean", "lower_CI_95", "upper_CI_95", 0.25, 0.5, 0.75]
+    )
     summary_stats_labels = summary_stats
     summary_stats_symbols = copy(summary_stats)
 
@@ -334,8 +334,8 @@ function create_all_wide_optimal_threshold_summary_dfs(
             summary_stats_symbols[i] = Symbol(stat)
             continue
         end
-        summary_stats_labels[i] = "$(Int64(stat*100))th"
-        summary_stats_symbols[i] = Symbol("perc_$(Int64(stat*100))th")
+        summary_stats_labels[i] = "$(Int64(stat * 100))th"
+        summary_stats_symbols[i] = Symbol("perc_$(Int64(stat * 100))th")
     end
 
     summary_dfs = map(
@@ -356,11 +356,11 @@ function create_wide_optimal_threshold_summary_df(df, characteristic)
 end
 
 function create_and_save_xlsx_optimal_threshold_summaries(
-    optimal_thresholds_vec;
-    tabledirpath = outdir("optimal-threshold-results"),
-    filename = "optimal-threshold-result-tables",
-    kwargs...,
-)
+        optimal_thresholds_vec;
+        tabledirpath = outdir("optimal-threshold-results"),
+        filename = "optimal-threshold-result-tables",
+        kwargs...,
+    )
     kwargs_dict = Dict(kwargs)
 
     long_df = create_optimal_thresholds_df(
@@ -428,7 +428,7 @@ function create_and_save_xlsx_optimal_threshold_summaries(
 end
 
 function create_optimal_thresholds_df(optimal_thresholds_vec)
-    Chain.@chain begin
+    return Chain.@chain begin
         map(optimal_thresholds_vec) do opt
             percent_clinic_tested = opt.percent_clinic_tested
 
@@ -441,7 +441,7 @@ function create_optimal_thresholds_df(optimal_thresholds_vec)
             accuracy = opt.accuracy
 
             return percent_clinic_tested, sens,
-            spec, test_lag, alertthreshold, accuracy
+                spec, test_lag, alertthreshold, accuracy
         end
         reduce(vcat, _)
         DataFrames.DataFrame(
@@ -501,12 +501,12 @@ function create_wide_optimal_thresholds_df(df, characteristic_sym)
 end
 
 function create_optimal_threshold_summary_df(
-    optimal_thresholds_vec,
-    characteristic::Symbol;
-    percentiles = [0.25, 0.5, 0.75],
-    nboots = 10000,
-    ci = 0.95,
-)
+        optimal_thresholds_vec,
+        characteristic::Symbol;
+        percentiles = [0.25, 0.5, 0.75],
+        nboots = 10000,
+        ci = 0.95,
+    )
     return create_optimal_threshold_summary_df(
         optimal_thresholds_vec,
         [characteristic];
@@ -517,12 +517,12 @@ function create_optimal_threshold_summary_df(
 end
 
 function create_optimal_threshold_summary_df(
-    optimal_thresholds_vec,
-    characteristics::T;
-    percentiles = [0.25, 0.5, 0.75],
-    nboots = 10000,
-    ci = 0.95,
-) where {T<:AbstractVector{<:Symbol}}
+        optimal_thresholds_vec,
+        characteristics::T;
+        percentiles = [0.25, 0.5, 0.75],
+        nboots = 10000,
+        ci = 0.95,
+    ) where {T <: AbstractVector{<:Symbol}}
     if !isnothing(percentiles)
         percentile_labels = map(percentiles) do perc
             perc = perc * 100
@@ -542,7 +542,7 @@ function create_optimal_threshold_summary_df(
         )
         char_mean_label = "$(characteristic)_mean"
 
-        ci_label = "CI_$(Int64(ci*100))"
+        ci_label = "CI_$(Int64(ci * 100))"
         char_mean_lower_label = "$(characteristic)_lower_$(ci_label)"
         char_mean_upper_label = "$(characteristic)_upper_$(ci_label)"
         DataFrames.DataFrame(
@@ -555,8 +555,8 @@ function create_optimal_threshold_summary_df(
                 )
 
                 return char_lower,
-                char_mean, char_upper,
-                chars_percentiles...
+                    char_mean, char_upper,
+                    chars_percentiles...
             end,
             [
                 char_mean_lower_label,
@@ -588,24 +588,24 @@ function create_optimal_threshold_summary_df(
             getfield.(optimal_thresholds_vec, :percent_clinic_tested),
         "sensitivity" =>
             getfield.(
-                optimal_thresholds_vec.individual_test_specification,
-                :sensitivity,
-            ),
+            optimal_thresholds_vec.individual_test_specification,
+            :sensitivity,
+        ),
         "specificity" =>
             getfield.(
-                optimal_thresholds_vec.individual_test_specification,
-                :specificity,
-            ),
+            optimal_thresholds_vec.individual_test_specification,
+            :specificity,
+        ),
         "test_lag" =>
             getfield.(
-                optimal_thresholds_vec.individual_test_specification,
-                :test_result_lag,
-            ),
+            optimal_thresholds_vec.individual_test_specification,
+            :test_result_lag,
+        ),
         "alert_threshold" =>
             getfield.(
-                optimal_thresholds_vec,
-                :alert_threshold,
-            ),
+            optimal_thresholds_vec,
+            :alert_threshold,
+        ),
         "accuracy" => getfield.(
             optimal_thresholds_vec,
             :accuracy,
@@ -616,8 +616,8 @@ function create_optimal_threshold_summary_df(
 end
 
 function calculate_optimal_threshold_summaries(
-    char_vecs; percentiles = [0.25, 0.5, 0.75], nboots = 10000, ci = 0.95
-)
+        char_vecs; percentiles = [0.25, 0.5, 0.75], nboots = 10000, ci = 0.95
+    )
     all_chars = reduce(vcat, char_vecs)
 
     if isempty(all_chars)
@@ -649,12 +649,12 @@ function calculate_optimal_threshold_summaries(
 end
 
 function save_xlsx_optimal_threshold_summaries(
-    summary_tuple, filename; filepath = outdir("optimal-threshold-results")
-)
+        summary_tuple, filename; filepath = outdir("optimal-threshold-results")
+    )
     sheet_names = String.(keys(summary_tuple))
     file = joinpath(filepath, "$(filename).xlsx")
 
-    XLSX.openxlsx(file; mode = "w") do xf
+    return XLSX.openxlsx(file; mode = "w") do xf
         for i in eachindex(sheet_names)
             sheet_name = sheet_names[i]
             df = summary_tuple[i]
@@ -672,7 +672,7 @@ function save_xlsx_optimal_threshold_summaries(
 end
 
 function _rename_test_scenario(x)
-    Match.@match x begin
+    return Match.@match x begin
         0.85 => "RDT Equivalent (0.85)"
         0.9 => "RDT Equivalent (0.9)"
         _ => "ELISA Equivalent"
@@ -680,19 +680,19 @@ function _rename_test_scenario(x)
 end
 
 function gt_table(
-    df;
-    testing_rates = DataFrames.Between("0.1", "0.6"),
-    colorschemes = ["ggsci::green_material"],
-    save = "no",
-    show = "yes",
-    filepath = outdir("tables"),
-    filename = "optimal_thresholds.png",
-    decimals = 2,
-    container_width_px = 960,
-    container_height_px = 660,
-    table_width_pct = 100,
-    kwargs...,
-)
+        df;
+        testing_rates = DataFrames.Between("0.1", "0.6"),
+        colorschemes = ["ggsci::green_material"],
+        save = "no",
+        show = "yes",
+        filepath = outdir("tables"),
+        filename = "optimal_thresholds.png",
+        decimals = 2,
+        container_width_px = 960,
+        container_height_px = 660,
+        table_width_pct = 100,
+        kwargs...,
+    )
     kwarg_dict = Dict(kwargs...)
 
     filtered = Chain.@chain df begin
@@ -727,7 +727,7 @@ function gt_table(
 
     RCall.@rput filtered save show filepath filename domain colorschemes decimals container_width_px container_height_px table_width_pct
 
-    RCall.R"""
+    return RCall.R"""
     library(gt)
     library(tidyverse)
 
