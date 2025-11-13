@@ -17,7 +17,7 @@ using OutbreakDetection: line_plot
 
 #%%
 manuscriptdir(args...) = DrWatson.projectdir("manuscript", args...)
-manuscript_scripts(args...) = manuscriptdir("scripts", args...)
+manuscript_scripts(args...) = DrWatson.projectdir("scripts", "manuscript", args...)
 manuscript_files(args...) = manuscriptdir("manuscript_files", args...)
 manuscript_plotdir(args...) = manuscript_files("plots", args...)
 manuscript_tabledir(args...) = manuscript_files("tables", args...)
