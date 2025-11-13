@@ -18,9 +18,6 @@ export ACCURACY_COLOR, DAILY_SENSITIVITY_COLOR, DAILY_SPECIFICITY_COLOR,
     PERC_OUTBREAKS_MISSED_COLOR, PERC_ALERTS_CORRECT_COLOR,
     PERC_ALERTS_FALSE_COLOR
 
-include("quantile_plots.jl")
-export create_seir_quantiles_plot
-
 include("noise_plots.jl")
 export visualize_ensemble_noise
 
