@@ -1,13 +1,14 @@
 using LabelledArrays: SLVector, SLArray
 using StructArrays: StructVector
 using Match: Match
+using LightSumTypes: LightSumTypes
 
 struct SimTimeParameters{
-    T1<:AbstractFloat,
-    T2<:StepRangeLen,
-    T3<:Tuple{T1,T1},
-    T4<:Int,
-}
+        T1 <: AbstractFloat,
+        T2 <: StepRangeLen,
+        T3 <: Tuple{T1, T1},
+        T4 <: Int,
+    }
     tmin::T1
     tmax::T1
     tstep::T1
@@ -24,8 +25,8 @@ function SimTimeParameters(; tmin = 0.0, tmax = 365.0 * 100.0, tstep = 1.0)
 end
 
 struct DynamicsParameters{
-    T1<:AbstractFloat,T2<:Union{<:Integer,T1},T3<:Function
-}
+        T1 <: AbstractFloat, T2 <: Union{<:Integer, T1}, T3 <: Function,
+    }
     beta_mean::T1
     beta_force::T1
     seasonality::T3
@@ -39,11 +40,11 @@ struct DynamicsParameters{
 end
 
 function DynamicsParameters(
-    sigma::Float64,
-    gamma::Float64,
-    R_0::Float64;
-    vaccination_coverage::Float64 = 0.8,
-)
+        sigma::Float64,
+        gamma::Float64,
+        R_0::Float64;
+        vaccination_coverage::Float64 = 0.8,
+    )
     return DynamicsParameters(
         BETA_MEAN,
         BETA_FORCE,
@@ -59,15 +60,15 @@ function DynamicsParameters(
 end
 
 function DynamicsParameters(
-    N::Int64,
-    annual_births_per_k::Int64,
-    beta_force::Float64,
-    sigma::Float64,
-    gamma::Float64,
-    R_0::Float64,
-    vaccination_coverage::Float64;
-    seasonality::Function = cos,
-)
+        N::Int64,
+        annual_births_per_k::Int64,
+        beta_force::Float64,
+        sigma::Float64,
+        gamma::Float64,
+        R_0::Float64,
+        vaccination_coverage::Float64;
+        seasonality::Function = cos,
+    )
     mu = calculate_mu(annual_births_per_k)
     beta_mean = calculate_beta(R_0, gamma, mu, 1, N)
     epsilon = calculate_import_rate(mu, R_0, N)
@@ -87,9 +88,9 @@ function DynamicsParameters(
 end
 
 function DynamicsParameters(
-    N::Int64, annual_births_per_k::Int64, beta_force::Float64;
-    vaccination_coverage::Float64 = 0.8,
-)
+        N::Int64, annual_births_per_k::Int64, beta_force::Float64;
+        vaccination_coverage::Float64 = 0.8,
+    )
     mu = calculate_mu(annual_births_per_k)
     beta_mean = calculate_beta(R0, GAMMA, mu, 1, N)
     epsilon = calculate_import_rate(mu, R0, N)
@@ -108,7 +109,7 @@ function DynamicsParameters(
     )
 end
 
-struct StateParameters{T1<:SLArray,T2<:SLArray}
+struct StateParameters{T1 <: SLArray, T2 <: SLArray}
     init_states::T1
     init_state_props::T2
 end
@@ -123,8 +124,8 @@ function StateParameters(N::Int64, init_state_props::Dict)
 end
 
 function StateParameters(;
-    N = 500_00, s_prop = 0.1, e_prop = 0.01, i_prop = 0.01
-)
+        N = 500_00, s_prop = 0.1, e_prop = 0.01, i_prop = 0.01
+    )
     r_prop = 1 - (s_prop + e_prop + i_prop)
 
     states = SLVector(;
@@ -147,13 +148,13 @@ function StateParameters(;
 end
 
 struct EnsembleSpecification{
-    T1<:Tuple,
-    T2<:StateParameters,
-    T3<:DynamicsParameters,
-    T4<:SimTimeParameters,
-    T5<:Integer,
-    T6<:AbstractString,
-}
+        T1 <: Tuple,
+        T2 <: StateParameters,
+        T3 <: DynamicsParameters,
+        T4 <: SimTimeParameters,
+        T5 <: Integer,
+        T6 <: AbstractString,
+    }
     modeltypes::T1
     state_parameters::T2
     dynamics_parameters::T3
@@ -163,12 +164,12 @@ struct EnsembleSpecification{
 end
 
 function EnsembleSpecification(
-    modeltypes::Tuple,
-    state_parameters::StateParameters,
-    dynamics_parameters::DynamicsParameters,
-    time_parameters::SimTimeParameters,
-    nsims::Int64,
-)
+        modeltypes::Tuple,
+        state_parameters::StateParameters,
+        dynamics_parameters::DynamicsParameters,
+        time_parameters::SimTimeParameters,
+        nsims::Int64,
+    )
     dirpath = outdir(
         "ensemble",
         modeltypes...,
@@ -196,12 +197,12 @@ function EnsembleSpecification(
 end
 
 struct OutbreakThresholdChars{
-    T1<:AbstractFloat,
-    T2<:Integer,
-    T3<:Vector{<:AbstractFloat},
-    T4<:Vector{<:Integer},
-    T5<:AbstractMatrix{<:Integer},
-}
+        T1 <: AbstractFloat,
+        T2 <: Integer,
+        T3 <: Vector{<:AbstractFloat},
+        T4 <: Vector{<:Integer},
+        T5 <: AbstractMatrix{<:Integer},
+    }
     daily_sensitivity::T1
     daily_specificity::T1
     daily_ppv::T1
@@ -247,7 +248,7 @@ struct OutbreakThresholdChars{
     alert_outbreak_timeseries_prop_diff::T1
 end
 
-struct OutbreakSpecification{T1<:Integer,T2<:AbstractString}
+struct OutbreakSpecification{T1 <: Integer, T2 <: AbstractString}
     outbreak_threshold::T1
     minimum_outbreak_duration::T1
     minimum_outbreak_size::T1
@@ -255,8 +256,8 @@ struct OutbreakSpecification{T1<:Integer,T2<:AbstractString}
 end
 
 function OutbreakSpecification(
-    outbreak_threshold, minimum_outbreak_duration, minimum_outbreak_size
-)
+        outbreak_threshold, minimum_outbreak_duration, minimum_outbreak_size
+    )
     dirpath = joinpath(
         "min_outbreak_dur_$(minimum_outbreak_duration)",
         "min_outbreak_size_$(minimum_outbreak_size)",
@@ -271,11 +272,11 @@ function OutbreakSpecification(
     )
 end
 
-struct AlertMethod{T1<:AbstractString}
+struct AlertMethod{T1 <: AbstractString}
     method_name::T1
-    function AlertMethod(method_name::T1) where {T1<:AbstractString}
+    function AlertMethod(method_name::T1) where {T1 <: AbstractString}
         available_test_methods = [
-            "dailythreshold", "movingavg", "dailythreshold_movingavg"
+            "dailythreshold", "movingavg", "dailythreshold_movingavg",
         ]
         if !in(method_name, available_test_methods)
             error(
@@ -287,8 +288,8 @@ struct AlertMethod{T1<:AbstractString}
 end
 
 struct OutbreakDetectionSpecification{
-    TReal<:Real,T1<:Integer,T2<:AbstractFloat,T3<:AlertMethod,T4<:AbstractString
-}
+        TReal <: Real, T1 <: Integer, T2 <: AbstractFloat, T3 <: AlertMethod, T4 <: AbstractString,
+    }
     alert_threshold::TReal
     moving_average_lag::T1
     percent_visit_clinic::T2
@@ -299,12 +300,12 @@ struct OutbreakDetectionSpecification{
 end
 
 function OutbreakDetectionSpecification(
-    alert_threshold,
-    moving_average_lag,
-    percent_visit_clinic,
-    percent_clinic_tested,
-    alert_method,
-)
+        alert_threshold,
+        moving_average_lag,
+        percent_visit_clinic,
+        percent_clinic_tested,
+        alert_method,
+    )
     alertdirpath = joinpath(
         "alertmethod_$(alert_method)", "alertthreshold_$(alert_threshold)"
     )
@@ -336,7 +337,7 @@ function OutbreakDetectionSpecification(
     )
 end
 
-struct IndividualTestSpecification{T1<:AbstractFloat,T2<:Integer}
+struct IndividualTestSpecification{T1 <: AbstractFloat, T2 <: Integer}
     sensitivity::T1
     specificity::T1
     test_result_lag::T2
@@ -347,7 +348,7 @@ function get_test_description(test_specification::IndividualTestSpecification)
         IndividualTestSpecification(1.0, 0.0, 0) => "Clinical case definition"
         IndividualTestSpecification(0.98, 0.98, x::Int) || IndividualTestSpecification(0.95, 0.98, x::Int) => "ELISA-like ($(test_specification.sensitivity * 100)% sens, $(test_specification.specificity * 100)% spec, $(x) day lag)"
         IndividualTestSpecification(1.0, 1.0, x::Int) => "Perfect test ($(x) day lag)"
-        IndividualTestSpecification(x::AbstractFloat, x::AbstractFloat, 0) where {x<1.0} => "RDT-like ($(test_specification.sensitivity * 100)% sens/spec)"
+        IndividualTestSpecification(x::AbstractFloat, x::AbstractFloat, 0) where {x < 1.0} => "RDT-like ($(test_specification.sensitivity * 100)% sens/spec)"
     end
     return description
 end
@@ -355,7 +356,7 @@ end
 function table_test_type(sensitivity, specificity, test_lag)
     return Match.@match (sensitivity, specificity, test_lag) begin
         (1.0, 0.0, 0) => "Clinical Case Definition"
-        (x::AbstractFloat, x::AbstractFloat, 0) where {x<1.0} => "Imperfect Test ($(Int64(round(sensitivity * 100; digits = 0)))%)"
+        (x::AbstractFloat, x::AbstractFloat, 0) where {x < 1.0} => "Imperfect Test ($(Int64(round(sensitivity * 100; digits = 0)))%)"
         (1.0, 1.0, x::Int) => "Perfect Test"
     end
 end
@@ -363,7 +364,7 @@ end
 function plot_test_description(test_specification::IndividualTestSpecification)
     return Match.@match test_specification begin
         IndividualTestSpecification(1.0, 0.0, 0) => "Clinical Case Definition"
-        IndividualTestSpecification(x::AbstractFloat, x::AbstractFloat, 0) where {x<1.0} => "Imperfect Test ($(Int64(round(x * 100; digits = 0)))%)"
+        IndividualTestSpecification(x::AbstractFloat, x::AbstractFloat, 0) where {x < 1.0} => "Imperfect Test ($(Int64(round(x * 100; digits = 0)))%)"
         IndividualTestSpecification(1.0, 1.0, x::Int) => "Perfect Test ($x-day lag)"
     end
 end
@@ -371,8 +372,8 @@ end
 abstract type NoiseSpecification end
 
 struct PoissonNoiseSpecification{
-    T1<:AbstractString,T2<:AbstractFloat
-} <: NoiseSpecification
+        T1 <: AbstractString, T2 <: AbstractFloat,
+    } <: NoiseSpecification
     noise_type::T1
     noise_mean_scaling::T2
 end
@@ -382,8 +383,8 @@ function PoissonNoiseSpecification(noise_mean_scaling)
 end
 
 struct DynamicalNoiseSpecification{
-    T1<:AbstractString,T2<:AbstractFloat,T3<:Integer
-} <: NoiseSpecification
+        T1 <: AbstractString, T2 <: AbstractFloat, T3 <: Integer,
+    } <: NoiseSpecification
     noise_type::T1
     R_0::T2
     latent_period::T3
@@ -397,8 +398,8 @@ function DynamicalNoiseSpecification()
 end
 
 function get_noise_description(
-    noise_specification::T
-) where {T<:NoiseSpecification}
+        noise_specification::T
+    ) where {T <: NoiseSpecification}
     return noise_specification.noise_type
 end
 
@@ -409,14 +410,14 @@ function get_noise_description(noise_specification::DynamicalNoiseSpecification)
 end
 
 function get_noise_magnitude(
-    noise_specification::T
-) where {T<:NoiseSpecification}
+        noise_specification::T
+    ) where {T <: NoiseSpecification}
     return string("Poisson scaling: ", noise_specification.noise_mean_scaling)
 end
 
 function get_noise_magnitude(
-    noise_specification::DynamicalNoiseSpecification
-)
+        noise_specification::DynamicalNoiseSpecification
+    )
     return string("Rubella vax: ", noise_specification.vaccination_coverage)
 end
 
@@ -431,13 +432,13 @@ function getdirpath(spec::NoiseSpecification)
 end
 
 struct ScenarioSpecification{
-    T1<:EnsembleSpecification,
-    T2<:OutbreakSpecification,
-    T3<:NoiseSpecification,
-    T4<:OutbreakDetectionSpecification,
-    T5<:IndividualTestSpecification,
-    T6<:AbstractString,
-}
+        T1 <: EnsembleSpecification,
+        T2 <: OutbreakSpecification,
+        T3 <: NoiseSpecification,
+        T4 <: OutbreakDetectionSpecification,
+        T5 <: IndividualTestSpecification,
+        T6 <: AbstractString,
+    }
     ensemble_specification::T1
     outbreak_specification::T2
     noise_specification::T3
@@ -447,12 +448,12 @@ struct ScenarioSpecification{
 end
 
 function ScenarioSpecification(
-    ensemble_specification::EnsembleSpecification,
-    outbreak_specification::OutbreakSpecification,
-    noise_specification::NoiseSpecification,
-    outbreak_detection_specification::OutbreakDetectionSpecification,
-    individual_test_specification::IndividualTestSpecification,
-)
+        ensemble_specification::EnsembleSpecification,
+        outbreak_specification::OutbreakSpecification,
+        noise_specification::NoiseSpecification,
+        outbreak_detection_specification::OutbreakDetectionSpecification,
+        individual_test_specification::IndividualTestSpecification,
+    )
     dirpath = joinpath(
         ensemble_specification.dirpath,
         outbreak_specification.dirpath,
@@ -473,7 +474,7 @@ function ScenarioSpecification(
     )
 end
 
-struct TestPositivity{T1<:AbstractArray{<:AbstractFloat}}
+struct TestPositivity{T1 <: AbstractArray{<:AbstractFloat}}
     one_day::T1
     seven_day::T1
     fourteen_day::T1
@@ -498,12 +499,12 @@ function TestPositivity(true_positive_vec, total_test_vec, alert_vec)
 end
 
 struct OptimalThresholdCharacteristics{
-    T1<:StructVector{<:OutbreakThresholdChars},
-    T2<:IndividualTestSpecification,
-    T3<:NoiseSpecification,
-    T4<:AbstractFloat,
-    TReal<:Real,
-}
+        T1 <: StructVector{<:OutbreakThresholdChars},
+        T2 <: IndividualTestSpecification,
+        T3 <: NoiseSpecification,
+        T4 <: AbstractFloat,
+        TReal <: Real,
+    }
     outbreak_threshold_chars::T1
     individual_test_specification::T2
     noise_specification::T3
@@ -512,9 +513,8 @@ struct OptimalThresholdCharacteristics{
     accuracy::T4
 end
 
-abstract type OptimizationMethods end
+abstract type AbstractOptimizationMethods end
 
-# QuadDIRECT optimization
-struct QD <: OptimizationMethods end
 # MultistartOptimization
-struct MSO <: OptimizationMethods end
+struct MSO end
+LightSumTypes.@sumtype OptimizationMethods(MSO) <: AbstractOptimizationMethods

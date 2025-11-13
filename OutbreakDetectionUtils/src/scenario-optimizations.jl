@@ -14,29 +14,29 @@ using Dates: Dates
 using Match: Match
 
 function run_scenario_optimizations(
-    ensemble_specifications,
-    outbreak_specifications,
-    noise_specifications,
-    outbreak_detection_specifications,
-    individual_test_specifications,
-    optim_method::TMethod = MSO,
-    accuracy_functions = [arithmetic_mean, calculate_f_beta_score];
-    seed = 1234,
-    executor = FLoops.SequentialEx(),
-    optimization_filename_base = "alert-threshold-optimization.jld2",
-    filedir = outdir("ensemble", "scenario-optimizations"),
-    optimization_output_filepath = joinpath(
-        filedir,
-        string(Dates.now()) * "_" * optimization_filename_base,
-    ),
-    force = false,
-    return_df = true,
-    filter_df_results = false,
-    save_df = true,
-    disable_time_check = false,
-    time_per_run_s = 45,
-    kwargs...,
-) where {TMethod<:Type{<:OptimizationMethods}}
+        ensemble_specifications,
+        outbreak_specifications,
+        noise_specifications,
+        outbreak_detection_specifications,
+        individual_test_specifications,
+        optim_method::TMethod = MSO,
+        accuracy_functions = [arithmetic_mean, calculate_f_beta_score];
+        seed = 1234,
+        executor = FLoops.SequentialEx(),
+        optimization_filename_base = "alert-threshold-optimization.jld2",
+        filedir = outdir("ensemble", "scenario-optimizations"),
+        optimization_output_filepath = joinpath(
+            filedir,
+            string(Dates.now()) * "_" * optimization_filename_base,
+        ),
+        force = false,
+        return_df = true,
+        filter_df_results = false,
+        save_df = true,
+        disable_time_check = false,
+        time_per_run_s = 45,
+        kwargs...,
+    ) where {TMethod <: Type{<:OptimizationMethods}}
     if length(save_df + return_df) == 0
         error(
             "At least one of `save_df` and `return_df` must be `true`. Instead, got `save_df = ` $save_df, and `return_df = ` $return_df"
@@ -57,22 +57,24 @@ function run_scenario_optimizations(
     if Try.isok(load_filepath) && !force
         optim_df = JLD2.load(Try.unwrap(load_filepath))["threshold_optim_df"]
     else
-        optim_df = DataFrames.DataFrame((
-            ensemble_spec = typeof(ensemble_specifications[1])[],
-            outbreak_spec = typeof(outbreak_specifications[1])[],
-            noise_spec = Union{
-                PoissonNoiseSpecification,DynamicalNoiseSpecification
-            }[],
-            outbreak_detection_spec = typeof(
-                outbreak_detection_specifications[1]
-            )[],
-            test_spec = typeof(individual_test_specifications[1])[],
-            optimal_threshold = Float64[],
-            optimal_accuracy = Float64[],
-            optimization_method = Union{Type{QD},Type{MSO}}[],
-            accuracy_function = Function[],
-            OT_chars = StructVector{<:OutbreakThresholdChars}[],
-        ))
+        optim_df = DataFrames.DataFrame(
+            (
+                ensemble_spec = typeof(ensemble_specifications[1])[],
+                outbreak_spec = typeof(outbreak_specifications[1])[],
+                noise_spec = Union{
+                    PoissonNoiseSpecification, DynamicalNoiseSpecification,
+                }[],
+                outbreak_detection_spec = typeof(
+                    outbreak_detection_specifications[1]
+                )[],
+                test_spec = typeof(individual_test_specifications[1])[],
+                optimal_threshold = Float64[],
+                optimal_accuracy = Float64[],
+                optimization_method = OptimizationMethods[],
+                accuracy_function = Function[],
+                OT_chars = StructVector{<:OutbreakThresholdChars}[],
+            )
+        )
     end
 
     combinations_to_run = calculate_combination_to_run(
@@ -146,20 +148,20 @@ function run_scenario_optimizations(
 end
 
 function check_missing_scenario_optimizations(
-    optim_df,
-    combinations_to_run;
-    disable_time_check = false,
-    time_per_run_s = 45,
-    scenario_parameter_symbols = [
-        :ensemble_spec,
-        :outbreak_spec,
-        :noise_spec,
-        :outbreak_detection_spec,
-        :test_spec,
-        :optimization_method,
-        :accuracy_function,
-    ],
-)
+        optim_df,
+        combinations_to_run;
+        disable_time_check = false,
+        time_per_run_s = 45,
+        scenario_parameter_symbols = [
+            :ensemble_spec,
+            :outbreak_spec,
+            :noise_spec,
+            :outbreak_detection_spec,
+            :test_spec,
+            :optimization_method,
+            :accuracy_function,
+        ],
+    )
     missing_combinations = DataFrames.antijoin(
         combinations_to_run,
         optim_df;
@@ -200,12 +202,12 @@ function check_missing_scenario_optimizations(
 end
 
 function run_missing_scenario_optimizations!(
-    optim_df,
-    missing_optims_df;
-    seed = 1234,
-    executor = FLoops.SequentialEx(),
-    kwargs...,
-)
+        optim_df,
+        missing_optims_df;
+        seed = 1234,
+        executor = FLoops.SequentialEx(),
+        kwargs...,
+    )
     prog = Progress(DataFrames.nrow(missing_optims_df))
 
     incidence_sim_grouped_df = DataFrames.groupby(
@@ -247,10 +249,10 @@ function run_missing_scenario_optimizations!(
             )
 
             for detect_test_gp in DataFrames.groupby(
-                noise_gp, [:outbreak_detection_spec, :test_spec]
-            )
+                    noise_gp, [:outbreak_detection_spec, :test_spec]
+                )
                 outbreak_detection_spec = detect_test_gp[
-                    1, :outbreak_detection_spec
+                    1, :outbreak_detection_spec,
                 ]
                 individual_test_spec = detect_test_gp[1, :test_spec]
 
@@ -259,10 +261,10 @@ function run_missing_scenario_optimizations!(
                 )
 
                 for accuracy_function_df in DataFrames.groupby(
-                    detect_test_gp, [:accuracy_function]
-                )
+                        detect_test_gp, [:accuracy_function]
+                    )
                     accuracy_function = accuracy_function_df[
-                        1, :accuracy_function
+                        1, :accuracy_function,
                     ]
                     println(
                         styled"\t\t\t\t-> Accuracy Function: {yellow,inverse: $(accuracy_function)}"
@@ -340,9 +342,9 @@ function run_missing_scenario_optimizations!(
 end
 
 function get_most_recent_optimization_filepath(
-    filename_base,
-    filedir,
-)
+        filename_base,
+        filedir,
+    )
     @assert isdir(filedir)
     optimization_files = readdir(filedir)
 
@@ -361,7 +363,7 @@ function get_most_recent_optimization_filepath(
         return Try.Err("No optimization files found.")
     end
 
-    filtered_optimization_datetimes = Vector{Union{Try.Ok,Try.Err}}(
+    filtered_optimization_datetimes = Vector{Union{Try.Ok, Try.Err}}(
         undef, length(filtered_optimization_files)
     )
 
@@ -400,24 +402,24 @@ function get_most_recent_optimization_filepath(
     most_recent_filepath = joinpath(
         filedir,
         string(most_recent_optimization_datetime) *
-        "_$(filename_base)",
+            "_$(filename_base)",
     )
     return Try.Ok(most_recent_filepath)
 end
 
 function filter_optim_results(
-    optim_df,
-    combinations_to_run;
-    scenario_parameter_symbols = [
-        :ensemble_spec,
-        :outbreak_spec,
-        :noise_spec,
-        :outbreak_detection_spec,
-        :test_spec,
-        :optimization_method,
-        :accuracy_function,
-    ],
-)
+        optim_df,
+        combinations_to_run;
+        scenario_parameter_symbols = [
+            :ensemble_spec,
+            :outbreak_spec,
+            :noise_spec,
+            :outbreak_detection_spec,
+            :test_spec,
+            :optimization_method,
+            :accuracy_function,
+        ],
+    )
     return DataFrames.innerjoin(
         optim_df,
         combinations_to_run;
@@ -426,23 +428,23 @@ function filter_optim_results(
 end
 
 function calculate_combination_to_run(
-    ensemble_specifications,
-    outbreak_specifications,
-    noise_specifications,
-    outbreak_detection_specifications,
-    individual_test_specifications,
-    optim_method::TMethod = MSO,
-    accuracy_functions = [arithmetic_mean, calculate_f_beta_score];
-    scenario_parameter_symbols = [
-        :ensemble_spec,
-        :outbreak_spec,
-        :noise_spec,
-        :outbreak_detection_spec,
-        :test_spec,
-        :optimization_method,
-        :accuracy_function,
-    ],
-) where {TMethod<:Type{<:OptimizationMethods}}
+        ensemble_specifications,
+        outbreak_specifications,
+        noise_specifications,
+        outbreak_detection_specifications,
+        individual_test_specifications,
+        optim_method::TMethod = MSO,
+        accuracy_functions = [arithmetic_mean, calculate_f_beta_score];
+        scenario_parameter_symbols = [
+            :ensemble_spec,
+            :outbreak_spec,
+            :noise_spec,
+            :outbreak_detection_spec,
+            :test_spec,
+            :optimization_method,
+            :accuracy_function,
+        ],
+    ) where {TMethod <: Type{<:OptimizationMethods}}
     @assert mapreduce(
         f -> in(f, [arithmetic_mean, calculate_f_beta_score]),
         +,
@@ -464,21 +466,21 @@ function calculate_combination_to_run(
 end
 
 function reshape_optim_df_to_matrix(
-    optim_df::T1;
-) where {T1<:DataFrames.DataFrame}
+        optim_df::T1
+    ) where {T1 <: DataFrames.DataFrame}
     noise_spec_vec = unique(optim_df.noise_spec)
     unique_noise_descriptions = unique(get_noise_description.(noise_spec_vec))
     num_noise_descriptions = length(unique_noise_descriptions)
 
     shape_noise_specifications =
         map(unique_noise_descriptions) do noise_description
-            filter(
-                noise_spec ->
-                    noise_description == get_noise_description(noise_spec),
-                noise_spec_vec,
-            ) |>
+        filter(
+            noise_spec ->
+            noise_description == get_noise_description(noise_spec),
+            noise_spec_vec,
+        ) |>
             v -> sort_noise_specifications(convert(Vector{typeof(v[1])}, v))
-        end
+    end
 
     num_shape_noise_specifications = length(shape_noise_specifications[1])
 
@@ -536,8 +538,8 @@ function reshape_optim_df_to_matrix(
 end
 
 function sort_noise_specifications(
-    v::AbstractVector{T}
-) where {T<:PoissonNoiseSpecification}
+        v::AbstractVector{T}
+    ) where {T <: PoissonNoiseSpecification}
     noise_magnitudes = getproperty.(v, :noise_mean_scaling)
 
     noise_orders = sortperm(noise_magnitudes)
@@ -546,8 +548,8 @@ function sort_noise_specifications(
 end
 
 function sort_noise_specifications(
-    v::AbstractVector{T}
-) where {T<:DynamicalNoiseSpecification}
+        v::AbstractVector{T}
+    ) where {T <: DynamicalNoiseSpecification}
     noise_magnitudes = getproperty.(v, :vaccination_coverage)
 
     noise_orders = sortperm(noise_magnitudes; rev = true)

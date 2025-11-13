@@ -16,7 +16,7 @@ export SimTimeParameters, EnsembleSpecification, DynamicsParameters,
     PoissonNoiseSpecification, DynamicalNoiseSpecification, NoiseSpecification,
     get_noise_description, get_noise_magnitude, getdirpath,
     ScenarioSpecification, TestPositivity, OptimalThresholdCharacteristics,
-    OptimizationMethods, QD, MSO
+    OptimizationMethods, MSO
 
 include("dynamics-constants.jl")
 export POPULATION_N, LATENT_PER_DAYS, DUR_INF_DAYS, R0, SIGMA, GAMMA,

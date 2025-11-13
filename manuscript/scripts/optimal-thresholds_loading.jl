@@ -89,9 +89,9 @@ outbreak_detection_spec_vec = create_combinations_vec(
 #%%
 noise_spec_vec =
     filter(ensemble_noise_specification_vec) do noise_spec
-        noise_spec.noise_type == "poisson" ||
-            noise_spec.correlation == "in-phase"
-    end
+    noise_spec.noise_type == "poisson" ||
+        noise_spec.correlation == "in-phase"
+end
 
 ensemble_specification = ensemble_spec_vec[1]
 alertmethod = alert_method_vec[1]
@@ -134,9 +134,9 @@ poisson_noise_optimal_solutions = DataFrames.filter(
 dynamical_noise_optimal_solutions = DataFrames.filter(
     :noise_spec =>
         n ->
-            n == DynamicalNoiseSpecification(
-                "dynamical", 5.0, 7, 14, "in-phase", 0.15, 0.0492
-            ),
+    n == DynamicalNoiseSpecification(
+        "dynamical", 5.0, 7, 14, "in-phase", 0.15, 0.0492
+    ),
     optim_df,
 );
 

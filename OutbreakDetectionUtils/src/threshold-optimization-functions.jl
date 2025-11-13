@@ -1,31 +1,30 @@
 using StatsBase: StatsBase
 using NaNMath: NaNMath
 using UnPack: @unpack
-# using Optim: Optim
 using DataFrames: DataFrames
-using QuadDIRECT: QuadDIRECT
 using MultistartOptimization: MultistartOptimization
 using NLopt: NLopt
+using LightSumTypes: LightSumTypes
 
 function setup_optimization(ensemble_param_dict)
     UnPack.@unpack ensemble_spec,
-    seed,
-    outbreak_spec = ensemble_param_dict
+        seed,
+        outbreak_spec = ensemble_param_dict
 
     UnPack.@unpack state_parameters,
-    dynamics_parameters, time_parameters,
-    nsims =
+        dynamics_parameters, time_parameters,
+        nsims =
         ensemble_spec
 
     UnPack.@unpack tstep, tlength, trange = time_parameters
 
-    ensemble_seir_vecs = Array{typeof(state_parameters.init_states),2}(
+    ensemble_seir_vecs = Array{typeof(state_parameters.init_states), 2}(
         undef,
         tlength,
         nsims,
     )
 
-    ensemble_inc_vecs = Array{typeof(StaticArrays.SVector(0)),2}(
+    ensemble_inc_vecs = Array{typeof(StaticArrays.SVector(0)), 2}(
         undef,
         tlength,
         nsims,
@@ -55,17 +54,17 @@ function setup_optimization(ensemble_param_dict)
 end
 
 function run_optimization(
-    objective_function,
-    OT_chars_param_dict,
-    optim_method::TMethod = MSO,
-    accuracy_measure = arithmetic_mean,
-    kwargs...,
-) where {TMethod<:Type{<:OptimizationMethods}}
+        objective_function,
+        OT_chars_param_dict,
+        optim_method::OptimizationMethods = MSO,
+        accuracy_measure = arithmetic_mean,
+        kwargs...,
+    )
     UnPack.@unpack scenario_spec, ensemble_inc_arr, thresholds_vec, seed =
         OT_chars_param_dict
     UnPack.@unpack noise_specification,
-    outbreak_detection_specification,
-    individual_test_specification = scenario_spec
+        outbreak_detection_specification,
+        individual_test_specification = scenario_spec
 
     noise_array = create_noise_arr(
         noise_specification,
@@ -94,63 +93,30 @@ function run_optimization(
 end
 
 function optimization_wrapper(
-    objective_function_closure,
-    ::Type{QD};
-    splits = ([8.0, 15.0, 35.0],),
-    lowers = [0.0],
-    uppers = [50.0],
-    kwargs...,
-)
-    kwargs_dict = Dict{Symbol,Any}(kwargs)
-
-    if haskey(kwargs_dict, :splits)
-        splits = kwargs_dict[:splits]
-    end
-    if haskey(kwargs_dict, :lowers)
-        lowers = kwargs_dict[:lowers]
-    end
-    if haskey(kwargs_dict, :uppers)
-        uppers = kwargs_dict[:uppers]
-    end
-
-    allowed_kwargs = (
-        :rtol,
-        :atol,
-        :fvalue,
-        :maxevals,
-        :nquasinewton,
-        :minwidth,
-        :print_interval,
-    )
-
-    filtered_kwargs = filter(((k, v),) -> k in allowed_kwargs, kwargs_dict)
-
-    optim_minimizer, optim_minimum = QuadDIRECT.minimize(
         objective_function_closure,
-        splits,
-        lowers,
-        uppers;
-        filtered_kwargs...,
+        optim_method::OptimizationMethods;
+        kwargs...,
     )
-
-    @assert length(optim_minimizer) == 1
-
-    return optim_minimizer[1], optim_minimum
+    return optimization_wrapper(
+        objective_function_closure,
+        LightSumTypes.variant(optim_method);
+        kwargs...
+    )
 end
 
 function optimization_wrapper(
-    objective_function_closure,
-    ::Type{MSO};
-    lowers = [0.0],
-    uppers = [50.0],
-    local_algorithm = NLopt.LN_BOBYQA,
-    n_sobol_points = 100,
-    use_threads = false,
-    xtol_rel = 1e-3,
-    xtol_abs = 1e-3,
-    kwargs...,
-)
-    kwargs_dict = Dict{Symbol,Any}(kwargs)
+        objective_function_closure,
+        optim_method::MSO;
+        lowers = [0.0],
+        uppers = [50.0],
+        local_algorithm = NLopt.LN_BOBYQA,
+        n_sobol_points = 100,
+        use_threads = false,
+        xtol_rel = 1.0e-3,
+        xtol_abs = 1.0e-3,
+        kwargs...,
+    )
+    kwargs_dict = Dict{Symbol, Any}(kwargs)
 
     if haskey(kwargs_dict, :lowers)
         lowers = kwargs_dict[:lowers]
@@ -209,17 +175,17 @@ function optimization_wrapper(
 end
 
 function objective_function(
-    alert_threshold_vec,
-    inputs,
-)
+        alert_threshold_vec,
+        inputs,
+    )
     @assert length(alert_threshold_vec) == 1
 
     @unpack ensemble_inc_arr,
-    noise_array,
-    outbreak_detection_specification,
-    individual_test_specification,
-    thresholds_vec,
-    accuracy_function = inputs
+        noise_array,
+        outbreak_detection_specification,
+        individual_test_specification,
+        thresholds_vec,
+        accuracy_function = inputs
 
     outbreak_detection_specification = OutbreakDetectionSpecification(
         alert_threshold_vec[1],
@@ -244,8 +210,8 @@ function objective_function(
 end
 
 function calculate_ensemble_objective_metric(
-    accuracy_function, testarr, infecarr, thresholds_vec
-)
+        accuracy_function, testarr, infecarr, thresholds_vec
+    )
     mean_accuracy = map(axes(infecarr, 3)) do sim
         dailychars = calculate_daily_detection_characteristics(
             @view(testarr[:, 6, sim]), @view(infecarr[:, 3, sim])
@@ -263,8 +229,8 @@ function calculate_ensemble_objective_metric(
 end
 
 function calculate_outbreak_detection_accuracy(
-    accuracy_function, outbreakbounds, alertbounds
-)
+        accuracy_function, outbreakbounds, alertbounds
+    )
     filtered_matched_bounds = match_outbreak_detection_bounds(
         outbreakbounds, alertbounds
     )[1]
