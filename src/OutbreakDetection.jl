@@ -18,9 +18,6 @@ export ACCURACY_COLOR, DAILY_SENSITIVITY_COLOR, DAILY_SPECIFICITY_COLOR,
     PERC_OUTBREAKS_MISSED_COLOR, PERC_ALERTS_CORRECT_COLOR,
     PERC_ALERTS_FALSE_COLOR
 
-include("noise_plots.jl")
-export visualize_ensemble_noise
-
 include("outbreak-threshold-chars_plots.jl")
 export ensemble_OTChars_plot, save_compare_ensemble_OTchars_plot,
     compare_ensemble_OTchars_plots, ensemble_outbreak_detect_diff_plot,
