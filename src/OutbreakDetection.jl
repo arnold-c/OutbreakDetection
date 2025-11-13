@@ -57,10 +57,18 @@ export line_plot,
     collect_OptimalThresholdCharacteristics
 
 @static if false
-    include("../scripts/single-sim_plots.jl")
-    include("../scripts/ensemble-diag-testing_scenarios_plots.jl")
-    include("../scripts/ensemble-sim_optimal-accuracy-lineplot.jl")
-    include("../scripts/debugging.jl")
+    # Include manuscript scripts for LSP support
+    # These scripts are not loaded at runtime but help the LSP
+    # recognize plotting functions and provide autocomplete
+    include("../scripts/manuscript/optimal-thresholds.jl")
+    include("../scripts/manuscript/optimal-thresholds_loading.jl")
+    include("../scripts/manuscript/optimal-thresholds_plots.jl")
+    include("../scripts/manuscript/optimal-thresholds_checks.jl")
+    include("../scripts/manuscript/optimal-thresholds_tables.jl")
+    include("../scripts/manuscript/supplemental_plots.jl")
+    include("../scripts/manuscript/supplemental_tables.jl")
+    include("../scripts/manuscript/plotting-setup.jl")
+    include("../scripts/manuscript/schematic-plot.jl")
 end
 
 end
