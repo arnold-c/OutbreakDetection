@@ -1,9 +1,5 @@
 #%%
 using DrWatson
-using OutbreakDetectionUtils
-
-#%%
-using DrWatson
 @quickactivate "OutbreakDetection"
 
 using DataFrames
@@ -20,32 +16,28 @@ import OutbreakDetectionUtils: create_optimal_threshold_summary_df
 using OutbreakDetection: line_plot
 
 #%%
-manuscriptdir(args...) = DrWatson.projectdir("manuscript", args...)
-function manuscript_scripts(args...)
-    return DrWatson.projectdir("scripts", "manuscript", args...)
-end
-manuscript_files(args...) = manuscriptdir("manuscript_files", args...)
-manuscript_plotdir(args...) = manuscript_files("plots", args...)
-manuscript_tabledir(args...) = manuscript_files("tables", args...)
-appendix_files(args...) = manuscriptdir("supplemental_files", args...)
-appendix_plotdir(args...) = appendix_files("plots", args...)
-appendix_tabledir(args...) = appendix_files("tables", args...)
-include(manuscript_scripts("plotting-setup.jl"))
+tablesdir(args...) = projectdir("tables", args...)
+appendix_plotdir(args...) = plotsdir("supplemental", args...)
+appendix_tabledir(args...) = tablesdir("supplemental", args...)
+include(scriptsdir("plotting-setup.jl"))
 
 #%%
-include(manuscript_scripts("schematic-plot.jl"))
+include(scriptsdir("dynamics-constants.jl"))
 
 #%%
-include(manuscript_scripts("optimal-thresholds_loading.jl"));
+include(scriptsdir("schematic-plot.jl"))
 
 #%%
-include(manuscript_scripts("optimal-thresholds_plots.jl"));
+include(scriptsdir("optimal-thresholds_loading.jl"));
 
 #%%
-include(manuscript_scripts("supplemental_tables.jl"))
+include(scriptsdir("optimal-thresholds_plots.jl"));
 
 #%%
-include(manuscript_scripts("supplemental_plots.jl"))
+include(scriptsdir("supplemental_tables.jl"))
 
 #%%
-include(manuscript_scripts("optimal-thresholds_checks.jl"))
+include(scriptsdir("supplemental_plots.jl"))
+
+#%%
+include(scriptsdir("optimal-thresholds_checks.jl"))

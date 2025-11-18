@@ -1,10 +1,3 @@
-using DataFrames
-using DrWatson: DrWatson
-using StatsBase: StatsBase
-using Match: Match
-using StructArrays
-using LaTeXStrings
-
 lineplot_colors = [
     "#56B4E9"
     "#E69F00"
@@ -12,36 +5,36 @@ lineplot_colors = [
 ]
 
 function line_plot(
-    noise_spec_vec,
-    ensemble_percent_clinic_tested_vec,
-    optimal_threshold_test_spec_vec,
-    optimal_threshold_core_params;
-    outcome = :accuracy,
-    plotdirpath = DrWatson.plotsdir(),
-    plotname = "line_accuracy_plot",
-    plotformat = "png",
-    size = (1300, 800),
-    colors = lineplot_colors,
-    alpha = 0.5,
-    xlabel = "Proportion Of Infected Individuals Tested",
-    ylabel = "Outbreak Detection\nAccuracy",
-    facet_fontsize = 24,
-    legendsize = 28,
-    xlabelsize = 28,
-    ylabelsize = 28,
-    show_x_facet_label = true,
-    show_y_facet_label = true,
-    ylims = (nothing, nothing),
-    hidedecorations = (true, true),
-    clinical_hline = true,
-    hlines = nothing,
-    nbanks = 1,
-    legend_rowsize = Makie.Relative(0.05),
-    xlabel_rowsize = Makie.Relative(0.03),
-    force = false,
-    save_plot = true,
-    kwargs...,
-)
+        noise_spec_vec,
+        ensemble_percent_clinic_tested_vec,
+        optimal_threshold_test_spec_vec,
+        optimal_threshold_core_params;
+        outcome = :accuracy,
+        plotdirpath = DrWatson.plotsdir(),
+        plotname = "line_accuracy_plot",
+        plotformat = "png",
+        size = (1300, 800),
+        colors = lineplot_colors,
+        alpha = 0.5,
+        xlabel = "Proportion Of Infected Individuals Tested",
+        ylabel = "Outbreak Detection\nAccuracy",
+        facet_fontsize = 24,
+        legendsize = 28,
+        xlabelsize = 28,
+        ylabelsize = 28,
+        show_x_facet_label = true,
+        show_y_facet_label = true,
+        ylims = (nothing, nothing),
+        hidedecorations = (true, true),
+        clinical_hline = true,
+        hlines = nothing,
+        nbanks = 1,
+        legend_rowsize = Makie.Relative(0.05),
+        xlabel_rowsize = Makie.Relative(0.03),
+        force = false,
+        save_plot = true,
+        kwargs...,
+    )
     mkpath(plotdirpath)
     plotpath = joinpath(plotdirpath, "$plotname.$plotformat")
 
@@ -87,35 +80,35 @@ function line_plot(
 end
 
 function line_plot(
-    optimal_thresholds_chars_array;
-    outcome = :accuracy,
-    plotdirpath = DrWatson.plotsdir(),
-    plotname = "line_accuracy_plot",
-    plotformat = "png",
-    size = (1300, 800),
-    colors = lineplot_colors,
-    alpha = 0.5,
-    markersize = 15,
-    xlabel = "Proportion Of Infected Individuals Tested",
-    ylabel = "Outbreak Detection\nAccuracy",
-    facet_fontsize = 24,
-    legendsize = 28,
-    xlabelsize = 28,
-    ylabelsize = 28,
-    show_x_facet_label = true,
-    show_y_facet_label = true,
-    ylims = (nothing, nothing),
-    hidedecorations = (true, true),
-    clinical_hline = true,
-    hlines = nothing,
-    nbanks = 1,
-    legend_rowsize = Makie.Relative(0.05),
-    xlabel_rowsize = Makie.Relative(0.03),
-    force = false,
-    save_plot = true,
-    dots = false,
-    kwargs...,
-)
+        optimal_thresholds_chars_array;
+        outcome = :accuracy,
+        plotdirpath = DrWatson.plotsdir(),
+        plotname = "line_accuracy_plot",
+        plotformat = "png",
+        size = (1300, 800),
+        colors = lineplot_colors,
+        alpha = 0.5,
+        markersize = 15,
+        xlabel = "Proportion Of Infected Individuals Tested",
+        ylabel = "Outbreak Detection\nAccuracy",
+        facet_fontsize = 24,
+        legendsize = 28,
+        xlabelsize = 28,
+        ylabelsize = 28,
+        show_x_facet_label = true,
+        show_y_facet_label = true,
+        ylims = (nothing, nothing),
+        hidedecorations = (true, true),
+        clinical_hline = true,
+        hlines = nothing,
+        nbanks = 1,
+        legend_rowsize = Makie.Relative(0.05),
+        xlabel_rowsize = Makie.Relative(0.03),
+        force = false,
+        save_plot = true,
+        dots = false,
+        kwargs...,
+    )
     mkpath(plotdirpath)
     plotpath = joinpath(plotdirpath, "$plotname.$plotformat")
 
@@ -123,7 +116,7 @@ function line_plot(
 
     if !isfile(plotpath) || force
         if in(outcome, [:avoidable_cases, :unavoidable_cases])
-            kwargs_dict = Dict{Symbol,Any}(kwargs)
+            kwargs_dict = Dict{Symbol, Any}(kwargs)
             if !haskey(kwargs_dict, :cases_scaling)
                 @error "Cases scaling not provided. Please provide kwarg `cases_scaling`"
             end
@@ -142,7 +135,7 @@ function line_plot(
             sort(
                 unique(
                     optimal_thresholds_chars_array[
-                        1, 1
+                        1, 1,
                     ].individual_test_specification,
                 );
                 by = t -> t.test_result_lag,
@@ -258,89 +251,29 @@ function line_plot(
     return nothing
 end
 
-function collect_OptimalThresholdCharacteristics(
-    noise_spec_vec,
-    ensemble_percent_clinic_tested_vec,
-    optimal_threshold_test_spec_vec,
-    optimal_threshold_core_params;
-    clinical_hline = false,
-)
-    noise_descriptions = get_noise_description.(noise_spec_vec)
-    unique_noise_descriptions = unique(noise_descriptions)
-
-    shape_noise_specifications =
-        map(unique_noise_descriptions) do noise_description
-            filter(
-                noise_spec ->
-                    noise_description == get_noise_description(noise_spec),
-                noise_spec_vec,
-            )
-        end
-
-    @assert length(vcat(shape_noise_specifications...)) ==
-        length(unique_noise_descriptions) *
-            length(shape_noise_specifications[1])
-
-    if clinical_hline
-        optimal_threshold_test_spec_vec = vcat(
-            optimal_threshold_test_spec_vec, CLINICAL_CASE_TEST_SPEC
-        )
-    end
-
-    optimal_thresholds_vecs = Array{
-        StructArray{OptimalThresholdCharacteristics}
-    }(
-        undef,
-        length(unique_noise_descriptions),
-        length(shape_noise_specifications[1]),
-    )
-
-    for (i, noise_description) in pairs(unique_noise_descriptions)
-        label_noise_description = Match.@match noise_description begin
-            "poisson" => "Poisson Noise"
-            "dynamical, in-phase" => "Dynamical Noise: In-Phase"
-            _ => "Other Noise"
-        end
-
-        for (j, noise_spec) in pairs(shape_noise_specifications[i])
-            optimal_threshold_comparison_params = (
-                noise_specification = noise_spec,
-                optimal_threshold_core_params...,
-            )
-
-            optimal_thresholds_vecs[i, j] = calculate_OptimalThresholdCharacteristics(
-                ensemble_percent_clinic_tested_vec,
-                optimal_threshold_test_spec_vec,
-                optimal_threshold_comparison_params,
-            )
-        end
-    end
-    return optimal_thresholds_vecs
-end
-
 function _line_plot(
-    fig,
-    noise_spec,
-    unique_test_specifications,
-    optimal_thresholds_vec,
-    i,
-    j;
-    outcome = :accuracy,
-    colors = lineplot_colors,
-    alpha = 0.3,
-    markersize = 15,
-    ylabel = "Accuracy",
-    ylabelsize = 28,
-    show_x_facet_label = true,
-    facet_fontsize = 24,
-    num_noise_descriptions = 1,
-    ylims = (nothing, nothing),
-    hidedecorations = (true, true),
-    hlines = nothing,
-    dots = false,
-    kwargs...,
-)
-    kwargs_dict = Dict{Symbol,Any}(kwargs)
+        fig,
+        noise_spec,
+        unique_test_specifications,
+        optimal_thresholds_vec,
+        i,
+        j;
+        outcome = :accuracy,
+        colors = lineplot_colors,
+        alpha = 0.3,
+        markersize = 15,
+        ylabel = "Accuracy",
+        ylabelsize = 28,
+        show_x_facet_label = true,
+        facet_fontsize = 24,
+        num_noise_descriptions = 1,
+        ylims = (nothing, nothing),
+        hidedecorations = (true, true),
+        hlines = nothing,
+        dots = false,
+        kwargs...,
+    )
+    kwargs_dict = Dict{Symbol, Any}(kwargs)
 
     if outcome != :alert_threshold
         long_df = create_optimal_threshold_summary_df(
@@ -375,14 +308,14 @@ function _line_plot(
             long_df,
             DataFrames.Cols(r".*_mean", r".*_[0-9]+th") .=>
                 (
-                    x ->
-                        Int64.(
-                            round.(
-                                x * kwargs_dict[:cases_scaling];
-                                digits = 0,
-                            ),
-                        )
-                );
+                x ->
+                Int64.(
+                    round.(
+                        x * kwargs_dict[:cases_scaling];
+                        digits = 0,
+                    ),
+                )
+            );
             renamecols = false,
         )
     end
@@ -437,23 +370,23 @@ function _line_plot(
 end
 
 function _line_plot_facet(
-    gl,
-    noise_spec,
-    unique_test_specifications,
-    long_df;
-    outcome = :accuracy,
-    colors = lineplot_colors,
-    alpha = 0.3,
-    markersize = 15,
-    xlabel = "Proportion Tested",
-    ylabel = "Accuracy",
-    xlabelsize = 28,
-    ylabelsize = 28,
-    facet_fontsize = 24,
-    ylims = (nothing, nothing),
-    hlines = nothing,
-    kwargs...,
-)
+        gl,
+        noise_spec,
+        unique_test_specifications,
+        long_df;
+        outcome = :accuracy,
+        colors = lineplot_colors,
+        alpha = 0.3,
+        markersize = 15,
+        xlabel = "Proportion Tested",
+        ylabel = "Accuracy",
+        xlabelsize = 28,
+        ylabelsize = 28,
+        facet_fontsize = 24,
+        ylims = (nothing, nothing),
+        hlines = nothing,
+        kwargs...,
+    )
     kwargs_dict = Dict(kwargs)
 
     ypos = haskey(kwargs_dict, :x_facet_label) ? 2 : 1
