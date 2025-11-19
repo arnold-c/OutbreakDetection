@@ -53,16 +53,16 @@ function create_noise_vecs(
     )
     seed *= 10
 
-    @unpack state_parameters,
+    UnPack.@unpack state_parameters,
         time_parameters,
         nsims = ensemble_specification
-    @unpack tlength = time_parameters
-    @unpack init_states = state_parameters
-    @unpack N = init_states
+    UnPack.@unpack tlength = time_parameters
+    UnPack.@unpack init_states = state_parameters
+    UnPack.@unpack N = init_states
 
     @assert nsims == length(enddates_vec) "Number of simulations must match number of endpoints"
 
-    @unpack poisson_component = noise_specification
+    UnPack.@unpack poisson_component = noise_specification
 
     init_states_sv = StaticArrays.SVector(init_states)
 
@@ -132,11 +132,11 @@ function create_noise_vecs(
         seed = 1234,
         kwargs...,
     )
-    @unpack nsims = ensemble_specification
+    UnPack.@unpack nsims = ensemble_specification
     @assert nsims == length(enddates_vec) "Number of simulations must match number of endpoints"
     @assert nsims == length(seir_results) "Number of simulations must match SEIR results"
 
-    @unpack noise_mean_scaling = noise_specification
+    UnPack.@unpack noise_mean_scaling = noise_specification
 
     # Initialize vectors for variable lengths
     incidence_vecs = Vector{Vector{Int64}}(undef, nsims)

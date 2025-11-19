@@ -2,6 +2,7 @@ module OutbreakDetectionCore
 
 # Package imports
 using Bootstrap: Bootstrap
+using Bumper: Bumper, @no_escape, @alloc
 using Chain: Chain
 using DataFrames: DataFrames
 using DataFramesMeta: DataFramesMeta
