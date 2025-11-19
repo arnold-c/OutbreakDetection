@@ -48,24 +48,16 @@ include("./diagnostic-testing/calculate-num-positive.jl")
 include("./diagnostic-testing/calculate-test-positivity.jl")
 include("./diagnostic-testing/create-test-arrays.jl")
 
-include("optimal-threshold-functions.jl")
-export calculate_optimal_threshold, calculate_OptimalThresholdCharacteristics,
-    calculate_optimal_threshold_summaries,
-    create_optimal_thresholds_df, create_wide_optimal_thresholds_df,
-    create_and_save_xlsx_optimal_threshold_summaries,
-    create_optimal_threshold_summary_df,
-    create_wide_optimal_threshold_summary_df,
-    create_all_wide_optimal_threshold_summary_dfs,
-    save_xlsx_optimal_threshold_summaries,
-    create_and_save_xlsx_optimal_threshold_summaries
+# Optimal Thresholds
+include("./optimal-thresholds/threshold-calculation.jl")
+include("./optimal-thresholds/threshold-summaries.jl")
+include("./optimal-thresholds/results-dataframes.jl")
+include("./optimal-thresholds/results-export.jl")
 
-include("threshold-optimization-functions.jl")
-export run_optimization,
-    setup_optimization,
-    objective_function,
-    calculate_ensemble_objective_metric,
-    calculate_outbreak_detection_accuracy,
-    optimization_wrapper
+# Threshold Optimization
+include("./optimization-functions/common/objective-function.jl")
+include("./optimization-functions/threshold-optimization/optimization-setup.jl")
+include("./optimization-functions/threshold-optimization/optimization-wrapper.jl")
 
 include("scenario-optimizations.jl")
 export run_scenario_optimizations,
