@@ -2,7 +2,7 @@
 using DrWatson
 @quickactivate "OutbreakDetection"
 
-using OutbreakDetectionUtils:
+using OutbreakDetectionCore:
     IndividualTestSpecification, create_combinations_vec,
     DynamicalNoiseSpecification, PoissonNoiseSpecification
 using OutbreakDetection: collect_OptimalThresholdCharacteristics
@@ -95,7 +95,7 @@ clinical_hline = false
 accuracy_functions = [arithmetic_mean, calculate_f_beta_score]
 
 #%%
-all_optim_df = OutbreakDetectionUtils.run_scenario_optimizations(
+all_optim_df = OutbreakDetectionCore.run_scenario_optimizations(
     ensemble_spec_vec,
     outbreak_spec_vec,
     noise_spec_vec,

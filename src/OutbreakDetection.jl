@@ -7,7 +7,7 @@ using DataFrames: DataFrames
 using Chain: @chain
 using NaNMath: NaNMath
 using FLoops: FLoops
-using OutbreakDetectionUtils: OutbreakDetectionUtils
+using OutbreakDetectionCore: OutbreakDetectionCore
 using Match: Match
 using StructArrays: StructVector, StructArray
 using LaTeXStrings

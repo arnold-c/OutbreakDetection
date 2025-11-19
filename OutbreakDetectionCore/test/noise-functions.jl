@@ -1,5 +1,5 @@
 @testset "noise-functions.jl" begin
-    using OutbreakDetectionUtils
+    using OutbreakDetectionCore
     using StaticArrays
     using NaNMath: NaNMath
 
@@ -46,13 +46,13 @@
         nsims,
     )
 
-    ensemble_seir_vecs = Array{typeof(state_parameters.init_states),2}(
+    ensemble_seir_vecs = Array{typeof(state_parameters.init_states), 2}(
         undef,
         time_parameters.tlength,
         nsims,
     )
 
-    ensemble_inc_vecs = Array{typeof(StaticArrays.SVector(0)),2}(
+    ensemble_inc_vecs = Array{typeof(StaticArrays.SVector(0)), 2}(
         undef,
         time_parameters.tlength,
         nsims,
@@ -94,21 +94,21 @@
 
     @test isapprox(
         dynamical_noise_means.mean_poisson_noise +
-        dynamical_noise_means.mean_rubella_noise,
+            dynamical_noise_means.mean_rubella_noise,
         mean(dynamical_noise_array),
-        atol = 1e-2,
+        atol = 1.0e-2,
     )
 
     @test isequal(
         dynamical_noise_means.mean_poisson_noise +
-        dynamical_noise_means.mean_rubella_noise,
+            dynamical_noise_means.mean_rubella_noise,
         dynamical_noise_means.mean_noise,
     )
 
     @test isapprox(
         dynamical_noise_means.poisson_noise_prop,
         dynamical_noise_spec.noise_mean_scaling,
-        atol = 1e-2,
+        atol = 1.0e-2,
     )
 
     poisson_noise_spec = PoissonNoiseSpecification(
@@ -125,7 +125,7 @@
     @test isapprox(
         poisson_noise_means.mean_poisson_noise,
         mean(ensemble_inc_arr * poisson_noise_spec.noise_mean_scaling),
-        atol = 1e-2,
+        atol = 1.0e-2,
     )
 
     @test isequal(poisson_noise_means.mean_noise, mean(poisson_noise_array))

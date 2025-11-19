@@ -1,4 +1,4 @@
-using OutbreakDetectionUtils, StatsBase
+using OutbreakDetectionCore, StatsBase
 
 @testset "diag-testing-functions.jl" begin
     @testset "Moving average" begin
@@ -40,18 +40,20 @@ using OutbreakDetectionUtils, StatsBase
             isequal(
                 daily_testpositives[:, 2],
                 Int64.(
-                    round.([
-                        StatsBase.mean([1]),
-                        StatsBase.mean([1, 2]),
-                        StatsBase.mean([1, 2, 3]),
-                        StatsBase.mean([1, 2, 3, 4]),
-                        StatsBase.mean([1, 2, 3, 4, 5]),
-                        StatsBase.mean([2, 3, 4, 5, 6]),
-                        StatsBase.mean([3, 4, 5, 6, 7]),
-                        StatsBase.mean([4, 5, 6, 7, 8]),
-                        StatsBase.mean([5, 6, 7, 8, 9]),
-                        StatsBase.mean([6, 7, 8, 9, 10]),
-                    ])
+                    round.(
+                        [
+                            StatsBase.mean([1]),
+                            StatsBase.mean([1, 2]),
+                            StatsBase.mean([1, 2, 3]),
+                            StatsBase.mean([1, 2, 3, 4]),
+                            StatsBase.mean([1, 2, 3, 4, 5]),
+                            StatsBase.mean([2, 3, 4, 5, 6]),
+                            StatsBase.mean([3, 4, 5, 6, 7]),
+                            StatsBase.mean([4, 5, 6, 7, 8]),
+                            StatsBase.mean([5, 6, 7, 8, 9]),
+                            StatsBase.mean([6, 7, 8, 9, 10]),
+                        ]
+                    )
                 ),
             )
         end
@@ -100,7 +102,7 @@ using OutbreakDetectionUtils, StatsBase
             ]
 
             isequal(
-                OutbreakDetectionUtils.match_outbreak_detection_bounds(
+                OutbreakDetectionCore.match_outbreak_detection_bounds(
                     outbreakbounds, detectionbounds
                 ),
                 (
@@ -183,10 +185,10 @@ using OutbreakDetectionUtils, StatsBase
 
     @testset "Outbreak detection characteristics" begin
         outbreakbounds = [
-            10 60 51 12*51
-            100 180 81 8*81
-            380 410 31 30*31
-            500 540 41 25*41
+            10 60 51 12 * 51
+            100 180 81 8 * 81
+            380 410 31 30 * 31
+            500 540 41 25 * 41
             600 660 61 1100
         ]
 
@@ -207,20 +209,20 @@ using OutbreakDetectionUtils, StatsBase
 
         accuracy = mean([4 / 5, 7 / 8])
         matched_bounds = [
-            10 60 5 15 12*51
-            10 60 17 40 12*51
-            10 60 50 80 12*51
-            100 180 90 105 8*81
-            100 180 110 160 8*81
-            380 410 390 420 30*31
-            500 540 495 550 25*41
+            10 60 5 15 12 * 51
+            10 60 17 40 12 * 51
+            10 60 50 80 12 * 51
+            100 180 90 105 8 * 81
+            100 180 110 160 8 * 81
+            380 410 390 420 30 * 31
+            500 540 495 550 25 * 41
         ]
         noutbreaks = 5
         nalerts = 8
         outbreak_duration_vec = [51, 81, 31, 41, 61]
         alert_duration_vec = [11, 24, 31, 16, 51, 31, 56, 6]
         detected_outbreak_size = [
-            12 * 51, 8 * 81, 30 * 31, 25 * 41
+            12 * 51, 8 * 81, 30 * 31, 25 * 41,
         ]
         missed_outbreak_size = [1100]
         n_true_outbreaks_detected = 4
@@ -321,7 +323,7 @@ using OutbreakDetectionUtils, StatsBase
                     infectious_tested_vec, noise_tested_vec, outbreakbounds
                 ),
                 (12 * 51 + 8 * 81 + 30 * 31 + 25 * 41) +
-                (4 * 51 + 5 * 81 + 6 * 31 + 4 * 41),
+                    (4 * 51 + 5 * 81 + 6 * 31 + 4 * 41),
             )
         end
     end

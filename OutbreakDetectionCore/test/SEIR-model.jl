@@ -1,4 +1,4 @@
-using OutbreakDetectionUtils
+using OutbreakDetectionCore
 using Test
 using LabelledArrays: LabelledArrays
 using StaticArrays

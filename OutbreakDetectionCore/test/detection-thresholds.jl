@@ -1,5 +1,5 @@
 @testset "detection-thresholds.jl" begin
-    using OutbreakDetectionUtils, StatsBase, StaticArrays
+    using OutbreakDetectionCore, StatsBase, StaticArrays
 
     outbreakthreshold = 5
     minoutbreakdur = 30
@@ -39,21 +39,21 @@
 
     @testset "Outbreak duration" begin
         @test isequal(
-            OutbreakDetectionUtils.calculate_outbreak_duration(
+            OutbreakDetectionCore.calculate_outbreak_duration(
                 outbreak_thresholds[1, :]
             ),
             51,
         )
 
         @test isequal(
-            OutbreakDetectionUtils.calculate_outbreak_duration(
+            OutbreakDetectionCore.calculate_outbreak_duration(
                 outbreak_thresholds[2, 1],
                 outbreak_thresholds[2, 2],
             ),
             11,
         )
 
-        OutbreakDetectionUtils.calculate_outbreak_duration!(
+        OutbreakDetectionCore.calculate_outbreak_duration!(
             outbreak_thresholds
         )
         @test isequal(
@@ -64,7 +64,7 @@
 
     @testset "Outbreak size" begin
         @test isequal(
-            OutbreakDetectionUtils.calculate_outbreak_size(
+            OutbreakDetectionCore.calculate_outbreak_size(
                 inc_vec,
                 outbreak_thresholds[1, 1],
                 outbreak_thresholds[1, 2],
@@ -76,11 +76,11 @@
     @testset "Classifying Outbreaks" begin
         @testset "Single Outbreak" begin
             @test isequal(
-                OutbreakDetectionUtils.classify_outbreak(
+                OutbreakDetectionCore.classify_outbreak(
                     outbreak_thresholds[1, 1],
                     outbreak_thresholds[1, 2],
                     minoutbreakdur,
-                    OutbreakDetectionUtils.calculate_outbreak_size(
+                    OutbreakDetectionCore.calculate_outbreak_size(
                         inc_vec,
                         outbreak_thresholds[1, 1],
                         outbreak_thresholds[1, 2],
@@ -90,7 +90,7 @@
                 12 * 51 > minoutbreaksize,
             )
             @test isequal(
-                OutbreakDetectionUtils.classify_outbreak(
+                OutbreakDetectionCore.classify_outbreak(
                     outbreak_thresholds[1, 3],
                     minoutbreakdur,
                     12 * 51,
@@ -129,11 +129,11 @@
             @test isequal(
                 outbreak_thresholds,
                 [
-                    10 60 51 12*51 1
-                    80 90 11 15*11 0
-                    100 180 81 8*81 1
-                    380 410 31 30*31 1
-                    500 540 41 25*41 1
+                    10 60 51 12 * 51 1
+                    80 90 11 15 * 11 0
+                    100 180 81 8 * 81 1
+                    380 410 31 30 * 31 1
+                    500 540 41 25 * 41 1
                 ],
             )
         end
@@ -141,14 +141,14 @@
 
     @testset "Filtering only outbreaks thresholds" begin
         @test isequal(
-            OutbreakDetectionUtils.filter_only_outbreaks(
+            OutbreakDetectionCore.filter_only_outbreaks(
                 outbreak_thresholds
             ),
             [
-                10 60 51 12*51
-                100 180 81 8*81
-                380 410 31 30*31
-                500 540 41 25*41
+                10 60 51 12 * 51
+                100 180 81 8 * 81
+                380 410 31 30 * 31
+                500 540 41 25 * 41
             ],
         )
     end
@@ -197,7 +197,8 @@
                             repeat([1], 41)..., # Outbreak here (i = 500 to 540)
                         ],
                     ),
-                    3),
+                    3
+                ),
                 length(inc_vec),
                 3,
                 3,
@@ -209,10 +210,10 @@
             repeat(
                 [
                     [
-                        10 60 51 12*51
-                        100 180 81 8*81
-                        380 410 31 30*31
-                        500 540 41 25*41
+                        10 60 51 12 * 51
+                        100 180 81 8 * 81
+                        380 410 31 30 * 31
+                        500 540 41 25 * 41
                     ],
                 ],
                 3,

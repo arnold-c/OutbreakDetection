@@ -1,17 +1,17 @@
-using OutbreakDetectionUtils
+using OutbreakDetectionCore
 using Test
 using Aqua
 using JET
 
-@testset "OutbreakDetectionUtils.jl" begin
+@testset "OutbreakDetectionCore.jl" begin
     @testset "Code quality (Aqua.jl)" begin
-        Aqua.test_all(OutbreakDetectionUtils; ambiguities = false)
+        Aqua.test_all(OutbreakDetectionCore; ambiguities = false)
         @testset "Ambiguities" begin
-            Aqua.test_ambiguities(OutbreakDetectionUtils)
+            Aqua.test_ambiguities(OutbreakDetectionCore)
         end
     end
     @testset "Code linting (JET.jl)" begin
-        JET.test_package(OutbreakDetectionUtils; target_defined_modules = true)
+        JET.test_package(OutbreakDetectionCore; target_defined_modules = true)
     end
     include("SEIR-model.jl")
     include("cleaning-functions.jl")

@@ -5,14 +5,14 @@ function collect_OptimalThresholdCharacteristics(
         optimal_threshold_core_params;
         clinical_hline = false,
     )
-    noise_descriptions = OutbreakDetectionUtils.get_noise_description.(noise_spec_vec)
+    noise_descriptions = OutbreakDetectionCore.get_noise_description.(noise_spec_vec)
     unique_noise_descriptions = unique(noise_descriptions)
 
     shape_noise_specifications =
         map(unique_noise_descriptions) do noise_description
         filter(
             noise_spec ->
-            noise_description == OutbreakDetectionUtils.get_noise_description(noise_spec),
+            noise_description == OutbreakDetectionCore.get_noise_description(noise_spec),
             noise_spec_vec,
         )
     end
@@ -28,7 +28,7 @@ function collect_OptimalThresholdCharacteristics(
     end
 
     optimal_thresholds_vecs = Array{
-        StructArray{OutbreakDetectionUtils.OptimalThresholdCharacteristics},
+        StructArray{OutbreakDetectionCore.OptimalThresholdCharacteristics},
     }(
         undef,
         length(unique_noise_descriptions),
@@ -48,7 +48,7 @@ function collect_OptimalThresholdCharacteristics(
                 optimal_threshold_core_params...,
             )
 
-            optimal_thresholds_vecs[i, j] = OutbreakDetectionUtils.calculate_OptimalThresholdCharacteristics(
+            optimal_thresholds_vecs[i, j] = OutbreakDetectionCore.calculate_OptimalThresholdCharacteristics(
                 ensemble_percent_clinic_tested_vec,
                 optimal_threshold_test_spec_vec,
                 optimal_threshold_comparison_params,

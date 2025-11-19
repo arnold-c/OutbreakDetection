@@ -34,11 +34,11 @@ function get_outbreak_status(
 
     abovethresholdrle = StatsBase.rle(abovethreshold_vec)
 
-    all_outbreak_bounds = OutbreakDetectionUtils.calculate_outbreak_thresholds(
+    all_outbreak_bounds = OutbreakDetectionCore.calculate_outbreak_thresholds(
         abovethresholdrle
     )
 
-    OutbreakDetectionUtils.classify_all_outbreaks!(
+    OutbreakDetectionCore.classify_all_outbreaks!(
         abovethreshold_vec,
         all_outbreak_bounds,
         inc_vec,
@@ -46,7 +46,7 @@ function get_outbreak_status(
         outbreak_specification.minimum_outbreak_size,
     )
 
-    outbreak_bounds = OutbreakDetectionUtils.filter_only_outbreaks(
+    outbreak_bounds = OutbreakDetectionCore.filter_only_outbreaks(
         all_outbreak_bounds
     )
 
@@ -151,13 +151,13 @@ function create_schematic_simulation(
         test_specification,
         time_p;
         seed = 1234,
-        outbreak_specification = OutbreakDetectionUtils.OutbreakSpecification(5, 30, 500),
-        outbreak_detection_specification = OutbreakDetectionUtils.OutbreakDetectionSpecification(5, 7, 1.0, 0.5, "movingavg"),
+        outbreak_specification = OutbreakDetectionCore.OutbreakSpecification(5, 30, 500),
+        outbreak_detection_specification = OutbreakDetectionCore.OutbreakDetectionSpecification(5, 7, 1.0, 0.5, "movingavg"),
         noise_scaling = 10,
         shift_noise = 0,
         movingavg_window = 20
     )
-    inc_sv = OutbreakDetectionUtils.seir_mod(
+    inc_sv = OutbreakDetectionCore.seir_mod(
         states_p.init_states,
         dynamics_p,
         time_p;
@@ -166,7 +166,7 @@ function create_schematic_simulation(
 
     inc_vec =
         round.(
-        OutbreakDetectionUtils.calculate_movingavg(
+        OutbreakDetectionCore.calculate_movingavg(
             vec(convert_svec_to_matrix(inc_sv)),
             movingavg_window,
         )
@@ -176,15 +176,15 @@ function create_schematic_simulation(
         inc_vec, outbreak_specification
     )
 
-    noise_sv = OutbreakDetectionUtils.seir_mod(
+    noise_sv = OutbreakDetectionCore.seir_mod(
         noise_states_p.init_states,
         noise_dynamics_p,
         time_p;
         seed = seed,
     )[2]
 
-    noise_vec_tmp = OutbreakDetectionUtils.calculate_movingavg(
-        vec(OutbreakDetectionUtils.convert_svec_to_matrix(noise_sv)) .*
+    noise_vec_tmp = OutbreakDetectionCore.calculate_movingavg(
+        vec(OutbreakDetectionCore.convert_svec_to_matrix(noise_sv)) .*
             noise_scaling, movingavg_window
     )
 
@@ -194,7 +194,7 @@ function create_schematic_simulation(
         outbreak_detection_specification.percent_visit_clinic *
         outbreak_detection_specification.percent_clinic_tested
 
-    true_positives = OutbreakDetectionUtils.calculate_positives(
+    true_positives = OutbreakDetectionCore.calculate_positives(
         calculate_true_positives!,
         inc_vec .* perc_tested,
         time_p.tlength,
@@ -202,7 +202,7 @@ function create_schematic_simulation(
         test_specification.sensitivity,
     )
 
-    false_positives = OutbreakDetectionUtils.calculate_positives(
+    false_positives = OutbreakDetectionCore.calculate_positives(
         calculate_noise_positives!,
         noise_vec .* perc_tested,
         time_p.tlength,
@@ -213,19 +213,19 @@ function create_schematic_simulation(
     test_positives = true_positives .+ false_positives
 
     # Calculate moving average of TOTAL test positives
-    movingavg_testpositives = OutbreakDetectionUtils.calculate_movingavg(
+    movingavg_testpositives = OutbreakDetectionCore.calculate_movingavg(
         test_positives,
         outbreak_detection_specification.moving_average_lag,
     )
 
-    alertstatus_vec = OutbreakDetectionUtils.detectoutbreak(
+    alertstatus_vec = OutbreakDetectionCore.detectoutbreak(
         movingavg_testpositives,
         outbreak_detection_specification.alert_threshold,
     )
-    alert_bounds = OutbreakDetectionUtils.calculate_outbreak_thresholds(
+    alert_bounds = OutbreakDetectionCore.calculate_outbreak_thresholds(
         rle(alertstatus_vec .> 0); ncols = 3
     )
-    OutbreakDetectionUtils.calculate_outbreak_duration!(alert_bounds)
+    OutbreakDetectionCore.calculate_outbreak_duration!(alert_bounds)
 
     return inc_vec,
         outbreak_status,

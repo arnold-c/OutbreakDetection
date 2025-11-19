@@ -1,4 +1,4 @@
-module OutbreakDetectionUtils
+module OutbreakDetectionCore
 
 # Package imports
 using Bootstrap: Bootstrap

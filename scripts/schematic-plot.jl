@@ -2,7 +2,7 @@
 using StatsBase: StatsBase
 using OutbreakDetection: create_schematic_simulation,
     plot_schematic
-using OutbreakDetectionUtils: StateParameters, DynamicsParameters, IndividualTestSpecification, OutbreakSpecification, OutbreakDetectionSpecification
+using OutbreakDetectionCore: StateParameters, DynamicsParameters, IndividualTestSpecification, OutbreakSpecification, OutbreakDetectionSpecification
 
 #%%
 states_p = StateParameters(

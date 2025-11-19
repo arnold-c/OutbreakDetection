@@ -8,10 +8,10 @@ using Match: Match
 using CSV: CSV
 using Chain: Chain
 
-using OutbreakDetectionUtils:
+using OutbreakDetectionCore:
     create_optimal_thresholds_df, create_optimal_threshold_summary_df
 
-import OutbreakDetectionUtils: create_optimal_threshold_summary_df
+import OutbreakDetectionCore: create_optimal_threshold_summary_df
 
 using OutbreakDetection: line_plot
 

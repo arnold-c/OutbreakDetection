@@ -2,7 +2,7 @@
 
 julia_version = "1.11.7"
 manifest_format = "2.0"
-project_hash = "aee7d4ae9427e8d73bbe59248a82c99466cc3477"
+project_hash = "1ac815e227d90679937a674a17fc77ce364ac7f2"
 
 [[deps.ADTypes]]
 git-tree-sha1 = "27cecae79e5cc9935255f90c53bb831cc3c870d7"
@@ -1589,9 +1589,9 @@ git-tree-sha1 = "05868e21324cede2207c6f0f466b4bfef6d5e7ee"
 uuid = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
 version = "1.8.1"
 
-[[deps.OutbreakDetectionUtils]]
+[[deps.OutbreakDetectionCore]]
 deps = ["Bootstrap", "Chain", "DataFrames", "DataFramesMeta", "Dates", "Distributions", "DrWatson", "FLoops", "FreqTables", "JLD2", "LabelledArrays", "LightSumTypes", "LinearAlgebra", "Match", "MultistartOptimization", "NLopt", "NaNMath", "Optim", "ProgressMeter", "REPL", "Random", "Reexport", "StaticArrays", "Statistics", "StatsBase", "StructArrays", "StyledStrings", "Tables", "Try", "TryExperimental", "UnPack", "XLSX"]
-path = "OutbreakDetectionUtils"
+path = "OutbreakDetectionCore"
 uuid = "f998a708-2341-46f4-85c5-02aab2fba5ed"
 version = "1.0.0-DEV"
 
