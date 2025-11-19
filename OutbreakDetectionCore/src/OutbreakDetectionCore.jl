@@ -49,8 +49,7 @@ include("./types/optimization-types.jl")
 # Simulation (needed before constants)
 include("./simulation/transmission-functions.jl")
 
-# Constants (depend on transmission functions)
-include("./constants/dynamics-constants.jl")
+# Constants
 include("./constants/test-constants.jl")
 
 # Simulation (continued)
