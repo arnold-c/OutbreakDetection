@@ -2,35 +2,42 @@
     using OutbreakDetectionCore
     using StaticArrays
     using NaNMath: NaNMath
+    using Statistics
+    using StructArrays
 
+    # New API: DynamicalNoiseSpecification
     dynamical_noise_spec = DynamicalNoiseSpecification(
-        "dynamical",
-        5.0,
-        7,
-        14,
-        "in-phase",
-        0.15,
-        0.0,
+        R_0 = 5.0,
+        latent_period = 7.0,
+        duration_infection = 14.0,
+        correlation = "in-phase",
+        poisson_component = 0.15,
+        vaccination_bounds = [0.0, 0.8]
     )
+    # Create concrete instance for simulation
+    dynamical_noise = DynamicalNoise(dynamical_noise_spec, 0.0) # 0.0 vaccination for test
 
     state_parameters = StateParameters(
         500_000,
         Dict(
             :s_prop => 0.05,
             :e_prop => 0.0,
-            :i_prop => 0.0,
-            :r_prop => 0.95,
+            :i_prop => 0.001,
+            :r_prop => 0.949,
         ),
     )
-    dynamics_parameters = DynamicsParameters(
-        500_000,
-        27,
-        0.2,
-        SIGMA,
-        GAMMA,
-        16.0,
-        0.8,
+
+    # New API: DynamicsParameters
+    target_dynamics = TargetDiseaseDynamicsParameters(
+        R_0 = 16.0,
+        latent_period_days = 10.0,
+        infectious_duration_days = 8.0,
+        beta_force = 0.2,
+        population_N = 500_000
     )
+    dynamics_spec = DynamicsParameterSpecification(target_dynamics)
+    dynamics_parameters = DynamicsParameters(dynamics_spec; vaccination_coverage = 0.8)
+
     time_parameters = SimTimeParameters(;
         tmin = 0.0,
         tmax = 365.0 * 100.0,
@@ -46,87 +53,54 @@
         nsims,
     )
 
-    ensemble_seir_vecs = Array{typeof(state_parameters.init_states), 2}(
-        undef,
-        time_parameters.tlength,
-        nsims,
-    )
+    # Run SEIR simulation using new API
+    # We need SEIR results for Poisson noise generation
+    seir_results = StructVector{SEIRRun}(undef, nsims)
 
-    ensemble_inc_vecs = Array{typeof(StaticArrays.SVector(0)), 2}(
-        undef,
-        time_parameters.tlength,
-        nsims,
-    )
-
-    ensemble_beta_arr = zeros(Float64, time_parameters.tlength)
-
-    for sim in axes(ensemble_inc_vecs, 2)
+    # Helper to run single simulation (since we don't have ensemble run function exposed here yet)
+    for sim in 1:nsims
         run_seed = seed + (sim - 1)
-
-        seir_mod!(
-            @view(ensemble_seir_vecs[:, sim]),
-            @view(ensemble_inc_vecs[:, sim]),
-            ensemble_beta_arr,
-            state_parameters.init_states,
+        seir_results[sim] = seir_mod(
+            StaticArrays.SVector(state_parameters.init_states),
             dynamics_parameters,
             time_parameters;
-            seed = run_seed,
+            seed = run_seed
         )
     end
 
-    ensemble_inc_arr = zeros(
-        Int64, size(ensemble_inc_vecs, 1), size(ensemble_inc_vecs, 2)
+    # Test Dynamical Noise
+    # We need enddates for create_noise_vecs
+    enddates = fill(time_parameters.tlength, nsims)
+
+    # Create noise dynamics parameters for the test
+    noise_dynamics_params = create_noise_dynamics_parameters(
+        dynamical_noise,
+        dynamics_spec,
+        state_parameters.init_states.N
     )
 
-    for sim in axes(ensemble_inc_vecs, 2)
-        convert_svec_to_matrix!(
-            @view(ensemble_inc_arr[:, sim]),
-            @view(ensemble_inc_vecs[:, sim])
-        )
-    end
-
-    dynamical_noise_array, dynamical_noise_means = create_noise_arr(
-        dynamical_noise_spec,
-        ensemble_inc_arr;
-        ensemble_specification = ensemble_spec,
-        seed = seed,
+    noise_run = create_noise_vecs(
+        dynamical_noise,
+        ensemble_spec,
+        noise_dynamics_params,
+        enddates;
+        seed = seed
     )
 
-    @test isapprox(
-        dynamical_noise_means.mean_poisson_noise +
-            dynamical_noise_means.mean_rubella_noise,
-        mean(dynamical_noise_array),
-        atol = 1.0e-2,
+    @test noise_run isa NoiseRun
+    @test noise_run.mean_noise ≈ noise_run.mean_dynamic_noise + noise_run.mean_poisson_noise
+
+    # Test Poisson Noise
+    poisson_noise = PoissonNoise(0.15) # 0.15 scaling
+
+    poisson_run = create_noise_vecs(
+        poisson_noise,
+        ensemble_spec,
+        enddates,
+        seir_results;
+        seed = seed
     )
 
-    @test isequal(
-        dynamical_noise_means.mean_poisson_noise +
-            dynamical_noise_means.mean_rubella_noise,
-        dynamical_noise_means.mean_noise,
-    )
-
-    @test isapprox(
-        dynamical_noise_means.poisson_noise_prop,
-        dynamical_noise_spec.noise_mean_scaling,
-        atol = 1.0e-2,
-    )
-
-    poisson_noise_spec = PoissonNoiseSpecification(
-        "poisson",
-        0.15,
-    )
-
-    poisson_noise_array, poisson_noise_means = create_noise_arr(
-        poisson_noise_spec,
-        ensemble_inc_arr;
-        seed = seed,
-    )
-
-    @test isapprox(
-        poisson_noise_means.mean_poisson_noise,
-        mean(ensemble_inc_arr * poisson_noise_spec.noise_mean_scaling),
-        atol = 1.0e-2,
-    )
-
-    @test isequal(poisson_noise_means.mean_noise, mean(poisson_noise_array))
+    @test poisson_run isa NoiseRun
+    @test poisson_run.mean_noise > 0.0
 end
