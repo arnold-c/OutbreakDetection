@@ -1,9 +1,3 @@
-using DrWatson: DrWatson
-using UnPack: UnPack
-using FLoops: FLoops
-using ProgressMeter: ProgressMeter
-using StaticArrays: StaticArrays
-
 export run_ensemble_jump_prob, run_jump_prob,
     summarize_ensemble_jump_prob, jump_prob_summary
 

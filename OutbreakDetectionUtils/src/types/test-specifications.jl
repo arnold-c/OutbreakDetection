@@ -1,5 +1,3 @@
-using Match: Match
-
 export IndividualTestSpecification, TestPositivity,
     get_test_description, table_test_type, plot_test_description
 

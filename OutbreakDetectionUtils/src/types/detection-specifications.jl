@@ -1,5 +1,3 @@
-using Match: Match
-
 export OutbreakDetectionSpecification, AlertMethod
 
 """

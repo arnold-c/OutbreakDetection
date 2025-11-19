@@ -1,5 +1,3 @@
-using DataFrames: DataFrames
-
 export calculate_combination_to_run
 
 """

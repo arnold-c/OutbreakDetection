@@ -1,8 +1,3 @@
-using UnPack: UnPack
-using MultistartOptimization: MultistartOptimization
-using NLopt: NLopt
-using LightSumTypes: LightSumTypes
-
 export run_optimization, optimization_wrapper
 
 """

@@ -1,9 +1,3 @@
-using DataFrames: DataFrames
-using DataFramesMeta: DataFramesMeta
-using Chain: Chain
-using Statistics: Statistics
-using Tables: Tables
-
 export create_sir_df, create_sir_beta_dfs,
     create_sir_all_sim_quantiles, create_sir_all_sim_quantiles!
 

@@ -1,6 +1,3 @@
-using UnPack: UnPack
-using FLoops: FLoops
-
 export collect_threshold_char_vec
 
 function collect_threshold_char_vec(percent_clinic_tested, base_parameters)

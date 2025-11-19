@@ -1,8 +1,3 @@
-using StatsBase: StatsBase
-using FreqTables: FreqTables
-using StructArrays: StructArrays
-using NaNMath: NaNMath
-
 export calculate_OutbreakThresholdChars, calculate_daily_detection_characteristics,
     calculate_outbreak_detection_characteristics, calculate_noutbreaks,
     calculate_n_outbreak_tests, filter_first_matched_bounds,

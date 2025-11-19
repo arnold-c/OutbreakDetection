@@ -1,8 +1,3 @@
-using UnPack: UnPack
-using StatsBase: StatsBase
-using ProgressMeter: ProgressMeter
-using StructArrays: StructArrays
-
 export calculate_optimal_threshold, calculate_OptimalThresholdCharacteristics
 
 """

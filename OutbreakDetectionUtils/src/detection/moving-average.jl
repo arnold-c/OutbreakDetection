@@ -1,5 +1,3 @@
-using StatsBase: StatsBase
-
 export calculate_movingavg, calculate_movingavg!
 
 """

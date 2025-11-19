@@ -1,5 +1,3 @@
-using LabelledArrays: SLVector, SLArray
-
 export StateParameters
 
 """

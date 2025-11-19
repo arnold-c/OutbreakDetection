@@ -1,7 +1,3 @@
-using UnPack: UnPack
-using StatsBase: StatsBase
-using NaNMath: NaNMath
-
 export objective_function, calculate_ensemble_objective_metric,
     calculate_outbreak_detection_accuracy
 

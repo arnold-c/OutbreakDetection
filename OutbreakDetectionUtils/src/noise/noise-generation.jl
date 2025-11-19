@@ -1,11 +1,3 @@
-using UnPack: UnPack
-using Match: Match
-using StaticArrays: StaticArrays
-using Random: Random
-using Distributions: Distributions
-using StatsBase: StatsBase
-using NaNMath: NaNMath
-
 export create_noise_arr, add_poisson_noise_arr!
 
 function create_noise_arr(

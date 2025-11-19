@@ -1,6 +1,3 @@
-using UnPack: UnPack
-using StaticArrays: StaticArrays
-
 export setup_optimization
 
 """

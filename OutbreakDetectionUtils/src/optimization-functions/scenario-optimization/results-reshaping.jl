@@ -1,6 +1,3 @@
-using DataFrames: DataFrames
-using StructArrays: StructArrays
-
 export reshape_optim_df_to_matrix, sort_noise_specifications
 
 """

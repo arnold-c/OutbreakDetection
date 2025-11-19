@@ -1,6 +1,3 @@
-using StatsBase: StatsBase
-using Bootstrap: Bootstrap
-
 export calculate_optimal_threshold_summaries
 
 """

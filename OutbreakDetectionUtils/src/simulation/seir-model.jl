@@ -1,7 +1,3 @@
-using Distributions: Distributions
-using Random: Random
-using StaticArrays: StaticArrays
-
 export seir_mod, seir_mod!, seir_mod_loop!,
     convert_svec_to_matrix, convert_svec_to_matrix!, convert_svec_to_array
 

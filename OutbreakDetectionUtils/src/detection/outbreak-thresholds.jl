@@ -1,5 +1,3 @@
-using StatsBase: StatsBase
-
 export create_inc_infec_arr, create_inc_infec_arr!,
     calculate_outbreak_thresholds
 

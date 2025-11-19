@@ -1,5 +1,36 @@
 module OutbreakDetectionUtils
 
+# Package imports
+using Bootstrap: Bootstrap
+using Chain: Chain
+using DataFrames: DataFrames
+using DataFramesMeta: DataFramesMeta
+using Dates: Dates
+using Distributions: Distributions
+using DrWatson: DrWatson, @dict, @tagsave
+using FLoops: FLoops
+using FreqTables: FreqTables
+using JLD2: JLD2
+using LabelledArrays: SLVector, SLArray
+using LightSumTypes: LightSumTypes
+using LinearAlgebra: LinearAlgebra
+using Match: Match
+using MultistartOptimization: MultistartOptimization
+using NaNMath: NaNMath
+using NLopt: NLopt
+using ProgressMeter: ProgressMeter, Progress, next!
+using Random: Random
+using REPL.TerminalMenus: RadioMenu, request
+using StaticArrays: StaticArrays
+using Statistics: Statistics
+using StatsBase: StatsBase
+using StructArrays: StructArrays, StructVector
+using StyledStrings
+using Tables: Tables
+using Try: Try
+using UnPack: UnPack
+using XLSX: XLSX
+
 # Utilities
 include("./utilities/DrWatson-helpers.jl")
 

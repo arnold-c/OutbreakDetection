@@ -1,7 +1,3 @@
-using DataFrames: DataFrames
-using XLSX: XLSX
-using Match: Match
-
 export save_xlsx_optimal_threshold_summaries,
     create_and_save_xlsx_optimal_threshold_summaries
 

@@ -1,5 +1,3 @@
-using LinearAlgebra: LinearAlgebra
-
 export calculate_beta, calculate_beta_amp, calculateR0,
     calculate_import_rate, calculate_mu
 

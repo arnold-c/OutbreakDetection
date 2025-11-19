@@ -1,7 +1,3 @@
-using DataFrames: DataFrames
-using Try: Try
-using REPL.TerminalMenus: RadioMenu, request
-
 export check_missing_scenario_optimizations
 
 """

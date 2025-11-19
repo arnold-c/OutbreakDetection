@@ -1,6 +1,3 @@
-using StructArrays: StructVector
-using LightSumTypes: LightSumTypes
-
 export OptimalThresholdCharacteristics, OptimizationMethods, MSO,
     AbstractOptimizationMethods
 

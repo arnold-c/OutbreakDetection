@@ -1,8 +1,3 @@
-using DrWatson: DrWatson
-using UnPack: UnPack
-using FLoops: FLoops
-using JLD2: JLD2
-
 export run_OutbreakThresholdChars_creation, OutbreakThresholdChars_creation,
     get_ensemble_file
 

@@ -1,6 +1,3 @@
-using Try: Try
-using Dates: Dates
-
 export get_most_recent_optimization_filepath
 
 """
