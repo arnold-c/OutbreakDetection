@@ -32,24 +32,18 @@ include("./noise/noise-generation.jl")
 include("./utilities/cleaning-functions.jl")
 include("./utilities/collect-thresholds-vec_functions.jl")
 
-# TODO: Still need to reorganize these files
-include("detection-thresholds.jl")
-export create_inc_infec_arr,
-    create_inc_infec_arr!, calculate_outbreak_thresholds,
-    classify_all_outbreaks!, filter_only_outbreaks, calculate_positives,
-    calculate_true_positives!
+# Detection
+include("./detection/outbreak-thresholds.jl")
+include("./detection/outbreak-classification.jl")
+include("./detection/moving-average.jl")
+include("./detection/alert-detection.jl")
+include("./detection/detection-characteristics.jl")
 
-include("diag-testing-functions.jl")
-export create_testing_arrs, create_testing_arrs!, calculate_tested!,
-    calculate_positives!, calculate_true_positives!, calculate_noise_positives!,
-    calculate_movingavg, calculate_movingavg!,
-    detectoutbreak, detectoutbreak!, calculate_daily_detection_characteristics,
-    calculate_noutbreaks, calculate_n_outbreak_tests,
-    calculate_OutbreakThresholdChars,
-    calculate_test_positivity, calculate_outbreak_detection_characteristics,
-    filter_first_matched_bounds, calculate_first_matched_bounds_index,
-    calculate_cases_before_after_alert!, calculate_cases_before_after_alert,
-    calculate_f_beta_score, arithmetic_mean
+# Diagnostic Testing
+include("./diagnostic-testing/calculate-num-tested.jl")
+include("./diagnostic-testing/calculate-num-positive.jl")
+include("./diagnostic-testing/calculate-test-positivity.jl")
+include("./diagnostic-testing/create-test-arrays.jl")
 
 include("ensemble-functions.jl")
 export create_combinations_vec, create_ensemble_spec_combinations,
