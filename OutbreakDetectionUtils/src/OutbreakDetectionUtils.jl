@@ -24,6 +24,8 @@ include("./constants/test-constants.jl")
 
 # Simulation (continued)
 include("./simulation/seir-model.jl")
+include("./simulation/ensemble-simulation.jl")
+include("./simulation/ensemble-outbreak-detection.jl")
 
 # Noise
 include("./noise/noise-generation.jl")
@@ -31,6 +33,7 @@ include("./noise/noise-generation.jl")
 # Utilities (data processing)
 include("./utilities/cleaning-functions.jl")
 include("./utilities/collect-thresholds-vec_functions.jl")
+include("./utilities/create-combinations.jl")
 
 # Detection
 include("./detection/outbreak-thresholds.jl")
@@ -44,13 +47,6 @@ include("./diagnostic-testing/calculate-num-tested.jl")
 include("./diagnostic-testing/calculate-num-positive.jl")
 include("./diagnostic-testing/calculate-test-positivity.jl")
 include("./diagnostic-testing/create-test-arrays.jl")
-
-include("ensemble-functions.jl")
-export create_combinations_vec, create_ensemble_spec_combinations,
-    run_ensemble_jump_prob, run_jump_prob,
-    summarize_ensemble_jump_prob, jump_prob_summary,
-    run_OutbreakThresholdChars_creation, OutbreakThresholdChars_creation,
-    get_ensemble_file
 
 include("optimal-threshold-functions.jl")
 export calculate_optimal_threshold, calculate_OptimalThresholdCharacteristics,
