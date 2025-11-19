@@ -48,14 +48,65 @@ function calculate_beta(R_0, gamma, mu, contact_mat, pop_matrix)
 end
 
 """
-    calculate_beta_amp(beta_mean, beta_force, t)
+    calculate_beta_amp(beta_mean, beta_force, t; seasonality)
 
 Calculate the amplitude of the transmission rate beta as a function of time.
-`beta_mean` is the mean transmission rate, `beta_force` is the amplitude of the `seasonality` function.
-`seasonality` defaults to using the `cosine` function
+
+This function computes the time-varying transmission rate using seasonal forcing.
+It supports both the new SeasonalityFunction sum type and legacy Function type
+for backward compatibility.
+
+# Arguments
+- `beta_mean`: Mean transmission rate
+- `beta_force`: Amplitude of seasonal forcing (0-1)
+- `t`: Time in days
+
+# Keyword Arguments
+- `seasonality`: Seasonality function (default: cos for backward compatibility)
+  - Can be a Function (cos, sin) for backward compatibility
+  - Can be a SeasonalityFunction (CosineSeasonality, SineSeasonality)
+
+# Returns
+- `Float64`: Time-varying transmission rate
+
+# Formula
+β(t) = β_mean × (1 + β_force × seasonality(2π × t / 365))
+
+# Examples
+```julia
+# Legacy function-based (backward compatible)
+beta_t = calculate_beta_amp(0.0001, 0.2, 100.0; seasonality = cos)
+
+# New sum type-based
+seasonality = SeasonalityFunction(CosineSeasonality())
+beta_t = calculate_beta_amp(0.0001, 0.2, 100.0; seasonality = seasonality)
+```
 """
 function calculate_beta_amp(beta_mean, beta_force, t; seasonality = cos)
-    return beta_mean * (1 + beta_force * seasonality(2pi * t / 365))
+    return beta_mean * (1 + beta_force * _apply_seasonality(seasonality, 2pi * t / 365))
+end
+
+"""
+    _apply_seasonality(seasonality, x)
+
+Internal function to apply seasonality function to a value.
+
+Handles both SeasonalityFunction sum types and legacy Function types.
+"""
+function _apply_seasonality(seasonality::SeasonalityFunction, x)
+    variant = LightSumTypes.variant(seasonality)
+    if variant isa CosineSeasonality
+        return cos(x)
+    elseif variant isa SineSeasonality
+        return sin(x)
+    else
+        error("Unknown seasonality variant: $(typeof(variant))")
+    end
+end
+
+function _apply_seasonality(seasonality::Function, x)
+    # Backward compatibility for Function type
+    return seasonality(x)
 end
 
 """
