@@ -54,6 +54,7 @@ include("./simulation/transmission-functions.jl")
 include("./constants/test-constants.jl")
 
 # Simulation (continued)
+include("./simulation/endemic-equilibrium.jl")
 include("./simulation/seir-model.jl")
 include("./simulation/ensemble-simulation.jl")
 include("./simulation/ensemble-outbreak-detection.jl")
