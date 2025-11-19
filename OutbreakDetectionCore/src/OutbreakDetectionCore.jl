@@ -63,6 +63,7 @@ include("./simulation/ensemble-outbreak-detection.jl")
 include("./noise/noise-mean-incidence.jl")
 include("./noise/noise-dynamics-parameters.jl")
 include("./noise/noise-recreation.jl")
+include("./noise/noise-parameters-optimization.jl")
 include("./noise/noise-generation.jl")
 
 # Utilities (data processing)
