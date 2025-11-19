@@ -224,7 +224,7 @@ function DynamicsParameterSpecification(target::TargetDiseaseDynamicsParameters)
     gamma = 1.0 / target.infectious_duration_days
     mu = 1.0 / (target.life_expectancy_years * 365.0)
     annual_births_per_k = 1000.0 / target.life_expectancy_years
-    beta_mean = calculate_beta(target.R_0, gamma, mu, 1, target.population_N)
+    beta_mean = calculate_beta(target.R_0, sigma, gamma, mu)
     epsilon = calculate_import_rate(mu, target.R_0, target.population_N)
 
     return DynamicsParameterSpecification(
@@ -339,7 +339,7 @@ function DynamicsParameters(
     end
 
     mu = calculate_mu(annual_births_per_k)
-    beta_mean = calculate_beta(R_0, gamma, mu, 1, N)
+    beta_mean = calculate_beta(R_0, sigma, gamma, mu)
     epsilon = calculate_import_rate(mu, R_0, N)
 
     return DynamicsParameters(
