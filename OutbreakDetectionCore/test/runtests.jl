@@ -21,4 +21,5 @@ using JET
     include("noise-functions.jl")
     include("collect-thresholds-vec_functions.jl")
     include("optimal-threshold-functions.jl")
+    include("optimization-wrapper.jl")
 end

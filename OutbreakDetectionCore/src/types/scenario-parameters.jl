@@ -54,7 +54,7 @@ hash(scenario)  # Automatic hash function
 """
 AutoHashEquals.@auto_hash_equals struct ScenarioParameters
     target_dynamics::TargetDiseaseDynamicsParameters
-    noise_spec::NoiseSpecification
+    noise_spec::Union{DynamicalNoiseSpecification, PoissonNoise}
     test_spec::IndividualTestSpecification
     percent_clinic_tested::Float64
     outbreak_threshold::Float64

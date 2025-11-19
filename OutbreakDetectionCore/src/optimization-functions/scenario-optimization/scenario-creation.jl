@@ -112,19 +112,13 @@ function create_scenario_grid(;
 
             for sensitivity in test_sensitivities
                 test = IndividualTestSpecification(
-                    sensitivity = sensitivity,
-                    specificity = base_test.specificity,
-                    test_result_lag = base_test.test_result_lag,
+                    sensitivity, base_test.specificity, base_test.test_result_lag
                 )
 
                 for percent_tested in percent_tested_values
                     for threshold in outbreak_thresholds
                         scenario = ScenarioParameters(
-                            target_dynamics = target,
-                            noise_spec = noise,
-                            test_spec = test,
-                            percent_clinic_tested = percent_tested,
-                            outbreak_threshold = threshold,
+                            target, noise, test, percent_tested, threshold
                         )
                         push!(scenarios, scenario)
                     end
