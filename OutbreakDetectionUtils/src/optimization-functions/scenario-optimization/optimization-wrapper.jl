@@ -1,18 +1,25 @@
 using DataFrames: DataFrames
 using DrWatson: @dict, @tagsave
-using Base: unique_from
-using DataFramesMeta: exec
 using StructArrays: StructVector
 using ProgressMeter: Progress, next!
 using FLoops: FLoops
 using Try: Try
-using TryExperimental: TryExperimental
-using REPL: REPL
-using REPL.TerminalMenus: RadioMenu, request
 using StyledStrings
 using Dates: Dates
-using Match: Match
+using JLD2: JLD2
 
+export run_scenario_optimizations, run_missing_scenario_optimizations!
+
+"""
+    run_scenario_optimizations(ensemble_specifications, outbreak_specifications, 
+                               noise_specifications, outbreak_detection_specifications, 
+                               individual_test_specifications, optim_method, 
+                               accuracy_functions; kwargs...)
+
+Run optimization for multiple scenarios.
+
+Returns optimization DataFrame or nothing based on parameters.
+"""
 function run_scenario_optimizations(
         ensemble_specifications,
         outbreak_specifications,
@@ -147,60 +154,12 @@ function run_scenario_optimizations(
     return nothing
 end
 
-function check_missing_scenario_optimizations(
-        optim_df,
-        combinations_to_run;
-        disable_time_check = false,
-        time_per_run_s = 45,
-        scenario_parameter_symbols = [
-            :ensemble_spec,
-            :outbreak_spec,
-            :noise_spec,
-            :outbreak_detection_spec,
-            :test_spec,
-            :optimization_method,
-            :accuracy_function,
-        ],
-    )
-    missing_combinations = DataFrames.antijoin(
-        combinations_to_run,
-        optim_df;
-        on = scenario_parameter_symbols,
-    )
+"""
+    run_missing_scenario_optimizations!(optim_df, missing_optims_df; 
+                                        seed=1234, executor=..., kwargs...)
 
-    missing_runs = DataFrames.nrow(missing_combinations)
-    if missing_runs == 0
-        return Try.Err("No missing simulations")
-    end
-
-    if missing_runs > 0 && !disable_time_check
-        nrun_time_s = missing_runs * time_per_run_s
-        nrun_time_minutes = round(nrun_time_s / 60; digits = 2)
-        nrun_time_hours = divrem(nrun_time_minutes, 60)
-        nrun_time_message = if nrun_time_s < 10
-            "less than 10 seconds"
-        elseif nrun_time_s < 60
-            "approximately $(round(nrun_time_s; digits = 0)) seconds"
-        elseif nrun_time_minutes < 120
-            "approximately $(nrun_time_minutes) minutes"
-        else
-            "approximately $(nrun_time_hours[1]) hours and $(nrun_time_hours[2]) minutes"
-        end
-        choice = request(
-            "There are $(missing_runs) missing simulations. This is estimated to take $(nrun_time_message). Do you want to continue?",
-            RadioMenu(["No", "Yes"]; ctrl_c_interrupt = false),
-        )
-
-        if choice != 2
-            return Try.Err("User aborted")
-        end
-
-        println("Continuing ...")
-    end
-
-    return Try.Ok(missing_combinations)
-end
-
+Run optimizations for missing scenarios and update optim_df in place.
+"""
 function run_missing_scenario_optimizations!(
         optim_df,
         missing_optims_df;
@@ -341,72 +300,6 @@ function run_missing_scenario_optimizations!(
     return nothing
 end
 
-function get_most_recent_optimization_filepath(
-        filename_base,
-        filedir,
-    )
-    @assert isdir(filedir)
-    optimization_files = readdir(filedir)
-
-    if length(optimization_files) == 0
-        return Try.Err("No optimization files found.")
-    end
-
-    filter_regex = Regex("(.*)$(filename_base)\$")
-
-    filtered_optimization_files = filter(
-        f -> contains(f, filter_regex),
-        optimization_files,
-    )
-
-    if length(filtered_optimization_files) == 0
-        return Try.Err("No optimization files found.")
-    end
-
-    filtered_optimization_datetimes = Vector{Union{Try.Ok, Try.Err}}(
-        undef, length(filtered_optimization_files)
-    )
-
-    for (i, f) in pairs(filtered_optimization_files)
-        matches = match(filter_regex, f)
-        if isnothing(matches)
-            filtered_optimization_datetimes[i] = Try.Err(
-                "No matches for filename $(f)"
-            )
-            continue
-        end
-
-        filtered_optimization_datetimes[i] = Try.Ok(
-            tryparse(
-                Dates.DateTime,
-                strip(
-                    matches[1],
-                    '_',
-                ),
-            ),
-        )
-    end
-
-    filtered_optimization_datetimes = filter(
-        Try.isok, filtered_optimization_datetimes
-    )
-
-    if length(filtered_optimization_datetimes) == 0
-        return Try.Err("No optimization files found.")
-    end
-
-    most_recent_optimization_datetime = sort(
-        Try.unwrap.(filtered_optimization_datetimes)
-    )[end]
-
-    most_recent_filepath = joinpath(
-        filedir,
-        string(most_recent_optimization_datetime) *
-            "_$(filename_base)",
-    )
-    return Try.Ok(most_recent_filepath)
-end
-
 function filter_optim_results(
         optim_df,
         combinations_to_run;
@@ -425,134 +318,4 @@ function filter_optim_results(
         combinations_to_run;
         on = scenario_parameter_symbols,
     )
-end
-
-function calculate_combination_to_run(
-        ensemble_specifications,
-        outbreak_specifications,
-        noise_specifications,
-        outbreak_detection_specifications,
-        individual_test_specifications,
-        optim_method::TMethod = MSO,
-        accuracy_functions = [arithmetic_mean, calculate_f_beta_score];
-        scenario_parameter_symbols = [
-            :ensemble_spec,
-            :outbreak_spec,
-            :noise_spec,
-            :outbreak_detection_spec,
-            :test_spec,
-            :optimization_method,
-            :accuracy_function,
-        ],
-    ) where {TMethod <: Type{<:OptimizationMethods}}
-    @assert mapreduce(
-        f -> in(f, [arithmetic_mean, calculate_f_beta_score]),
-        +,
-        unique(accuracy_functions),
-    ) == length(unique(accuracy_functions))
-
-    return DataFrames.DataFrame(
-        Iterators.product(
-            ensemble_specifications,
-            outbreak_specifications,
-            noise_specifications,
-            outbreak_detection_specifications,
-            individual_test_specifications,
-            [optim_method],
-            accuracy_functions,
-        ),
-        scenario_parameter_symbols,
-    )
-end
-
-function reshape_optim_df_to_matrix(
-        optim_df::T1
-    ) where {T1 <: DataFrames.DataFrame}
-    noise_spec_vec = unique(optim_df.noise_spec)
-    unique_noise_descriptions = unique(get_noise_description.(noise_spec_vec))
-    num_noise_descriptions = length(unique_noise_descriptions)
-
-    shape_noise_specifications =
-        map(unique_noise_descriptions) do noise_description
-        filter(
-            noise_spec ->
-            noise_description == get_noise_description(noise_spec),
-            noise_spec_vec,
-        ) |>
-            v -> sort_noise_specifications(convert(Vector{typeof(v[1])}, v))
-    end
-
-    num_shape_noise_specifications = length(shape_noise_specifications[1])
-
-    @assert length(vcat(shape_noise_specifications...)) ==
-        num_noise_descriptions * num_shape_noise_specifications
-
-    optim_arr = Array{Any}(
-        undef,
-        num_noise_descriptions,
-        num_shape_noise_specifications,
-    )
-
-    unique_test_specifications = sort(
-        sort(
-            unique(optim_df.test_spec);
-            by = t -> t.test_result_lag,
-            rev = true,
-        );
-        by = t -> (t.sensitivity, t.specificity),
-        rev = false,
-    )
-
-    for i in eachindex(unique_noise_descriptions)
-        for (j, noise_spec) in pairs(shape_noise_specifications[i])
-            subset_df = DataFrames.subset(
-                optim_df,
-                :noise_spec => DataFrames.ByRow(==(noise_spec)),
-            )
-
-            test_order = mapreduce(
-                t -> findall(isequal(t).(subset_df.test_spec)),
-                vcat,
-                unique_test_specifications,
-            )
-
-            subset_df = subset_df[test_order, :]
-
-            optim_arr[i, j] = StructArrays.StructVector(
-                OptimalThresholdCharacteristics.(
-                    subset_df.OT_chars,
-                    subset_df.test_spec,
-                    subset_df.noise_spec,
-                    getfield.(
-                        subset_df.outbreak_detection_spec,
-                        :percent_clinic_tested,
-                    ),
-                    subset_df.optimal_threshold,
-                    subset_df.optimal_accuracy,
-                ),
-            )
-        end
-    end
-
-    return optim_arr
-end
-
-function sort_noise_specifications(
-        v::AbstractVector{T}
-    ) where {T <: PoissonNoiseSpecification}
-    noise_magnitudes = getproperty.(v, :noise_mean_scaling)
-
-    noise_orders = sortperm(noise_magnitudes)
-
-    return v[noise_orders]
-end
-
-function sort_noise_specifications(
-        v::AbstractVector{T}
-    ) where {T <: DynamicalNoiseSpecification}
-    noise_magnitudes = getproperty.(v, :vaccination_coverage)
-
-    noise_orders = sortperm(noise_magnitudes; rev = true)
-
-    return v[noise_orders]
 end

@@ -59,12 +59,11 @@ include("./optimization-functions/common/objective-function.jl")
 include("./optimization-functions/threshold-optimization/optimization-setup.jl")
 include("./optimization-functions/threshold-optimization/optimization-wrapper.jl")
 
-include("scenario-optimizations.jl")
-export run_scenario_optimizations,
-    check_missing_scenario_optimizations,
-    run_missing_scenario_optimizations!,
-    get_most_recent_optimization_filepath,
-    reshape_optim_df_to_matrix,
-    sort_noise_specifications
+# Scenario Optimization
+include("./optimization-functions/scenario-optimization/scenario-creation.jl")
+include("./optimization-functions/scenario-optimization/scenario-confirmation.jl")
+include("./optimization-functions/scenario-optimization/results-loading.jl")
+include("./optimization-functions/scenario-optimization/results-reshaping.jl")
+include("./optimization-functions/scenario-optimization/optimization-wrapper.jl")
 
 end
