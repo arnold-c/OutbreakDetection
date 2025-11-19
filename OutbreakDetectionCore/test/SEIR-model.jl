@@ -7,42 +7,35 @@ using StaticArrays
     states = StateParameters(;
         N = 500_000,
         s_prop = 0.05,
-        e_prop = 0.00,
-        i_prop = 0.00,
+        e_prop = 0.0,
+        i_prop = 0.0,
     )
 
-    dynamics_params = DynamicsParameters(
-        BETA_MEAN,
-        BETA_FORCE,
-        cos,
-        SIGMA,
-        GAMMA,
-        MU,
-        ANNUAL_BIRTHS_PER_K,
-        EPSILON,
-        R0,
-        VACCINATION_COVERAGE,
+    target_dynamics = TargetDiseaseDynamicsParameters(
+        R_0 = 16.0,
+        latent_period_days = 10.0,
+        infectious_duration_days = 8.0,
+        beta_force = 0.2
     )
+    dynamics_spec = DynamicsParameterSpecification(target_dynamics)
+    dynamics_params = DynamicsParameters(dynamics_spec; vaccination_coverage = 0.8)
 
     time_params = SimTimeParameters(;
         tmin = 0.0, tmax = 365.0 * 100, tstep = 1.0
     )
 
     seir_res = seir_mod(
-        states, dynamics_params, time_params; seed = 1234
+        StaticArrays.SVector(states.init_states), dynamics_params, time_params; seed = 1234
     )
 
-    @test length(seir_res) == 3
-    seir_state_vec, seir_inc_vec, seir_beta_vec = seir_res
+    @test seir_res isa SEIRRun
+    @test length(seir_res.states) == time_params.tlength
+    @test length(seir_res.incidence) == time_params.tlength
+    @test length(seir_res.Reff) == time_params.tlength
 
-    @test typeof(seir_state_vec) <: Vector{<:LabelledArrays.SLArray}
-    @test typeof(seir_inc_vec) <: Vector{<:StaticVector{1,<:Integer}}
-    @test typeof(seir_beta_vec) <: Vector{<:AbstractFloat}
+    @test typeof(seir_res.states) <: Vector{<:StaticArrays.SVector}
+    @test typeof(seir_res.incidence) <: Vector{<:Integer}
+    @test typeof(seir_res.Reff) <: Vector{<:AbstractFloat}
 
-    @test length(seir_state_vec) == length(seir_inc_vec) ==
-        length(
-            seir_beta_vec
-        ) == time_params.tlength
-
-    @test size(seir_state_vec[1]) == 5,)
+    @test length(seir_res.states[1]) == 5
 end
