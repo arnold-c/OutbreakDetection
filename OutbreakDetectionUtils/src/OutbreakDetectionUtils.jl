@@ -1,40 +1,38 @@
 module OutbreakDetectionUtils
 
-include("DrWatson-helpers.jl")
-export outdir
+# Utilities
+include("./utilities/DrWatson-helpers.jl")
 
-include("transmission-functions.jl")
-export calculate_beta,
-    calculate_beta_amp, calculateR0, calculate_import_rate, calculate_mu
+# Types
+include("./types/time-parameters.jl")
+include("./types/state-parameters.jl")
+include("./types/dynamics-parameters.jl")
+include("./types/ensemble-specifications.jl")
+include("./types/outbreak-specifications.jl")
+include("./types/detection-specifications.jl")
+include("./types/test-specifications.jl")
+include("./types/noise-specifications.jl")
+include("./types/scenario-specifications.jl")
+include("./types/optimization-types.jl")
 
-include("structs.jl")
-export SimTimeParameters, EnsembleSpecification, DynamicsParameters,
-    StateParameters, OutbreakThresholdChars, OutbreakDetectionSpecification,
-    OutbreakSpecification, IndividualTestSpecification,
-    get_test_description,
-    table_test_type, plot_test_description,
-    PoissonNoiseSpecification, DynamicalNoiseSpecification, NoiseSpecification,
-    get_noise_description, get_noise_magnitude, getdirpath,
-    ScenarioSpecification, TestPositivity, OptimalThresholdCharacteristics,
-    OptimizationMethods, MSO
+# Simulation (needed before constants)
+include("./simulation/transmission-functions.jl")
 
-include("dynamics-constants.jl")
-export POPULATION_N, LATENT_PER_DAYS, DUR_INF_DAYS, R0, SIGMA, GAMMA,
-    LIFE_EXPECTANCY_YEARS, ANNUAL_BIRTHS_PER_K, VACCINATION_COVERAGE,
-    MU, BETA_MEAN, BETA_FORCE, EPSILON
+# Constants (depend on transmission functions)
+include("./constants/dynamics-constants.jl")
+include("./constants/test-constants.jl")
 
-include("test-constants.jl")
-export CLINICAL_CASE_TEST_SPEC,
-    EPI_LINKED_CASE_TEST_SPEC, CLINICAL_TEST_SPECS, PROTOTYPE_RDT_TEST_SPECS
+# Simulation (continued)
+include("./simulation/seir-model.jl")
 
-include("SEIR-model.jl")
-export seir_mod, seir_mod!, seir_mod_loop!,
-    convert_svec_to_matrix, convert_svec_to_matrix!, convert_svec_to_array
+# Noise
+include("./noise/noise-generation.jl")
 
-include("cleaning-functions.jl")
-export create_sir_df, create_sir_beta_dfs,
-    create_sir_all_sim_quantiles, create_sir_all_sim_quantiles!
+# Utilities (data processing)
+include("./utilities/cleaning-functions.jl")
+include("./utilities/collect-thresholds-vec_functions.jl")
 
+# TODO: Still need to reorganize these files
 include("detection-thresholds.jl")
 export create_inc_infec_arr,
     create_inc_infec_arr!, calculate_outbreak_thresholds,
@@ -59,12 +57,6 @@ export create_combinations_vec, create_ensemble_spec_combinations,
     summarize_ensemble_jump_prob, jump_prob_summary,
     run_OutbreakThresholdChars_creation, OutbreakThresholdChars_creation,
     get_ensemble_file
-
-include("noise-functions.jl")
-export create_noise_arr, add_poisson_noise_arr!
-
-include("collect-thresholds-vec_functions.jl")
-export collect_threshold_char_vec
 
 include("optimal-threshold-functions.jl")
 export calculate_optimal_threshold, calculate_OptimalThresholdCharacteristics,
