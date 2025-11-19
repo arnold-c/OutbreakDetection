@@ -1,12 +1,14 @@
-export seir_mod, seir_mod!, seir_mod_loop!,
-    convert_svec_to_matrix, convert_svec_to_matrix!, convert_svec_to_array
+# module SEIRModel
+#
+# export calculate_beta_amp, seir_mod, seir_mod!, seir_mod_loop!
+#
+"""
+This is a simulation of an SIR model that uses Tau-leaping, with commuter
+imports. All jumps are manually defined.
+"""
 
-function seir_mod(
-        states::StateParameters, dynamics_params::DynamicsParameters,
-        time_params::SimTimeParameters; seed = 1234
-    )
-    return seir_mod(states.init_states, dynamics_params, time_params)
-end
+export seir_mod,
+    seir_mod!
 
 """
     seir_mod(states, dynamics_params, trange; tstep, type = "stoch")
@@ -14,26 +16,73 @@ end
 The in-place function to run the SEIR model with a vaccinations going directly to the R compartment and produce the transmission rate array.
 """
 function seir_mod(
-        states, dynamics_params, time_params; seed = 1234
+        states::StaticArrays.SVector{5, Int64},
+        dynamics_params::DynamicsParameters,
+        time_params::SimTimeParameters;
+        seed::Int64 = 1234
     )
-    state_vec = Vector{typeof(states)}(undef, time_params.tlength)
-    beta_vec = Vector{Float64}(undef, time_params.tlength)
-    inc_vec = Vector{typeof(StaticArrays.SVector(0))}(
-        undef, time_params.tlength
+    Random.seed!(seed)
+
+    tlength = time_params.tlength
+    state_vec = Vector{typeof(states)}(undef, tlength)
+    inc_vec = Vector{Int64}(undef, tlength)
+    Reff_vec = Vector{Float64}(undef, tlength)
+    beta_vec = Vector{Float64}(undef, tlength)
+
+    calculate_beta_amp!(
+        beta_vec,
+        dynamics_params,
+        time_params
     )
 
     seir_mod!(
         state_vec,
         inc_vec,
+        Reff_vec,
         beta_vec,
         states,
         dynamics_params,
-        time_params;
-        seed = seed,
+        time_params,
     )
 
-    return state_vec, inc_vec, beta_vec
+    return SEIRRun(
+        state_vec,
+        inc_vec,
+        Reff_vec,
+    )
 end
+
+function seir_mod(
+        states::StaticArrays.SVector{5, Int64},
+        dynamics_params::DynamicsParameters,
+        beta_vec::Vector{Float64},
+        time_params::SimTimeParameters;
+        seed::Int64 = 1234
+    )
+    Random.seed!(seed)
+
+    tlength = time_params.tlength
+    state_vec = Vector{typeof(states)}(undef, tlength)
+    inc_vec = Vector{Int64}(undef, tlength)
+    Reff_vec = Vector{Float64}(undef, tlength)
+
+    seir_mod!(
+        state_vec,
+        inc_vec,
+        Reff_vec,
+        beta_vec,
+        states,
+        dynamics_params,
+        time_params,
+    )
+
+    return SEIRRun(
+        state_vec,
+        inc_vec,
+        Reff_vec,
+    )
+end
+
 
 """
     seir_mod!(state_arr, change_arr, jump_arr, beta_arr, states, dynamics_params, trange; tstep, type = "stoch")
@@ -41,47 +90,62 @@ end
 The in-place function to run the SEIR model and produce the transmission rate array.
 """
 function seir_mod!(
-        state_vec,
-        inc_vec,
-        beta_vec,
-        states,
-        dynamics_params,
-        time_params;
-        seed = 1234,
-    )
-    Random.seed!(seed)
+        state_vec::ASV,
+        inc_vec::AI,
+        Reff_vec::AF1,
+        beta_vec::AF2,
+        states::StaticArrays.SVector{5, Int64},
+        dynamics_params::DynamicsParameters,
+        time_params::SimTimeParameters,
+    ) where {
+        ASV <: AbstractVector{StaticArrays.SVector{5, Int64}},
+        AI <: AbstractVector{Int64},
+        AF1 <: AbstractVector{Float64},
+        AF2 <: AbstractVector{Float64},
+    }
 
     @inbounds begin
         mu = dynamics_params.mu
         epsilon = dynamics_params.epsilon
         sigma = dynamics_params.sigma
         gamma = dynamics_params.gamma
-        R_0 = dynamics_params.R_0
-        vaccination_coverage = dynamics_params.vaccination_coverage
         timestep = time_params.tstep
-        beta_mean = dynamics_params.beta_mean
-        beta_force = dynamics_params.beta_force
-        trange = time_params.trange
+        tlength = length(inc_vec)
 
         state_vec[1] = states
-        inc_vec[1] = StaticArrays.SVector(0)
+        inc_vec[1] = 0
+        Reff_vec[1] = calculateReffective(
+            beta_vec[1],
+            dynamics_params,
+            states[1],
+            states[5],
+        )
     end
 
-    @. beta_vec = calculate_beta_amp(
-        beta_mean, beta_force, trange; seasonality = dynamics_params.seasonality
-    )
+    # Pre-compute constant values to avoid repeated calculations
+    mu_timestep = mu * timestep
+    sigma_timestep = sigma * timestep
+    gamma_timestep = gamma * timestep
+    epsilon_timestep = epsilon * timestep
 
-    @inbounds for i in 2:(time_params.tlength)
-        state_vec[i], inc_vec[i] = seir_mod_loop!(
+    @inbounds for i in 2:(tlength)
+        vaccination_coverage = dynamics_params.vaccination_coverage
+
+        state_vec[i], inc_vec[i] = seir_mod_loop(
             state_vec[i - 1],
-            beta_vec[i],
-            mu,
-            epsilon,
-            sigma,
-            gamma,
-            R_0,
+            beta_vec[i - 1],
+            mu_timestep,
+            epsilon_timestep,
+            sigma_timestep,
+            gamma_timestep,
             vaccination_coverage,
             timestep,
+        )
+        Reff_vec[i] = calculateReffective(
+            beta_vec[i],
+            dynamics_params,
+            state_vec[i][1],
+            state_vec[i][5],
         )
     end
 
@@ -93,22 +157,17 @@ end
 
 The inner loop that is called by `seir_mod!()` function.
 """
-function seir_mod_loop!(
-        state_vec,
-        beta_t,
-        mu,
-        epsilon,
-        sigma,
-        gamma,
-        R_0,
-        vaccination_coverage,
-        timestep,
-    )
+function seir_mod_loop(
+        state_vec::StaticArrays.SVector{5, Int64},
+        beta_t::Float64,
+        mu_timestep::Float64,
+        epsilon_timestep::Float64,
+        sigma_timestep::Float64,
+        gamma_timestep::Float64,
+        vaccination_coverage::Float64,
+        timestep::Float64,
+    )::Tuple{StaticArrays.SVector{5, Int64}, Int64}
 
-    # TODO: Benchmak StaticArrays implementation as potentially much faster.
-    # Would need to use permutedims(reshape(reinterperate(Float64, StaticArrays.SVector), (...), (...))
-    # to get it into an array that could be used later on.
-    # Create views of the state variables for easier use
     @inbounds begin
         S = state_vec[1]
         E = state_vec[2]
@@ -116,29 +175,64 @@ function seir_mod_loop!(
         R = state_vec[4]
         N = state_vec[5]
 
-        contact_inf = Random.rand(
-            Distributions.Poisson(beta_t * S * I * timestep)
-        ) # Contact: S -> E
-        S_births = Random.rand(
-            Distributions.Poisson(
-                mu * (1 - vaccination_coverage) * N * timestep
-            ),
-        ) # Birth -> S
-        S_death = Random.rand(Distributions.Poisson(mu * S * timestep)) # S -> death
-        R_death = Random.rand(Distributions.Poisson(mu * R * timestep)) # R -> death
-        import_inf = Random.rand(
-            Distributions.Poisson((epsilon * N / R_0) * timestep)
-        ) # Import: S -> E
-        R_births = Random.rand(
-            Distributions.Poisson(mu * vaccination_coverage * N * timestep)
-        ) # Birth -> R
-        latent = Random.rand(Distributions.Binomial(E, sigma * timestep)) # E -> I
-        E_death = Random.rand(Distributions.Binomial(E - latent, mu * timestep)) # E -> death
-        recovery = Random.rand(Distributions.Binomial(I, gamma * timestep)) # I -> R
-        I_death = Random.rand(
-            Distributions.Binomial(I - recovery, mu * timestep)
-        ) # I -> death
+        # Pre-compute common terms and probabilities (reuse these!)
+        mu_N_timestep = mu_timestep * N
 
+        # Pre-compute all probabilities once
+        contact_prob = convert_rate_to_prob(beta_t * I * timestep / N)
+        import_prob = convert_rate_to_prob(epsilon_timestep)
+        death_prob = convert_rate_to_prob(mu_timestep)  # Reuse for all death processes
+        latent_prob = convert_rate_to_prob(sigma_timestep)
+        recovery_prob = convert_rate_to_prob(gamma_timestep)
+
+        # Births (Poisson since external arrivals)
+        S_births = rand(Distributions.Poisson(mu_N_timestep * (1 - vaccination_coverage)))
+        R_births = rand(Distributions.Poisson(mu_N_timestep * vaccination_coverage))
+
+        # For S compartment: handle competing outflows sequentially
+        remaining_S = S
+
+        # Contact infections: S -> E (use smart transition)
+        contact_rate = remaining_S * contact_prob
+        contact_inf = remaining_S > 0 ?
+            _smart_transition(remaining_S, contact_prob, contact_rate) :
+            0
+        remaining_S = max(0, remaining_S - contact_inf)
+
+        # Import infections: S -> E (use smart transition)
+        import_rate = remaining_S * import_prob
+        import_inf = remaining_S > 0 ?
+            _smart_transition(remaining_S, import_prob, import_rate) :
+            0
+        remaining_S = max(0, remaining_S - import_inf)
+
+        # S deaths (use smart transition with pre-computed death_prob)
+        S_death_rate = remaining_S * death_prob
+        S_death = remaining_S > 0 ?
+            _smart_transition(remaining_S, death_prob, S_death_rate) :
+            0
+
+        # E compartment transitions
+        latent_rate = E * latent_prob
+        latent = _smart_transition(E, latent_prob, latent_rate)
+
+        remaining_E = E - latent
+        E_death_rate = remaining_E * death_prob  # Reuse death_prob
+        E_death = _smart_transition(remaining_E, death_prob, E_death_rate)
+
+        # I compartment transitions
+        recovery_rate = I * recovery_prob
+        recovery = _smart_transition(I, recovery_prob, recovery_rate)
+
+        remaining_I = I - recovery
+        I_death_rate = remaining_I * death_prob  # Reuse death_prob
+        I_death = _smart_transition(remaining_I, death_prob, I_death_rate)
+
+        # R deaths (use smart transition with pre-computed death_prob)
+        R_death_rate = R * death_prob  # Reuse death_prob
+        R_death = _smart_transition(R, death_prob, R_death_rate)
+
+        # Calculate changes
         dS = S_births - (contact_inf + import_inf + S_death)
         dE = (contact_inf + import_inf) - (latent + E_death)
         dI = latent - (recovery + I_death)
@@ -148,8 +242,37 @@ function seir_mod_loop!(
 
     return (
         StaticArrays.SVector(S + dS, E + dE, I + dI, R + dR, N + dN),
-        StaticArrays.SVector(contact_inf),
+        contact_inf,
     )
+end
+
+@inline function convert_rate_to_prob(rate)
+    return min(rate, 1.0)
+end
+
+@inline function _smart_transition(n::Int64, prob::Float64)
+    rate = n * prob
+    return _smart_transition(n, prob, rate)
+end
+
+# Smart transition function that chooses between Poisson and Binomial
+@inline function _smart_transition(n::Int64, prob::Float64, rate::Float64)
+    # Use Poisson when:
+    # - Population is large (n > 30)
+    # - Expected value is small (rate < 10)
+    # This gives good approximation with better performance
+
+    if n == 0
+        return 0
+    end
+
+    if n > 30 && rate < 10.0
+        # Use Poisson approximation for large n, small rate
+        return min(rand(Distributions.Poisson(rate)), n)  # Cap at population size
+    else
+        # Use exact Binomial for small n or large rate
+        return rand(Distributions.Binomial(n, prob))
+    end
 end
 
 function convert_svec_to_matrix(svec)
