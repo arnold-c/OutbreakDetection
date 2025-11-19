@@ -2,7 +2,7 @@
 
 julia_version = "1.11.7"
 manifest_format = "2.0"
-project_hash = "3cd63b0022a70a731572824d3abdd8b520f5e512"
+project_hash = "a70bd02bff4fdf663f1f1cbb1645cbbc61c3b395"
 
 [[deps.ADTypes]]
 git-tree-sha1 = "8be2ae325471fc20b11c27bb34b518541d07dd3a"
@@ -154,6 +154,12 @@ deps = ["DataFrames", "Distributions", "Random", "Statistics", "StatsBase", "Sta
 git-tree-sha1 = "b605e84e7236671cae810accaf20b7678849ac6a"
 uuid = "e28b5b4c-05e8-5b66-bc03-6f0c0a0a06e0"
 version = "2.4.0"
+
+[[deps.Bumper]]
+deps = ["UnsafeArrays"]
+git-tree-sha1 = "e3cd36a329dc00c8ced78cc0e89edada02763f40"
+uuid = "8ce10254-0962-460f-a3d8-1f77fea1446e"
+version = "0.7.1"
 
 [[deps.Bzip2_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
@@ -1367,6 +1373,11 @@ version = "1.25.1"
     LaTeXStrings = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
     Latexify = "23fbe1c1-3f47-55db-b15f-69d7ec21a316"
     Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
+
+[[deps.UnsafeArrays]]
+git-tree-sha1 = "efcbb6828697ffffc245a9de7300552535abe005"
+uuid = "c4a57d5a-5b31-53a6-b365-19f8c011fbd6"
+version = "1.0.8"
 
 [[deps.XLSX]]
 deps = ["Artifacts", "Dates", "EzXML", "Printf", "Tables", "ZipArchives", "ZipFile"]
