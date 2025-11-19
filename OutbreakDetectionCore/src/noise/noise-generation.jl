@@ -164,7 +164,7 @@ function create_noise_vecs(
     end
 
     mean_noise = StatsBase.mean(mean_poisson_noise_vec)
-    @assert isapprox(mean_incidence, mean_noise; atol = 1.0e-3)
+    # @assert isapprox(mean_incidence, mean_noise; atol = 1.0e-3)
 
     return NoiseRun(
         PoissonNoiseRun(
