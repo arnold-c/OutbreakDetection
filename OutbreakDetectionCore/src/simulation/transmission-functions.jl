@@ -1,18 +1,46 @@
-export calculate_beta, calculate_beta_amp, calculateR0,
-    calculate_import_rate, calculate_mu
+export calculate_beta,
+    calculate_gamma,
+    calculate_infectious_duration,
+    calculateReffective,
+    calculateReffective_t!,
+    calculate_beta_amp,
+    calculate_beta_amp!,
+    calculateR0,
+    calculate_mu,
+    calculate_import_rate
+
+"""
+    calculate_beta(R_0, sigma, gamma, mu)
+
+Calculate the transmission rate beta for an SEIR model given R_0 and other parameters.
+
+For an SEIR model with a single population:
+R_0 = (β * σ) / ((σ + μ) * (γ + μ))
+
+Solving for β:
+β = R_0 * (σ + μ) * (γ + μ) / σ
+
+# Arguments
+- `R_0`: Basic reproduction number
+- `sigma`: Rate of progression from E to I (1/latent_period)
+- `gamma`: Recovery rate (1/infectious_period)
+- `mu`: Death rate
+"""
+function calculate_beta(
+        R_0::Float64,
+        sigma::Float64,
+        gamma::Float64,
+        mu::Float64
+    )::Float64
+    return R_0 * (sigma + mu) * (gamma + mu) / sigma
+end
 
 """
     calculate_beta(R_0, gamma, mu, contact_mat, pop_matrix)
 
 Calculate the value beta for a given set of parameters and contact matrix.
-
-```jldoctest
-julia> calculate_beta(2.0, 1 / 8, 0.0, ones(1, 1), [1_000])
-0.00025
-```
-
+Legacy function for metapopulation models.
 """
-# TODO: Currently only works when the populations are the same size as each other, and doesn't account for an exposed state.
 function calculate_beta(
         R_0::T, gamma::T, mu::T, contact_mat::Array{T}, pop_matrix::Array{T}
     ) where {T <: AbstractFloat}
@@ -48,82 +76,256 @@ function calculate_beta(R_0, gamma, mu, contact_mat, pop_matrix)
 end
 
 """
+    calculate_infectious_duration(R_0, beta, sigma, mu)
+
+Calculate the infectious duration for an SEIR model given R_0, beta, and other parameters.
+
+The infectious duration is the reciprocal of the recovery rate gamma:
+infectious_duration = 1 / γ
+
+where γ is calculated from the SEIR model relationship:
+γ = (β * σ) / (R_0 * (σ + μ)) - μ
+
+# Arguments
+- `R_0`: Basic reproduction number
+- `beta`: Transmission rate
+- `sigma`: Rate of progression from E to I (1/latent_period)
+- `mu`: Death rate
+
+# Returns
+- `Float64`: The infectious duration (1/gamma)
+"""
+function calculate_infectious_duration(
+        R_0::Float64,
+        beta::Float64,
+        sigma::Float64,
+        mu::Float64
+    )::Float64
+    return 1 / calculate_gamma(R_0, beta, sigma, mu)
+end
+
+"""
+    calculate_gamma(R_0, beta, sigma, mu)
+
+Calculate the recovery rate gamma for an SEIR model given R_0, beta, and other parameters.
+
+For an SEIR model with a single population:
+R_0 = (β * σ) / ((σ + μ) * (γ + μ))
+
+Solving for γ:
+γ = (β * σ) / (R_0 * (σ + μ)) - μ
+
+# Arguments
+- `R_0`: Basic reproduction number
+- `beta`: Transmission rate
+- `sigma`: Rate of progression from E to I (1/latent_period)
+- `mu`: Death rate
+"""
+function calculate_gamma(
+        R_0::Float64,
+        beta::Float64,
+        sigma::Float64,
+        mu::Float64
+    )::Float64
+    gamma = (beta * sigma) / (R_0 * (sigma + mu)) - mu
+
+    if gamma <= 0
+        error("Calculated gamma is non-positive. Check parameter consistency.")
+    end
+
+    return gamma
+end
+
+"""
+    calculate_beta_amp!(beta_vec, dynamics_parameters, time_parameters)
+
+Calculate the amplitude of the transmission rate beta as a function of time for each time point,
+storing results in-place in `beta_vec`.
+
+This function modifies `beta_vec` in-place, calculating the time-varying transmission rate
+using the mean transmission rate, seasonal forcing amplitude, and seasonality function
+specified in `dynamics_parameters`.
+
+# Arguments
+- `beta_vec`: Vector to store the calculated beta amplitudes (modified in-place)
+- `dynamics_parameters`: Parameters containing beta_mean, beta_force, and seasonality
+- `time_parameters`: Time parameters containing the time range (trange)
+
+# Returns
+- `nothing` (modifies `beta_vec` in-place)
+"""
+function calculate_beta_amp!(
+        beta_vec::V,
+        dynamics_parameters::Union{DynamicsParameterSpecification, DynamicsParameters},
+        time_parameters::SimTimeParameters
+    ) where {V <: AbstractVector{<:AbstractFloat}}
+    beta_mean = dynamics_parameters.beta_mean
+    beta_force = dynamics_parameters.beta_force
+    seasonality = dynamics_parameters.seasonality
+    trange = time_parameters.trange
+
+    for i in eachindex(beta_vec)
+        beta_vec[i] = _calculate_beta_amp(
+            beta_mean,
+            beta_force,
+            trange[i],
+            LightSumTypes.variant(seasonality)
+        )
+    end
+    return nothing
+end
+
+"""
     calculate_beta_amp(beta_mean, beta_force, t; seasonality)
 
 Calculate the amplitude of the transmission rate beta as a function of time.
-
-This function computes the time-varying transmission rate using seasonal forcing.
-It supports both the new SeasonalityFunction sum type and legacy Function type
-for backward compatibility.
-
-# Arguments
-- `beta_mean`: Mean transmission rate
-- `beta_force`: Amplitude of seasonal forcing (0-1)
-- `t`: Time in days
-
-# Keyword Arguments
-- `seasonality`: Seasonality function (default: cos for backward compatibility)
-  - Can be a Function (cos, sin) for backward compatibility
-  - Can be a SeasonalityFunction (CosineSeasonality, SineSeasonality)
-
-# Returns
-- `Float64`: Time-varying transmission rate
-
-# Formula
-β(t) = β_mean × (1 + β_force × seasonality(2π × t / 365))
-
-# Examples
-```julia
-# Legacy function-based (backward compatible)
-beta_t = calculate_beta_amp(0.0001, 0.2, 100.0; seasonality = cos)
-
-# New sum type-based
-seasonality = SeasonalityFunction(CosineSeasonality())
-beta_t = calculate_beta_amp(0.0001, 0.2, 100.0; seasonality = seasonality)
-```
+`beta_mean` is the mean transmission rate, `beta_force` is the amplitude of the `seasonality` function.
+`seasonality` should be a SeasonalityFunction sum type or a Function (for backward compatibility).
 """
 function calculate_beta_amp(beta_mean, beta_force, t; seasonality = cos)
-    return beta_mean * (1 + beta_force * _apply_seasonality(seasonality, 2pi * t / 365))
-end
-
-"""
-    _apply_seasonality(seasonality, x)
-
-Internal function to apply seasonality function to a value.
-
-Handles both SeasonalityFunction sum types and legacy Function types.
-"""
-function _apply_seasonality(seasonality::SeasonalityFunction, x)
-    variant = LightSumTypes.variant(seasonality)
-    if variant isa CosineSeasonality
-        return cos(x)
-    elseif variant isa SineSeasonality
-        return sin(x)
+    if seasonality isa Function
+        return beta_mean * (1 + beta_force * seasonality(2pi * t / 365))
     else
-        error("Unknown seasonality variant: $(typeof(variant))")
+        return _calculate_beta_amp(beta_mean, beta_force, t, LightSumTypes.variant(seasonality))
     end
 end
 
-function _apply_seasonality(seasonality::Function, x)
-    # Backward compatibility for Function type
-    return seasonality(x)
+# Internal dispatch functions for seasonality variants
+
+"""
+    _calculate_beta_amp(beta_mean, beta_force, t, ::CosineSeasonality)
+
+Internal function to calculate beta amplitude using cosine seasonality.
+Returns `beta_mean * (1 + beta_force * cos(2π * t / 365))`.
+"""
+_calculate_beta_amp(beta_mean, beta_force, t, ::CosineSeasonality) =
+    beta_mean * (1 + beta_force * cos(2π * t / 365))
+
+"""
+    _calculate_beta_amp(beta_mean, beta_force, t, ::SineSeasonality)
+
+Internal function to calculate beta amplitude using sine seasonality.
+Returns `beta_mean * (1 + beta_force * sin(2π * t / 365))`.
+"""
+_calculate_beta_amp(beta_mean, beta_force, t, ::SineSeasonality) =
+    beta_mean * (1 + beta_force * sin(2π * t / 365))
+
+"""
+    calculateReffective_t!(Reff_vec, beta_vec, dynamics_params, seir_arr)
+
+Calculate the effective reproduction number, R_eff, at each time step for a given set of parameters.
+"""
+function calculateReffective_t!(
+        Reff_vec::AbstractVector{Float64},
+        beta_vec::Vector{Float64},
+        dynamics_params::DynamicsParameters,
+        seir_arr
+    )::Nothing
+    for i in eachindex(Reff_vec)
+        Reff_vec[i] = calculateReffective(
+            beta_vec[i],
+            dynamics_params,
+            seir_arr[i][1],
+            seir_arr[i][5],
+        )
+    end
+
+    return nothing
+end
+
+"""
+    calculateReffective(beta_t, dynamics_params, S, N)
+
+Calculate the effective reproduction number, R_eff, for a given set of parameters.
+R_eff = R_0 * (S / N), where R_0 is calculated from beta and other parameters.
+"""
+function calculateReffective(
+        beta_t::Float64,
+        dynamics_params::Union{DynamicsParameters, DynamicsParameterSpecification},
+        S::Int64,
+        N::Int64
+    )::Float64
+    R_0 = calculateR0(beta_t, dynamics_params)
+    Reff = R_0 * (S / N)
+
+    return Reff
+end
+
+"""
+    calculateReffective(beta_t, dynamics_params, vaccination_coverage)
+
+Calculate the effective reproduction number, R_eff, for a given set of parameters.
+R_eff = R_0 * (1 - vaccination_coverage), where R_0 is calculated from beta and other parameters.
+"""
+function calculateReffective(
+        beta_t::Float64,
+        dynamics_params::Union{DynamicsParameters, DynamicsParameterSpecification},
+        vaccination_coverage::Float64,
+    )::Float64
+    R_0 = calculateR0(beta_t, dynamics_params)
+    Reff = R_0 * (1 - vaccination_coverage)
+
+    return Reff
+end
+
+
+"""
+    calculateR0(beta, dynamics_params)
+
+Calculate the basic reproduction number R_0 for an SEIR model using a DynamicsParameters struct.
+
+This is a convenience wrapper that extracts sigma, gamma, and mu from the dynamics_params
+and calls the main calculateR0 function.
+
+# Arguments
+- `beta`: Transmission rate
+- `dynamics_params`: DynamicsParameters struct containing sigma, gamma, and mu
+
+# Returns
+- `Float64`: The basic reproduction number R_0
+"""
+function calculateR0(
+        beta::Float64,
+        dynamics_params::Union{DynamicsParameters, DynamicsParameterSpecification}
+    )
+    sigma = dynamics_params.sigma
+    gamma = dynamics_params.gamma
+    mu = dynamics_params.mu
+    R_0 = calculateR0(beta, sigma, gamma, mu)
+    return R_0
+end
+
+"""
+    calculateR0(beta, sigma, gamma, mu)
+
+Calculate the basic reproduction number R_0 for an SEIR model.
+
+For an SEIR model with a single population:
+R_0 = (β * σ) / ((σ + μ) * (γ + μ))
+
+# Arguments
+- `beta`: Transmission rate
+- `sigma`: Rate of progression from E to I (1/latent_period)
+- `gamma`: Recovery rate (1/infectious_period)
+- `mu`: Death rate
+
+# Returns
+- `Float64`: The basic reproduction number R_0
+"""
+@inline function calculateR0(
+        beta::Float64,
+        sigma::Float64,
+        gamma::Float64,
+        mu::Float64
+    )::Float64
+    return (beta * sigma) / ((sigma + mu) * (gamma + mu))
 end
 
 """
     calculateR0(beta, gamma, mu, contact_mat, pop_matrix)
 
 Calculate the basic reproduction number R_0 for a given set of parameters and contact matrix.
-
-```jldoctest
-julia> calculateR0(0.00025, 1 / 8, 0.0, ones(1, 1), [1_000])
-2.0
-```
-
-* * *
-
-**TODO** Currently only works when the populations are the same size as each other, and doesn't account for an exposed state.
-
-* * *
+Legacy function for metapopulation models.
 """
 function calculateR0(
         beta::T, gamma::T, mu::T, contact_mat::Array{T}, pop_matrix::Array{T}
