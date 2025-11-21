@@ -2,7 +2,7 @@
 
 julia_version = "1.11.7"
 manifest_format = "2.0"
-project_hash = "ff69456073048d3339af421785631d6dec0149f1"
+project_hash = "716a935f90ab1eafde0cc8c6bebe7ebf4e963d25"
 
 [[deps.Accessors]]
 deps = ["CompositionsBase", "ConstructionBase", "Dates", "InverseFunctions", "MacroTools"]
@@ -657,6 +657,12 @@ version = "0.5.16"
 deps = ["Base64"]
 uuid = "d6f4376e-aef5-505a-96c1-9c027394607a"
 version = "1.11.0"
+
+[[deps.Match]]
+deps = ["MacroTools", "OrderedCollections"]
+git-tree-sha1 = "58c5c5db26f2f0512facb359991410b7b5982c38"
+uuid = "7eb4fadd-790c-5f42-8a69-bfa0b872bfbf"
+version = "2.4.1"
 
 [[deps.MathOptInterface]]
 deps = ["BenchmarkTools", "CodecBzip2", "CodecZlib", "DataStructures", "ForwardDiff", "JSON3", "LinearAlgebra", "MutableArithmetics", "NaNMath", "OrderedCollections", "PrecompileTools", "Printf", "SparseArrays", "SpecialFunctions", "Test"]
