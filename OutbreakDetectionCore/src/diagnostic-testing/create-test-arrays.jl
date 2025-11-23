@@ -1,5 +1,38 @@
 export create_testing_arrs, create_testing_arrs!
 
+# Dispatch-based helper functions for outbreak detection
+function _detect_outbreak!(
+        outbreakvec,
+        testarr_view,
+        test_movingavg_view,
+        alertthreshold,
+        ::AlertMethod.MovingAverage,
+    )
+    return detectoutbreak!(outbreakvec, test_movingavg_view, alertthreshold)
+end
+
+function _detect_outbreak!(
+        outbreakvec,
+        testarr_view,
+        test_movingavg_view,
+        alertthreshold,
+        ::AlertMethod.DailyThresholdMovingAverage,
+    )
+    return detectoutbreak!(
+        outbreakvec, testarr_view, test_movingavg_view, alertthreshold
+    )
+end
+
+function _detect_outbreak!(
+        outbreakvec,
+        testarr_view,
+        test_movingavg_view,
+        alertthreshold,
+        ::AlertMethod.DailyThreshold,
+    )
+    return detectoutbreak!(outbreakvec, testarr_view, alertthreshold)
+end
+
 """
     create_testing_arrs(incarr, noisearr, outbreak_detect_spec, 
                         individual_test_spec)
@@ -22,7 +55,7 @@ function create_testing_arrs(
         test_movingavg_arr,
         incarr,
         noisearr,
-        outbreak_detect_spec.alert_method.method_name,
+        outbreak_detect_spec.alert_method,
         outbreak_detect_spec.alert_threshold,
         outbreak_detect_spec.moving_average_lag,
         outbreak_detect_spec.percent_tested,
@@ -96,22 +129,14 @@ function create_testing_arrs!(
             moveavglag,
         )
 
-        detectoutbreak_args = Match.@match alert_method begin
-            "movingavg" => (
-                @view(testarr[:, 6, sim]),
-                @view(test_movingavg_arr[:, sim]),
-                alertthreshold,
-            )
-            "dailythreshold_movingavg" => (
-                @view(testarr[:, 6, sim]),
-                @view(testarr[:, 5, sim]),
-                @view(test_movingavg_arr[:, sim]),
-                alertthreshold,
-            )
-        end
-
         # TOTAL Test positive individuals trigger outbreak response
-        detectoutbreak!(detectoutbreak_args...)
+        _detect_outbreak!(
+            @view(testarr[:, 6, sim]),
+            @view(testarr[:, 5, sim]),
+            @view(test_movingavg_arr[:, sim]),
+            alertthreshold,
+            alert_method,
+        )
 
         # Triggered outbreak equal to actual outbreak status
         @. testarr[:, 7, sim] =
