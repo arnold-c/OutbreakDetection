@@ -5,28 +5,38 @@ export OutbreakDetectionSpecification, AlertMethod
 
 Method used for outbreak alert detection.
 
-# Fields
-- `method_name::AbstractString`: Name of the alert method
-
 Available methods:
-- "dailythreshold": Daily threshold only
-- "movingavg": Moving average only
-- "dailythreshold_movingavg": Both daily threshold and moving average
+- `DailyThreshold`: Daily threshold only
+- `MovingAverage`: Moving average only
+- `DailyThresholdMovingAverage`: Both daily threshold and moving average
 """
-struct AlertMethod{T1 <: AbstractString}
-    method_name::T1
-    function AlertMethod(method_name::T1) where {T1 <: AbstractString}
-        available_test_methods = [
-            "dailythreshold", "movingavg", "dailythreshold_movingavg",
-        ]
-        if !in(method_name, available_test_methods)
-            error(
-                "$(method_name) is not a valid test method. It must be one of $(available_test_methods)"
-            )
-        end
-        return new{T1}(method_name)
+@sum_type AlertMethod begin
+    DailyThreshold
+    MovingAverage
+    DailyThresholdMovingAverage
+end
+
+# String constructor for backwards compatibility
+function AlertMethod(method_name::AbstractString)
+    if method_name == "dailythreshold"
+        return AlertMethod.DailyThreshold()
+    elseif method_name == "movingavg"
+        return AlertMethod.MovingAverage()
+    elseif method_name == "dailythreshold_movingavg"
+        return AlertMethod.DailyThresholdMovingAverage()
+    else
+        available_methods = ["dailythreshold", "movingavg", "dailythreshold_movingavg"]
+        error(
+            "$(method_name) is not a valid alert method. It must be one of $(available_methods)"
+        )
     end
 end
+
+# Display methods for printing
+Base.show(io::IO, ::AlertMethod.DailyThreshold) = print(io, "dailythreshold")
+Base.show(io::IO, ::AlertMethod.MovingAverage) = print(io, "movingavg")
+Base.show(io::IO, ::AlertMethod.DailyThresholdMovingAverage) =
+    print(io, "dailythreshold_movingavg")
 
 """
     OutbreakDetectionSpecification
@@ -61,6 +71,27 @@ struct OutbreakDetectionSpecification{
     dirpath::T4
 end
 
+# Helper functions for directory path construction with dispatch
+function _construct_dirpath(
+        ::AlertMethod.DailyThreshold,
+        alertdirpath,
+        testingdirpath,
+        moving_average_lag,
+    )
+    return joinpath(alertdirpath, testingdirpath)
+end
+
+function _construct_dirpath(
+        ::Union{AlertMethod.MovingAverage, AlertMethod.DailyThresholdMovingAverage},
+        alertdirpath,
+        testingdirpath,
+        moving_average_lag,
+    )
+    return joinpath(
+        alertdirpath, "moveavglag_$(moving_average_lag)", testingdirpath
+    )
+end
+
 function OutbreakDetectionSpecification(
         alert_threshold,
         moving_average_lag,
@@ -68,25 +99,20 @@ function OutbreakDetectionSpecification(
         percent_clinic_tested,
         alert_method,
     )
+    # Convert string to AlertMethod if needed
+    alert_method_typed = alert_method isa AbstractString ? AlertMethod(alert_method) : alert_method
+
     alertdirpath = joinpath(
-        "alertmethod_$(alert_method)", "alertthreshold_$(alert_threshold)"
+        "alertmethod_$(alert_method_typed)", "alertthreshold_$(alert_threshold)"
     )
     testingdirpath = joinpath(
         "perc_visit_clinic_$(percent_visit_clinic)",
         "perc_clinic_tested_$(percent_clinic_tested)",
     )
 
-    dirpath = Match.@match alert_method begin
-        "dailythreshold" => joinpath(
-            alertdirpath,
-            testingdirpath,
-        )
-        _ => joinpath(
-            alertdirpath,
-            "moveavglag_$(moving_average_lag)",
-            testingdirpath,
-        )
-    end
+    dirpath = _construct_dirpath(
+        alert_method_typed, alertdirpath, testingdirpath, moving_average_lag
+    )
 
     return OutbreakDetectionSpecification(
         alert_threshold,
@@ -94,7 +120,7 @@ function OutbreakDetectionSpecification(
         percent_visit_clinic,
         percent_clinic_tested,
         percent_visit_clinic * percent_clinic_tested,
-        AlertMethod(alert_method),
+        alert_method_typed,
         dirpath,
     )
 end
