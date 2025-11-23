@@ -13,9 +13,8 @@ using FLoops: FLoops
 using FreqTables: FreqTables
 using JLD2: JLD2
 using LabelledArrays: SLVector, SLArray
-using LightSumTypes: LightSumTypes
+using LightSumTypes: LightSumTypes, @sum_type
 using LinearAlgebra: LinearAlgebra
-using Match: Match
 using MultistartOptimization: MultistartOptimization
 using NaNMath: NaNMath
 using NLopt: NLopt
