@@ -6,7 +6,7 @@ function _detect_outbreak!(
         testarr_view,
         test_movingavg_view,
         alertthreshold,
-        ::AlertMethod.MovingAverage,
+        ::MovingAverage,
     )
     return detectoutbreak!(outbreakvec, test_movingavg_view, alertthreshold)
 end
@@ -16,7 +16,7 @@ function _detect_outbreak!(
         testarr_view,
         test_movingavg_view,
         alertthreshold,
-        ::AlertMethod.DailyThresholdMovingAverage,
+        ::DailyThresholdMovingAverage,
     )
     return detectoutbreak!(
         outbreakvec, testarr_view, test_movingavg_view, alertthreshold
@@ -28,7 +28,7 @@ function _detect_outbreak!(
         testarr_view,
         test_movingavg_view,
         alertthreshold,
-        ::AlertMethod.DailyThreshold,
+        ::DailyThreshold,
     )
     return detectoutbreak!(outbreakvec, testarr_view, alertthreshold)
 end

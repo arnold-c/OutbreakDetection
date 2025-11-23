@@ -1,5 +1,13 @@
 export OutbreakDetectionSpecification, AlertMethod
 
+# Define AlertMethod sum type variants
+struct DailyThreshold end
+struct MovingAverage end
+struct DailyThresholdMovingAverage end
+
+# Create the sum type
+const AlertMethod = Union{DailyThreshold, MovingAverage, DailyThresholdMovingAverage}
+
 """
     AlertMethod
 
@@ -10,20 +18,16 @@ Available methods:
 - `MovingAverage`: Moving average only
 - `DailyThresholdMovingAverage`: Both daily threshold and moving average
 """
-@sum_type AlertMethod begin
-    DailyThreshold
-    MovingAverage
-    DailyThresholdMovingAverage
-end
+AlertMethod
 
 # String constructor for backwards compatibility
-function AlertMethod(method_name::AbstractString)
+function alert_method_from_string(method_name::AbstractString)
     if method_name == "dailythreshold"
-        return AlertMethod.DailyThreshold()
+        return DailyThreshold()
     elseif method_name == "movingavg"
-        return AlertMethod.MovingAverage()
+        return MovingAverage()
     elseif method_name == "dailythreshold_movingavg"
-        return AlertMethod.DailyThresholdMovingAverage()
+        return DailyThresholdMovingAverage()
     else
         available_methods = ["dailythreshold", "movingavg", "dailythreshold_movingavg"]
         error(
@@ -33,9 +37,9 @@ function AlertMethod(method_name::AbstractString)
 end
 
 # Display methods for printing
-Base.show(io::IO, ::AlertMethod.DailyThreshold) = print(io, "dailythreshold")
-Base.show(io::IO, ::AlertMethod.MovingAverage) = print(io, "movingavg")
-Base.show(io::IO, ::AlertMethod.DailyThresholdMovingAverage) =
+Base.show(io::IO, ::DailyThreshold) = print(io, "dailythreshold")
+Base.show(io::IO, ::MovingAverage) = print(io, "movingavg")
+Base.show(io::IO, ::DailyThresholdMovingAverage) =
     print(io, "dailythreshold_movingavg")
 
 """
@@ -73,7 +77,7 @@ end
 
 # Helper functions for directory path construction with dispatch
 function _construct_dirpath(
-        ::AlertMethod.DailyThreshold,
+        ::DailyThreshold,
         alertdirpath,
         testingdirpath,
         moving_average_lag,
@@ -82,7 +86,7 @@ function _construct_dirpath(
 end
 
 function _construct_dirpath(
-        ::Union{AlertMethod.MovingAverage, AlertMethod.DailyThresholdMovingAverage},
+        ::Union{MovingAverage, DailyThresholdMovingAverage},
         alertdirpath,
         testingdirpath,
         moving_average_lag,
@@ -100,7 +104,7 @@ function OutbreakDetectionSpecification(
         alert_method,
     )
     # Convert string to AlertMethod if needed
-    alert_method_typed = alert_method isa AbstractString ? AlertMethod(alert_method) : alert_method
+    alert_method_typed = alert_method isa AbstractString ? alert_method_from_string(alert_method) : alert_method
 
     alertdirpath = joinpath(
         "alertmethod_$(alert_method_typed)", "alertthreshold_$(alert_threshold)"
