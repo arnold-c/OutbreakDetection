@@ -213,9 +213,11 @@ function create_and_save_xlsx_optimal_threshold_summaries(
 end
 
 function _rename_test_scenario(x)
-    return Match.@match x begin
-        0.85 => "RDT Equivalent (0.85)"
-        0.9 => "RDT Equivalent (0.9)"
-        _ => "ELISA Equivalent"
+    return if x == 0.85
+        "RDT Equivalent (0.85)"
+    elseif x == 0.9
+        "RDT Equivalent (0.9)"
+    else
+        "ELISA Equivalent"
     end
 end
