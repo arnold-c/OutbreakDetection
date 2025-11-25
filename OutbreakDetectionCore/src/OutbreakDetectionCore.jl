@@ -70,7 +70,6 @@ include("./noise/noise-generation.jl")
 
 # Utilities (data processing)
 include("./utilities/cleaning-functions.jl")
-include("./utilities/collect-thresholds-vec_functions.jl")
 include("./utilities/create-combinations.jl")
 
 # Detection
