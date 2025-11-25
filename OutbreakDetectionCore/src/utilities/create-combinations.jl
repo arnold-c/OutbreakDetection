@@ -1,98 +1,63 @@
-export create_combinations_vec, create_ensemble_spec_combinations
+export create_combinations_vec
 
 """
-    create_combinations_vec(custom_function, combinations)
+    create_combinations_vec(
+    	custom_function,
+    	combinations;
+		init = custom_function[]
+    )
 
-Create a vector of all combinations by applying custom_function to each combination.
-"""
-function create_combinations_vec(custom_function, combinations)
-    combs = Iterators.product(combinations...)
+Generate all combinations of input parameters and apply a custom function to each.
 
-    return vec(map(combination -> custom_function(combination...), combs))
+This utility function creates the Cartesian product of all input parameter combinations,
+applies a user-defined function to each combination, and concatenates the results into
+a single vector.
+
+# Arguments
+- `custom_function`: Function to apply to each combination. Should accept the elements
+  of a combination as separate arguments and return a vector or array-like object.
+- `combinations`: Iterable collection of parameter values to combine. Each element
+  should be an iterable (e.g., vector, range) of values for one parameter.
+- `init`: Initial value for the reduction operation (default: `custom_function[]`).
+  Should be an empty instance of the expected return type.
+
+# Returns
+- Vector containing concatenated results from applying `custom_function` to all
+  combinations of input parameters.
+
+# Notes
+- Uses `Iterators.product` to generate all combinations efficiently.
+- Results are combined using `vcat`, so `custom_function` should return vector-like objects.
+- TODO: make type stable
+
+# Examples
+```julia
+# Generate parameter combinations for a simulation
+function create_params(R0, beta_force)
+    return [DynamicsParameters(R_0=R0, beta_force=beta_force)]
 end
 
+R0_values = [12.0, 16.0, 20.0]
+beta_values = [0.1, 0.2, 0.3]
+
+params = create_combinations_vec(
+    create_params,
+    (R0_values, beta_values)
+)
+# Returns vector with 9 parameter combinations
+```
+
+# See Also
+- `Iterators.product`: Creates Cartesian product of iterables
+- `mapreduce`: Applies function and reduces results
 """
-    create_ensemble_spec_combinations(beta_force_vec, seasonality_vec, sigma_vec, 
-                                     gamma_vec, annual_births_per_k_vec, R_0_vec, 
-                                     vaccination_coverage_vec, N_vec, 
-                                     init_states_prop_dict, model_types_vec, 
-                                     time_p_vec, nsims_vec)
-
-Create all combinations of ensemble specifications from parameter vectors.
-"""
-function create_ensemble_spec_combinations(
-        beta_force_vec,
-        seasonality_vec,
-        sigma_vec,
-        gamma_vec,
-        annual_births_per_k_vec,
-        R_0_vec,
-        vaccination_coverage_vec,
-        N_vec,
-        init_states_prop_dict,
-        model_types_vec,
-        time_p_vec,
-        nsims_vec,
+function create_combinations_vec(
+        custom_function,
+        combinations;
+        init = custom_function[]
     )
-    ensemble_spec_combinations = Iterators.product(
-        beta_force_vec,
-        seasonality_vec,
-        sigma_vec,
-        gamma_vec,
-        annual_births_per_k_vec,
-        R_0_vec,
-        vaccination_coverage_vec,
-        N_vec,
-        init_states_prop_dict,
-        model_types_vec,
-        time_p_vec,
-        nsims_vec,
-    )
+    combs = Iterators.product(combinations...)
 
-    ensemble_spec_vec = Vector(undef, length(ensemble_spec_combinations))
-
-    for (
-            i,
-            (
-                beta_force,
-                seasonality,
-                sigma,
-                gamma,
-                annual_births_per_k,
-                R_0,
-                vaccination_coverage,
-                N,
-                init_states_prop,
-                model_type,
-                time_p,
-                nsims,
-            ),
-        ) in enumerate(ensemble_spec_combinations)
-        mu = calculate_mu(annual_births_per_k)
-        beta_mean = calculate_beta(R_0, gamma, mu, 1, N)
-        epsilon = calculate_import_rate(mu, R_0, N)
-
-        ensemble_spec_vec[i] = EnsembleSpecification(
-            model_type,
-            StateParameters(
-                N, init_states_prop
-            ),
-            DynamicsParameters(
-                beta_mean,
-                beta_force,
-                seasonality,
-                sigma,
-                gamma,
-                mu,
-                annual_births_per_k,
-                epsilon,
-                R_0,
-                vaccination_coverage,
-            ),
-            time_p,
-            nsims,
-        )
-    end
-
-    return ensemble_spec_vec
+    # TODO: make type stable
+    return mapreduce(combination -> custom_function(combination...), vcat, combs; init = init)
 end
