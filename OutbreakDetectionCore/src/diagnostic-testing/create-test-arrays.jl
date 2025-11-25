@@ -1,38 +1,5 @@
 export create_testing_arrs, create_testing_arrs!
 
-# Dispatch-based helper functions for outbreak detection
-function _detect_outbreak!(
-        outbreakvec,
-        testarr_view,
-        test_movingavg_view,
-        alertthreshold,
-        ::MovingAverage,
-    )
-    return detectoutbreak!(outbreakvec, test_movingavg_view, alertthreshold)
-end
-
-function _detect_outbreak!(
-        outbreakvec,
-        testarr_view,
-        test_movingavg_view,
-        alertthreshold,
-        ::DailyThresholdMovingAverage,
-    )
-    return detectoutbreak!(
-        outbreakvec, testarr_view, test_movingavg_view, alertthreshold
-    )
-end
-
-function _detect_outbreak!(
-        outbreakvec,
-        testarr_view,
-        test_movingavg_view,
-        alertthreshold,
-        ::DailyThreshold,
-    )
-    return detectoutbreak!(outbreakvec, testarr_view, alertthreshold)
-end
-
 """
     create_testing_arrs(incarr, noisearr, outbreak_detect_spec, 
                         individual_test_spec)

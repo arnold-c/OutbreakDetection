@@ -1,47 +1,135 @@
-export OutbreakDetectionSpecification, AlertMethod
+export OutbreakDetectionSpecification,
+    AlertMethod,
+    DailyThreshold,
+    MovingAverage,
+    DailyThresholdMovingAverage,
+    getstring
 
-# Define AlertMethod sum type variants
+"""
+    AbstractAlertMethod
+
+Abstract base type for all alert detection method variants.
+
+This serves as the supertype for the `AlertMethod` sum type and its variants.
+
+# See also
+- [`AlertMethod`](@ref)
+- [`DailyThreshold`](@ref)
+- [`MovingAverage`](@ref)
+- [`DailyThresholdMovingAverage`](@ref)
+"""
+abstract type AbstractAlertMethod end
+
+"""
+    DailyThreshold
+
+Alert method variant that triggers alerts based only on daily threshold values.
+
+This method compares daily incidence or test positivity values against a
+threshold. An alert is triggered when the daily value meets or exceeds the
+threshold.
+
+# See also
+- [`AlertMethod`](@ref)
+- [`MovingAverage`](@ref)
+- [`DailyThresholdMovingAverage`](@ref)
+"""
 struct DailyThreshold end
-struct MovingAverage end
-struct DailyThresholdMovingAverage end
 
-# Create the sum type
-const AlertMethod = Union{DailyThreshold, MovingAverage, DailyThresholdMovingAverage}
+"""
+    MovingAverage
+
+Alert method variant that triggers alerts based only on moving average values.
+
+This method compares the moving average of incidence or test positivity values
+against a threshold. An alert is triggered when the moving average meets or
+exceeds the threshold.
+
+# See also
+- [`AlertMethod`](@ref)
+- [`DailyThreshold`](@ref)
+- [`DailyThresholdMovingAverage`](@ref)
+"""
+struct MovingAverage end
+
+"""
+    DailyThresholdMovingAverage
+
+Alert method variant that triggers alerts based on both daily and moving
+average thresholds.
+
+This method compares both the daily values and moving average values against
+a threshold. An alert is triggered when either the daily value or the moving
+average meets or exceeds the threshold.
+
+# See also
+- [`AlertMethod`](@ref)
+- [`DailyThreshold`](@ref)
+- [`MovingAverage`](@ref)
+"""
+struct DailyThresholdMovingAverage end
 
 """
     AlertMethod
 
-Method used for outbreak alert detection.
+Sum type for outbreak alert detection methods.
 
-Available methods:
-- `DailyThreshold`: Daily threshold only
-- `MovingAverage`: Moving average only
-- `DailyThresholdMovingAverage`: Both daily threshold and moving average
+This is a LightSumTypes-based sum type that can hold one of three variants:
+- `DailyThreshold`: Alert based on daily values only
+- `MovingAverage`: Alert based on moving average only
+- `DailyThresholdMovingAverage`: Alert based on either daily or moving average
+
+# Construction
+    AlertMethod(DailyThreshold())
+    AlertMethod(MovingAverage())
+    AlertMethod(DailyThresholdMovingAverage())
+
+# See also
+- [`DailyThreshold`](@ref)
+- [`MovingAverage`](@ref)
+- [`DailyThresholdMovingAverage`](@ref)
+- [`getstring`](@ref)
 """
-AlertMethod
+LightSumTypes.@sumtype AlertMethod(DailyThreshold, MovingAverage, DailyThresholdMovingAverage) <: AbstractAlertMethod
+
+"""
+    getstring(alert_method)
+
+Extract the type name from an alert method object as a string.
+
+This function converts an alert method object (either an `AlertMethod` sum type
+or one of its variant types) to its string representation and extracts just the
+type name, removing any module qualifiers and parentheses.
+
+# Arguments
+- `alert_method`: An `AlertMethod` sum type or one of its variants
+  (`DailyThreshold`, `MovingAverage`, `DailyThresholdMovingAverage`)
+
+# Returns
+- `String`: The unqualified type name (e.g., "DailyThreshold", "MovingAverage")
+
+# Examples
+```julia
+getstring(DailyThreshold())  # Returns "DailyThreshold"
+getstring(OutbreakDetectionCore.DailyThreshold())  # Returns "DailyThreshold"
+```
+
+# Implementation Notes
+Uses a regex pattern `r"([^.(]+)\\("` to match the last component of a
+potentially module-qualified type name before the opening parenthesis.
+
+# See also
+- [`AlertMethod`](@ref)
+"""
+getstring(alert_method::AlertMethod) = match(
+    r"([^.(]+)\(",
+    string(
+        LightSumTypes.variant(alert_method)
+    )
+).captures[1]
+
 
 # String constructor for backwards compatibility
-function alert_method_from_string(method_name::AbstractString)
-    if method_name == "dailythreshold"
-        return DailyThreshold()
-    elseif method_name == "movingavg"
-        return MovingAverage()
-    elseif method_name == "dailythreshold_movingavg"
-        return DailyThresholdMovingAverage()
-    else
-        available_methods = ["dailythreshold", "movingavg", "dailythreshold_movingavg"]
-        error(
-            "$(method_name) is not a valid alert method. It must be one of $(available_methods)"
-        )
-    end
-end
-
-# Display methods for printing
-Base.show(io::IO, ::DailyThreshold) = print(io, "dailythreshold")
-Base.show(io::IO, ::MovingAverage) = print(io, "movingavg")
-Base.show(io::IO, ::DailyThresholdMovingAverage) =
-    print(io, "dailythreshold_movingavg")
-
 """
     OutbreakDetectionSpecification
 
@@ -64,20 +152,69 @@ Specification for outbreak detection parameters.
 Creates an `OutbreakDetectionSpecification` with automatically generated directory path.
 """
 struct OutbreakDetectionSpecification{
-        TReal <: Real, T1 <: Integer, T2 <: AbstractFloat, T3 <: AlertMethod, T4 <: AbstractString,
+        TReal <: Real, T1 <: Integer, T2 <: AbstractFloat, T3 <: AbstractString,
     }
     alert_threshold::TReal
     moving_average_lag::T1
     percent_visit_clinic::T2
     percent_clinic_tested::T2
     percent_tested::T2
-    alert_method::T3
-    dirpath::T4
+    alert_method::AlertMethod
+    dirpath::T3
 end
 
-# Helper functions for directory path construction with dispatch
+"""
+    _construct_dirpath(alert_method, varargs...)
+
+Internal dispatcher for directory path construction based on alert method type.
+
+This function unwraps the `AlertMethod` sum type and dispatches to the
+appropriate specialized path construction method.
+
+# Arguments
+- `alert_method`: An `AlertMethod` sum type
+- `varargs...`: Variable arguments passed to the specialized methods
+  (alertdirpath, testingdirpath, moving_average_lag)
+
+# Returns
+- `String`: Constructed directory path
+
+# See also
+- [`OutbreakDetectionSpecification`](@ref)
+"""
 function _construct_dirpath(
-        ::DailyThreshold,
+        alert_method,
+        varargs...
+    )
+    return _construct_dirpath(
+        LightSumTypes.variant(alert_method),
+        varargs...
+    )
+end
+
+"""
+    _construct_dirpath(alert_method::DailyThreshold, alertdirpath,
+                       testingdirpath, moving_average_lag)
+
+Construct directory path for daily threshold alert method.
+
+For the `DailyThreshold` method, the moving average lag is not used in the
+path construction, so the path only includes alert and testing directories.
+
+# Arguments
+- `alert_method::DailyThreshold`: Alert method type indicator
+- `alertdirpath`: Directory path component for alert parameters
+- `testingdirpath`: Directory path component for testing parameters
+- `moving_average_lag`: Moving average lag (unused for this method)
+
+# Returns
+- `String`: Joined path of alertdirpath and testingdirpath
+
+# See also
+- [`OutbreakDetectionSpecification`](@ref)
+"""
+function _construct_dirpath(
+        alert_method::DailyThreshold,
         alertdirpath,
         testingdirpath,
         moving_average_lag,
@@ -85,8 +222,32 @@ function _construct_dirpath(
     return joinpath(alertdirpath, testingdirpath)
 end
 
+"""
+    _construct_dirpath(alert_method::Union{MovingAverage,
+                       DailyThresholdMovingAverage}, alertdirpath,
+                       testingdirpath, moving_average_lag)
+
+Construct directory path for moving average-based alert methods.
+
+For methods that use moving averages (`MovingAverage` and
+`DailyThresholdMovingAverage`), the path includes a subdirectory for the
+moving average lag parameter.
+
+# Arguments
+- `alert_method::Union{MovingAverage, DailyThresholdMovingAverage}`: Alert
+  method type indicator
+- `alertdirpath`: Directory path component for alert parameters
+- `testingdirpath`: Directory path component for testing parameters
+- `moving_average_lag`: Moving average lag value to include in path
+
+# Returns
+- `String`: Joined path including moving average lag subdirectory
+
+# See also
+- [`OutbreakDetectionSpecification`](@ref)
+"""
 function _construct_dirpath(
-        ::Union{MovingAverage, DailyThresholdMovingAverage},
+        alert_method::Union{MovingAverage, DailyThresholdMovingAverage},
         alertdirpath,
         testingdirpath,
         moving_average_lag,
@@ -96,6 +257,61 @@ function _construct_dirpath(
     )
 end
 
+"""
+    OutbreakDetectionSpecification(alert_threshold, moving_average_lag,
+                                   percent_visit_clinic, percent_clinic_tested,
+                                   alert_method)
+
+Construct an `OutbreakDetectionSpecification` with automatically generated
+directory path.
+
+This constructor creates a complete outbreak detection specification by
+computing derived fields (overall testing percentage and directory path) from
+the provided parameters.
+
+# Arguments
+- `alert_threshold`: Threshold value for triggering an outbreak alert
+- `moving_average_lag`: Number of time steps for moving average calculation
+- `percent_visit_clinic`: Proportion of infected individuals who visit a clinic
+  (0.0 to 1.0)
+- `percent_clinic_tested`: Proportion of clinic visitors who receive diagnostic
+  testing (0.0 to 1.0)
+- `alert_method`: Alert detection method (an `AlertMethod` sum type or variant)
+
+# Returns
+- `OutbreakDetectionSpecification`: Fully constructed specification with
+  computed fields
+
+# Computed Fields
+- `percent_tested`: Automatically computed as `percent_visit_clinic *
+  percent_clinic_tested`
+- `dirpath`: Automatically generated hierarchical directory path based on all
+  parameters
+
+# Directory Path Structure
+The generated `dirpath` follows this structure:
+- For `DailyThreshold`:
+  `"alertmethod_<method>/alertthreshold_<threshold>/perc_visit_clinic_<pvc>/perc_clinic_tested_<pct>"`
+- For `MovingAverage` or `DailyThresholdMovingAverage`:
+  `"alertmethod_<method>/alertthreshold_<threshold>/moveavglag_<lag>/perc_visit_clinic_<pvc>/perc_clinic_tested_<pct>"`
+
+# Examples
+```julia
+spec = OutbreakDetectionSpecification(
+    5.0,                              # alert_threshold
+    7,                                # moving_average_lag
+    0.8,                              # percent_visit_clinic
+    0.9,                              # percent_clinic_tested
+    AlertMethod(DailyThreshold())     # alert_method
+)
+# spec.percent_tested will be 0.72 (0.8 * 0.9)
+```
+
+# See also
+- [`OutbreakDetectionSpecification`](@ref): The struct definition
+- [`AlertMethod`](@ref)
+- [`_construct_dirpath`](@ref)
+"""
 function OutbreakDetectionSpecification(
         alert_threshold,
         moving_average_lag,
@@ -103,11 +319,9 @@ function OutbreakDetectionSpecification(
         percent_clinic_tested,
         alert_method,
     )
-    # Convert string to AlertMethod if needed
-    alert_method_typed = alert_method isa AbstractString ? alert_method_from_string(alert_method) : alert_method
-
+    alert_method_string = getstring(alert_method)
     alertdirpath = joinpath(
-        "alertmethod_$(alert_method_typed)", "alertthreshold_$(alert_threshold)"
+        "alertmethod_$(alert_method_string)", "alertthreshold_$(alert_threshold)"
     )
     testingdirpath = joinpath(
         "perc_visit_clinic_$(percent_visit_clinic)",
@@ -115,7 +329,10 @@ function OutbreakDetectionSpecification(
     )
 
     dirpath = _construct_dirpath(
-        alert_method_typed, alertdirpath, testingdirpath, moving_average_lag
+        alert_method,
+        alertdirpath,
+        testingdirpath,
+        moving_average_lag
     )
 
     return OutbreakDetectionSpecification(
@@ -124,7 +341,7 @@ function OutbreakDetectionSpecification(
         percent_visit_clinic,
         percent_clinic_tested,
         percent_visit_clinic * percent_clinic_tested,
-        alert_method_typed,
+        alert_method,
         dirpath,
     )
 end

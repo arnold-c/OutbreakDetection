@@ -69,7 +69,6 @@ include("./noise/noise-parameters-optimization.jl")
 include("./noise/noise-generation.jl")
 
 # Utilities (data processing)
-include("./utilities/cleaning-functions.jl")
 include("./utilities/create-combinations.jl")
 
 # Detection
