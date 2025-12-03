@@ -1409,10 +1409,10 @@ uuid = "7eb4fadd-790c-5f42-8a69-bfa0b872bfbf"
 version = "2.4.1"
 
 [[deps.MathOptInterface]]
-deps = ["BenchmarkTools", "CodecBzip2", "CodecZlib", "DataStructures", "ForwardDiff", "JSON3", "LinearAlgebra", "MutableArithmetics", "NaNMath", "OrderedCollections", "PrecompileTools", "Printf", "SparseArrays", "SpecialFunctions", "Test"]
-git-tree-sha1 = "a2cbab4256690aee457d136752c404e001f27768"
+deps = ["BenchmarkTools", "CodecBzip2", "CodecZlib", "ForwardDiff", "JSON3", "LinearAlgebra", "MutableArithmetics", "NaNMath", "OrderedCollections", "PrecompileTools", "Printf", "SparseArrays", "SpecialFunctions", "Test"]
+git-tree-sha1 = "1381263d06a9526c4449238b32b1e01bed6b7ce9"
 uuid = "b8f27783-ece8-5eb3-8dc8-9495eed66fee"
-version = "1.46.0"
+version = "1.47.0"
 
 [[deps.MathProgBase]]
 deps = ["LinearAlgebra", "SparseArrays"]
