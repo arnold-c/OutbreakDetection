@@ -1,6 +1,5 @@
-export OptimizationResult, ThresholdOptimizationResult
-
-using AutoHashEquals: AutoHashEquals
+export OptimizationResult,
+    ThresholdOptimizationResult
 
 """
     OptimizationResult

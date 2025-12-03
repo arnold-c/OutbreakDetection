@@ -1,5 +1,8 @@
-export OptimalThresholdCharacteristics, OptimizationMethods, MSO,
-    AbstractOptimizationMethods, NoiseVaccinationOptimizationParameters
+export OptimalThresholdCharacteristics,
+    OptimizationMethods,
+    MSO,
+    AbstractOptimizationMethods,
+    NoiseVaccinationOptimizationParameters
 
 """
     OptimalThresholdCharacteristics

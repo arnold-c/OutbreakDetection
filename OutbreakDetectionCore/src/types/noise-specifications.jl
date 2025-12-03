@@ -1,6 +1,13 @@
-export NoiseType, PoissonNoiseType, DynamicalNoiseType,
-    DynamicalNoiseSpecification, DynamicalNoise, PoissonNoise,
-    NoiseSpecification, get_noise_description, get_noise_magnitude, getdirpath
+export NoiseType,
+    PoissonNoiseType,
+    DynamicalNoiseType,
+    DynamicalNoiseSpecification,
+    DynamicalNoise,
+    PoissonNoise,
+    NoiseSpecification,
+    get_noise_description,
+    get_noise_magnitude,
+    getdirpath
 
 # Abstract types for sum type variants
 abstract type AbstractNoiseType end
@@ -71,7 +78,11 @@ Base.@kwdef struct DynamicalNoiseSpecification
     vaccination_bounds::Vector{Float64} = [0.0, 1.0]
 
     function DynamicalNoiseSpecification(
-            R_0, latent_period, duration_infection, correlation, poisson_component,
+            R_0,
+            latent_period,
+            duration_infection,
+            correlation,
+            poisson_component,
             vaccination_bounds
         )
         @assert R_0 > 0 "R_0 must be positive"
@@ -83,7 +94,11 @@ Base.@kwdef struct DynamicalNoiseSpecification
         @assert 0 <= vaccination_bounds[1] < vaccination_bounds[2] <= 1 "Invalid vaccination bounds"
 
         return new(
-            R_0, latent_period, duration_infection, correlation, poisson_component,
+            R_0,
+            latent_period,
+            duration_infection,
+            correlation,
+            poisson_component,
             vaccination_bounds
         )
     end
@@ -168,7 +183,10 @@ spec = DynamicalNoiseSpecification(
 noise = DynamicalNoise(spec, 0.65)
 ```
 """
-function DynamicalNoise(spec::DynamicalNoiseSpecification, vaccination_coverage::Float64)
+function DynamicalNoise(
+        spec::DynamicalNoiseSpecification,
+        vaccination_coverage::Float64
+    )
     @assert 0.0 <= vaccination_coverage <= 1.0 "Vaccination coverage must be in [0, 1]"
 
     return DynamicalNoise(
@@ -239,7 +257,7 @@ dynamical = DynamicalNoise(spec, 0.65)
 get_noise_description(dynamical)  # "Dynamical, in-phase"
 ```
 """
-function get_noise_description(noise::PoissonNoise)
+function get_noise_description(::PoissonNoise)
     return "Poisson"
 end
 
@@ -285,7 +303,8 @@ getdirpath(dynamical)  # "R_0_5.0/latent_period_7.0/..."
 """
 function getdirpath(noise::Union{PoissonNoise, DynamicalNoise})
     return reduce(
-        joinpath, map(p -> "$(p)_$(getproperty(noise, p))", propertynames(noise))
+        joinpath,
+        map(p -> "$(p)_$(getproperty(noise, p))", propertynames(noise))
     )
 end
 

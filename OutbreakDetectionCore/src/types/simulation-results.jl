@@ -1,4 +1,7 @@
-export SEIRRun, NoiseRun, DynamicalNoiseRun, PoissonNoiseRun
+export SEIRRun,
+    NoiseRun,
+    DynamicalNoiseRun,
+    PoissonNoiseRun
 
 """
     SEIRRun

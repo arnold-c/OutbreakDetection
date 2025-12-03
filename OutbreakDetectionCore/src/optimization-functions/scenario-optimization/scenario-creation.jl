@@ -1,10 +1,15 @@
 export calculate_combination_to_run, create_scenario_grid, _create_noise_for_level
 
 """
-    calculate_combination_to_run(ensemble_specifications, outbreak_specifications, 
-                                 noise_specifications, outbreak_detection_specifications, 
-                                 individual_test_specifications, optim_method, 
-                                 accuracy_functions; scenario_parameter_symbols=...)
+    calculate_combination_to_run(
+    	ensemble_specifications,
+    	outbreak_specifications,
+    	noise_specifications,
+    	outbreak_detection_specifications,
+    	individual_test_specifications,
+    	optim_method,
+    	accuracy_functions; scenario_parameter_symbols=...
+    )
 
 Calculate all combinations of scenarios to run for optimization.
 """
@@ -14,7 +19,7 @@ function calculate_combination_to_run(
         noise_specifications,
         outbreak_detection_specifications,
         individual_test_specifications,
-        optim_method::TMethod = MSO,
+        optim_method::OptimizationMethods = MSO,
         accuracy_functions = [arithmetic_mean, calculate_f_beta_score];
         scenario_parameter_symbols = [
             :ensemble_spec,
@@ -25,7 +30,7 @@ function calculate_combination_to_run(
             :optimization_method,
             :accuracy_function,
         ],
-    ) where {TMethod <: Type{<:OptimizationMethods}}
+    )
     @assert mapreduce(
         f -> in(f, [arithmetic_mean, calculate_f_beta_score]),
         +,

@@ -14,9 +14,13 @@ Complete specification for a detection scenario.
 - `dirpath::AbstractString`: Directory path for output
 
 # Constructor
-    ScenarioSpecification(ensemble_specification, outbreak_specification,
-                         noise_specification, outbreak_detection_specification,
-                         individual_test_specification)
+    ScenarioSpecification(
+    	ensemble_specification,
+    	outbreak_specification,
+    	noise_specification,
+    	outbreak_detection_specification,
+    	individual_test_specification
+    )
 
 Creates a `ScenarioSpecification` with automatically generated directory path.
 """

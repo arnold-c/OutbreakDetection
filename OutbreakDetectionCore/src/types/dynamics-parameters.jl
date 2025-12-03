@@ -1,14 +1,16 @@
-export TargetDiseaseDynamicsParameters, DynamicsParameterSpecification,
-    DynamicsParameters, SeasonalityFunction, CosineSeasonality, SineSeasonality
+export TargetDiseaseDynamicsParameters,
+    DynamicsParameterSpecification,
+    DynamicsParameters,
+    SeasonalityFunction,
+    CosineSeasonality,
+    SineSeasonality
 
 # Seasonality sum types
 abstract type AbstractSeasonalityFunction end
 struct CosineSeasonality <: AbstractSeasonalityFunction end
 struct SineSeasonality <: AbstractSeasonalityFunction end
 
-LightSumTypes.@sumtype SeasonalityFunction(
-    CosineSeasonality, SineSeasonality
-) <: AbstractSeasonalityFunction
+LightSumTypes.@sumtype SeasonalityFunction(CosineSeasonality, SineSeasonality) <: AbstractSeasonalityFunction
 
 """
     TargetDiseaseDynamicsParameters
@@ -261,7 +263,8 @@ dynamics = DynamicsParameters(spec; vaccination_coverage = 0.8)
 ```
 """
 function DynamicsParameters(
-        spec::DynamicsParameterSpecification; vaccination_coverage::Float64 = 0.8
+        spec::DynamicsParameterSpecification;
+        vaccination_coverage::Float64 = 0.8
     )
     @assert 0.0 <= vaccination_coverage <= 1.0 "Vaccination coverage must be in [0, 1]"
 
@@ -288,7 +291,10 @@ end
 This constructor is provided for backward compatibility but will be removed in a future version.
 """
 function DynamicsParameters(
-        sigma::Float64, gamma::Float64, R_0::Float64; vaccination_coverage::Float64 = 0.8
+        sigma::Float64,
+        gamma::Float64,
+        R_0::Float64;
+        vaccination_coverage::Float64 = 0.8
     )
     @warn "DynamicsParameters(sigma, gamma, R_0) is deprecated. " *
         "Use TargetDiseaseDynamicsParameters → DynamicsParameterSpecification → DynamicsParameters"
@@ -301,7 +307,10 @@ function DynamicsParameters(
         beta_force = 0.2,  # default
     )
     spec = DynamicsParameterSpecification(target)
-    return DynamicsParameters(spec; vaccination_coverage = vaccination_coverage)
+    return DynamicsParameters(
+        spec;
+        vaccination_coverage = vaccination_coverage
+    )
 end
 
 """
@@ -384,5 +393,8 @@ function DynamicsParameters(
     )
 
     spec = DynamicsParameterSpecification(target)
-    return DynamicsParameters(spec; vaccination_coverage = vaccination_coverage)
+    return DynamicsParameters(
+        spec;
+        vaccination_coverage = vaccination_coverage
+    )
 end

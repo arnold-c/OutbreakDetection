@@ -1,6 +1,5 @@
-export ScenarioParameters, ThresholdOptimizationScenario
-
-using AutoHashEquals: AutoHashEquals
+export ScenarioParameters,
+    ThresholdOptimizationScenario
 
 """
     ScenarioParameters
@@ -112,11 +111,21 @@ AutoHashEquals.@auto_hash_equals struct ThresholdOptimizationScenario
     seed::Int64
 
     function ThresholdOptimizationScenario(
-            scenario_params, ensemble_spec, time_params, nsims, seed
+            scenario_params,
+            ensemble_spec,
+            time_params,
+            nsims,
+            seed
         )
         @assert nsims > 0 "Number of simulations must be positive"
         @assert seed >= 0 "Seed must be non-negative"
 
-        return new(scenario_params, ensemble_spec, time_params, nsims, seed)
+        return new(
+            scenario_params,
+            ensemble_spec,
+            time_params,
+            nsims,
+            seed
+        )
     end
 end

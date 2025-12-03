@@ -1,4 +1,5 @@
-export OutbreakSpecification, OutbreakThresholdChars
+export OutbreakSpecification,
+    OutbreakThresholdChars
 
 """
     OutbreakSpecification
@@ -25,7 +26,9 @@ struct OutbreakSpecification{T1 <: Integer, T2 <: AbstractString}
 end
 
 function OutbreakSpecification(
-        outbreak_threshold, minimum_outbreak_duration, minimum_outbreak_size
+        outbreak_threshold,
+        minimum_outbreak_duration,
+        minimum_outbreak_size
     )
     dirpath = joinpath(
         "min_outbreak_dur_$(minimum_outbreak_duration)",

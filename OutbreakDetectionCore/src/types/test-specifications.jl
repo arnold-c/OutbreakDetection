@@ -1,5 +1,8 @@
-export IndividualTestSpecification, TestPositivity,
-    get_test_description, table_test_type, plot_test_description
+export IndividualTestSpecification,
+    TestPositivity,
+    get_test_description,
+    table_test_type,
+    plot_test_description
 
 """
     IndividualTestSpecification
@@ -47,7 +50,11 @@ end
 
 Get a table-formatted test type description.
 """
-function table_test_type(sensitivity, specificity, test_lag)
+function table_test_type(
+        sensitivity::Float64,
+        specificity::Float64,
+        test_lag::Int64
+    )
     return if sensitivity == 1.0 && specificity == 0.0 && test_lag == 0
         "Clinical Case Definition"
     elseif sensitivity == specificity && sensitivity < 1.0 && test_lag == 0

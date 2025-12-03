@@ -85,7 +85,11 @@ params = SimTimeParameters(tmax = 365.0 * 20)
 params = SimTimeParameters(tmin = 365.0 * 10, tmax = 365.0 * 15)
 ```
 """
-function SimTimeParameters(; tmin::Float64 = 0.0, tmax::Float64 = 365.0 * 100.0, tstep::Float64 = 1.0)
+function SimTimeParameters(;
+        tmin::Float64 = 0.0,
+        tmax::Float64 = 365.0 * 100.0,
+        tstep::Float64 = 1.0
+    )
     trange = tmin:tstep:tmax
     tspan = (tmin, tmax)
     tlength = length(trange)
