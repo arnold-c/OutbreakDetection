@@ -1,0 +1,30 @@
+export proceed_with_optimization
+
+function proceed_with_optimization(
+        missing_scenarios::StructVector{OptimizationScenario};
+        disable_time_check::Bool = false,
+        seconds_per_scenario = 0.025
+    )
+    n_missing = length(missing_scenarios)
+
+    if n_missing == 0
+        @info "No missing grid points to evaluate"
+        return false
+    end
+
+    if disable_time_check
+        return true
+    end
+
+    # Estimate time (simpler than multistart since no optimization)
+    estimated_time = n_missing * seconds_per_scenario
+
+    if estimated_time > 300  # 5 minutes
+        println(StyledStrings.styled"{yellow:Warning:} Estimated grid search time: {red:$(round(estimated_time/60, digits=1))} minutes")
+        print("Continue? (y/N): ")
+        response = readline()
+        return lowercase(strip(response)) in ["y", "yes"]
+    end
+
+    return true
+end

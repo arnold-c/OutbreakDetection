@@ -1,141 +1,140 @@
-export run_optimization, optimization_wrapper
+export run_scenario_threshold_optimization
 
 """
-    run_optimization(objective_function, OT_chars_param_dict, 
-                    optim_method=MSO, accuracy_measure=arithmetic_mean, 
-                    kwargs...)
+    gridsearch_structvector(specification_vecs, data_arrs; kwargs...)
 
-Run threshold optimization for a scenario.
+Grid search optimization using StructVector for efficient parallel processing.
+Reuses functions from multistart optimization where possible.
 
-Returns optim_minimizer and optim_minimum.
+# Arguments
+- `specification_vecs`: Named tuple containing specification vectors including grid parameters
+- `data_arrs`: Named tuple containing ensemble data arrays
+
+# Keyword Arguments
+- `filedir`: Directory for saving results
+- `gridsearch_filename_base`: Base filename for results
+- `executor`: Executor for loops (default: `FLoops.ThreadedEx()`)
+- `batch_size`: Batch size for processing scenarios (default: 50)
+- `force`: Force recomputation even if results exist (default: false)
+- `return_results` Return the results (default: true)
+- `save_results`: Save results to file (default: true)
+- `verbose`: Print progress information (default: true)
+- `disable_time_check`: Skip time estimation confirmation (default: false)
 """
-function run_optimization(
-        objective_function,
-        OT_chars_param_dict,
-        optim_method::OptimizationMethods = MSO,
-        accuracy_measure = arithmetic_mean,
-        kwargs...,
+function run_scenario_threshold_optimization(
+        specification_vecs::ScenarioSpecificationVecs;
+        # File management
+        filedir = outdir("ensemble", "threshold-gridsearch"),
+        gridsearch_filename_base = "threshold-gridsearch-structvector.jld2",
+        gridsearch_output_filepath = joinpath(
+            filedir,
+            string(Dates.now()) * "_" * gridsearch_filename_base,
+        ),
+        checkpoint_dir = outdir("ensemble", "threshold-gridsearch", "checkpoints"),
+        checkpoint_output_filename_base = joinpath(
+            filedir,
+            string(Dates.now()) * "_" * "checkpoint_batch_",
+        ),
+        # Control options
+        scheduler = :dynamic, #:serial, :greedy, :static, :dynamic
+        force = false,
+        return_results = true,
+        save_results = true,
+        save_checkpoints = true,
+        save_checkpoint_num = 1,
+        verbose = true,
+        disable_time_check = false,
+        seconds_per_scenario = 0.025
     )
-    UnPack.@unpack scenario_spec, ensemble_inc_arr, thresholds_vec, seed =
-        OT_chars_param_dict
-    UnPack.@unpack noise_specification,
-        outbreak_detection_specification,
-        individual_test_specification = scenario_spec
-
-    noise_array = create_noise_arr(
-        noise_specification,
-        ensemble_inc_arr;
-        ensemble_specification = scenario_spec.ensemble_specification,
-        seed = seed,
-    )[1]
-
-    obj_inputs = (;
-        ensemble_inc_arr,
-        noise_array,
-        outbreak_detection_specification,
-        individual_test_specification,
-        thresholds_vec,
-    )
-
-    objective_function_closure = x -> objective_function(x, obj_inputs)
-
-    optim_minimizer, optim_minimum = optimization_wrapper(
-        objective_function_closure,
-        optim_method;
-        kwargs...,
-    )
-
-    return optim_minimizer, optim_minimum
-end
-
-"""
-    optimization_wrapper(objective_function_closure, optim_method; kwargs...)
-
-Wrapper for optimization methods.
-"""
-function optimization_wrapper(
-        objective_function_closure,
-        optim_method::OptimizationMethods;
-        kwargs...,
-    )
-    return optimization_wrapper(
-        objective_function_closure,
-        LightSumTypes.variant(optim_method);
-        kwargs...
-    )
-end
-
-"""
-    optimization_wrapper(objective_function_closure, optim_method::MSO; kwargs...)
-
-Multistart optimization wrapper using NLopt.
-"""
-function optimization_wrapper(
-        objective_function_closure,
-        optim_method::MSO;
-        lowers = [0.0],
-        uppers = [50.0],
-        local_algorithm = NLopt.LN_BOBYQA,
-        n_sobol_points = 100,
-        use_threads = false,
-        xtol_rel = 1.0e-3,
-        xtol_abs = 1.0e-3,
-        kwargs...,
-    )
-    kwargs_dict = Dict{Symbol, Any}(kwargs)
-
-    if haskey(kwargs_dict, :lowers)
-        lowers = kwargs_dict[:lowers]
+    if !isdir(filedir)
+        mkpath(filedir)
     end
-    if haskey(kwargs_dict, :uppers)
-        uppers = kwargs_dict[:uppers]
-    end
-    if haskey(kwargs_dict, :n_sobol_points)
-        n_sobol_points = kwargs_dict[:n_sobol_points]
-    end
-    if haskey(kwargs_dict, :use_threads)
-        use_threads = kwargs_dict[:use_threads]
-    end
-    if !haskey(kwargs_dict, :xtol_rel)
-        kwargs_dict[:xtol_rel] = xtol_rel
-    end
-    if !haskey(kwargs_dict, :xtol_abs)
-        kwargs_dict[:xtol_abs] = xtol_abs
+    @assert scheduler in [:dynamic, :static, :greedy, :serial]
+
+
+    # Create all grid search scenarios as StructVector
+    # This includes all combinations with grid parameters
+    all_scenarios = create_scenarios_structvector(specification_vecs)
+
+    if verbose
+        n_total_scenarios = length(all_scenarios)
+        println(StyledStrings.styled"{green:Starting Grid Search with StructVector}")
+        println(StyledStrings.styled"Total grid points: {yellow:$n_total_scenarios}")
     end
 
-    allowed_kwargs = (
-        :stopval,
-        :xtol_rel,
-        :xtol_abs,
-        :ftol_rel,
-        :ftol_abs,
-        :maxeval,
-        :maxtime,
+    # Load existing results (including checkpoints)
+    existing_results = if force
+        StructVector(OptimizationResult[])
+    else
+        load_previous_optimzation_results_structvector(filedir, gridsearch_filename_base)
+    end
+
+    n_existing = length(existing_results)
+    if verbose
+        println(StyledStrings.styled"Found {cyan:$n_existing} existing results")
+    end
+
+    # Find missing scenarios - reuse function from multistart
+    missing_scenarios = find_missing_scenarios(all_scenarios, existing_results)
+    n_missing = length(missing_scenarios)
+
+    if verbose
+        println(StyledStrings.styled"Missing grid points to evaluate: {yellow:$n_missing}")
+    end
+
+    # Check with user if needed
+    if n_missing > 0
+        if !proceed_with_optimization(
+                missing_scenarios;
+                disable_time_check = disable_time_check,
+                seconds_per_scenario = seconds_per_scenario
+            )
+            @info "Threshold optimization cancelled by user"
+            return return_results ? existing_results : nothing
+        end
+    else
+        @info "All optimization scenarios already evaluated"
+        return return_results ? existing_results : nothing
+    end
+
+    # Run grid search for missing scenarios in batches
+    start_time = Dates.now()
+    new_results = evaluate_missing_optimizations(
+        missing_scenarios;
+        save_results = save_results,
+        save_checkpoints = save_checkpoints,
+        save_checkpoint_num = save_checkpoint_num,
+        checkpoint_dir = checkpoint_dir,
+        checkpoint_output_filename_base = checkpoint_output_filename_base,
+        scheduler = scheduler,
+        verbose = verbose
     )
+    end_time = Dates.now()
 
-    filtered_kwargs = filter(((k, v),) -> k in allowed_kwargs, kwargs_dict)
+    # Wrap in try block just in case the datetime arithmetic fails so it doesn't prevent
+    # results being saved and returned
+    try
+        time_taken = Dates.seconds(end_time - start_time)
+        println(StyledStrings.styled"Took {yellow:$time_taken} seconds to complete {blue:$n_missing} missing scenarios: {green:$(time_taken/n_missing)} seconds per scenario")
+    catch e
+    end
 
-    P = MultistartOptimization.MinimizationProblem(
-        objective_function_closure,
-        lowers,
-        uppers,
-    )
 
-    local_method = MultistartOptimization.NLoptLocalMethod(
-        local_algorithm;
-        filtered_kwargs...,
-    )
+    # Combine existing and new results
+    BangBang.append!!(existing_results, new_results)
 
-    multistart_method = MultistartOptimization.TikTak(n_sobol_points)
+    # Save final results - reuse function from multistart
+    if save_results
+        save_results_structvector(existing_results, gridsearch_output_filepath)
 
-    p = MultistartOptimization.multistart_minimization(
-        multistart_method,
-        local_method,
-        P;
-        use_threads = use_threads,
-    )
+        # Clean up checkpoints after successful save
+        cleanup_checkpoints(checkpoint_dir)
+    end
 
-    @assert length(p.location) == 1
+    if verbose
+        n_final = length(existing_results)
+        println(StyledStrings.styled"{green:Grid search complete! Total results: {yellow:$n_final}}")
+    end
 
-    return p.location[1], p.value
+    return return_results ? existing_results : nothing
 end

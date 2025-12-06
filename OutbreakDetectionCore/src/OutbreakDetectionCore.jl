@@ -20,6 +20,7 @@ using LinearAlgebra: LinearAlgebra
 using MultistartOptimization: MultistartOptimization
 using NaNMath: NaNMath
 using NLopt: NLopt
+using OhMyThreads: OhMyThreads
 using ProgressMeter: ProgressMeter, Progress, next!
 using Random: Random
 using REPL.TerminalMenus: RadioMenu, request
@@ -41,11 +42,12 @@ include("./types/time-parameters.jl")
 include("./types/state-parameters.jl")
 include("./types/dynamics-parameters.jl")
 include("./types/simulation-results.jl")
+include("./types/noise-specifications.jl")
 include("./types/ensemble-specifications.jl")
 include("./types/outbreak-specifications.jl")
 include("./types/detection-specifications.jl")
 include("./types/test-specifications.jl")
-include("./types/noise-specifications.jl")
+include("./types/optimization-scenario.jl")
 include("./types/scenario-specifications.jl")
 include("./types/scenario-parameters.jl")
 include("./types/optimization-types.jl")
@@ -72,6 +74,8 @@ include("./noise/noise-generation.jl")
 
 # Utilities (data processing)
 include("./utilities/create-combinations.jl")
+include("./utilities/create-ensemble-specification.jl")
+include("./utilities/group-structvectors.jl")
 
 # Detection
 include("./detection/outbreak-thresholds.jl")
@@ -93,15 +97,31 @@ include("./optimal-thresholds/results-dataframes.jl")
 include("./optimal-thresholds/results-export.jl")
 
 # Threshold Optimization
-include("./optimization-functions/common/objective-function.jl")
-include("./optimization-functions/threshold-optimization/optimization-setup.jl")
 include("./optimization-functions/threshold-optimization/optimization-wrapper.jl")
+include("./optimization-functions/threshold-optimization/scenario-creation.jl")
+include("./optimization-functions/threshold-optimization/result-loading.jl")
+include("./optimization-functions/threshold-optimization/results-retrieval.jl")
+include("./optimization-functions/threshold-optimization/checkpoint-loading.jl")
+include("./optimization-functions/threshold-optimization/missing-results.jl")
+include("./optimization-functions/threshold-optimization//confirm-proceed-with-optimization.jl")
+
+# include("./optimization-functions/common/objective-function.jl")
+# include("./optimization-functions/threshold-optimization/optimization-setup.jl")
+# include(
+#     "./optimization-functions/threshold-optimization/optimization-wrapper.jl"
+# )
+# include("./optimization-functions/threshold-optimization/scenario-creation.jl")
+# include("./optimization-functions/threshold-optimization/gridsearch-optimization-wrapper.jl")
 
 # Scenario Optimization
-include("./optimization-functions/scenario-optimization/scenario-creation.jl")
-include("./optimization-functions/scenario-optimization/scenario-confirmation.jl")
-include("./optimization-functions/scenario-optimization/results-loading.jl")
-include("./optimization-functions/scenario-optimization/results-reshaping.jl")
-include("./optimization-functions/scenario-optimization/optimization-wrapper.jl")
+# include("./optimization-functions/scenario-optimization/scenario-creation.jl")
+# include(
+#     "./optimization-functions/scenario-optimization/scenario-confirmation.jl"
+# )
+# include("./optimization-functions/scenario-optimization/results-loading.jl")
+# include("./optimization-functions/scenario-optimization/results-reshaping.jl")
+# include(
+#     "./optimization-functions/scenario-optimization/optimization-wrapper.jl"
+# )
 
 end

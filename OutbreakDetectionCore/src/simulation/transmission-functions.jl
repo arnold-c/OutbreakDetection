@@ -21,58 +21,19 @@ Solving for β:
 β = R_0 * (σ + μ) * (γ + μ) / σ
 
 # Arguments
-- `R_0`: Basic reproduction number
-- `sigma`: Rate of progression from E to I (1/latent_period)
-- `gamma`: Recovery rate (1/infectious_period)
-- `mu`: Death rate
+
+  - `R_0`: Basic reproduction number
+  - `sigma`: Rate of progression from E to I (1/latent_period)
+  - `gamma`: Recovery rate (1/infectious_period)
+  - `mu`: Death rate
 """
 function calculate_beta(
-        R_0::Float64,
-        sigma::Float64,
-        gamma::Float64,
-        mu::Float64
-    )::Float64
+    R_0::Float64,
+    sigma::Float64,
+    gamma::Float64,
+    mu::Float64,
+)::Float64
     return R_0 * (sigma + mu) * (gamma + mu) / sigma
-end
-
-"""
-    calculate_beta(R_0, gamma, mu, contact_mat, pop_matrix)
-
-Calculate the value beta for a given set of parameters and contact matrix.
-Legacy function for metapopulation models.
-"""
-function calculate_beta(
-        R_0::T, gamma::T, mu::T, contact_mat::Array{T}, pop_matrix::Array{T}
-    ) where {T <: AbstractFloat}
-    if size(contact_mat, 1) == size(contact_mat, 2)
-        nothing
-    else
-        error("contact_mat must be square")
-    end
-    if size(contact_mat, 1) == size(pop_matrix, 1)
-        nothing
-    else
-        error("contact_mat and pop_matrix must have the same number of rows")
-    end
-
-    F = contact_mat .* pop_matrix
-    V = LinearAlgebra.Diagonal(repeat([gamma + mu], size(contact_mat, 1)))
-
-    FV⁻¹ = F * inv(V)
-    eigenvals = LinearAlgebra.eigen(FV⁻¹).values
-    beta = R_0 / maximum(real(eigenvals))
-
-    return beta
-end
-
-function calculate_beta(R_0, gamma, mu, contact_mat, pop_matrix)
-    return calculate_beta(
-        convert(Float64, R_0),
-        convert(Float64, gamma),
-        convert(Float64, mu),
-        convert(Array{Float64}, [contact_mat]),
-        convert(Array{Float64}, [pop_matrix]),
-    )
 end
 
 """
@@ -87,20 +48,22 @@ where γ is calculated from the SEIR model relationship:
 γ = (β * σ) / (R_0 * (σ + μ)) - μ
 
 # Arguments
-- `R_0`: Basic reproduction number
-- `beta`: Transmission rate
-- `sigma`: Rate of progression from E to I (1/latent_period)
-- `mu`: Death rate
+
+  - `R_0`: Basic reproduction number
+  - `beta`: Transmission rate
+  - `sigma`: Rate of progression from E to I (1/latent_period)
+  - `mu`: Death rate
 
 # Returns
-- `Float64`: The infectious duration (1/gamma)
+
+  - `Float64`: The infectious duration (1/gamma)
 """
 function calculate_infectious_duration(
-        R_0::Float64,
-        beta::Float64,
-        sigma::Float64,
-        mu::Float64
-    )::Float64
+    R_0::Float64,
+    beta::Float64,
+    sigma::Float64,
+    mu::Float64,
+)::Float64
     return 1 / calculate_gamma(R_0, beta, sigma, mu)
 end
 
@@ -116,17 +79,18 @@ Solving for γ:
 γ = (β * σ) / (R_0 * (σ + μ)) - μ
 
 # Arguments
-- `R_0`: Basic reproduction number
-- `beta`: Transmission rate
-- `sigma`: Rate of progression from E to I (1/latent_period)
-- `mu`: Death rate
+
+  - `R_0`: Basic reproduction number
+  - `beta`: Transmission rate
+  - `sigma`: Rate of progression from E to I (1/latent_period)
+  - `mu`: Death rate
 """
 function calculate_gamma(
-        R_0::Float64,
-        beta::Float64,
-        sigma::Float64,
-        mu::Float64
-    )::Float64
+    R_0::Float64,
+    beta::Float64,
+    sigma::Float64,
+    mu::Float64,
+)::Float64
     gamma = (beta * sigma) / (R_0 * (sigma + mu)) - mu
 
     if gamma <= 0
@@ -147,18 +111,22 @@ using the mean transmission rate, seasonal forcing amplitude, and seasonality fu
 specified in `dynamics_parameters`.
 
 # Arguments
-- `beta_vec`: Vector to store the calculated beta amplitudes (modified in-place)
-- `dynamics_parameters`: Parameters containing beta_mean, beta_force, and seasonality
-- `time_parameters`: Time parameters containing the time range (trange)
+
+  - `beta_vec`: Vector to store the calculated beta amplitudes (modified in-place)
+  - `dynamics_parameters`: Parameters containing beta_mean, beta_force, and seasonality
+  - `time_parameters`: Time parameters containing the time range (trange)
 
 # Returns
-- `nothing` (modifies `beta_vec` in-place)
+
+  - `nothing` (modifies `beta_vec` in-place)
 """
 function calculate_beta_amp!(
-        beta_vec::V,
-        dynamics_parameters::Union{DynamicsParameterSpecification, DynamicsParameters},
-        time_parameters::SimTimeParameters
-    ) where {V <: AbstractVector{<:AbstractFloat}}
+    beta_vec::V,
+    dynamics_parameters::Union{
+        DynamicsParameterSpecification,DynamicsParameters
+    },
+    time_parameters::SimTimeParameters,
+) where {V<:AbstractVector{<:AbstractFloat}}
     beta_mean = dynamics_parameters.beta_mean
     beta_force = dynamics_parameters.beta_force
     seasonality = dynamics_parameters.seasonality
@@ -169,7 +137,7 @@ function calculate_beta_amp!(
             beta_mean,
             beta_force,
             trange[i],
-            LightSumTypes.variant(seasonality)
+            LightSumTypes.variant(seasonality),
         )
     end
     return nothing
@@ -183,11 +151,9 @@ Calculate the amplitude of the transmission rate beta as a function of time.
 `seasonality` should be a SeasonalityFunction sum type or a Function (for backward compatibility).
 """
 function calculate_beta_amp(beta_mean, beta_force, t; seasonality = cos)
-    if seasonality isa Function
-        return beta_mean * (1 + beta_force * seasonality(2pi * t / 365))
-    else
-        return _calculate_beta_amp(beta_mean, beta_force, t, LightSumTypes.variant(seasonality))
-    end
+    return _calculate_beta_amp(
+        beta_mean, beta_force, t, LightSumTypes.variant(seasonality)
+    )
 end
 
 # Internal dispatch functions for seasonality variants
@@ -216,11 +182,11 @@ _calculate_beta_amp(beta_mean, beta_force, t, ::SineSeasonality) =
 Calculate the effective reproduction number, R_eff, at each time step for a given set of parameters.
 """
 function calculateReffective_t!(
-        Reff_vec::AbstractVector{Float64},
-        beta_vec::Vector{Float64},
-        dynamics_params::DynamicsParameters,
-        seir_arr
-    )::Nothing
+    Reff_vec::AbstractVector{Float64},
+    beta_vec::Vector{Float64},
+    dynamics_params::DynamicsParameters,
+    seir_arr,
+)::Nothing
     for i in eachindex(Reff_vec)
         Reff_vec[i] = calculateReffective(
             beta_vec[i],
@@ -240,11 +206,11 @@ Calculate the effective reproduction number, R_eff, for a given set of parameter
 R_eff = R_0 * (S / N), where R_0 is calculated from beta and other parameters.
 """
 function calculateReffective(
-        beta_t::Float64,
-        dynamics_params::Union{DynamicsParameters, DynamicsParameterSpecification},
-        S::Int64,
-        N::Int64
-    )::Float64
+    beta_t::Float64,
+    dynamics_params::Union{DynamicsParameters,DynamicsParameterSpecification},
+    S::Int64,
+    N::Int64,
+)::Float64
     R_0 = calculateR0(beta_t, dynamics_params)
     Reff = R_0 * (S / N)
 
@@ -258,16 +224,15 @@ Calculate the effective reproduction number, R_eff, for a given set of parameter
 R_eff = R_0 * (1 - vaccination_coverage), where R_0 is calculated from beta and other parameters.
 """
 function calculateReffective(
-        beta_t::Float64,
-        dynamics_params::Union{DynamicsParameters, DynamicsParameterSpecification},
-        vaccination_coverage::Float64,
-    )::Float64
+    beta_t::Float64,
+    dynamics_params::Union{DynamicsParameters,DynamicsParameterSpecification},
+    vaccination_coverage::Float64,
+)::Float64
     R_0 = calculateR0(beta_t, dynamics_params)
     Reff = R_0 * (1 - vaccination_coverage)
 
     return Reff
 end
-
 
 """
     calculateR0(beta, dynamics_params)
@@ -278,16 +243,18 @@ This is a convenience wrapper that extracts sigma, gamma, and mu from the dynami
 and calls the main calculateR0 function.
 
 # Arguments
-- `beta`: Transmission rate
-- `dynamics_params`: DynamicsParameters struct containing sigma, gamma, and mu
+
+  - `beta`: Transmission rate
+  - `dynamics_params`: DynamicsParameters struct containing sigma, gamma, and mu
 
 # Returns
-- `Float64`: The basic reproduction number R_0
+
+  - `Float64`: The basic reproduction number R_0
 """
 function calculateR0(
-        beta::Float64,
-        dynamics_params::Union{DynamicsParameters, DynamicsParameterSpecification}
-    )
+    beta::Float64,
+    dynamics_params::Union{DynamicsParameters,DynamicsParameterSpecification},
+)
     sigma = dynamics_params.sigma
     gamma = dynamics_params.gamma
     mu = dynamics_params.mu
@@ -304,64 +271,23 @@ For an SEIR model with a single population:
 R_0 = (β * σ) / ((σ + μ) * (γ + μ))
 
 # Arguments
-- `beta`: Transmission rate
-- `sigma`: Rate of progression from E to I (1/latent_period)
-- `gamma`: Recovery rate (1/infectious_period)
-- `mu`: Death rate
+
+  - `beta`: Transmission rate
+  - `sigma`: Rate of progression from E to I (1/latent_period)
+  - `gamma`: Recovery rate (1/infectious_period)
+  - `mu`: Death rate
 
 # Returns
-- `Float64`: The basic reproduction number R_0
+
+  - `Float64`: The basic reproduction number R_0
 """
 @inline function calculateR0(
-        beta::Float64,
-        sigma::Float64,
-        gamma::Float64,
-        mu::Float64
-    )::Float64
+    beta::Float64,
+    sigma::Float64,
+    gamma::Float64,
+    mu::Float64,
+)::Float64
     return (beta * sigma) / ((sigma + mu) * (gamma + mu))
-end
-
-"""
-    calculateR0(beta, gamma, mu, contact_mat, pop_matrix)
-
-Calculate the basic reproduction number R_0 for a given set of parameters and contact matrix.
-Legacy function for metapopulation models.
-"""
-function calculateR0(
-        beta::T, gamma::T, mu::T, contact_mat::Array{T}, pop_matrix::Array{T}
-    ) where {T <: AbstractFloat}
-    if size(contact_mat, 1) == size(contact_mat, 2)
-        nothing
-    else
-        error("contact_mat must be square")
-    end
-    if size(contact_mat, 1) == size(pop_matrix, 1)
-        nothing
-    else
-        error("contact_mat and pop_matrix must have the same number of rows")
-    end
-
-    B = beta * contact_mat
-
-    F = B .* pop_matrix
-    V = LinearAlgebra.Diagonal(repeat([gamma + mu], size(contact_mat, 1)))
-
-    FV⁻¹ = F * inv(V)
-    eigenvals = LinearAlgebra.eigen(FV⁻¹).values
-
-    R_0 = maximum(real(eigenvals))
-
-    return R_0
-end
-
-function calculateR0(beta, gamma, mu, contact_mat, pop_matrix)
-    return calculateR0(
-        convert(Float64, beta),
-        convert(Float64, gamma),
-        convert(Float64, mu),
-        convert(Array{Float64}, [contact_mat]),
-        convert(Array{Float64}, [pop_matrix]),
-    )
 end
 
 function calculate_mu(annual_births_per_k)

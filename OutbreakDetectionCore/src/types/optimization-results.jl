@@ -1,88 +1,86 @@
 export OptimizationResult,
-    ThresholdOptimizationResult
+    AlertClassificationResults,
+    OptimizedValues
 
 """
     OptimizationResult
 
-Base result from an optimization run.
+Complete results from EWS hyperparameter optimization including scenario details and performance.
 
-Designed for StructVector storage with AutoHashEquals for efficient lookup.
+This struct provides a comprehensive record of an optimization run, storing both the complete
+scenario configuration used during optimization and the optimal hyperparameter values and
+performance metrics discovered. It serves as the primary output format for optimization
+functions and enables reproducible analysis of optimization results.
+
+The result includes all parameters needed to recreate the optimization scenario, making it
+suitable for result storage, comparison across different scenarios, and further analysis.
+This is also used when new scenarios are prepared to be run, checking if the results already
+exist, and if they do, load the existing results to avoid redundant computations.
 
 # Fields
-- `scenario_params::ScenarioParameters`: Scenario that was optimized
-- `optimal_threshold::Float64`: Optimal detection threshold
-- `accuracy::Float64`: Detection accuracy at optimal threshold
-- `sensitivity::Float64`: True positive rate
-- `specificity::Float64`: True negative rate
-- `mean_detection_delay::Float64`: Mean delay to detection (days)
-- `proportion_detected::Float64`: Proportion of outbreaks detected
-
-# Examples
-```julia
-result = OptimizationResult(
-    scenario_params = scenario,
-    optimal_threshold = 0.05,
-    accuracy = 0.95,
-    sensitivity = 0.92,
-    specificity = 0.98,
-    mean_detection_delay = 14.5,
-    proportion_detected = 0.88
-)
-
-# Store in StructVector
-results = StructVector{OptimizationResult}([result1, result2, ...])
-
-# Efficient filtering
-high_accuracy = filter(r -> r.accuracy > 0.9, results)
-```
 """
-AutoHashEquals.@auto_hash_equals struct OptimizationResult
-    scenario_params::ScenarioParameters
+Base.@kwdef struct OptimizationResult
+    ensemble_specification::EnsembleSpecification
+    noise_level::Float64
+    noise_type_description::Symbol
+    test_specification::IndividualTestSpecification
+    percent_tested::Float64
+    alert_method::AlertMethod
     optimal_threshold::Float64
     accuracy::Float64
-    sensitivity::Float64
-    specificity::Float64
+    proportion_outbreaks_detected::Float64
+    proportion_alerts_correct::Float64
     mean_detection_delay::Float64
-    proportion_detected::Float64
 end
 
 """
-    ThresholdOptimizationResult
+    AlertClassificationResults
 
-Extended result with detailed threshold characteristics.
+Stores binary classification results from outbreak detection analysis.
 
-Includes full threshold sweep results for analysis.
+Contains the confusion matrix components and total counts for evaluating detection performance
+across all outbreaks in each simulation.
 
 # Fields
-- `base_result::OptimizationResult`: Base optimization result
-- `threshold_sweep::Vector{Float64}`: Thresholds tested
-- `accuracy_sweep::Vector{Float64}`: Accuracy at each threshold
-- `sensitivity_sweep::Vector{Float64}`: Sensitivity at each threshold
-- `specificity_sweep::Vector{Float64}`: Specificity at each threshold
+- `true_positives::Float64`: Number of outbreaks correctly identified by alert criteria
+- `false_positives::Float64`: Number of alerts that do not correspond to an outbreak
+- `false_negatives::Float64`: Number of outbreaks not identified by alert criteria
+- `nsims::Int64`: Total number of simulations
 
-# Examples
-```julia
-result = ThresholdOptimizationResult(
-    base_result = opt_result,
-    threshold_sweep = [0.01, 0.02, 0.05, 0.1],
-    accuracy_sweep = [0.85, 0.92, 0.95, 0.88],
-    sensitivity_sweep = [0.95, 0.92, 0.88, 0.75],
-    specificity_sweep = [0.75, 0.92, 0.98, 0.99]
-)
-
-# Access optimal values
-result.base_result.optimal_threshold  # 0.05
-result.base_result.accuracy  # 0.95
-
-# Analyze threshold sweep
-using Plots
-plot(result.threshold_sweep, result.accuracy_sweep, label="Accuracy")
-```
+# Notes
+The classification counts are stored as Float64 to support weighted or fractional classifications,
+while the total simulation counts remain as integers. This struct serves as an intermediate
+representation for calculating performance metrics like sensitivity, specificity, and accuracy.
 """
-AutoHashEquals.@auto_hash_equals struct ThresholdOptimizationResult
-    base_result::OptimizationResult
-    threshold_sweep::Vector{Float64}
-    accuracy_sweep::Vector{Float64}
-    sensitivity_sweep::Vector{Float64}
-    specificity_sweep::Vector{Float64}
+Base.@kwdef struct AlertClassificationResults
+    true_positives::Float64
+    false_positives::Float64
+    false_negatives::Float64
+    nsims::Int64
+end
+
+"""
+    OptimizedValues
+
+Optimal hyperparameter values and performance metrics from alert threshold optimization.
+
+This struct stores the results of threshold optimization for outbreak detection, containing
+both the optimal threshold value found during optimization and the corresponding performance
+metrics achieved with that threshold.
+
+# Fields
+- `alert_threshold::Float64`: Optimal alert threshold determination
+- `accuracy::Float64`: Overall classification accuracy achieved with optimal parameters (0.0 to 1.0)
+- `proportion_outbreaks_detected::Float64`: True positive rate (sensitivity) given the optimal threshold
+- `proportion_alerts_correct::Float64`: Proportion of alerts that are associated with an outbreak (Positive predictive value) given the optimal threshold
+- `mean_detection_delay::Float64`: The mean delay in days between the start of the outbreak and when the alert is triggered
+
+# Example
+"""
+Base.@kwdef struct OptimizedValues
+    alert_threshold::Float64
+    accuracy::Float64
+    proportion_outbreaks_detected::Float64
+    proportion_alerts_correct::Float64
+    mean_detection_delay::Float64
 end

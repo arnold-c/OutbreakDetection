@@ -1,7 +1,7 @@
 name = "OutbreakDetectionCore"
 uuid = "f998a708-2341-46f4-85c5-02aab2fba5ed"
-authors = ["Callum Arnold <24391445+arnold-c@users.noreply.github.com> and contributors"]
 version = "1.0.0-DEV"
+authors = ["Callum Arnold <24391445+arnold-c@users.noreply.github.com> and contributors"]
 
 [deps]
 AutoHashEquals = "15f4f7f2-30c1-5605-9d31-71845cf9641f"
@@ -22,6 +22,7 @@ LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 MultistartOptimization = "3933049c-43be-478e-a8bb-6e0f7fd53575"
 NLopt = "76087f3c-5699-56af-9a33-bf431cd00edd"
 NaNMath = "77ba4419-2d1f-58cd-9bb1-8ffee604a2e3"
+OhMyThreads = "67456a42-1dca-4109-a031-0a68de7e3ad5"
 ProgressMeter = "92933f4c-e287-5a05-a399-4b506db050ca"
 REPL = "3fa0cd96-eef1-5676-8a61-b3b8758bbffb"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
@@ -55,6 +56,7 @@ LinearAlgebra = "1.0"
 MultistartOptimization = "0.2.2"
 NLopt = "0.6.5"
 NaNMath = "1.0"
+OhMyThreads = "0.8.3"
 ProgressMeter = "1.0"
 REPL = "1.11.0"
 Random = "1.0"
