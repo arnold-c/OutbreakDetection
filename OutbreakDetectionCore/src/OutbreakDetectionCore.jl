@@ -47,6 +47,7 @@ include("./types/ensemble-specifications.jl")
 include("./types/outbreak-specifications.jl")
 include("./types/detection-specifications.jl")
 include("./types/test-specifications.jl")
+include("./types/accuracy-metrics.jl")
 include("./types/optimization-scenario.jl")
 include("./types/scenario-specifications.jl")
 include("./types/scenario-parameters.jl")
@@ -55,6 +56,7 @@ include("./types/optimization-results.jl")
 
 # Simulation (needed before constants)
 include("./simulation/transmission-functions.jl")
+include("./simulation/simulate-ensemble-seir-results.jl")
 
 # Constants
 include("./constants/test-constants.jl")
@@ -89,6 +91,8 @@ include("./diagnostic-testing/calculate-num-tested.jl")
 include("./diagnostic-testing/calculate-num-positive.jl")
 include("./diagnostic-testing/calculate-test-positivity.jl")
 include("./diagnostic-testing/create-test-arrays.jl")
+include("./diagnostic-testing/create-test-positive-vectors.jl")
+include("./diagnostic-testing/create-test-positive-container.jl")
 
 # Optimal Thresholds
 include("./optimal-thresholds/threshold-calculation.jl")
@@ -103,7 +107,12 @@ include("./optimization-functions/threshold-optimization/result-loading.jl")
 include("./optimization-functions/threshold-optimization/results-retrieval.jl")
 include("./optimization-functions/threshold-optimization/checkpoint-loading.jl")
 include("./optimization-functions/threshold-optimization/missing-results.jl")
-include("./optimization-functions/threshold-optimization//confirm-proceed-with-optimization.jl")
+include("./optimization-functions/threshold-optimization/confirm-proceed-with-optimization.jl")
+include("./optimization-functions/threshold-optimization/evaluate-optimization.jl")
+include("./optimization-functions/threshold-optimization/threshold-optimization.jl")
+
+# Vaccination
+include("./vaccination/vaccination-distribution-sample.jl")
 
 # include("./optimization-functions/common/objective-function.jl")
 # include("./optimization-functions/threshold-optimization/optimization-setup.jl")
