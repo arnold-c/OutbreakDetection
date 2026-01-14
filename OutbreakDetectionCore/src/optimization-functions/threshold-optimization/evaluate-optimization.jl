@@ -14,8 +14,8 @@ function evaluate_missing_optimizations(
         verbose::Bool = true,
         verbose_noise_optimization = false,
         seed = 1234,
-        dynamic_noise_optimization_parameters::NoiseVaccinationOptimizationParameters = NoiseVaccinationOptimizationParameters()
-
+        dynamic_noise_optimization_parameters::NoiseVaccinationOptimizationParameters = NoiseVaccinationOptimizationParameters(),
+        threshold_optimization_parameters::ThresholdOptimizationParameters = ThresholdOptimizationParameters(),
     )
     @assert scheduler in [:dynamic, :static, :greedy, :serial]
 
@@ -41,6 +41,11 @@ function evaluate_missing_optimizations(
             ensemble_key.ensemble_specification;
             seed = seed
         )
+        # TODO: Add grouping based on outbreakdetection specification and create vecs of outbreak statuses
+        enddates_vec = fill(
+            ensemble_key.ensemble_specification.time_parameters.tlength,
+            ensemble_key.ensemble_specification.nsims
+        )
 
         noise_trim_groups = group_structvector(
             ensemble_scenarios,
@@ -55,14 +60,14 @@ function evaluate_missing_optimizations(
                     PoissonNoise(noise_trim_key.noise_level),
                     ensemble_key.ensemble_specification,
                     enddates_vec,
-                    trimmed_ensemble.emergent_seir_run,
+                    ensemble_simulation,
                     seed = seed
                 )
             else
                 # Call the original optimization function with the computed mean
                 optim_res = optimize_dynamic_noise_params_wrapper(
                     ensemble_key.ensemble_specification,
-                    trimmed_ensemble.emergent_seir_run,
+                    ensemble_simulation,
                     enddates_vec,
                     noise_trim_key.noise_level,
                     dynamic_noise_optimization_parameters;
@@ -85,8 +90,8 @@ function evaluate_missing_optimizations(
             for (test_key, test_scenarios) in test_groups
                 verbose && println("\t\tTest Specification: $(test_key.test_specification)\n\t\tTest Percentage: $(test_key.percent_tested)")
 
-                ensemble_test_positives = create_test_positive_vecs(
-                    trimmed_ensemble,
+                test_positives = create_test_positive_vecs(
+                    ensemble_simulation,
                     noise_vecs,
                     test_key.percent_tested,
                     test_key.test_specification,
@@ -100,9 +105,15 @@ function evaluate_missing_optimizations(
                 for (alert_method_key, alert_method_scenarios) in alert_method_groups
                     verbose && println("\t\t\tAlert Method: $(alert_method_key.alert_method)")
 
+                    test_positives_container = create_test_positive_container(
+                        alert_method_key.alert_method,
+                        test_positives
+                    )
+
                     opt_groups = group_structvector(
                         alert_method_scenarios,
-                        :accuracy_metric
+                        :accuracy_metric,
+                        :threshold_bounds
                     )
 
                     opt_scenarios_vec = collect(values(opt_groups))
@@ -115,7 +126,8 @@ function evaluate_missing_optimizations(
 
                         optimization_result = threshold_optimization(
                             optimization_scenario,
-                            ensemble_test_positives,
+                            test_positives_container,
+                            threshold_optimization_parameters,
                         )
 
                         return optimization_result

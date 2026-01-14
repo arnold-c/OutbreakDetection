@@ -23,6 +23,9 @@ Reuses functions from multistart optimization where possible.
 """
 function run_scenario_threshold_optimization(
         specification_vecs::ScenarioSpecificationVecs;
+        # Optimization control
+        dynamic_noise_optimization_parameters::NoiseVaccinationOptimizationParameters = NoiseVaccinationOptimizationParameters(),
+        threshold_optimization_parameters::ThresholdOptimizationParameters = ThresholdOptimizationParameters(),
         # File management
         filedir = outdir("ensemble", "threshold-gridsearch"),
         gridsearch_filename_base = "threshold-gridsearch-structvector.jld2",
@@ -107,7 +110,9 @@ function run_scenario_threshold_optimization(
         checkpoint_dir = checkpoint_dir,
         checkpoint_output_filename_base = checkpoint_output_filename_base,
         scheduler = scheduler,
-        verbose = verbose
+        verbose = verbose,
+        dynamic_noise_optimization_parameters = dynamic_noise_optimization_parameters,
+        threshold_optimization_parameters = threshold_optimization_parameters,
     )
     end_time = Dates.now()
 
