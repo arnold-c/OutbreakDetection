@@ -1,9 +1,25 @@
-export OutbreakDetectionSpecification,
+export TestPositiveContainer,
+    SingleAlertTestPositiveContainer,
+    DualAlertTestPositiveContainer,
+    OutbreakDetectionSpecification,
     AlertMethod,
     DailyThreshold,
     MovingAverage,
     DailyThresholdMovingAverage,
     getstring
+
+abstract type AbstractTestPositiveContainer end
+
+Base.@kwdef struct DualAlertTestPositiveContainer <: AbstractTestPositiveContainer
+    test_positives::Vector{Vector{Int64}}
+    movingavg_test_positives::Vector{Vector{Float64}}
+end
+
+Base.@kwdef struct SingleAlertTestPositiveContainer{T <: Union{Int64, Float64}}
+    test_positive_results::Vector{Vector{T}}
+end
+
+LightSumTypes.@sumtype TestPositiveContainer(SingleAlertTestPositiveContainer, DualAlertTestPositiveContainer) <: AbstractTestPositiveContainer
 
 """
     AbstractAlertMethod
