@@ -50,7 +50,9 @@ exceeds the threshold.
 - [`DailyThreshold`](@ref)
 - [`DailyThresholdMovingAverage`](@ref)
 """
-struct MovingAverage end
+Base.@kwdef struct MovingAverage
+    window::Int64 = 7
+end
 
 """
     DailyThresholdMovingAverage
@@ -67,7 +69,9 @@ average meets or exceeds the threshold.
 - [`DailyThreshold`](@ref)
 - [`MovingAverage`](@ref)
 """
-struct DailyThresholdMovingAverage end
+Base.@kwdef struct DailyThresholdMovingAverage
+    window::Int64 = 7
+end
 
 """
     AlertMethod
