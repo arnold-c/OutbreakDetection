@@ -66,8 +66,10 @@ measles_ensemble_specification = create_ensemble_specifications(
 )
 
 #%%
-noise_level_vec = [1.0, 2.0, 4.0, 8.0]
-noise_type_description_vec = [:static, :dynamic]
+# noise_level_vec = [1.0, 2.0, 4.0, 8.0]
+noise_level_vec = [1.0]
+# noise_type_description_vec = [:static, :dynamic]
+noise_type_description_vec = [:static]
 
 test_specification_vec = [
     IndividualTestSpecification(val, val, lag) for
@@ -77,6 +79,8 @@ percent_tested_vec = collect(0.1:0.1:1.0)
 
 #%%
 alert_method_vec = AlertMethod[AlertMethod(MovingAverage())]
+accuracy_metric_vec = AccuracyMetric[AccuracyMetric(BalancedAccuracy())]
+threshold_bounds = (; lower = 0.0, upper = 20.0)
 
 #%%
 specification_vecs = ScenarioSpecificationVecs(;
@@ -86,13 +90,15 @@ specification_vecs = ScenarioSpecificationVecs(;
     test_specification_vec = test_specification_vec,
     percent_tested_vec = percent_tested_vec,
     alert_method_vec = alert_method_vec,
+    accuracy_metric_vec = accuracy_metric_vec,
+    threshold_bounds_vec = [threshold_bounds],
 )
 
 #%%
 create_scenarios_structvector(specification_vecs)
 
 #%%
-gridsearch_scenarios = run_scenario_threshold_optimization(
+optimized_threshold_results = run_scenario_threshold_optimization(
     specification_vecs;
     force = true,
     save_results = true,
