@@ -1,8 +1,10 @@
 export OptimalThresholdCharacteristics,
+    OptimizationTracker,
     OptimizationMethods,
     MSO,
     AbstractOptimizationMethods,
-    NoiseVaccinationOptimizationParameters
+    NoiseVaccinationOptimizationParameters,
+    ThresholdOptimizationParameters
 
 """
     OptimalThresholdCharacteristics
@@ -30,6 +32,19 @@ struct OptimalThresholdCharacteristics{
     percent_clinic_tested::T4
     alert_threshold::TReal
     accuracy::T4
+end
+
+"""
+    OptimizationTracker
+
+Mutable struct to track the best solution and its metrics during optimization.
+"""
+Base.@kwdef mutable struct OptimizationTracker
+    best_loss::Float64 = Inf
+    best_accuracy::Float64 = 0.0
+    best_sensitivity::Float64 = 0.0
+    best_specificity::Float64 = 0.0
+    best_threshold::Float64 = 0.0
 end
 
 """
@@ -125,6 +140,15 @@ result = optimize_dynamic_noise_params(
 - [`DynamicalNoiseSpecification`](@ref): Noise specification with bounds
 """
 Base.@kwdef struct NoiseVaccinationOptimizationParameters
+    n_sobol_points::Int64 = 100
+    local_algorithm = NLopt.LN_BOBYQA
+    maxeval::Int64 = 1000
+    xtol_rel::Float64 = 1.0e-3
+    xtol_abs::Float64 = 1.0e-3
+    atol::Float64 = 1.0e-2
+end
+
+Base.@kwdef struct ThresholdOptimizationParameters
     n_sobol_points::Int64 = 100
     local_algorithm = NLopt.LN_BOBYQA
     maxeval::Int64 = 1000
