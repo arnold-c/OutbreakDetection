@@ -26,6 +26,7 @@ Base.@kwdef struct OptimizationResult
     test_specification::IndividualTestSpecification
     percent_tested::Float64
     alert_method::AlertMethod
+    accuracy_metric::AccuracyMetric
     optimal_threshold::Float64
     accuracy::Float64
     proportion_outbreaks_detected::Float64
