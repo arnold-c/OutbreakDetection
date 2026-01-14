@@ -1,5 +1,19 @@
 export calculate_movingavg, calculate_movingavg!
 
+function calculate_movingavg(
+        vec_of_vecs::Vector{Vector{T}},
+        avglag
+    ) where {T <: Number}
+    outvecs = Vector{Vector{Float64}}(undef, length(vec_of_vecs))
+    for i in eachindex(vec_of_vecs)
+        outvecs[i] = calculate_movingavg(
+            vec_of_vecs[i],
+            avglag
+        )
+    end
+    return outvecs
+end
+
 """
     calculate_movingavg(invec, avglag)
 
@@ -40,29 +54,29 @@ function calculate_movingavg!(outvec, invec, avglag)
     return nothing
 end
 
-function calculate_movingavg!(
-        outvec::T1, invec, avglag
-    ) where {T1 <: AbstractArray{<:Integer}}
-    if avglag == 0
-        outvec .= invec
-        return nothing
-    end
-
-    @inbounds for day in eachindex(invec)
-        outvec[day] = calculate_int_daily_movingavg(invec, day, avglag)
-    end
-    return nothing
-end
+# function calculate_movingavg!(
+#         outvec::T1, invec, avglag
+#     ) where {T1 <: AbstractArray{<:Integer}}
+#     if avglag == 0
+#         outvec .= invec
+#         return nothing
+#     end
+#
+#     @inbounds for day in eachindex(invec)
+#         outvec[day] = calculate_int_daily_movingavg(invec, day, avglag)
+#     end
+#     return nothing
+# end
 
 function calculate_float_daily_movingavg(invec, day, avglag)
     @inline moveavg_daystart = calculate_daily_movingavg_startday(day, avglag)
     return StatsBase.mean(@view(invec[moveavg_daystart:day]))
 end
 
-function calculate_int_daily_movingavg(invec, day, avglag)
-    @inline moveavg_daystart = calculate_daily_movingavg_startday(day, avglag)
-    return Int64(round(StatsBase.mean(@view(invec[moveavg_daystart:day]))))
-end
+# function calculate_int_daily_movingavg(invec, day, avglag)
+#     @inline moveavg_daystart = calculate_daily_movingavg_startday(day, avglag)
+#     return Int64(round(StatsBase.mean(@view(invec[moveavg_daystart:day]))))
+# end
 
 function calculate_daily_movingavg_startday(day, avglag)
     if day < avglag
