@@ -34,7 +34,7 @@ using Try: Try
 using UnPack: UnPack
 using XLSX: XLSX
 
-# Utilities
+# Generic Utilities
 include("./utilities/DrWatson-helpers.jl")
 
 # Types
@@ -45,14 +45,17 @@ include("./types/simulation-results.jl")
 include("./types/noise-specifications.jl")
 include("./types/ensemble-specifications.jl")
 include("./types/outbreak-specifications.jl")
-include("./types/detection-specifications.jl")
+include("./types/alert-methods.jl")
+include("./types/outbreak-detection-specifications.jl")
+include("./types/thresholds.jl")
 include("./types/test-specifications.jl")
 include("./types/accuracy-metrics.jl")
+include("./types/optimization-methods.jl")
+include("./types/optimization-parameters.jl")
 include("./types/optimization-scenario.jl")
-include("./types/scenario-specifications.jl")
-include("./types/scenario-parameters.jl")
-include("./types/optimization-types.jl")
 include("./types/optimization-results.jl")
+include("./types/optimization-tracker.jl")
+include("./types/test-positive-containers.jl")
 
 # Simulation (needed before constants)
 include("./simulation/transmission-functions.jl")
@@ -64,73 +67,57 @@ include("./constants/test-constants.jl")
 # Simulation (continued)
 include("./simulation/endemic-equilibrium.jl")
 include("./simulation/seir-model.jl")
-include("./simulation/ensemble-simulation.jl")
-include("./simulation/ensemble-outbreak-detection.jl")
 
 # Noise
-include("./noise/noise-mean-incidence.jl")
 include("./noise/noise-dynamics-parameters.jl")
-include("./noise/noise-recreation.jl")
-include("./noise/noise-parameters-optimization.jl")
 include("./noise/noise-generation.jl")
+include("./noise/noise-mean-incidence.jl")
+include("./noise/noise-parameters-optimization.jl")
+include("./noise/noise-recreation.jl")
 
 # Utilities (data processing)
-include("./utilities/create-combinations.jl")
+include("./utilities/calculate-moving-average.jl")
 include("./utilities/create-ensemble-specification.jl")
 include("./utilities/group-structvectors.jl")
-
-# Detection
-include("./detection/outbreak-thresholds.jl")
-include("./detection/outbreak-classification.jl")
-include("./detection/moving-average.jl")
-include("./detection/alert-detection.jl")
-include("./detection/detection-characteristics.jl")
+include("./utilities/calculate-mean-incidence.jl")
+include("./utilities/vaccination-distribution-sample.jl")
+include("./utilities/test-descriptions.jl")
+# TODO: update to work with current structvector implementation
+include("./utilities/results-reshaping.jl")
 
 # Diagnostic Testing
 include("./diagnostic-testing/calculate-num-tested.jl")
 include("./diagnostic-testing/calculate-num-positive.jl")
-include("./diagnostic-testing/calculate-test-positivity.jl")
-include("./diagnostic-testing/create-test-arrays.jl")
 include("./diagnostic-testing/create-test-positive-vectors.jl")
 include("./diagnostic-testing/create-test-positive-container.jl")
 
-# Optimal Thresholds
-include("./optimal-thresholds/threshold-calculation.jl")
-include("./optimal-thresholds/threshold-summaries.jl")
-include("./optimal-thresholds/results-dataframes.jl")
-include("./optimal-thresholds/results-export.jl")
+# Detection
+include("./detection/accuracy-ensemble-calculation.jl")
+include("./detection/accuracy-simulation-calculation.jl")
+include("./detection/alert-generation.jl")
+include("./detection/classify-outbreaks.jl")
+include("./detection/detection-metric-functions.jl")
+include("./detection/match-alert-outbreak-thresholds.jl")
+include("./detection/threshold-bounds-calculation.jl")
 
 # Threshold Optimization
-include("./optimization-functions/threshold-optimization/optimization-wrapper.jl")
-include("./optimization-functions/threshold-optimization/scenario-creation.jl")
-include("./optimization-functions/threshold-optimization/result-loading.jl")
-include("./optimization-functions/threshold-optimization/results-retrieval.jl")
-include("./optimization-functions/threshold-optimization/checkpoint-loading.jl")
-include("./optimization-functions/threshold-optimization/missing-results.jl")
-include("./optimization-functions/threshold-optimization/confirm-proceed-with-optimization.jl")
-include("./optimization-functions/threshold-optimization/evaluate-optimization.jl")
-include("./optimization-functions/threshold-optimization/threshold-optimization.jl")
+include("./threshold-optimization/checkpoint-loading.jl")
+include("./threshold-optimization/confirm-proceed-with-optimization.jl")
+include("./threshold-optimization/evaluate-missing-optimizations.jl")
+include("./threshold-optimization/missing-results.jl")
+include("./threshold-optimization/multistart-objective-function.jl")
+include("./threshold-optimization/optimization-wrapper.jl")
+include("./threshold-optimization/result-loading.jl")
+include("./threshold-optimization/results-retrieval.jl")
+include("./threshold-optimization/scenario-creation.jl")
+include("./threshold-optimization/threshold-optimization.jl")
 
-# Vaccination
-include("./vaccination/vaccination-distribution-sample.jl")
+# Optimal Thresholds
+include("./optimal-thresholds/optimal-metrics-calculation.jl")
+# TODO: Update summaries below to be able to remove these files/adapt the underlying functions
+include("./optimal-thresholds/results-dataframes.jl")
+include("./optimal-thresholds/threshold-calculation.jl")
+include("./optimal-thresholds/threshold-summaries.jl")
 
-# include("./optimization-functions/common/objective-function.jl")
-# include("./optimization-functions/threshold-optimization/optimization-setup.jl")
-# include(
-#     "./optimization-functions/threshold-optimization/optimization-wrapper.jl"
-# )
-# include("./optimization-functions/threshold-optimization/scenario-creation.jl")
-# include("./optimization-functions/threshold-optimization/gridsearch-optimization-wrapper.jl")
-
-# Scenario Optimization
-# include("./optimization-functions/scenario-optimization/scenario-creation.jl")
-# include(
-#     "./optimization-functions/scenario-optimization/scenario-confirmation.jl"
-# )
-# include("./optimization-functions/scenario-optimization/results-loading.jl")
-# include("./optimization-functions/scenario-optimization/results-reshaping.jl")
-# include(
-#     "./optimization-functions/scenario-optimization/optimization-wrapper.jl"
-# )
 
 end
