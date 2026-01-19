@@ -19,7 +19,7 @@ temporal bounds of detected outbreaks.
   minimum_outbreak_duration, and minimum_outbreak_size
 
 # Returns
-- `outbreak_status`: Binary vector (0/1) indicating outbreak status at each
+- `outbreak_status`: Binary vector (true/false) indicating outbreak status at each
   time point
 - `outbreak_bounds`: Matrix with rows representing [start, end] indices of each
   detected outbreak
@@ -50,11 +50,11 @@ function get_outbreak_status(
         all_outbreak_bounds
     )
 
-    outbreak_status = zeros(Int64, length(inc_vec))
+    outbreak_status = zeros(Bool, length(inc_vec))
 
     for (lower, upper) in eachrow(outbreak_bounds)
         # @show lower, upper
-        outbreak_status[lower:upper] .= 1
+        outbreak_status[lower:upper] .= true
     end
     return outbreak_status, outbreak_bounds
 end
@@ -223,7 +223,7 @@ function create_schematic_simulation(
         outbreak_detection_specification.alert_threshold,
     )
     alert_bounds = OutbreakDetectionCore.calculate_outbreak_thresholds(
-        rle(alertstatus_vec .> 0); ncols = 3
+        rle(alertstatus_vec); ncols = 3
     )
     OutbreakDetectionCore.calculate_outbreak_duration!(alert_bounds)
 
