@@ -22,4 +22,11 @@ using JET
     include("collect-thresholds-vec_functions.jl")
     include("optimal-threshold-functions.jl")
     include("optimization-wrapper.jl")
+    include("outbreak-status.jl")
+    include("outbreak-classification-outbreakspec.jl")
+    include("alert-generation.jl")
+    include("accuracy-calculation.jl")
+    include("match-alert-outbreak-bounds.jl")
+    include("detection-metric-functions.jl")
+    include("missing-results.jl")
 end

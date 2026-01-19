@@ -30,7 +30,7 @@
         )
 
         # Test return types and lengths
-        @test outbreak_status_vecs isa Vector{Vector{Int64}}
+        @test outbreak_status_vecs isa Vector{Vector{Bool}}
         @test outbreak_bounds_vecs isa Vector{Matrix{Int64}}
         @test length(outbreak_status_vecs) == 1
         @test length(outbreak_bounds_vecs) == 1
@@ -38,9 +38,9 @@
         # Test outbreak status vector
         status = outbreak_status_vecs[1]
         @test length(status) == 99
-        @test all(status[1:9] .== 0)      # Before outbreak
-        @test all(status[10:60] .== 1)    # During outbreak
-        @test all(status[61:99] .== 0)    # After outbreak
+        @test all(status[1:9] .== false)      # Before outbreak
+        @test all(status[10:60] .== true)    # During outbreak
+        @test all(status[61:99] .== false)    # After outbreak
 
         # Test outbreak bounds
         bounds = outbreak_bounds_vecs[1]
@@ -76,19 +76,19 @@
         @test size(bounds, 1) == 2
 
         # Test first outbreak
-        @test all(status[10:60] .== 1)
+        @test all(status[10:60] .== true)
         @test bounds[1, 1] == 10
         @test bounds[1, 2] == 60
 
         # Test second outbreak
-        @test all(status[80:160] .== 1)
+        @test all(status[80:160] .== true)
         @test bounds[2, 1] == 80
         @test bounds[2, 2] == 160
 
         # Test baseline periods
-        @test all(status[1:9] .== 0)
-        @test all(status[61:79] .== 0)
-        @test all(status[161:199] .== 0)
+        @test all(status[1:9] .== false)
+        @test all(status[61:79] .== false)
+        @test all(status[161:199] .== false)
     end
 
     @testset "Single simulation - no outbreaks" begin
@@ -106,7 +106,7 @@
         bounds = outbreak_bounds_vecs[1]
 
         # No outbreaks detected
-        @test all(status .== 0)
+        @test all(status .== false)
         @test size(bounds, 1) == 0  # Empty matrix
     end
 
@@ -129,7 +129,7 @@
         bounds = outbreak_bounds_vecs[1]
 
         # Period not classified as outbreak (too short)
-        @test all(status .== 0)
+        @test all(status .== false)
         @test size(bounds, 1) == 0
     end
 
@@ -152,7 +152,7 @@
         bounds = outbreak_bounds_vecs[1]
 
         # Period not classified as outbreak (too small)
-        @test all(status .== 0)
+        @test all(status .== false)
         @test size(bounds, 1) == 0
     end
 
@@ -191,15 +191,15 @@
         @test length(outbreak_bounds_vecs) == 3
 
         # Test first simulation
-        @test all(outbreak_status_vecs[1][10:60] .== 1)
+        @test all(outbreak_status_vecs[1][10:60] .== true)
         @test size(outbreak_bounds_vecs[1], 1) == 1
 
         # Test second simulation
-        @test all(outbreak_status_vecs[2][20:60] .== 1)
+        @test all(outbreak_status_vecs[2][20:60] .== true)
         @test size(outbreak_bounds_vecs[2], 1) == 1
 
         # Test third simulation (no outbreak)
-        @test all(outbreak_status_vecs[3] .== 0)
+        @test all(outbreak_status_vecs[3] .== false)
         @test size(outbreak_bounds_vecs[3], 1) == 0
     end
 
@@ -220,7 +220,7 @@
         status = outbreak_status_vecs[1]
         bounds = outbreak_bounds_vecs[1]
 
-        @test all(status[1:40] .== 1)
+        @test all(status[1:40] .== true)
         @test bounds[1, 1] == 1
         @test bounds[1, 2] == 40
     end
@@ -242,7 +242,7 @@
         status = outbreak_status_vecs[1]
         bounds = outbreak_bounds_vecs[1]
 
-        @test all(status[60:99] .== 1)
+        @test all(status[60:99] .== true)
         @test bounds[1, 1] == 60
         @test bounds[1, 2] == 99
     end
@@ -261,7 +261,7 @@
         status = outbreak_status_vecs[1]
         bounds = outbreak_bounds_vecs[1]
 
-        @test all(status .== 1)
+        @test all(status .== true)
         @test size(bounds, 1) == 1
         @test bounds[1, 1] == 1
         @test bounds[1, 2] == 99
@@ -281,21 +281,21 @@
         status_strict, bounds_strict = create_outbreak_status_vecs(
             seir_results, outbreak_spec_strict
         )
-        @test all(status_strict[1] .== 0)  # 12 < 15, no outbreak
+        @test all(status_strict[1] .== false)  # 12 < 15, no outbreak
 
         # Test with looser duration requirement
         outbreak_spec_loose_dur = OutbreakSpecification(5, 10, 500)
         status_loose, bounds_loose = create_outbreak_status_vecs(
             seir_results, outbreak_spec_loose_dur
         )
-        @test all(status_loose[1][10:60] .== 1)  # Still outbreak
+        @test all(status_loose[1][10:60] .== true)  # Still outbreak
 
         # Test with looser size requirement
         outbreak_spec_loose_size = OutbreakSpecification(5, 30, 100)
         status_loose_size, bounds_loose_size = create_outbreak_status_vecs(
             seir_results, outbreak_spec_loose_size
         )
-        @test all(status_loose_size[1][10:60] .== 1)  # Still outbreak
+        @test all(status_loose_size[1][10:60] .== true)  # Still outbreak
     end
 
     @testset "Outbreak bounds matrix structure" begin
@@ -355,10 +355,10 @@
         for i in 1:size(bounds, 1)
             start_idx = bounds[i, 1]
             end_idx = bounds[i, 2]
-            @test all(status[start_idx:end_idx] .== 1)
+            @test all(status[start_idx:end_idx] .== true)
         end
 
-        # Verify that non-outbreak periods are 0
+        # Verify that non-outbreak periods are false
         outbreak_days = Set{Int}()
         for i in 1:size(bounds, 1)
             for day in bounds[i, 1]:bounds[i, 2]
@@ -368,7 +368,7 @@
 
         for day in 1:length(status)
             if day ∉ outbreak_days
-                @test status[day] == 0
+                @test status[day] == false
             end
         end
     end

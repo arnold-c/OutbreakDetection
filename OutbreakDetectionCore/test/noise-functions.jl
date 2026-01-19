@@ -69,9 +69,6 @@
     end
 
     # Test Dynamical Noise
-    # We need enddates for create_noise_vecs
-    enddates = fill(time_parameters.tlength, nsims)
-
     # Create noise dynamics parameters for the test
     noise_dynamics_params = create_noise_dynamics_parameters(
         dynamical_noise,
@@ -82,8 +79,7 @@
     noise_run = create_noise_vecs(
         dynamical_noise,
         ensemble_spec,
-        noise_dynamics_params,
-        enddates;
+        noise_dynamics_params;
         seed = seed
     )
 
@@ -96,7 +92,6 @@
     poisson_run = create_noise_vecs(
         poisson_noise,
         ensemble_spec,
-        enddates,
         seir_results;
         seed = seed
     )

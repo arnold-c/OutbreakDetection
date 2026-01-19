@@ -66,17 +66,17 @@ using OutbreakDetectionCore, StatsBase
 
         @test begin
             outbreakvec = detectoutbreak(incvec, threshold)
-            outbreakvec == [0, 0, 1, 1, 1, 0, 0]
+            outbreakvec == [false, false, true, true, true, false, false]
         end
 
         @test begin
             outbreakvec = detectoutbreak(avgvec, threshold)
-            outbreakvec == [0, 0, 0, 1, 1, 1, 1]
+            outbreakvec == [false, false, false, true, true, true, true]
         end
 
         @test begin
             outbreakvec = detectoutbreak(incvec, avgvec, threshold)
-            outbreakvec == [0, 0, 1, 1, 1, 1, 1]
+            outbreakvec == [false, false, true, true, true, true, true]
         end
     end
 
