@@ -1,7 +1,31 @@
 export optimize_dynamic_noise_params
 
+function optimize_dynamic_noise_params_wrapper(
+        ensemble_specification::EnsembleSpecification,
+        seir_results::StructVector{SEIRRun},
+        target_scaling::Float64,
+        optimization_params::NoiseVaccinationOptimizationParameters = NoiseVaccinationOptimizationParameters();
+        verbose = false,
+        seed = 1234
+    )
+
+    # Calculate trimmed mean incidence up to endpoints
+    overall_mean = calculate_mean_incidence(seir_results)
+
+    # Call the original optimization function with the computed mean
+    return optimize_dynamic_noise_params(
+        ensemble_specification,
+        overall_mean,
+        target_scaling,
+        optimization_params;
+        verbose = verbose,
+        seed = seed
+    )
+end
+
+
 """
-    optimize_dynamic_noise_params(target_scaling, mean_target_incidence, noise_spec, ensemble_spec, base_dynamics, opt_params=NoiseVaccinationOptimizationParameters(); verbose=false, seed=1234)
+    optimize_dynamic_noise_params(target_scaling, mean_target_incidence, noise_spec, ensemble_spec, base_dynamics, optimization_params=NoiseVaccinationOptimizationParameters(); verbose=false, seed=1234)
 
 Optimize vaccination coverage to achieve target noise level.
 
@@ -29,7 +53,7 @@ Uses multistart optimization with:
 - `noise_spec::DynamicalNoiseSpecification`: Noise specification with vaccination_bounds
 - `ensemble_spec::EnsembleSpecification`: Ensemble parameters for noise simulations
 - `base_dynamics::DynamicsParameterSpecification`: Base disease dynamics (not used for Reff)
-- `opt_params::NoiseVaccinationOptimizationParameters`: Optimization settings (optional)
+- `optimization_params::NoiseVaccinationOptimizationParameters`: Optimization settings (optional)
 
 # Keyword Arguments
 - `verbose::Bool`: Print optimization progress (default: false)
@@ -46,7 +70,7 @@ Named tuple with:
 # Errors
 Throws an error if:
 - Optimization fails to converge
-- Achieved noise differs from target by more than `opt_params.atol`
+- Achieved noise differs from target by more than `optimization_params.atol`
 
 # Examples
 ```julia
@@ -74,13 +98,13 @@ println("Use vaccination coverage: \$(result.optimal_vaccination)")
 println("This produces mean noise: \$(result.mean_noise)")
 
 # Fast optimization for testing
-opt_params = NoiseVaccinationOptimizationParameters(
+optimization_params = NoiseVaccinationOptimizationParameters(
     n_sobol_points = 10,
     maxeval = 100,
     atol = 0.5
 )
 result = optimize_dynamic_noise_params(
-    7.0, 3.0, noise_spec, ensemble_spec, base_dynamics, opt_params;
+    7.0, 3.0, noise_spec, ensemble_spec, base_dynamics, optimization_params;
     verbose = true
 )
 ```
@@ -91,18 +115,15 @@ result = optimize_dynamic_noise_params(
 - [`calculate_mean_dynamical_noise`](@ref): Objective function
 """
 function optimize_dynamic_noise_params(
+        ensemble_specification::EnsembleSpecification,
+        enddates_vec::Vector{Int64},
+        measles_daily_incidence::Float64,
         target_scaling::Float64,
-        mean_target_incidence::Float64,
-        noise_spec::DynamicalNoiseSpecification,
-        ensemble_spec::EnsembleSpecification,
-        base_dynamics::DynamicsParameterSpecification,
-        opt_params::NoiseVaccinationOptimizationParameters = NoiseVaccinationOptimizationParameters();
-        verbose::Bool = false,
-        seed::Int = 1234,
+        optimization_params::NoiseVaccinationOptimizationParameters = NoiseVaccinationOptimizationParameters();
+        verbose = false,
+        seed = 1234
     )
-    UnPack.@unpack vaccination_bounds = noise_spec
-    UnPack.@unpack n_sobol_points, local_algorithm, xtol_rel, xtol_abs, maxeval, atol =
-        opt_params
+    UnPack.@unpack vaccination_bounds = ensemble_specification.dynamical_noise_specification
 
     target_noise = target_scaling * mean_target_incidence
 
@@ -112,29 +133,34 @@ function optimize_dynamic_noise_params(
         println("Starting multistart optimization with $n_sobol_points points...")
     end
 
-    # Define objective function
-    objective = function (params)
-        vaccination_coverage = params[1]
+    # Pre-extract ensemble specification components to avoid repeated unpacking
+    N = ensemble_specification.state_parameters.init_states.N
 
-        # Create noise instance with this vaccination coverage
-        noise_instance = DynamicalNoise(noise_spec, vaccination_coverage)
+    # Define objective function: minimize squared difference from target
+    objective = let target_noise = target_noise,
+            ensemble_specification = ensemble_specification,
+            N = N,
+            verbose = verbose
+        function (params)
+            vaccination_coverage = params[1]
 
-        # Calculate mean noise
-        noise_level = calculate_mean_dynamical_noise(
-            noise_instance, ensemble_spec, base_dynamics; seed = seed
-        )
+            # Ensure susceptible proportion is valid and will result in positive compartments
+            # Use stricter bounds to prevent numerical issues with very small populations
+            min_safe_prop = max(1.0 / N, 0.001)  # At least 1 person or 0.1%, whichever is larger
+            max_safe_prop = min(1.0 - 1.0 / N, 0.999)  # At most N-1 people or 99.9%, whichever is smaller
 
-        if verbose
-            println(
-                "  Vax: $(round(vaccination_coverage; digits = 4)), " *
-                    "Noise: $(round(noise_level; digits = 2)), " *
-                    "Target: $(round(target_noise; digits = 2))",
+            noise_level = calculate_mean_dynamical_noise(
+                ensemble_specification,
+                vaccination_coverage;
+                verbose = verbose,
+                seed = seed
             )
-        end
 
-        # Return squared error
-        return (noise_level - target_noise)^2
+            # Return squared error from target
+            return (noise_level - target_noise)^2
+        end
     end
+
 
     # Setup multistart optimization
     problem = MultistartOptimization.MinimizationProblem(
@@ -145,11 +171,14 @@ function optimize_dynamic_noise_params(
 
     # Configure local method
     local_method = MultistartOptimization.NLopt_local_method(
-        local_algorithm; xtol_rel = xtol_rel, xtol_abs = xtol_abs, maxeval = maxeval
+        optimization_params.local_algorithm;
+        xtol_rel = optimization_params.xtol_rel,
+        xtol_abs = optimization_params.xtol_abs,
+        maxeval = optimization_params.maxeval
     )
 
     # Configure multistart method
-    multistart_method = MultistartOptimization.TikTak(n_sobol_points)
+    multistart_method = MultistartOptimization.TikTak(optimization_params.n_sobol_points)
 
     if verbose
         println("Running multistart optimization...")
@@ -157,46 +186,34 @@ function optimize_dynamic_noise_params(
 
     # Run optimization
     result = MultistartOptimization.multistart_minimization(
-        multistart_method, local_method, problem
+        multistart_method,
+        local_method,
+        problem
     )
 
-    # Extract results
-    optimal_vaccination = result.location[1]
-    achieved_noise = calculate_mean_dynamical_noise(
-        DynamicalNoise(noise_spec, optimal_vaccination),
-        ensemble_spec,
-        base_dynamics;
-        seed = seed,
-    )
-    difference = abs(achieved_noise - target_noise)
-
-    # Check convergence
     if !in(result.ret, [:SUCCESS, :XTOL_REACHED, :FTOL_REACHED, :STOPVAL_REACHED]) ||
-            difference > atol
-        error(
-            "Optimization failed or did not converge.\n" *
-                "Return code: $(result.ret)\n" *
-                "Optimal vaccination: $(optimal_vaccination)\n" *
-                "Target noise: $(target_noise)\n" *
-                "Achieved noise: $(achieved_noise)\n" *
-                "Difference: $(difference)\n" *
-                "Tolerance: $(atol)",
+            sqrt(result.value) > optimization_params.atol
+
+        optimal_vaccination_coverage = result.location[1]
+
+        optimized_noise = calculate_mean_dynamical_noise(
+            dynamical_noise_spec,
+            optimal_vaccination_coverage,
+            ensemble_specification;
+            verbose = false,
+            seed = seed
         )
+
+        error_msg = "Unsuccessful optimization." *
+            "\nReturn code: $(result.ret)" *
+            "\nAbsolute difference: $(sqrt(result.value))" *
+            "\nTarget value: $(target_noise)" *
+            "\nOptimized value: $(optimized_noise)" *
+            "\nOptimization parameters: Vax. prop = $(optimal_vaccination_coverage)"
+
+
+        error(error_msg)
     end
 
-    if verbose
-        println("\nOptimization successful!")
-        println("Optimal vaccination coverage: $(round(optimal_vaccination; digits = 4))")
-        println("Target noise: $(round(target_noise; digits = 2))")
-        println("Achieved noise: $(round(achieved_noise; digits = 2))")
-        println("Difference: $(round(difference; digits = 4))")
-    end
-
-    return (
-        optimal_vaccination = optimal_vaccination,
-        mean_noise = achieved_noise,
-        target_noise = target_noise,
-        difference = difference,
-        optimization_result = result,
-    )
+    return result
 end
