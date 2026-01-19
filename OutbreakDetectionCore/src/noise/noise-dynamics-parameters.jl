@@ -1,7 +1,7 @@
-export create_noise_dynamics_parameters
+export recreate_noise_dynamics_spec
 
 """
-    create_noise_dynamics_parameters(noise_spec, base_dynamics, population_N)
+    create_noise_dynamics_parameters(noise_specification, dynamics_parameter_specification, population_N)
 
 Create dynamics parameters for noise simulation.
 
@@ -10,8 +10,8 @@ adjusting seasonality and transmission parameters based on the correlation
 type specified in the noise specification.
 
 # Arguments
-- `noise_spec::DynamicalNoise`: Noise specification with vaccination coverage
-- `base_dynamics::DynamicsParameterSpecification`: Base disease dynamics
+- `noise_specification::DynamicalNoise`: Noise specification with vaccination coverage
+- `dynamics_parameter_specification::DynamicsParameterSpecification`: Base disease dynamics
 - `population_N::Int64`: Population size
 
 # Returns
@@ -33,7 +33,7 @@ The function:
 # Examples
 ```julia
 # Create noise specification
-noise_spec = DynamicalNoise(
+noise_specification = DynamicalNoise(
     R_0 = 5.0,
     latent_period = 7.0,
     duration_infection = 14.0,
@@ -49,18 +49,18 @@ target = TargetDiseaseDynamicsParameters(
     infectious_duration_days = 8.0,
     beta_force = 0.2
 )
-base_dynamics = DynamicsParameterSpecification(target)
+dynamics_parameter_specification = DynamicsParameterSpecification(target)
 
 # Create noise dynamics
 noise_dynamics = create_noise_dynamics_parameters(
-    noise_spec,
-    base_dynamics,
+    noise_specification,
+    dynamics_parameter_specification,
     500_000
 )
 
 # noise_dynamics has:
 # - Same seasonality as base (in-phase)
-# - R_0 = 5.0 (from noise_spec)
+# - R_0 = 5.0 (from noise_specification)
 # - Different latent/infectious periods
 # - vaccination_coverage = 0.65
 ```
@@ -70,31 +70,35 @@ noise_dynamics = create_noise_dynamics_parameters(
 - [`DynamicsParameterSpecification`](@ref): Base dynamics type
 - [`SeasonalityFunction`](@ref): Seasonality sum type
 """
-function create_noise_dynamics_parameters(
-        noise_spec::DynamicalNoise,
-        base_dynamics::DynamicsParameterSpecification,
-        population_N::Int64,
+function recreate_noise_dynamics_spec(
+        noise_specification::DynamicalNoise,
+        ensemble_specification::EnsembleSpecification
     )
+    UnPack.@unpack state_parameters,
+        dynamics_parameter_specification = ensemble_specification
+
+    N = state_parameters.init_states.N
+
     # Adjust beta_force based on correlation
-    noise_beta_force = if noise_spec.correlation == "none"
+    noise_beta_force = if noise_specification.correlation == "none"
         0.0
     else
-        base_dynamics.beta_force
+        dynamics_parameter_specification.beta_force
     end
 
     # Adjust seasonality based on correlation (using sum types)
-    noise_seasonality = if noise_spec.correlation == "out-of-phase"
+    noise_seasonality = if noise_specification.correlation == "out-of-phase"
         # Flip seasonality for out-of-phase correlation
-        base_variant = LightSumTypes.variant(base_dynamics.seasonality)
+        base_variant = LightSumTypes.variant(dynamics_parameter_specification.seasonality)
         if base_variant isa CosineSeasonality
             SeasonalityFunction(SineSeasonality())
         elseif base_variant isa SineSeasonality
             SeasonalityFunction(CosineSeasonality())
         else
-            base_dynamics.seasonality
+            dynamics_parameter_specification.seasonality
         end
     else
-        base_dynamics.seasonality
+        dynamics_parameter_specification.seasonality
     end
 
     # Calculate noise-specific parameters
@@ -102,7 +106,16 @@ function create_noise_dynamics_parameters(
     noise_sigma = calculate_sigma(dynamical_noise_params)
 
     noise_beta_mean = calculate_beta(
-        noise_spec.R_0, noise_gamma, base_dynamics.mu, 1, population_N
+        noise_specification.R_0,
+        noise_sigma,
+        noise_gamma,
+        dynamics_parameter_specification.mu,
+    )
+
+    noise_epsilon = calculate_import_rate(
+        dynamics_parameter_specification.mu,
+        noise_specification.R_0,
+        N
     )
 
     return DynamicsParameters(
@@ -111,10 +124,10 @@ function create_noise_dynamics_parameters(
         seasonality = noise_seasonality,
         sigma = noise_sigma,
         gamma = noise_gamma,
-        mu = base_dynamics.mu,
-        annual_births_per_k = base_dynamics.annual_births_per_k,
+        mu = dynamics_parameter_specification.mu,
+        annual_births_per_k = dynamics_parameter_specification.annual_births_per_k,
         epsilon = noise_epsilon,
-        R_0 = noise_spec.R_0,
-        vaccination_coverage = noise_spec.vaccination_coverage,
+        R_0 = noise_specification.R_0,
+        vaccination_coverage = noise_specification.vaccination_coverage,
     )
 end
