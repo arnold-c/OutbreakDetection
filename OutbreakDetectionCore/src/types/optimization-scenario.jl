@@ -14,6 +14,7 @@ Base.@kwdef struct ScenarioSpecificationVecs
     alert_method_vec::Vector{AlertMethod}
     accuracy_metric_vec::Vector{AccuracyMetric}
     threshold_bounds_vec::Vector{@NamedTuple{lower::Float64, upper::Float64}}
+    outbreak_specification_vec::Vector{OutbreakSpecification}
 end
 
 """
@@ -28,6 +29,7 @@ Base.@kwdef struct OptimizationScenario
     alert_method::AlertMethod
     accuracy_metric::AccuracyMetric
     threshold_bounds::@NamedTuple{lower::Float64, upper::Float64}
+    outbreak_specification::OutbreakSpecification
 
     function OptimizationScenario(
             ensemble_specification,
@@ -38,6 +40,7 @@ Base.@kwdef struct OptimizationScenario
             alert_method,
             accuracy_metric,
             threshold_bounds,
+            outbreak_specification,
         )
         @assert noise_type_description in [:static, :dynamic] "The noise type must be either :static or :dynamic. Received $noise_type_description"
         @assert threshold_bounds.lower < threshold_bounds.upper
@@ -50,7 +53,8 @@ Base.@kwdef struct OptimizationScenario
             percent_tested,
             alert_method,
             accuracy_metric,
-            threshold_bounds
+            threshold_bounds,
+            outbreak_specification
         )
     end
 end

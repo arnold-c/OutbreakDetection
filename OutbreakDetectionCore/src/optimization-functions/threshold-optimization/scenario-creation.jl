@@ -8,7 +8,8 @@ function create_scenarios_structvector(specification_vecs::ScenarioSpecification
         percent_tested_vec,
         alert_method_vec,
         accuracy_metric_vec,
-        threshold_bounds_vec = specification_vecs
+        threshold_bounds_vec,
+        outbreak_specification_vec = specification_vecs
 
     combinations = Iterators.product(
         ensemble_specification_vec,
@@ -18,7 +19,8 @@ function create_scenarios_structvector(specification_vecs::ScenarioSpecification
         percent_tested_vec,
         alert_method_vec,
         accuracy_metric_vec,
-        threshold_bounds_vec
+        threshold_bounds_vec,
+        outbreak_specification_vec,
     )
     n_combinations = length(combinations)
 
@@ -34,6 +36,7 @@ function create_scenarios_structvector(specification_vecs::ScenarioSpecification
                 alert_method,
                 accuracy_metric,
                 threshold_bounds,
+                outbreak_spec,
             ),
         ) in enumerate(combinations)
 
@@ -45,7 +48,8 @@ function create_scenarios_structvector(specification_vecs::ScenarioSpecification
             percent_tested = percent_tested,
             alert_method = alert_method,
             accuracy_metric = accuracy_metric,
-            threshold_bounds = threshold_bounds
+            threshold_bounds = threshold_bounds,
+            outbreak_specification = outbreak_spec,
         )
     end
 
