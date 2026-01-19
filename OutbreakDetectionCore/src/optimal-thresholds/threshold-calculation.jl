@@ -1,8 +1,9 @@
-export calculate_optimal_threshold, calculate_OptimalThresholdCharacteristics
+export calculate_optimal_threshold,
+    calculate_OptimalThresholdCharacteristics
 
 """
-    calculate_OptimalThresholdCharacteristics(percent_clinic_tested_vec, 
-                                              ind_test_spec_vec, 
+    calculate_OptimalThresholdCharacteristics(percent_clinic_tested_vec,
+                                              ind_test_spec_vec,
                                               base_parameters)
 
 Calculate optimal threshold characteristics for multiple test specifications.
@@ -74,9 +75,11 @@ function calculate_OptimalThresholdCharacteristics(
 end
 
 """
-    calculate_optimal_threshold(percent_clinic_tested, 
-                                individual_test_specification, 
-                                base_parameters)
+    calculate_optimal_threshold(
+    	percent_clinic_tested,
+    	individual_test_specification,
+    	base_parameters
+    )
 
 Calculate optimal alert threshold for a given test specification.
 """
