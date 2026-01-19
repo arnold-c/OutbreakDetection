@@ -1,10 +1,10 @@
-export TargetDiseaseDynamicsParameters,
-    CommonDiseaseDynamicsParameters,
+export DynamicsParameters,
     DynamicsParameterSpecification,
-    DynamicsParameters,
+    TargetDiseaseDynamicsParameters,
     SeasonalityFunction,
     CosineSeasonality,
-    SineSeasonality
+    SineSeasonality,
+    CommonDiseaseDynamicsParameters
 
 # Seasonality sum types
 abstract type AbstractSeasonalityFunction end
@@ -70,14 +70,17 @@ Base.@kwdef struct TargetDiseaseDynamicsParameters
     max_vaccination_coverage::Float64 = 0.9
 
     function TargetDiseaseDynamicsParameters(
-        R_0,
-        latent_period_days,
-        infectious_duration,
-        beta_force,
-        seasonality,
-        min_vaccination_coverage,
-        max_vaccination_coverage,
-    )
+            R_0,
+            latent_period_days,
+            infectious_duration,
+            beta_force,
+            seasonality,
+            min_vaccination_coverage,
+            max_vaccination_coverage,
+        )
+        @assert R_0 > 0 "R_0 must be positive"
+        @assert Dates.value(latent_period) > 0 "Latent period must be positive"
+        @assert Dates.value(duration_infection) > 0 "Infectious duration must be positive"
         @assert min_vaccination_coverage >= 0.0
         @assert min_vaccination_coverage <= max_vaccination_coverage <= 1.0
 
@@ -96,71 +99,6 @@ end
 Base.@kwdef struct CommonDiseaseDynamicsParameters
     births_per_k_pop::Float64
     nsims::Int64
-end
-
-"""
-    DynamicsParameterSpecification
-
-Derived specification with calculated transmission and demographic parameters.
-
-This intermediate type contains all calculated values needed for simulation,
-derived from user-specified target parameters. It does not include
-vaccination coverage, which is specified when creating a concrete
-DynamicsParameters instance.
-
-# Fields
-
-  - `beta_mean::Float64`: Mean transmission rate
-  - `beta_force::Float64`: Amplitude of seasonal forcing
-  - `seasonality::SeasonalityFunction`: Seasonality function
-  - `sigma::Float64`: Rate of progression from E to I (1/latent period)
-  - `gamma::Float64`: Recovery rate (1/infectious period)
-  - `mu::Float64`: Birth/death rate
-  - `annual_births_per_k::Float64`: Annual births per 1000 population
-  - `epsilon::Float64`: Import rate
-  - `R_0::Float64`: Basic reproduction number
-  - `population_N::Int64`: Population size
-
-# Constructors
-
-    DynamicsParameterSpecification(target::TargetDiseaseDynamicsParameters)
-
-Create specification from target parameters with automatic calculation of
-derived quantities.
-
-# Examples
-
-```julia
-target = TargetDiseaseDynamicsParameters(;
-    R_0 = 16.0,
-    latent_period_days = 10.0,
-    infectious_duration_days = 8.0,
-    beta_force = 0.2,
-)
-
-spec = DynamicsParameterSpecification(target)
-# spec.sigma ≈ 0.1 (1/10 days)
-# spec.gamma ≈ 0.125 (1/8 days)
-# spec.beta_mean calculated from R_0
-```
-
-# See Also
-
-  - [`TargetDiseaseDynamicsParameters`](@ref): User-facing specification
-  - [`DynamicsParameters`](@ref): Concrete instance for simulation
-"""
-Base.@kwdef struct DynamicsParameterSpecification
-    beta_mean::Float64
-    beta_force::Float64
-    seasonality::SeasonalityFunction
-    sigma::Float64
-    gamma::Float64
-    mu::Float64
-    annual_births_per_k::Float64
-    epsilon::Float64
-    R_0::Float64
-    min_vaccination_coverage::Float64
-    max_vaccination_coverage::Float64
 end
 
 """
@@ -221,6 +159,73 @@ Base.@kwdef struct DynamicsParameters
     epsilon::Float64
     R_0::Float64
     vaccination_coverage::Float64
+end
+
+"""
+    DynamicsParameterSpecification
+
+Derived specification with calculated transmission and demographic parameters.
+
+This intermediate type contains all calculated values needed for simulation,
+derived from user-specified target parameters. It does not include
+vaccination coverage, which is specified when creating a concrete
+DynamicsParameters instance.
+
+# Fields
+
+  - `beta_mean::Float64`: Mean transmission rate
+  - `beta_force::Float64`: Amplitude of seasonal forcing
+  - `seasonality::SeasonalityFunction`: Seasonality function
+  - `sigma::Float64`: Rate of progression from E to I (1/latent period)
+  - `gamma::Float64`: Recovery rate (1/infectious period)
+  - `mu::Float64`: Birth/death rate
+  - `annual_births_per_k::Float64`: Annual births per 1000 population
+  - `epsilon::Float64`: Import rate
+  - `R_0::Float64`: Basic reproduction number
+  - `population_N::Int64`: Population size
+  - `min_vaccination_coverage::Float64`: The lower bound of the Uniform distribution to sample the vaccination coverage from
+  - `max_vaccination_coverage::Float64`: The upper bound of the Uniform distribution to sample the vaccination coverage from
+
+# Constructors
+
+    DynamicsParameterSpecification(target::TargetDiseaseDynamicsParameters)
+
+Create specification from target parameters with automatic calculation of
+derived quantities.
+
+# Examples
+
+```julia
+target = TargetDiseaseDynamicsParameters(;
+    R_0 = 16.0,
+    latent_period_days = 10.0,
+    infectious_duration_days = 8.0,
+    beta_force = 0.2,
+)
+
+spec = DynamicsParameterSpecification(target)
+# spec.sigma ≈ 0.1 (1/10 days)
+# spec.gamma ≈ 0.125 (1/8 days)
+# spec.beta_mean calculated from R_0
+```
+
+# See Also
+
+  - [`TargetDiseaseDynamicsParameters`](@ref): User-facing specification
+  - [`DynamicsParameters`](@ref): Concrete instance for simulation
+"""
+Base.@kwdef struct DynamicsParameterSpecification
+    beta_mean::Float64
+    beta_force::Float64
+    seasonality::SeasonalityFunction
+    sigma::Float64
+    gamma::Float64
+    mu::Float64
+    annual_births_per_k::Float64
+    epsilon::Float64
+    R_0::Float64
+    min_vaccination_coverage::Float64
+    max_vaccination_coverage::Float64
 end
 
 # Constructor: TargetDiseaseDynamicsParameters → DynamicsParameterSpecification
@@ -312,21 +317,21 @@ dynamics = DynamicsParameters(spec)
 ```
 """
 function DynamicsParameters(
-    dynamic_parameter_specification::DynamicsParameterSpecification;
-    seed = 1234,
-)
+        dynamic_parameter_specification::DynamicsParameterSpecification;
+        seed = 1234,
+    )
     Random.seed!(seed)
 
     vaccination_coverage =
-        if dynamic_parameter_specification.min_vaccination_coverage ==
+    if dynamic_parameter_specification.min_vaccination_coverage ==
             dynamic_parameter_specification.max_vaccination_coverage
-            dynamic_parameter_specification.min_vaccination_coverage
-        else
-            sample_vaccination_coverage(
-                dynamic_parameter_specification.min_vaccination_coverage,
-                dynamic_parameter_specification.max_vaccination_coverage,
-            )
-        end
+        dynamic_parameter_specification.min_vaccination_coverage
+    else
+        sample_vaccination_coverage(
+            dynamic_parameter_specification.min_vaccination_coverage,
+            dynamic_parameter_specification.max_vaccination_coverage,
+        )
+    end
 
     dynamics_parameters = DynamicsParameters(;
         beta_mean = dynamic_parameter_specification.beta_mean,
