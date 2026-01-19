@@ -98,12 +98,12 @@ function create_noise_dynamics_parameters(
     end
 
     # Calculate noise-specific parameters
-    noise_gamma = 1.0 / noise_spec.duration_infection
-    noise_sigma = 1.0 / noise_spec.latent_period
+    noise_gamma = calculate_gamma(dynamical_noise_params)
+    noise_sigma = calculate_sigma(dynamical_noise_params)
+
     noise_beta_mean = calculate_beta(
         noise_spec.R_0, noise_gamma, base_dynamics.mu, 1, population_N
     )
-    noise_epsilon = calculate_import_rate(base_dynamics.mu, noise_spec.R_0, population_N)
 
     return DynamicsParameters(
         beta_mean = noise_beta_mean,

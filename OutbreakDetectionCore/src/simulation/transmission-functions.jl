@@ -1,6 +1,5 @@
 export calculate_beta,
     calculate_gamma,
-    calculate_infectious_duration,
     calculateReffective,
     calculateReffective_t!,
     calculate_beta_amp,
@@ -28,76 +27,63 @@ Solving for β:
   - `mu`: Death rate
 """
 function calculate_beta(
-    R_0::Float64,
-    sigma::Float64,
-    gamma::Float64,
-    mu::Float64,
-)::Float64
+        R_0::Float64,
+        sigma::Float64,
+        gamma::Float64,
+        mu::Float64,
+    )::Float64
     return R_0 * (sigma + mu) * (gamma + mu) / sigma
 end
 
 """
-    calculate_infectious_duration(R_0, beta, sigma, mu)
+    calculate_sigma(
+    	specification::Union{DynamicalNoiseSpecification, TargetDiseaseDynamicsParameters}
+    )
 
-Calculate the infectious duration for an SEIR model given R_0, beta, and other parameters.
+Calculate the rate of progression from exposed (E) to infectious (I) compartment.
 
-The infectious duration is the reciprocal of the recovery rate gamma:
-infectious_duration = 1 / γ
-
-where γ is calculated from the SEIR model relationship:
-γ = (β * σ) / (R_0 * (σ + μ)) - μ
+This is the inverse of the latent period, representing the rate at which
+exposed individuals become infectious in an SEIR model.
 
 # Arguments
 
-  - `R_0`: Basic reproduction number
-  - `beta`: Transmission rate
-  - `sigma`: Rate of progression from E to I (1/latent_period)
-  - `mu`: Death rate
+  - `specification`: Either a TargetDiseaseDynamicsParameters or DynamicalNoiseSpecification
+  object containing the latent_period
 
 # Returns
 
-  - `Float64`: The infectious duration (1/gamma)
+  - `Float64`: The progression rate sigma (1/latent_period)
 """
-function calculate_infectious_duration(
-    R_0::Float64,
-    beta::Float64,
-    sigma::Float64,
-    mu::Float64,
-)::Float64
-    return 1 / calculate_gamma(R_0, beta, sigma, mu)
+function calculate_sigma(
+        specification::Union{DynamicalNoiseSpecification, TargetDiseaseDynamicsParameters}
+    )::Float64
+    return 1.0 / Dates.days(specification.latent_period)
 end
 
+
 """
-    calculate_gamma(R_0, beta, sigma, mu)
+    calculate_gamma(
+    	specification::Union{DynamicalNoiseSpecification, TargetDiseaseDynamicsParameters}
+    )
 
-Calculate the recovery rate gamma for an SEIR model given R_0, beta, and other parameters.
+Calculate the recovery rate from the infectious (I) compartment.
 
-For an SEIR model with a single population:
-R_0 = (β * σ) / ((σ + μ) * (γ + μ))
-
-Solving for γ:
-γ = (β * σ) / (R_0 * (σ + μ)) - μ
+This is the inverse of the infectious period, representing the rate at which
+infectious individuals recover in an SEIR model.
 
 # Arguments
 
-  - `R_0`: Basic reproduction number
-  - `beta`: Transmission rate
-  - `sigma`: Rate of progression from E to I (1/latent_period)
-  - `mu`: Death rate
+  - `specification`: Either a TargetDiseaseDynamicsParameters or DynamicalNoiseSpecification
+  object containing the duration_infection
+
+# Returns
+
+  - `Float64`: The recovery rate gamma (1/duration_infection)
 """
 function calculate_gamma(
-    R_0::Float64,
-    beta::Float64,
-    sigma::Float64,
-    mu::Float64,
-)::Float64
-    gamma = (beta * sigma) / (R_0 * (sigma + mu)) - mu
-
-    if gamma <= 0
-        error("Calculated gamma is non-positive. Check parameter consistency.")
-    end
-
-    return gamma
+        specification::Union{DynamicalNoiseSpecification, TargetDiseaseDynamicsParameters}
+    )::Float64
+    return 1.0 / Dates.days(specification.duration_infection)
 end
 
 """
@@ -121,12 +107,12 @@ specified in `dynamics_parameters`.
   - `nothing` (modifies `beta_vec` in-place)
 """
 function calculate_beta_amp!(
-    beta_vec::V,
-    dynamics_parameters::Union{
-        DynamicsParameterSpecification,DynamicsParameters
-    },
-    time_parameters::SimTimeParameters,
-) where {V<:AbstractVector{<:AbstractFloat}}
+        beta_vec::V,
+        dynamics_parameters::Union{
+            DynamicsParameterSpecification, DynamicsParameters,
+        },
+        time_parameters::SimTimeParameters,
+    ) where {V <: AbstractVector{<:AbstractFloat}}
     beta_mean = dynamics_parameters.beta_mean
     beta_force = dynamics_parameters.beta_force
     seasonality = dynamics_parameters.seasonality
@@ -182,11 +168,11 @@ _calculate_beta_amp(beta_mean, beta_force, t, ::SineSeasonality) =
 Calculate the effective reproduction number, R_eff, at each time step for a given set of parameters.
 """
 function calculateReffective_t!(
-    Reff_vec::AbstractVector{Float64},
-    beta_vec::Vector{Float64},
-    dynamics_params::DynamicsParameters,
-    seir_arr,
-)::Nothing
+        Reff_vec::AbstractVector{Float64},
+        beta_vec::Vector{Float64},
+        dynamics_params::DynamicsParameters,
+        seir_arr,
+    )::Nothing
     for i in eachindex(Reff_vec)
         Reff_vec[i] = calculateReffective(
             beta_vec[i],
@@ -206,11 +192,11 @@ Calculate the effective reproduction number, R_eff, for a given set of parameter
 R_eff = R_0 * (S / N), where R_0 is calculated from beta and other parameters.
 """
 function calculateReffective(
-    beta_t::Float64,
-    dynamics_params::Union{DynamicsParameters,DynamicsParameterSpecification},
-    S::Int64,
-    N::Int64,
-)::Float64
+        beta_t::Float64,
+        dynamics_params::Union{DynamicsParameters, DynamicsParameterSpecification},
+        S::Int64,
+        N::Int64,
+    )::Float64
     R_0 = calculateR0(beta_t, dynamics_params)
     Reff = R_0 * (S / N)
 
@@ -224,10 +210,10 @@ Calculate the effective reproduction number, R_eff, for a given set of parameter
 R_eff = R_0 * (1 - vaccination_coverage), where R_0 is calculated from beta and other parameters.
 """
 function calculateReffective(
-    beta_t::Float64,
-    dynamics_params::Union{DynamicsParameters,DynamicsParameterSpecification},
-    vaccination_coverage::Float64,
-)::Float64
+        beta_t::Float64,
+        dynamics_params::Union{DynamicsParameters, DynamicsParameterSpecification},
+        vaccination_coverage::Float64,
+    )::Float64
     R_0 = calculateR0(beta_t, dynamics_params)
     Reff = R_0 * (1 - vaccination_coverage)
 
@@ -252,9 +238,9 @@ and calls the main calculateR0 function.
   - `Float64`: The basic reproduction number R_0
 """
 function calculateR0(
-    beta::Float64,
-    dynamics_params::Union{DynamicsParameters,DynamicsParameterSpecification},
-)
+        beta::Float64,
+        dynamics_params::Union{DynamicsParameters, DynamicsParameterSpecification},
+    )
     sigma = dynamics_params.sigma
     gamma = dynamics_params.gamma
     mu = dynamics_params.mu
@@ -282,11 +268,11 @@ R_0 = (β * σ) / ((σ + μ) * (γ + μ))
   - `Float64`: The basic reproduction number R_0
 """
 @inline function calculateR0(
-    beta::Float64,
-    sigma::Float64,
-    gamma::Float64,
-    mu::Float64,
-)::Float64
+        beta::Float64,
+        sigma::Float64,
+        gamma::Float64,
+        mu::Float64,
+    )::Float64
     return (beta * sigma) / ((sigma + mu) * (gamma + mu))
 end
 

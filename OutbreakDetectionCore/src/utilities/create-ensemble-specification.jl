@@ -77,16 +77,16 @@ ensemble_spec = create_ensemble_specifications(
   - [`calculate_vaccination_rate_to_achieve_Reff`](@ref): Function for calculating vaccination coverage
 """
 function create_ensemble_specifications(
-    label,
-	state_specification,
-    time_specification,
-    target_disease_dynamics_params::TargetDiseaseDynamicsParameters,
-    common_disease_dynamics_params::CommonDiseaseDynamicsParameters,
-    dynamical_noise_specification::DynamicalNoiseSpecification,
-)
+        label,
+        state_specification,
+        time_specification,
+        target_disease_dynamics_params::TargetDiseaseDynamicsParameters,
+        common_disease_dynamics_params::CommonDiseaseDynamicsParameters,
+        dynamical_noise_specification::DynamicalNoiseSpecification,
+    )
     mu = calculate_mu(common_disease_dynamics_params.births_per_k_pop)
-	sigma = 1 / Dates.value(target_disease_dynamics_params.latent_period)
-	gamma = 1 / Dates.value(target_disease_dynamics_params.infectious_duration)
+    gamma = calculate_gamma(target_disease_dynamics_params)
+    sigma = calculate_sigma(target_disease_dynamics_params)
 
     beta_mean = calculate_beta(
         target_disease_dynamics_params.R_0,
