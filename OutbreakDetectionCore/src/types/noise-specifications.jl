@@ -1,7 +1,4 @@
-export NoiseType,
-    PoissonNoiseType,
-    DynamicalNoiseType,
-    DynamicalNoiseSpecification,
+export DynamicalNoiseSpecification,
     DynamicalNoise,
     PoissonNoise,
     NoiseSpecification,
@@ -9,12 +6,6 @@ export NoiseType,
     get_noise_magnitude,
     getdirpath
 
-# Abstract types for sum type variants
-abstract type AbstractNoiseType end
-struct PoissonNoiseType <: AbstractNoiseType end
-struct DynamicalNoiseType <: AbstractNoiseType end
-
-LightSumTypes.@sumtype NoiseType(PoissonNoiseType, DynamicalNoiseType) <: AbstractNoiseType
 
 """
     DynamicalNoiseSpecification
@@ -71,8 +62,8 @@ spec = DynamicalNoiseSpecification(
 """
 Base.@kwdef struct DynamicalNoiseSpecification
     R_0::Float64
-    latent_period::Float64
-    duration_infection::Float64
+    latent_period::Dates.Day
+    infectious_duration::Dates.Day
     correlation::String
     poisson_component::Float64
     vaccination_bounds::Vector{Float64} = [0.0, 1.0]
@@ -86,8 +77,8 @@ Base.@kwdef struct DynamicalNoiseSpecification
             vaccination_bounds
         )
         @assert R_0 > 0 "R_0 must be positive"
-        @assert latent_period > 0 "Latent period must be positive"
-        @assert duration_infection > 0 "Infectious duration must be positive"
+        @assert Dates.days(latent_period) > 0 "Latent period must be positive"
+        @assert Dates.days(duration_infection) > 0 "Infectious duration must be positive"
         @assert correlation in ["in-phase", "out-of-phase", "none"] "Invalid correlation type"
         @assert poisson_component >= 0 "Poisson component must be non-negative"
         @assert length(vaccination_bounds) == 2 "Vaccination bounds must have 2 elements"
@@ -241,7 +232,6 @@ abstract type AbstractNoiseSpecification end
 LightSumTypes.@sumtype NoiseSpecification(PoissonNoise, DynamicalNoise) <:
 AbstractNoiseSpecification
 
-# Utility functions for backward compatibility
 
 """
     get_noise_description(noise::Union{PoissonNoise, DynamicalNoise})
@@ -306,23 +296,4 @@ function getdirpath(noise::Union{PoissonNoise, DynamicalNoise})
         joinpath,
         map(p -> "$(p)_$(getproperty(noise, p))", propertynames(noise))
     )
-end
-
-# Deprecated types for backward compatibility
-
-"""
-    PoissonNoiseSpecification
-
-**DEPRECATED**: Use `PoissonNoise` instead.
-
-This type is provided for backward compatibility but will be removed in a future version.
-"""
-struct PoissonNoiseSpecification
-    noise_type::String
-    noise_mean_scaling::Float64
-end
-
-function PoissonNoiseSpecification(noise_mean_scaling::Float64)
-    @warn "PoissonNoiseSpecification is deprecated. Use PoissonNoise instead."
-    return PoissonNoiseSpecification("Poisson", noise_mean_scaling)
 end
