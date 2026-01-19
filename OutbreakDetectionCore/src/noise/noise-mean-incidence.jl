@@ -1,54 +1,56 @@
-export calculate_mean_incidence
+export calculate_mean_dynamical_noise
 
 """
-    calculate_mean_incidence(seir_results)
+    calculate_mean_dynamical_noise(noise_spec, ensemble_spec, base_dynamics; verbose=false, seed=1234)
 
-Calculate mean incidence from SEIR simulation results.
+Calculate mean dynamical noise for given vaccination coverage.
 
-This function computes the mean daily incidence across all simulations
-and time points. It works efficiently with both StructVector and regular
-Vector of SEIRRun results.
+This is a wrapper function for optimization objectives. It runs noise
+simulations and returns only the mean noise level.
 
 # Arguments
-- `seir_results::Union{StructVector{SEIRRun}, Vector{SEIRRun}}`: SEIR simulation results
+- `noise_spec::DynamicalNoise`: Noise specification
+- `ensemble_spec::EnsembleSpecification`: Ensemble parameters
+- `base_dynamics::DynamicsParameterSpecification`: Base dynamics
+
+# Keyword Arguments
+- `verbose::Bool`: Print warnings (default: false)
+- `seed::Int`: Random seed (default: 1234)
 
 # Returns
-- `Float64`: Mean daily incidence across all simulations and time points
-
-# Implementation Notes
-When using StructVector, this function takes advantage of efficient column
-access. `seir_results.incidence` directly accesses the incidence column as
-a `Vector{Vector{Int64}}`, which is more efficient than iterating over
-individual SEIRRun structs.
+- `Float64`: Mean noise level (dynamical + Poisson components)
 
 # Examples
 ```julia
-# With StructVector (efficient)
-ensemble_results = StructVector{SEIRRun}([run1, run2, run3, ...])
-mean_inc = calculate_mean_incidence(ensemble_results)
-
-# With regular Vector (fallback)
-ensemble_results = [run1, run2, run3, ...]
-mean_inc = calculate_mean_incidence(ensemble_results)
-
-# Use in noise optimization
-target_mean = calculate_mean_incidence(target_disease_results)
-target_noise = 7.0 * target_mean  # High noise scenario
+# Use in optimization objective
+function objective(vaccination_coverage)
+    noise = DynamicalNoise(spec, vaccination_coverage)
+    noise_level = calculate_mean_dynamical_noise(
+        noise,
+        ensemble_spec,
+        base_dynamics
+    )
+    return (noise_level - target_noise)^2
+end
 ```
 
 # See Also
-- [`SEIRRun`](@ref): Single simulation result type
-- [`calculate_mean_dynamical_noise`](@ref): Calculate noise from dynamical simulations
+- [`recreate_noise_vecs`](@ref): Full noise recreation with all results
+- [`optimize_dynamic_noise_params`](@ref): Optimization wrapper
 """
-function calculate_mean_incidence(seir_results::StructVector{SEIRRun})
-    # StructVector provides efficient column access
-    # seir_results.incidence is a Vector{Vector{Int64}}
-    all_incidence = vcat(seir_results.incidence...)
-    return StatsBase.mean(all_incidence)
-end
+function calculate_mean_dynamical_noise(
+        ensemble_specification::EnsembleSpecification,
+        mean_vaccination_coverage::Float64;
+        verbose = false,
+        seed = 1234
+    )
 
-function calculate_mean_incidence(seir_results::Vector{SEIRRun})
-    # Fallback for regular Vector
-    all_incidence = vcat([result.incidence for result in seir_results]...)
-    return StatsBase.mean(all_incidence)
+    noise_result = recreate_noise_vecs(
+        ensemble_specification,
+        mean_vaccination_coverage;
+        verbose = verbose,
+        seed = seed
+    )
+
+    return noise_result.mean_noise
 end

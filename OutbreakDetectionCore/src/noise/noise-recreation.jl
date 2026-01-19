@@ -1,4 +1,5 @@
-export recreate_noise_vecs, calculate_mean_dynamical_noise
+export calculate_mean_dynamical_noise,
+    recreate_noise_vecs
 
 """
     recreate_noise_vecs(noise_spec, ensemble_spec, base_dynamics; verbose=false, seed=1234)
@@ -63,21 +64,27 @@ println("Mean Poisson noise: \$(noise_result.mean_poisson_noise)")
 - [`create_noise_dynamics_parameters`](@ref): Noise dynamics creation
 """
 function recreate_noise_vecs(
-        noise_spec::DynamicalNoise,
-        ensemble_spec::EnsembleSpecification,
-        base_dynamics::DynamicsParameterSpecification;
-        verbose::Bool = false,
-        seed::Int = 1234,
+        ensemble_specification::EnsembleSpecification,
+        vaccination_coverage::Float64;
+        verbose = false,
+        seed = 1234,
     )
+    # Create final EnsembleSpecification with optimal parameters for verification
+    UnPack.@unpack state_parameters = ensemble_specification
+    UnPack.@unpack init_states, init_state_props = state_parameters
+    UnPack.@unpack N = init_states
+
+
     UnPack.@unpack state_parameters, time_parameters, nsims = ensemble_spec
     N = state_parameters.init_states.N
 
     # Create noise-specific dynamics
-    noise_dynamics = create_noise_dynamics_parameters(noise_spec, base_dynamics, N)
+    noise_dynamics = recreate_noise_dynamics_spec(noise_spec, ensemble_spec)
 
     # Calculate endemic equilibrium for initial states
     endemic_result = calculate_endemic_equilibrium_proportions(
-        noise_dynamics, noise_spec.vaccination_coverage
+        noise_dynamics,
+        noise_spec.vaccination_coverage
     )
 
     # Handle endemic equilibrium calculation
@@ -97,136 +104,44 @@ function recreate_noise_vecs(
     end
 
     # Create updated state parameters with endemic equilibrium
-    noise_state_params = StateParameters(
+    updated_state_parameters = StateParameters(;
         N = N,
         s_prop = endemic_props.s_prop,
         e_prop = endemic_props.e_prop,
         i_prop = endemic_props.i_prop,
     )
 
-    # Run ensemble simulation with noise dynamics
-    # Note: This assumes run_jump_prob or similar function exists
-    # For now, we'll create a placeholder that returns mock data
-    # This will need to be updated when integrating with actual simulation code
-    noise_seir_results = _run_noise_ensemble_simulation(
-        noise_state_params, noise_dynamics, time_parameters, nsims; seed = seed
+    updated_ensemble_specification = EnsembleSpecification(
+        ensemble_specification.label,
+        updated_state_parameters,
+        ensemble_specification.time_parameters,
+        updated_dynamics_parameter_specification,
+        updated_dynamics_parameter_specification,
+        ensemble_specification.dynamical_noise_specification,
+        ensemble_specification.nsims,
+        ensemble_specification.dirpath
     )
 
-    # Calculate mean dynamical noise from SEIR results
-    mean_dynamic_noise = calculate_mean_incidence(noise_seir_results)
-
-    # Add Poisson component
-    mean_poisson_noise = noise_spec.poisson_component * mean_dynamic_noise
-    total_mean_noise = mean_dynamic_noise + mean_poisson_noise
-
-    # Extract incidence and Reff vectors
-    incidence_vecs = [run.incidence for run in noise_seir_results]
-    reff_vecs = [run.Reff for run in noise_seir_results]
-
-    return DynamicalNoiseRun(
-        incidence = incidence_vecs,
-        Reff = reff_vecs,
-        mean_noise = total_mean_noise,
-        mean_poisson_noise = mean_poisson_noise,
-        mean_dynamic_noise = mean_dynamic_noise,
+    updated_dynamics_parameters = DynamicsParameters(;
+        beta_mean = updated_dynamics_parameter_specification.beta_mean,
+        beta_force = updated_dynamics_parameter_specification.beta_force,
+        seasonality = updated_dynamics_parameter_specification.seasonality,
+        sigma = updated_dynamics_parameter_specification.sigma,
+        gamma = updated_dynamics_parameter_specification.gamma,
+        mu = updated_dynamics_parameter_specification.mu,
+        annual_births_per_k = updated_dynamics_parameter_specification.annual_births_per_k,
+        epsilon = updated_dynamics_parameter_specification.epsilon,
+        R_0 = updated_dynamics_parameter_specification.R_0,
+        vaccination_coverage = vaccination_coverage
     )
-end
 
-"""
-    calculate_mean_dynamical_noise(noise_spec, ensemble_spec, base_dynamics; verbose=false, seed=1234)
-
-Calculate mean dynamical noise for given vaccination coverage.
-
-This is a wrapper function for optimization objectives. It runs noise
-simulations and returns only the mean noise level.
-
-# Arguments
-- `noise_spec::DynamicalNoise`: Noise specification
-- `ensemble_spec::EnsembleSpecification`: Ensemble parameters
-- `base_dynamics::DynamicsParameterSpecification`: Base dynamics
-
-# Keyword Arguments
-- `verbose::Bool`: Print warnings (default: false)
-- `seed::Int`: Random seed (default: 1234)
-
-# Returns
-- `Float64`: Mean noise level (dynamical + Poisson components)
-
-# Examples
-```julia
-# Use in optimization objective
-function objective(vaccination_coverage)
-    noise = DynamicalNoise(spec, vaccination_coverage)
-    noise_level = calculate_mean_dynamical_noise(
-        noise,
-        ensemble_spec,
-        base_dynamics
+    noise_result = create_noise_vecs(
+        updated_dynamical_noise_spec,
+        updated_ensemble_specification,
+        updated_dynamics_parameters;
+        seed = seed
     )
-    return (noise_level - target_noise)^2
-end
-```
 
-# See Also
-- [`recreate_noise_vecs`](@ref): Full noise recreation with all results
-- [`optimize_dynamic_noise_params`](@ref): Optimization wrapper
-"""
-function calculate_mean_dynamical_noise(
-        noise_spec::DynamicalNoise,
-        ensemble_spec::EnsembleSpecification,
-        base_dynamics::DynamicsParameterSpecification;
-        verbose::Bool = false,
-        seed::Int = 1234,
-    )
-    result = recreate_noise_vecs(
-        noise_spec, ensemble_spec, base_dynamics; verbose = verbose, seed = seed
-    )
-    return result.mean_noise
-end
+    return noise_result
 
-# Placeholder function for ensemble simulation
-# This will be replaced with actual integration to existing simulation code
-"""
-    _run_noise_ensemble_simulation(state_params, dynamics_params, time_params, nsims; seed=1234)
-
-Placeholder for ensemble simulation integration.
-
-This function will be replaced with proper integration to the existing
-ensemble simulation infrastructure. For now, it returns a StructVector
-of mock SEIRRun results.
-
-# Note
-This is a temporary implementation to allow the noise optimization
-infrastructure to be built. It should be replaced with calls to the
-actual SEIR simulation code.
-"""
-function _run_noise_ensemble_simulation(
-        state_params::StateParameters,
-        dynamics_params::DynamicsParameters,
-        time_params::SimTimeParameters,
-        nsims::Int;
-        seed::Int = 1234,
-    )
-    # TODO: Replace with actual ensemble simulation
-    # For now, return mock data structure
-    @warn "Using placeholder ensemble simulation. Replace with actual SEIR simulation."
-
-    # Create mock results with correct structure
-    tlength = time_params.tlength
-    mock_runs = [
-        SEIRRun(
-                states = [
-                    StaticArrays.SVector{5, Int64}(
-                        state_params.init_states.S,
-                        state_params.init_states.E,
-                        state_params.init_states.I,
-                        state_params.init_states.R,
-                        state_params.init_states.N,
-                    ) for _ in 1:tlength
-                ],
-                incidence = rand(1:10, tlength),
-                Reff = rand(0.5:0.01:2.0, tlength),
-            ) for _ in 1:nsims
-    ]
-
-    return StructVector{SEIRRun}(mock_runs)
 end
