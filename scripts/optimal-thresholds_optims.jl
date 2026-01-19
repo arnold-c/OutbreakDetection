@@ -49,8 +49,8 @@ measles_dynamics_parameters = TargetDiseaseDynamicsParameters(;
 # @papadopoulosEstimatesBasicReproduction2022 @RubellaCDCYellow.
 rubella_dynamical_noise_spec = DynamicalNoiseSpecification(;
     R_0 = 5.0,
-    latent_period = 7.0,
-    duration_infection = 14.0,
+    latent_period = Day(7.0),
+    infectious_duration = Day(14.0),
     correlation = "in-phase",
     poisson_component = 0.15,
 )
