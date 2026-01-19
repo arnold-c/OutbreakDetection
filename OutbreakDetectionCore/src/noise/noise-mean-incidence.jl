@@ -44,11 +44,11 @@ function calculate_mean_incidence(seir_results::StructVector{SEIRRun})
     # StructVector provides efficient column access
     # seir_results.incidence is a Vector{Vector{Int64}}
     all_incidence = vcat(seir_results.incidence...)
-    return Statistics.mean(all_incidence)
+    return StatsBase.mean(all_incidence)
 end
 
 function calculate_mean_incidence(seir_results::Vector{SEIRRun})
     # Fallback for regular Vector
     all_incidence = vcat([result.incidence for result in seir_results]...)
-    return Statistics.mean(all_incidence)
+    return StatsBase.mean(all_incidence)
 end
