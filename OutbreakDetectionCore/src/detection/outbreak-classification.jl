@@ -39,6 +39,27 @@ function classify_all_outbreaks!(
 end
 
 """
+    classify_all_outbreaks!(outbreakstatus_vec, all_thresholds_arr, 
+                            incidence_vec, outbreak_specification)
+
+Classify all potential outbreaks using an OutbreakSpecification struct.
+"""
+function classify_all_outbreaks!(
+        outbreakstatus_vec,
+        all_thresholds_arr,
+        incidence_vec,
+        outbreak_specification::OutbreakSpecification,
+    )
+    return classify_all_outbreaks!(
+        outbreakstatus_vec,
+        all_thresholds_arr,
+        incidence_vec,
+        outbreak_specification.minimum_outbreak_duration,
+        outbreak_specification.minimum_outbreak_size,
+    )
+end
+
+"""
     calculate_outbreak_duration(lower_time, upper_time)
 
 Calculate duration of an outbreak period.
