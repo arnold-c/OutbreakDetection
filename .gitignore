@@ -437,3 +437,4 @@ profile.pb.gz
 tmp
 scripts/debugging.jl
 *.zip
+Session.vim
