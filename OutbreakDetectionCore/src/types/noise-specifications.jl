@@ -182,7 +182,7 @@ function DynamicalNoiseSpecification(
 
     return DynamicalNoiseSpecification(
         R_0 = spec.R_0,
-        latent_period = spec.latent_period,
+        latent_period = Float64(Dates.days(spec.latent_period)),
         infectious_duration = Float64(Dates.days(spec.infectious_duration)),
         correlation = spec.correlation,
         poisson_component = spec.poisson_component,
