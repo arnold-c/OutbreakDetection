@@ -75,9 +75,8 @@ function recreate_noise_dynamics_spec(
         ensemble_specification::EnsembleSpecification
     )
     UnPack.@unpack state_parameters,
-        dynamics_parameter_specification = ensemble_specification
-
-    N = state_parameters.init_states.N
+        dynamics_parameter_specification,
+        dynamical_noise_params = ensemble_specification
 
     # Adjust beta_force based on correlation
     noise_beta_force = if noise_specification.correlation == "none"
@@ -115,7 +114,7 @@ function recreate_noise_dynamics_spec(
     noise_epsilon = calculate_import_rate(
         dynamics_parameter_specification.mu,
         noise_specification.R_0,
-        N
+        state_parameters.init_states.N
     )
 
     return DynamicsParameters(
