@@ -116,8 +116,7 @@ result = optimize_dynamic_noise_params(
 """
 function optimize_dynamic_noise_params(
         ensemble_specification::EnsembleSpecification,
-        enddates_vec::Vector{Int64},
-        measles_daily_incidence::Float64,
+        mean_target_disease_daily_incidence::Float64,
         target_scaling::Float64,
         optimization_params::NoiseVaccinationOptimizationParameters = NoiseVaccinationOptimizationParameters();
         verbose = false,
@@ -125,7 +124,7 @@ function optimize_dynamic_noise_params(
     )
     UnPack.@unpack vaccination_bounds = ensemble_specification.dynamical_noise_params
 
-    target_noise = target_scaling * mean_target_incidence
+    target_noise = target_scaling * mean_target_disease_daily_incidence
 
     if verbose
         println("Target noise level: $target_noise")
@@ -133,21 +132,12 @@ function optimize_dynamic_noise_params(
         println("Starting multistart optimization with $n_sobol_points points...")
     end
 
-    # Pre-extract ensemble specification components to avoid repeated unpacking
-    N = ensemble_specification.state_parameters.init_states.N
-
     # Define objective function: minimize squared difference from target
     objective = let target_noise = target_noise,
             ensemble_specification = ensemble_specification,
-            N = N,
             verbose = verbose
         function (params)
             vaccination_coverage = params[1]
-
-            # Ensure susceptible proportion is valid and will result in positive compartments
-            # Use stricter bounds to prevent numerical issues with very small populations
-            min_safe_prop = max(1.0 / N, 0.001)  # At least 1 person or 0.1%, whichever is larger
-            max_safe_prop = min(1.0 - 1.0 / N, 0.999)  # At most N-1 people or 99.9%, whichever is smaller
 
             noise_level = calculate_mean_dynamical_noise(
                 ensemble_specification,
@@ -197,9 +187,8 @@ function optimize_dynamic_noise_params(
         optimal_vaccination_coverage = result.location[1]
 
         optimized_noise = calculate_mean_dynamical_noise(
-            dynamical_noise_spec,
-            optimal_vaccination_coverage,
-            ensemble_specification;
+            ensemble_specification,
+            optimal_vaccination_coverage;
             verbose = false,
             seed = seed
         )
