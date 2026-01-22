@@ -84,7 +84,7 @@ Sort Poisson noise specifications by noise magnitude.
 """
 function sort_noise_specifications(
         v::AbstractVector{T}
-    ) where {T <: PoissonNoise}
+    ) where {T <: PoissonNoiseSpecification}
     noise_magnitudes = getproperty.(v, :noise_mean_scaling)
 
     noise_orders = sortperm(noise_magnitudes)
@@ -93,13 +93,13 @@ function sort_noise_specifications(
 end
 
 """
-    sort_noise_specifications(v::AbstractVector{DynamicalNoiseSpecification})
+    sort_noise_specifications(v::AbstractVector{DynamicalNoiseParameters})
 
 Sort dynamical noise specifications by vaccination coverage (descending).
 """
 function sort_noise_specifications(
         v::AbstractVector{T}
-    ) where {T <: DynamicalNoise}
+    ) where {T <: DynamicalNoiseSpecification}
     noise_magnitudes = getproperty.(v, :vaccination_coverage)
 
     noise_orders = sortperm(noise_magnitudes; rev = true)

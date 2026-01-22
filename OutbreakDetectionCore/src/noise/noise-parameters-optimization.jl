@@ -50,7 +50,7 @@ Uses multistart optimization with:
 # Arguments
 - `target_scaling::Float64`: Multiplicative factor for target noise (e.g., 1.0 for "low", 7.0 for "high")
 - `mean_target_incidence::Float64`: Mean daily incidence from target disease simulations
-- `noise_spec::DynamicalNoiseSpecification`: Noise specification with vaccination_bounds
+- `noise_spec::DynamicalNoiseParameters`: Noise specification with vaccination_bounds
 - `ensemble_spec::EnsembleSpecification`: Ensemble parameters for noise simulations
 - `base_dynamics::DynamicsParameterSpecification`: Base disease dynamics (not used for Reff)
 - `optimization_params::NoiseVaccinationOptimizationParameters`: Optimization settings (optional)
@@ -75,7 +75,7 @@ Throws an error if:
 # Examples
 ```julia
 # Define noise specification with vaccination bounds
-noise_spec = DynamicalNoiseSpecification(
+noise_spec = DynamicalNoiseParameters(
     R_0 = 5.0,
     latent_period = 7.0,
     duration_infection = 14.0,
@@ -111,7 +111,7 @@ result = optimize_dynamic_noise_params(
 
 # See Also
 - [`NoiseVaccinationOptimizationParameters`](@ref): Optimization configuration
-- [`DynamicalNoiseSpecification`](@ref): Noise specification with bounds
+- [`DynamicalNoiseParameters`](@ref): Noise specification with bounds
 - [`calculate_mean_dynamical_noise`](@ref): Objective function
 """
 function optimize_dynamic_noise_params(
@@ -123,7 +123,7 @@ function optimize_dynamic_noise_params(
         verbose = false,
         seed = 1234
     )
-    UnPack.@unpack vaccination_bounds = ensemble_specification.dynamical_noise_specification
+    UnPack.@unpack vaccination_bounds = ensemble_specification.dynamical_noise_params
 
     target_noise = target_scaling * mean_target_incidence
 

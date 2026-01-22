@@ -4,7 +4,7 @@ using DrWatson
 
 using OutbreakDetectionCore:
     IndividualTestSpecification, create_combinations_vec,
-    DynamicalNoiseSpecification, PoissonNoiseSpecification
+    DynamicalNoiseParameters, PoissonNoiseSpecification
 using OutbreakDetection: collect_OptimalThresholdCharacteristics
 
 #%%
@@ -128,7 +128,7 @@ poisson_noise_optimal_solutions = DataFrames.filter(
 dynamical_noise_optimal_solutions = DataFrames.filter(
     :noise_spec =>
         n ->
-    n == DynamicalNoiseSpecification(
+    n == DynamicalNoiseParameters(
         "dynamical", 5.0, 7, 14, "in-phase", 0.15, 0.0492
     ),
     optim_df,

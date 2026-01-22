@@ -37,7 +37,7 @@ end
 
 """
     calculate_sigma(
-    	specification::Union{DynamicalNoiseSpecification, TargetDiseaseDynamicsParameters}
+    	specification::Union{DynamicalNoiseParameters, TargetDiseaseDynamicsParameters}
     )
 
 Calculate the rate of progression from exposed (E) to infectious (I) compartment.
@@ -47,7 +47,7 @@ exposed individuals become infectious in an SEIR model.
 
 # Arguments
 
-  - `specification`: Either a TargetDiseaseDynamicsParameters or DynamicalNoiseSpecification
+  - `specification`: Either a TargetDiseaseDynamicsParameters or DynamicalNoiseParameters
   object containing the latent_period
 
 # Returns
@@ -55,7 +55,7 @@ exposed individuals become infectious in an SEIR model.
   - `Float64`: The progression rate sigma (1/latent_period)
 """
 function calculate_sigma(
-        specification::Union{DynamicalNoiseSpecification, TargetDiseaseDynamicsParameters}
+        specification::Union{DynamicalNoiseParameters, TargetDiseaseDynamicsParameters}
     )::Float64
     return 1.0 / Dates.days(specification.latent_period)
 end
@@ -63,7 +63,7 @@ end
 
 """
     calculate_gamma(
-    	specification::Union{DynamicalNoiseSpecification, TargetDiseaseDynamicsParameters}
+    	specification::Union{DynamicalNoiseParameters, TargetDiseaseDynamicsParameters}
     )
 
 Calculate the recovery rate from the infectious (I) compartment.
@@ -73,7 +73,7 @@ infectious individuals recover in an SEIR model.
 
 # Arguments
 
-  - `specification`: Either a TargetDiseaseDynamicsParameters or DynamicalNoiseSpecification
+  - `specification`: Either a TargetDiseaseDynamicsParameters or DynamicalNoiseParameters
   object containing the duration_infection
 
 # Returns
@@ -81,7 +81,7 @@ infectious individuals recover in an SEIR model.
   - `Float64`: The recovery rate gamma (1/duration_infection)
 """
 function calculate_gamma(
-        specification::Union{DynamicalNoiseSpecification, TargetDiseaseDynamicsParameters}
+        specification::Union{DynamicalNoiseParameters, TargetDiseaseDynamicsParameters}
     )::Float64
     return 1.0 / Dates.days(specification.duration_infection)
 end

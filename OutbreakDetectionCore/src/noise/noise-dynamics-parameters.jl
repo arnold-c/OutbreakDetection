@@ -10,7 +10,7 @@ adjusting seasonality and transmission parameters based on the correlation
 type specified in the noise specification.
 
 # Arguments
-- `noise_specification::DynamicalNoise`: Noise specification with vaccination coverage
+- `noise_specification::DynamicalNoiseSpecification`: Noise specification with vaccination coverage
 - `dynamics_parameter_specification::DynamicsParameterSpecification`: Base disease dynamics
 - `population_N::Int64`: Population size
 
@@ -33,10 +33,10 @@ The function:
 # Examples
 ```julia
 # Create noise specification
-noise_specification = DynamicalNoise(
+noise_specification = DynamicalNoiseSpecification(
     R_0 = 5.0,
     latent_period = 7.0,
-    duration_infection = 14.0,
+    infectious_duration = 14.0,
     correlation = "in-phase",
     poisson_component = 1.0,
     vaccination_coverage = 0.65
@@ -66,12 +66,12 @@ noise_dynamics = create_noise_dynamics_parameters(
 ```
 
 # See Also
-- [`DynamicalNoise`](@ref): Noise specification type
+- [`DynamicalNoiseSpecification`](@ref): Noise specification type
 - [`DynamicsParameterSpecification`](@ref): Base dynamics type
 - [`SeasonalityFunction`](@ref): Seasonality sum type
 """
 function recreate_noise_dynamics_spec(
-        noise_specification::DynamicalNoise,
+        noise_specification::DynamicalNoiseSpecification,
         ensemble_specification::EnsembleSpecification
     )
     UnPack.@unpack state_parameters,

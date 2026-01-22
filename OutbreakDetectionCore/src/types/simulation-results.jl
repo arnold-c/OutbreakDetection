@@ -77,7 +77,7 @@ ensemble_noise = StructVector{DynamicalNoiseRun}([noise_run1, noise_run2, ...])
 # See Also
 - [`SEIRRun`](@ref): Single SEIR simulation results
 - [`PoissonNoiseRun`](@ref): Simpler Poisson-only noise results
-- [`DynamicalNoise`](@ref): Noise specification type
+- [`DynamicalNoiseSpecification`](@ref): Noise specification type
 """
 Base.@kwdef struct DynamicalNoiseRun
     incidence::Vector{Vector{Int64}}
@@ -113,7 +113,7 @@ ensemble_noise = StructVector{PoissonNoiseRun}([noise_run1, noise_run2, ...])
 
 # See Also
 - [`DynamicalNoiseRun`](@ref): More complex dynamical noise results
-- [`PoissonNoise`](@ref): Noise specification type
+- [`PoissonNoiseSpecification`](@ref): Noise specification type
 """
 Base.@kwdef struct PoissonNoiseRun
     incidence::Vector{Vector{Int64}}

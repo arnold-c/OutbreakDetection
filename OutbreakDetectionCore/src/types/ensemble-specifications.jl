@@ -21,14 +21,14 @@ all relevant parameter values in a hierarchical directory structure.
   - `time_parameters::SimTimeParameters`: Simulation time configuration including burnin, duration, and timestep
   - `dynamics_parameter_specification::DynamicsParameterSpecification`: Disease dynamics for outbreak scenarios
   - `null_dynamics_parameter_specification::DynamicsParameterSpecification`: Disease dynamics for null/baseline scenarios
-  - `dynamical_noise_specification::DynamicalNoiseSpecification`: Specification for dynamical noise in disease parameters
+  - `dynamical_noise_params::DynamicalNoiseParameters`: Specification for dynamical noise in disease parameters
   - `nsims::Int64`: Number of simulation replicates in the ensemble
   - `dirpath::String`: Automatically generated directory path for storing ensemble results
 
 # Constructor
 
     EnsembleSpecification(; label, state_parameters, time_parameters, dynamics_parameter_specification,
-                         null_dynamics_parameter_specification, dynamical_noise_specification, nsims, dirpath)
+                         null_dynamics_parameter_specification, dynamical_noise_params, nsims, dirpath)
 
 # Example
 
@@ -43,7 +43,7 @@ ensemble_spec = EnsembleSpecification(;
     ),
     dynamics_parameter_specification = emergent_dynamics,
     null_dynamics_parameter_specification = null_dynamics,
-    dynamical_noise_specification = noise_spec,
+    dynamical_noise_params = noise_spec,
     nsims = 1000,
     dirpath = "/path/to/results",
 )
@@ -58,7 +58,7 @@ println("Results stored in: \$(ensemble_spec.dirpath)")
   - [`StateParameters`](@ref): Initial population state configuration
   - [`SimTimeParameters`](@ref): Simulation time parameters
   - [`DynamicsParameterSpecification`](@ref): Disease dynamics specifications
-  - [`DynamicalNoiseSpecification`](@ref): Dynamical noise parameters
+  - [`DynamicalNoiseParameters`](@ref): Dynamical noise parameters
   - [`simulate_ensemble_seir_results`](@ref): Function that uses EnsembleSpecification for simulation
 """
 AutoHashEquals.@auto_hash_equals Base.@kwdef struct EnsembleSpecification
@@ -66,14 +66,14 @@ AutoHashEquals.@auto_hash_equals Base.@kwdef struct EnsembleSpecification
     state_parameters::StateParameters
     time_parameters::SimTimeParameters
     dynamics_parameter_specification::DynamicsParameterSpecification
-    dynamical_noise_specification::DynamicalNoiseSpecification
+    dynamical_noise_params::DynamicalNoiseParameters
     nsims::Int64
     dirpath::String
 end
 
 """
     EnsembleSpecification(label, state_parameters, time_parameters, dynamics_parameter_specification,
-                         null_dynamics_parameter_specification, dynamical_noise_specification, nsims)
+                         null_dynamics_parameter_specification, dynamical_noise_params, nsims)
 
 Construct an EnsembleSpecification with automatic directory path generation.
 
@@ -99,7 +99,7 @@ The generated directory structure follows this hierarchy:
   - `time_parameters::SimTimeParameters`: Simulation time configuration
   - `dynamics_parameter_specification::DynamicsParameterSpecification`: Disease dynamics for outbreak scenarios
   - `null_dynamics_parameter_specification::DynamicsParameterSpecification`: Disease dynamics for baseline scenarios
-  - `dynamical_noise_specification::DynamicalNoiseSpecification`: Dynamical noise specification
+  - `dynamical_noise_params::DynamicalNoiseParameters`: Dynamical noise specification
   - `nsims::Int64`: Number of simulation replicates
 
 # Returns
@@ -126,13 +126,13 @@ println(ensemble_spec.dirpath)
 ```
 """
 function EnsembleSpecification(
-    label::String,
-    state_parameters::StateParameters,
-    time_parameters::SimTimeParameters,
-    dynamics_parameter_specification::DynamicsParameterSpecification,
-    dynamical_noise_specification::DynamicalNoiseSpecification,
-    nsims::Int64,
-)
+        label::String,
+        state_parameters::StateParameters,
+        time_parameters::SimTimeParameters,
+        dynamics_parameter_specification::DynamicsParameterSpecification,
+        dynamical_noise_params::DynamicalNoiseParameters,
+        nsims::Int64,
+    )
     dirpath = outdir(
         "ensemble",
         "seasonal-infectivity-import",
@@ -144,8 +144,7 @@ function EnsembleSpecification(
         "R0_$(dynamics_parameter_specification.R_0)",
         "latent_period_$(round(1 / dynamics_parameter_specification.sigma; digits = 2))",
         "infectious_period_$(round(1 / dynamics_parameter_specification.gamma; digits = 2))",
-        "noise_R0_$(dynamical_noise_specification.R_0)",
-        "noise_latent_period_$(round(dynamical_noise_specification.latent_period; digits = 2))",
+        "noise_R0_$(dynamical_noise_params.R_0)",
         "noise_infectious_period_$(round(dynamical_noise_specification.duration_infection; digits = 2))",
         "min_vaccination_coverage_$(dynamics_parameter_specification.min_vaccination_coverage)",
         "max_vaccination_coverage_$(dynamics_parameter_specification.max_vaccination_coverage)",
@@ -160,7 +159,7 @@ function EnsembleSpecification(
         state_parameters,
         time_parameters,
         dynamics_parameter_specification,
-        dynamical_noise_specification,
+        dynamical_noise_params,
         nsims,
         dirpath,
     )

@@ -1,5 +1,5 @@
-export calculate_mean_dynamical_noise,
-    recreate_noise_vecs
+export recreate_noise_vecs
+
 
 """
     recreate_noise_vecs(noise_spec, ensemble_spec, base_dynamics; verbose=false, seed=1234)
@@ -11,7 +11,7 @@ noise parameters. It uses endemic equilibrium to set initial states for noise
 simulations, falling back to simple proportions if equilibrium doesn't exist.
 
 # Arguments
-- `noise_spec::DynamicalNoise`: Noise specification with vaccination coverage
+- `noise_spec::DynamicalNoiseSpecification`: Noise specification with vaccination coverage
 - `ensemble_spec::EnsembleSpecification`: Ensemble parameters
 - `base_dynamics::DynamicsParameterSpecification`: Base dynamics
 
@@ -35,7 +35,7 @@ The function:
 # Examples
 ```julia
 # Create noise specification
-noise_spec = DynamicalNoise(
+noise_spec = DynamicalNoiseSpecification(
     R_0 = 5.0,
     latent_period = 7.0,
     duration_infection = 14.0,
@@ -59,7 +59,7 @@ println("Mean Poisson noise: \$(noise_result.mean_poisson_noise)")
 ```
 
 # See Also
-- [`DynamicalNoise`](@ref): Noise specification type
+- [`DynamicalNoiseSpecification`](@ref): Noise specification type
 - [`calculate_endemic_equilibrium_proportions`](@ref): Endemic equilibrium calculation
 - [`create_noise_dynamics_parameters`](@ref): Noise dynamics creation
 """
@@ -117,7 +117,7 @@ function recreate_noise_vecs(
         ensemble_specification.time_parameters,
         updated_dynamics_parameter_specification,
         updated_dynamics_parameter_specification,
-        ensemble_specification.dynamical_noise_specification,
+        ensemble_specification.dynamical_noise_params,
         ensemble_specification.nsims,
         ensemble_specification.dirpath
     )

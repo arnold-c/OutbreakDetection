@@ -70,7 +70,7 @@ result = optimize_dynamic_noise_params(
 
 # See Also
 - [`optimize_dynamic_noise_params`](@ref): Main optimization function
-- [`DynamicalNoiseSpecification`](@ref): Noise specification with bounds
+- [`DynamicalNoiseParameters`](@ref): Noise specification with bounds
 """
 Base.@kwdef struct NoiseVaccinationOptimizationParameters
     n_sobol_points::Int64 = 100

@@ -47,7 +47,7 @@ measles_dynamics_parameters = TargetDiseaseDynamicsParameters(;
 
 # Choose Rubella-like parameters for the dynamic noise in the measles simulations
 # @papadopoulosEstimatesBasicReproduction2022 @RubellaCDCYellow.
-rubella_dynamical_noise_spec = DynamicalNoiseSpecification(;
+rubella_dynamical_noise_parameters = DynamicalNoiseParameters(;
     R_0 = 5.0,
     latent_period = Day(7.0),
     infectious_duration = Day(14.0),
@@ -62,7 +62,7 @@ measles_ensemble_specification = create_ensemble_specifications(
     time_parameters,
     measles_dynamics_parameters,
     common_disease_dynamics_parameters,
-    rubella_dynamical_noise_spec,
+    rubella_dynamical_noise_parameters,
 )
 
 #%%

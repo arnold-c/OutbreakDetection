@@ -43,7 +43,7 @@ function create_noise_vecs(
 end
 
 function create_noise_vecs(
-        noise_specification::DynamicalNoise,
+        noise_specification::DynamicalNoiseSpecification,
         ensemble_specification::EnsembleSpecification,
         noise_dynamics_parameters::DynamicsParameters;
         seed = 1234,
@@ -115,7 +115,7 @@ function create_noise_vecs(
 end
 
 function create_noise_vecs(
-        noise_specification::PoissonNoise,
+        noise_specification::PoissonNoiseSpecification,
         ensemble_specification::EnsembleSpecification,
         seir_results::StructVector{SEIRRun};
         seed = 1234,
