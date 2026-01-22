@@ -145,6 +145,7 @@ function EnsembleSpecification(
         "latent_period_$(round(1 / dynamics_parameter_specification.sigma; digits = 2))",
         "infectious_period_$(round(1 / dynamics_parameter_specification.gamma; digits = 2))",
         "noise_R0_$(dynamical_noise_params.R_0)",
+        "noise_latent_period_$(round(dynamical_noise_params.latent_period; digits = 2))",
         "noise_infectious_period_$(round(dynamical_noise_params.infectious_duration; digits = 2))",
         "min_vaccination_coverage_$(dynamics_parameter_specification.min_vaccination_coverage)",
         "max_vaccination_coverage_$(dynamics_parameter_specification.max_vaccination_coverage)",
