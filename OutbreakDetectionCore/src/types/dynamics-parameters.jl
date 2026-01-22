@@ -80,7 +80,7 @@ Base.@kwdef struct TargetDiseaseDynamicsParameters
         )
         @assert R_0 > 0 "R_0 must be positive"
         @assert Dates.value(latent_period) > 0 "Latent period must be positive"
-        @assert Dates.value(duration_infection) > 0 "Infectious duration must be positive"
+        @assert Dates.days(infectious_duration) > 0 "Infectious duration must be positive"
         @assert min_vaccination_coverage >= 0.0
         @assert min_vaccination_coverage <= max_vaccination_coverage <= 1.0
 

@@ -38,7 +38,7 @@ The function:
 noise_spec = DynamicalNoiseSpecification(
     R_0 = 5.0,
     latent_period = 7.0,
-    duration_infection = 14.0,
+    infectious_duration = 14.0,
     correlation = "in-phase",
     poisson_component = 1.0,
     vaccination_coverage = 0.65

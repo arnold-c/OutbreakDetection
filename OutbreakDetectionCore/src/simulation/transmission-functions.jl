@@ -74,16 +74,16 @@ infectious individuals recover in an SEIR model.
 # Arguments
 
   - `specification`: Either a TargetDiseaseDynamicsParameters or DynamicalNoiseParameters
-  object containing the duration_infection
+  object containing the infectious_duration
 
 # Returns
 
-  - `Float64`: The recovery rate gamma (1/duration_infection)
+  - `Float64`: The recovery rate gamma (1/infectious_duration)
 """
 function calculate_gamma(
         specification::Union{DynamicalNoiseParameters, TargetDiseaseDynamicsParameters}
     )::Float64
-    return 1.0 / Dates.days(specification.duration_infection)
+    return 1.0 / Dates.days(specification.infectious_duration)
 end
 
 """

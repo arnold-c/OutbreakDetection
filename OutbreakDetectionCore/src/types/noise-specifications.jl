@@ -20,7 +20,7 @@ in a DynamicalNoiseSpecification instance.
 # Fields
 - `R_0::Float64`: Basic reproduction number for noise dynamics (must be > 0)
 - `latent_period::Float64`: Latent period in days (must be > 0)
-- `duration_infection::Float64`: Duration of infection in days (must be > 0)
+- `infectious_duration::Float64`: Duration of infection in days (must be > 0)
 - `correlation::String`: Correlation type ("in-phase", "out-of-phase", "none")
 - `poisson_component::Float64`: Poisson noise component scaling (must be >= 0)
 - `vaccination_bounds::Vector{Float64}`: Bounds for vaccination optimization [min, max]
@@ -39,7 +39,7 @@ in a DynamicalNoiseSpecification instance.
 spec = DynamicalNoiseParameters(
     R_0 = 5.0,
     latent_period = 7.0,
-    duration_infection = 14.0,
+    infectious_duration = 14.0,
     correlation = "in-phase",
     poisson_component = 1.0,
     vaccination_bounds = [0.0, 0.8]
@@ -49,7 +49,7 @@ spec = DynamicalNoiseParameters(
 spec = DynamicalNoiseParameters(
     R_0 = 5.0,
     latent_period = 7.0,
-    duration_infection = 14.0,
+    infectious_duration = 14.0,
     correlation = "out-of-phase",
     poisson_component = 0.0,
     vaccination_bounds = [0.0, 0.8]
@@ -71,14 +71,14 @@ Base.@kwdef struct DynamicalNoiseParameters
     function DynamicalNoiseParameters(
             R_0,
             latent_period,
-            duration_infection,
+            infectious_duration,
             correlation,
             poisson_component,
             vaccination_bounds
         )
         @assert R_0 > 0 "R_0 must be positive"
         @assert Dates.days(latent_period) > 0 "Latent period must be positive"
-        @assert Dates.days(duration_infection) > 0 "Infectious duration must be positive"
+        @assert Dates.days(infectious_duration) > 0 "Infectious duration must be positive"
         @assert correlation in ["in-phase", "out-of-phase", "none"] "Invalid correlation type"
         @assert poisson_component >= 0 "Poisson component must be non-negative"
         @assert length(vaccination_bounds) == 2 "Vaccination bounds must have 2 elements"
@@ -87,7 +87,7 @@ Base.@kwdef struct DynamicalNoiseParameters
         return new(
             R_0,
             latent_period,
-            duration_infection,
+            infectious_duration,
             correlation,
             poisson_component,
             vaccination_bounds
@@ -107,7 +107,6 @@ specification.
 # Fields
 - `R_0::Float64`: Basic reproduction number for noise dynamics
 - `latent_period::Float64`: Latent period in days
-- `duration_infection::Float64`: Duration of infection in days
 - `infectious_duration::Float64`: Duration of infection in days
 - `correlation::String`: Correlation type ("in-phase", "out-of-phase", "none")
 - `poisson_component::Float64`: Poisson noise component scaling
@@ -127,7 +126,7 @@ vaccination coverage.
 spec = DynamicalNoiseParameters(
     R_0 = 5.0,
     latent_period = 7.0,
-    duration_infection = 14.0,
+    infectious_duration = 14.0,
     correlation = "in-phase",
     poisson_component = 1.0,
     vaccination_bounds = [0.0, 0.8]
@@ -144,7 +143,7 @@ noise = DynamicalNoiseSpecification(spec, 0.65)
 Base.@kwdef struct DynamicalNoiseSpecification
     R_0::Float64
     latent_period::Float64
-    duration_infection::Float64
+    infectious_duration::Float64
     correlation::String
     poisson_component::Float64
     vaccination_coverage::Float64
@@ -167,7 +166,7 @@ Create a DynamicalNoiseSpecification instance from a specification.
 spec = DynamicalNoiseParameters(
     R_0 = 5.0,
     latent_period = 7.0,
-    duration_infection = 14.0,
+    infectious_duration = 14.0,
     correlation = "in-phase",
     poisson_component = 1.0
 )
@@ -184,7 +183,7 @@ function DynamicalNoiseSpecification(
     return DynamicalNoiseSpecification(
         R_0 = spec.R_0,
         latent_period = spec.latent_period,
-        duration_infection = spec.duration_infection,
+        infectious_duration = Float64(Dates.days(spec.infectious_duration)),
         correlation = spec.correlation,
         poisson_component = spec.poisson_component,
         vaccination_coverage = vaccination_coverage,

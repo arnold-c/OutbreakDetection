@@ -78,7 +78,7 @@ Throws an error if:
 noise_spec = DynamicalNoiseParameters(
     R_0 = 5.0,
     latent_period = 7.0,
-    duration_infection = 14.0,
+    infectious_duration = 14.0,
     correlation = "in-phase",
     poisson_component = 1.0,
     vaccination_bounds = [0.0, 0.8]  # Search range for optimization
