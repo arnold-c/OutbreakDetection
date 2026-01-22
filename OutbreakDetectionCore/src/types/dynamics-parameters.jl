@@ -71,7 +71,7 @@ Base.@kwdef struct TargetDiseaseDynamicsParameters
 
     function TargetDiseaseDynamicsParameters(
             R_0,
-            latent_period_days,
+            latent_period,
             infectious_duration,
             beta_force,
             seasonality,
@@ -79,14 +79,14 @@ Base.@kwdef struct TargetDiseaseDynamicsParameters
             max_vaccination_coverage,
         )
         @assert R_0 > 0 "R_0 must be positive"
-        @assert Dates.value(latent_period) > 0 "Latent period must be positive"
+        @assert Dates.days(latent_period) > 0 "Latent period must be positive"
         @assert Dates.days(infectious_duration) > 0 "Infectious duration must be positive"
         @assert min_vaccination_coverage >= 0.0
         @assert min_vaccination_coverage <= max_vaccination_coverage <= 1.0
 
         return new(
             R_0,
-            latent_period_days,
+            latent_period,
             infectious_duration,
             beta_force,
             seasonality,
@@ -265,32 +265,46 @@ target = TargetDiseaseDynamicsParameters(;
 spec = DynamicsParameterSpecification(target)
 ```
 """
-function DynamicsParameterSpecification(target::TargetDiseaseDynamicsParameters)
-    @assert target.R_0 > 0 "R_0 must be positive"
-    @assert target.latent_period_days > 0 "Latent period must be positive"
-    @assert target.infectious_duration_days > 0 "Infectious duration must be positive"
-    @assert 0 <= target.beta_force <= 1 "Beta force must be in [0, 1]"
-    @assert target.life_expectancy_years > 0 "Life expectancy must be positive"
-    @assert target.population_N > 0 "Population must be positive"
+function DynamicsParameterSpecification(
+        state_specification::StateParameters,
+        target_disease_dynamics_params::TargetDiseaseDynamicsParameters,
+        common_disease_dynamics_params::CommonDiseaseDynamicsParameters,
+    )
+    @assert target_disease_dynamics_params.R_0 > 0 "R_0 must be positive"
+    @assert Dates.days(target_disease_dynamics_params.latent_period) > 0 "Latent period must be positive"
+    @assert Dates.days(target_disease_dynamics_params.infectious_duration) > 0 "Infectious duration must be positive"
+    @assert 0 <= target_disease_dynamics_params.beta_force <= 1 "Beta force must be in [0, 1]"
+    @assert state_specification.init_states.N > 0 "Population must be positive"
 
-    sigma = 1.0 / target.latent_period_days
-    gamma = 1.0 / target.infectious_duration_days
-    mu = 1.0 / (target.life_expectancy_years * 365.0)
-    annual_births_per_k = 1000.0 / target.life_expectancy_years
-    beta_mean = calculate_beta(target.R_0, sigma, gamma, mu)
-    epsilon = calculate_import_rate(mu, target.R_0, target.population_N)
+    sigma = calculate_sigma(target_disease_dynamics_params)
+    gamma = calculate_gamma(target_disease_dynamics_params)
+    mu = calculate_mu(common_disease_dynamics_params)
+
+    beta_mean = calculate_beta(
+        target_disease_dynamics_params.R_0,
+        sigma,
+        gamma,
+        mu
+    )
+
+    epsilon = calculate_import_rate(
+        mu,
+        target_disease_dynamics_params.R_0,
+        state_specification.init_states.N
+    )
 
     return DynamicsParameterSpecification(;
         beta_mean = beta_mean,
-        beta_force = target.beta_force,
-        seasonality = target.seasonality,
+        beta_force = target_disease_dynamics_params.beta_force,
+        seasonality = target_disease_dynamics_params.seasonality,
         sigma = sigma,
         gamma = gamma,
         mu = mu,
-        annual_births_per_k = annual_births_per_k,
+        annual_births_per_k = common_disease_dynamics_params.births_per_k_pop,
         epsilon = epsilon,
-        R_0 = target.R_0,
-        population_N = target.population_N,
+        R_0 = target_disease_dynamics_params.R_0,
+        min_vaccination_coverage = target_disease_dynamics_params.min_vaccination_coverage,
+        max_vaccination_coverage = target_disease_dynamics_params.max_vaccination_coverage,
     )
 end
 

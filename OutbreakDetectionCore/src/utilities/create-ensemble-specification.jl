@@ -84,35 +84,11 @@ function create_ensemble_specifications(
         common_disease_dynamics_params::CommonDiseaseDynamicsParameters,
         dynamical_noise_params::DynamicalNoiseParameters,
     )
-    mu = calculate_mu(common_disease_dynamics_params.births_per_k_pop)
-    gamma = calculate_gamma(target_disease_dynamics_params)
-    sigma = calculate_sigma(target_disease_dynamics_params)
-
-    beta_mean = calculate_beta(
-        target_disease_dynamics_params.R_0,
-        sigma,
-        gamma,
-        mu,
-    )
-
-    epsilon = calculate_import_rate(
-        mu,
-        target_disease_dynamics_params.R_0,
-        state_specification.init_states.N,
-    )
 
     dynamics_specification = DynamicsParameterSpecification(
-        beta_mean,
-        target_disease_dynamics_params.beta_force,
-        target_disease_dynamics_params.seasonality,
-        sigma,
-        gamma,
-        mu,
-        common_disease_dynamics_params.births_per_k_pop,
-        epsilon,
-        target_disease_dynamics_params.R_0,
-        target_disease_dynamics_params.min_vaccination_coverage,
-        target_disease_dynamics_params.max_vaccination_coverage,
+        state_specification,
+        target_disease_dynamics_params,
+        common_disease_dynamics_params,
     )
 
     ensemble_specification = EnsembleSpecification(
