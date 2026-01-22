@@ -12,10 +12,10 @@ using AutoHashEquals
             beta_force = 0.2,
         )
 
-        noise = DynamicalNoiseSpecification(
+        noise = DynamicalNoiseParameters(
             R_0 = 5.0,
             latent_period = 7.0,
-            duration_infection = 14.0,
+            infectious_duration = 14.0,
             correlation = "in-phase",
             poisson_component = 1.0,
             vaccination_bounds = [0.0, 0.8],
@@ -47,10 +47,10 @@ using AutoHashEquals
             beta_force = 0.2,
         )
 
-        noise = DynamicalNoiseSpecification(
+        noise = DynamicalNoiseParameters(
             R_0 = 5.0,
             latent_period = 7.0,
-            duration_infection = 14.0,
+            infectious_duration = 14.0,
             correlation = "in-phase",
             poisson_component = 1.0,
             vaccination_bounds = [0.0, 0.8],
@@ -88,10 +88,10 @@ using AutoHashEquals
             beta_force = 0.2,
         )
 
-        base_noise = DynamicalNoiseSpecification(
+        base_noise = DynamicalNoiseParameters(
             R_0 = 5.0,
             latent_period = 7.0,
-            duration_infection = 14.0,
+            infectious_duration = 14.0,
             correlation = "in-phase",
             poisson_component = 1.0,
             vaccination_bounds = [0.0, 0.8],
@@ -128,10 +128,10 @@ using AutoHashEquals
     end
 
     @testset "Noise Level Mapping" begin
-        base_noise = DynamicalNoiseSpecification(
+        base_noise = DynamicalNoiseParameters(
             R_0 = 5.0,
             latent_period = 7.0,
-            duration_infection = 14.0,
+            infectious_duration = 14.0,
             correlation = "in-phase",
             poisson_component = 1.0,
             vaccination_bounds = [0.0, 0.8],

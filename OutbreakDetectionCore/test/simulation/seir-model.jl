@@ -1,6 +1,5 @@
 using OutbreakDetectionCore
 using Test
-using LabelledArrays: LabelledArrays
 using StaticArrays
 
 @testset "SEIR-model.jl" verbose = true begin
@@ -13,12 +12,14 @@ using StaticArrays
 
     target_dynamics = TargetDiseaseDynamicsParameters(
         R_0 = 16.0,
-        latent_period_days = 10.0,
-        infectious_duration_days = 8.0,
-        beta_force = 0.2
+        latent_period = OutbreakDetectionCore.Dates.Day(10),
+        infectious_duration = OutbreakDetectionCore.Dates.Day(8),
+        beta_force = 0.2,
+        min_vaccination_coverage = 0.8,
+        max_vaccination_coverage = 0.8
     )
     dynamics_spec = DynamicsParameterSpecification(target_dynamics)
-    dynamics_params = DynamicsParameters(dynamics_spec; vaccination_coverage = 0.8)
+    dynamics_params = DynamicsParameters(dynamics_spec; seed = 1234)
 
     time_params = SimTimeParameters(;
         tmin = 0.0, tmax = 365.0 * 100, tstep = 1.0

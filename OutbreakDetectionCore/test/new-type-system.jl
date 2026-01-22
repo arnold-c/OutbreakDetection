@@ -73,11 +73,11 @@ using Try
     end
 
     @testset "Noise Specifications" begin
-        # Test DynamicalNoiseSpecification
-        noise_spec = DynamicalNoiseSpecification(
+        # Test DynamicalNoiseParameters
+        noise_spec = DynamicalNoiseParameters(
             R_0 = 5.0,
             latent_period = 7.0,
-            duration_infection = 14.0,
+            infectious_duration = 14.0,
             correlation = "in-phase",
             poisson_component = 1.0,
             vaccination_bounds = [0.0, 0.8],
@@ -85,19 +85,19 @@ using Try
 
         @test noise_spec.R_0 == 5.0
         @test noise_spec.latent_period == 7.0
-        @test noise_spec.duration_infection == 14.0
+        @test noise_spec.infectious_duration == 14.0
         @test noise_spec.correlation == "in-phase"
         @test noise_spec.poisson_component == 1.0
         @test noise_spec.vaccination_bounds == [0.0, 0.8]
 
-        # Test DynamicalNoise instance creation
-        noise = DynamicalNoise(noise_spec, 0.65)
+        # Test DynamicalNoiseSpecification instance creation
+        noise = DynamicalNoiseSpecification(noise_spec, 0.65)
 
         @test noise.R_0 == 5.0
         @test noise.vaccination_coverage == 0.65
 
-        # Test PoissonNoise
-        poisson = PoissonNoise(noise_mean_scaling = 1.0)
+        # Test PoissonNoiseSpecification
+        poisson = PoissonNoiseSpecification(noise_mean_scaling = 1.0)
 
         @test poisson.noise_mean_scaling == 1.0
     end
@@ -211,10 +211,10 @@ using Try
         @test_throws AssertionError DynamicsParameterSpecification(invalid_target2)
 
         # Test invalid noise correlation (throws during construction)
-        @test_throws AssertionError DynamicalNoiseSpecification(
+        @test_throws AssertionError DynamicalNoiseParameters(
             R_0 = 5.0,
             latent_period = 7.0,
-            duration_infection = 14.0,
+            infectious_duration = 14.0,
             correlation = "invalid",
             poisson_component = 1.0,
         )
