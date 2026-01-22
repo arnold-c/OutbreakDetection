@@ -276,6 +276,10 @@ R_0 = (β * σ) / ((σ + μ) * (γ + μ))
     return (beta * sigma) / ((sigma + mu) * (gamma + mu))
 end
 
+function calculate_mu(common_disease_dynamics_params::CommonDiseaseDynamicsParameters)
+    return calculate_mu(common_disease_dynamics_params.births_per_k_pop)
+end
+
 function calculate_mu(annual_births_per_k)
     life_expectancy_years = 1000 / annual_births_per_k
     return 1 / (life_expectancy_years * 365)
