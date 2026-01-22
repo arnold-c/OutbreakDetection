@@ -74,17 +74,21 @@ function recreate_noise_vecs(
     UnPack.@unpack init_states, init_state_props = state_parameters
     UnPack.@unpack N = init_states
 
-
-    UnPack.@unpack state_parameters, time_parameters, nsims = ensemble_spec
-    N = state_parameters.init_states.N
+    updated_dynamical_noise = DynamicalNoiseSpecification(
+        ensemble_specification.dynamical_noise_params,
+        vaccination_coverage
+    )
 
     # Create noise-specific dynamics
-    noise_dynamics = recreate_noise_dynamics_spec(noise_spec, ensemble_spec)
+    updated_dynamics_parameter_specification = recreate_noise_dynamics_spec(
+        updated_dynamical_noise,
+        ensemble_specification
+    )
 
     # Calculate endemic equilibrium for initial states
     endemic_result = calculate_endemic_equilibrium_proportions(
-        noise_dynamics,
-        noise_spec.vaccination_coverage
+        updated_dynamics_parameter_specification,
+        vaccination_coverage
     )
 
     # Handle endemic equilibrium calculation
@@ -96,10 +100,10 @@ function recreate_noise_vecs(
                 "\nDefaulting to no initial infections, s_prop = 1 - vaccination_coverage"
         end
         (
-            s_prop = 1.0 - noise_spec.vaccination_coverage,
+            s_prop = 1.0 - vaccination_coverage,
             e_prop = 0.0,
             i_prop = 0.0,
-            r_prop = noise_spec.vaccination_coverage,
+            r_prop = vaccination_coverage,
         )
     end
 
@@ -136,7 +140,7 @@ function recreate_noise_vecs(
     )
 
     noise_result = create_noise_vecs(
-        updated_dynamical_noise_spec,
+        updated_dynamical_noise,
         updated_ensemble_specification,
         updated_dynamics_parameters;
         seed = seed
