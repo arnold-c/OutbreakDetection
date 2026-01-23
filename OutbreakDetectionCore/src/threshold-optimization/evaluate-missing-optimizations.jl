@@ -124,7 +124,8 @@ function evaluate_missing_optimizations(
                         opt_scenarios_vec = collect(values(opt_groups))
 
                         results_batch = OhMyThreads.tmap(
-                            opt_scenarios_vec; scheduler = scheduler
+                            opt_scenarios_vec;
+                            scheduler = scheduler
                         ) do opt_scenario_sv
                             @assert length(opt_scenario_sv) == 1
                             optimization_scenario = opt_scenario_sv[1]

@@ -94,8 +94,8 @@ function threshold_optimization(
     # Setup multistart problem
     problem = MultistartOptimization.MinimizationProblem(
         objective,
-        scenario.threshold_bounds.lower,
-        scenario.threshold_bounds.upper
+        [scenario.threshold_bounds.lower],
+        [scenario.threshold_bounds.upper]
     )
 
     # Configure local optimization method
