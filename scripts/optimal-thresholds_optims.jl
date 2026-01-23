@@ -70,12 +70,12 @@ measles_ensemble_specification = create_ensemble_specifications(
 #%%
 noise_level_vec = [
     1.0,
-    # 2.0,
-    # 4.0,
+    2.0,
+    4.0,
     7.0,
 ]
 noise_type_description_vec = [
-    # :static,
+    :static,
     :dynamic,
 ]
 
@@ -109,7 +109,7 @@ specification_vecs = ScenarioSpecificationVecs(;
 #%%
 optimized_threshold_results = run_scenario_threshold_optimization(
     specification_vecs;
-    force = true,
+    force = false,
     save_results = true,
     save_checkpoints = true,
     save_checkpoint_num = 5,
