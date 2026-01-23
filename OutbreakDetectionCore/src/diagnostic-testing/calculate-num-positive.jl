@@ -26,7 +26,8 @@ function calculate_positives_vec!(
         tested_vec::AbstractVector{Int64},
         sim_length::Int64,
         lag::Int64,
-        tested_multiplier::Float64
+        tested_multiplier::Float64;
+        rng::Random.AbstractRNG = Random.default_rng()
     )
     # Initialize to zero
     fill!(npos_vec, 0)
@@ -34,7 +35,7 @@ function calculate_positives_vec!(
     @inbounds for day in eachindex(npos_vec)
         result_day = day + lag
         if result_day <= sim_length
-            npos_vec[result_day] = rand(Distributions.Binomial(tested_vec[day], tested_multiplier))
+            npos_vec[result_day] = rand(rng, Distributions.Binomial(tested_vec[day], tested_multiplier))
         end
     end
 

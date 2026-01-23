@@ -69,12 +69,12 @@ measles_ensemble_specification = create_ensemble_specifications(
 #%%
 noise_level_vec = [
     1.0,
-    2.0,
-    4.0,
+    # 2.0,
+    # 4.0,
     7.0,
 ]
 noise_type_description_vec = [
-    :static,
+    # :static,
     :dynamic,
 ]
 
@@ -108,7 +108,7 @@ specification_vecs = ScenarioSpecificationVecs(;
 #%%
 optimized_threshold_results = run_scenario_threshold_optimization(
     specification_vecs;
-    force = false,
+    force = true,
     save_results = true,
     save_checkpoints = true,
     save_checkpoint_num = 5,
@@ -117,15 +117,15 @@ optimized_threshold_results = run_scenario_threshold_optimization(
 );
 
 #%%
-display(
-    line_plot(
-        optimized_threshold_results;
-        outcome = :accuracies,
-        ylabel = "Detection Accuracy",
-        ylims = (0.5, 1.0),
-        percentiles = [0.1, 0.9]
-    )
-)
+# display(
+#     line_plot(
+#         optimized_threshold_results;
+#         outcome = :accuracies,
+#         ylabel = "Detection Accuracy",
+#         ylims = (0.5, 1.0),
+#         percentiles = [0.1, 0.9]
+#     )
+# )
 
 #%%
 OutbreakDetectionCore.verify_perfect_test_consistency(optimized_threshold_results)

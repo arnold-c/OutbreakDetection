@@ -214,9 +214,10 @@ function _create_test_positive_vec!(
     )
     sim_length = length(seir_incidence)
 
-    # Set seed so that the same individuals are tested in each sim index
-    # across different scenarios
-    Random.seed!(sim)
+    # Create separate RNG streams for SEIR and noise calculations
+    # This ensures noise scenarios don't affect SEIR-derived values
+    seir_rng = Random.MersenneTwister(sim)
+    noise_rng = Random.MersenneTwister(sim + 1_000_000)
 
     # Validate matching lengths
     @assert length(noise_incidence) == sim_length "SEIR and noise incidence lengths must match for simulation $sim"
@@ -229,26 +230,28 @@ function _create_test_positive_vec!(
         true_positives = @alloc(Int64, sim_length)
         false_positives = @alloc(Int64, sim_length)
 
-        # Calculate number tested from each source
-        calculate_tested_vec!(seir_tested, seir_incidence, percent_tested)
-        calculate_tested_vec!(noise_tested, noise_incidence, percent_tested)
+        # Calculate number tested from each source with independent RNGs
+        calculate_tested_vec!(seir_tested, seir_incidence, percent_tested; rng = seir_rng)
+        calculate_tested_vec!(noise_tested, noise_incidence, percent_tested; rng = noise_rng)
 
-        # Calculate true positives (from infected individuals)
+        # Calculate true positives (from infected individuals) using SEIR RNG
         calculate_positives_vec!(
             true_positives,
             seir_tested,
             sim_length,
             test_specification.test_result_lag,
-            test_specification.sensitivity
+            test_specification.sensitivity;
+            rng = seir_rng
         )
 
-        # Calculate false positives (from noise individuals)
+        # Calculate false positives (from noise individuals) using noise RNG
         calculate_positives_vec!(
             false_positives,
             noise_tested,
             sim_length,
             test_specification.test_result_lag,
-            1.0 - test_specification.specificity
+            1.0 - test_specification.specificity;
+            rng = noise_rng
         )
 
         # Create result vector with total positives

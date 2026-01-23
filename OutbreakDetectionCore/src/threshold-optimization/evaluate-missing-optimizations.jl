@@ -94,7 +94,8 @@ function evaluate_missing_optimizations(
 
                     recreate_noise_vecs(
                         ensemble_key.ensemble_specification,
-                        optim_res.location[1],
+                        optim_res.location[1];
+                        seed = seed
                     )
                 end
 
@@ -140,6 +141,11 @@ function evaluate_missing_optimizations(
                         ) do opt_scenario_sv
                             @assert length(opt_scenario_sv) == 1
                             optimization_scenario = opt_scenario_sv[1]
+
+                            # Seed the RNG to ensure consistent optimization results across different
+                            # noise scenarios, as create_test_positive_vecs modifies the global RNG state
+                            Random.seed!(seed)
+
 
                             optimization_result = threshold_optimization(
                                 optimization_scenario,
