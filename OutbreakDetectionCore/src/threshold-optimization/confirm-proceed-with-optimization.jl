@@ -18,13 +18,13 @@ function proceed_with_optimization(
 
     # Estimate time (simpler than multistart since no optimization)
     estimated_time = n_missing * seconds_per_scenario
+    println(StyledStrings.styled"{yellow:Warning:} Estimated optimization run time: {red:$(round(estimated_time/60, digits=1))} minutes")
 
     if estimated_time > 300  # 5 minutes
-        println(StyledStrings.styled"{yellow:Warning:} Estimated optimization run time: {red:$(round(estimated_time/60, digits=1))} minutes")
         print("Continue? (y/N): ")
         response = readline()
         return lowercase(strip(response)) in ["y", "yes"]
     end
 
-    return nothing
+    return true
 end

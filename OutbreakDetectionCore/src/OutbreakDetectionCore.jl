@@ -11,7 +11,7 @@ using DataFrames: DataFrames
 using DataFramesMeta: DataFramesMeta
 using Dates: Dates
 using Distributions: Distributions
-using DrWatson: DrWatson, @dict, @tagsave
+using DrWatson: DrWatson
 using FLoops: FLoops
 using FreqTables: FreqTables
 using JLD2: JLD2
