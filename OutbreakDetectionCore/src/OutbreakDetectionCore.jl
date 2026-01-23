@@ -98,6 +98,7 @@ include("./detection/alert-generation.jl")
 include("./detection/classify-outbreaks.jl")
 include("./detection/detection-metric-functions.jl")
 include("./detection/match-alert-outbreak-thresholds.jl")
+include("./detection/outbreak-thresholds-calculation.jl")
 include("./detection/threshold-bounds-calculation.jl")
 
 # Threshold Optimization
