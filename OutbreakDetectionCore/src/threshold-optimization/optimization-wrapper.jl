@@ -80,7 +80,11 @@ function run_scenario_threshold_optimization(
 
     n_existing = length(existing_results)
     if verbose
-        println(StyledStrings.styled"Found {cyan:$n_existing} existing results")
+        if force
+            println(StyledStrings.styled"{cyan:`force = true`} so re-running all optimizations")
+        else
+            println(StyledStrings.styled"Found {cyan:$n_existing} existing results")
+        end
     end
 
     # Find missing scenarios - reuse function from multistart
