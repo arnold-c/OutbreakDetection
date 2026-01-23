@@ -59,11 +59,9 @@ function run_scenario_threshold_optimization(
     # This includes all combinations with grid parameters
     all_scenarios = create_scenarios_structvector(specification_vecs)
 
-    if verbose
-        n_total_scenarios = length(all_scenarios)
-        println(StyledStrings.styled"{green:Starting optimization with StructVector}")
-        println(StyledStrings.styled"Total scenarios: {yellow:$n_total_scenarios}")
-    end
+    n_total_scenarios = length(all_scenarios)
+    println(StyledStrings.styled"{green:Starting optimization}")
+    println(StyledStrings.styled"Total scenarios: {yellow:$n_total_scenarios}")
 
     # Load existing results (including checkpoints)
     existing_results = if force
@@ -79,21 +77,17 @@ function run_scenario_threshold_optimization(
     end
 
     n_existing = length(existing_results)
-    if verbose
-        if force
-            println(StyledStrings.styled"{cyan:`force = true`} so re-running all optimizations")
-        else
-            println(StyledStrings.styled"Found {cyan:$n_existing} existing results")
-        end
+    if force
+        println(StyledStrings.styled"{cyan:`force = true`} so re-running all optimizations")
+    else
+        println(StyledStrings.styled"Found {cyan:$n_existing} existing results")
     end
 
     # Find missing scenarios - reuse function from multistart
     missing_scenarios = find_missing_scenarios(all_scenarios, existing_results)
     n_missing = length(missing_scenarios)
 
-    if verbose
-        println(StyledStrings.styled"Missing scenarios to optimize: {yellow:$n_missing}")
-    end
+    println(StyledStrings.styled"Missing scenarios to optimize: {yellow:$n_missing}")
 
     # Check with user if needed
     if n_missing > 0
