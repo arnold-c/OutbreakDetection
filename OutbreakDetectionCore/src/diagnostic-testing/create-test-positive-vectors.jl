@@ -214,6 +214,10 @@ function _create_test_positive_vec!(
     )
     sim_length = length(seir_incidence)
 
+    # Set seed so that the same individuals are tested in each sim index
+    # across different scenarios
+    Random.seed!(sim)
+
     # Validate matching lengths
     @assert length(noise_incidence) == sim_length "SEIR and noise incidence lengths must match for simulation $sim"
 
