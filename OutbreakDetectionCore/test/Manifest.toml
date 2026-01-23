@@ -2,7 +2,7 @@
 
 julia_version = "1.12.4"
 manifest_format = "2.0"
-project_hash = "023efe5f98dba66e11d3b6e8ea8de8243400c578"
+project_hash = "35ab12fcb151734e665319555a60538002d06740"
 
 [[deps.AliasTables]]
 deps = ["PtrArrays", "Random"]
@@ -424,6 +424,11 @@ version = "1.10.0"
 deps = ["InteractiveUtils", "Logging", "Random", "Serialization"]
 uuid = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 version = "1.11.0"
+
+[[deps.Try]]
+git-tree-sha1 = "56e72d45a7d77e23f6e943d28183eb509119843a"
+uuid = "bf1d0ff0-c4a9-496b-85f0-2b0d71c4f32a"
+version = "0.1.1"
 
 [[deps.UUIDs]]
 deps = ["Random", "SHA"]

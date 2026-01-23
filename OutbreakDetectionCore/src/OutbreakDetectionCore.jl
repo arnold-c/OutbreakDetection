@@ -68,6 +68,7 @@ include("./constants/test-constants.jl")
 # Simulation (continued)
 include("./simulation/endemic-equilibrium.jl")
 include("./simulation/seir-model.jl")
+include("./simulation/validate-ensemble-outbreaks.jl")
 
 # Noise
 include("./noise/noise-dynamics-parameters.jl")

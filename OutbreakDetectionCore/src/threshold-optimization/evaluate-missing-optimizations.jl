@@ -55,6 +55,17 @@ function evaluate_missing_optimizations(
                 outbreak_spec_key.outbreak_specification
             )
 
+            # Validate that all simulations have at least one outbreak
+            validation_result = validate_all_simulations_have_outbreaks(
+                outbreak_thresholds,
+                ensemble_key.ensemble_specification,
+                outbreak_spec_key.outbreak_specification
+            )
+
+            if Try.iserr(validation_result)
+                error(Try.unwrap_err(validation_result))
+            end
+
             noise_trim_groups = group_structvector(
                 outbreak_spec_scenarios,
                 :noise_level, :noise_type_description
