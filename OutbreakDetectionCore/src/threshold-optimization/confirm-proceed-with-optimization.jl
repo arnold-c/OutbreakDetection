@@ -26,5 +26,5 @@ function proceed_with_optimization(
         return lowercase(strip(response)) in ["y", "yes"]
     end
 
-    return true
+    return nothing
 end

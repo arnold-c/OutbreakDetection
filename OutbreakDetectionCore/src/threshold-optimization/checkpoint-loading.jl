@@ -10,7 +10,14 @@ function load_checkpoint_results_structvector(filedir::String)
     checkpoint_dir = joinpath(filedir, "checkpoints")
 
     if !isdir(checkpoint_dir)
-        return StructVector(OptimizationResult[])
+        @warn "$checkpoint_dir isn't a directory. Returning an empty StructVector to force the recreation of all scenarios."
+        print("Continue? (y/N): ")
+        response = readline()
+        if lowercase(strip(response)) in ["y", "yes"]
+            return Try.Ok(StructVector(OptimizationResult[]))
+        else
+            return Try.Err("Quitting optimization")
+        end
     end
 
     checkpoint_files = filter(
@@ -19,7 +26,14 @@ function load_checkpoint_results_structvector(filedir::String)
     )
 
     if isempty(checkpoint_files)
-        return StructVector(OptimizationResult[])
+        @warn "Failed to load the previous checkpoints in $checkpoint_dir. Returning an empty StructVector to force the recreation of all scenarios."
+        print("Continue? (y/N): ")
+        response = readline()
+        if lowercase(strip(response)) in ["y", "yes"]
+            return Try.Ok(StructVector(OptimizationResult[]))
+        else
+            return Try.Err("Quitting optimization")
+        end
     end
 
     # Sort checkpoint files by modification time (most recent first)
@@ -39,7 +53,7 @@ function load_checkpoint_results_structvector(filedir::String)
                     if file != sorted_files[1]
                         @info "Loaded checkpoint from $file (most recent checkpoint failed)"
                     end
-                    return results
+                    return Try.Ok(results)
                 end
             end
         catch e
@@ -47,5 +61,13 @@ function load_checkpoint_results_structvector(filedir::String)
         end
     end
 
-    error("All checkpoint files failed to load")
+    @warn "All checkpoint files failed to load. Returning an empty StructVector to force the recreation of all scenarios."
+    print("Continue? (y/N): ")
+    response = readline()
+    if lowercase(strip(response)) in ["y", "yes"]
+        return Try.Ok(StructVector(OptimizationResult[]))
+    else
+        return Try.Err("Quitting optimization")
+    end
+    return Try.Err("All checkpoint files failed to load")
 end

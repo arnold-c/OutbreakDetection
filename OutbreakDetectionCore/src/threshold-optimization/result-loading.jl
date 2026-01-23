@@ -71,6 +71,7 @@ function load_previous_optimization_results_structvector(
     if Try.iserr(load_filepath)
         # Try to load checkpoint files
         @warn checkpoint_warning_message
+        @warn Try.unwrap_err(load_filepath)
         return load_checkpoint_results_structvector(filedir)
     end
 
@@ -79,11 +80,17 @@ function load_previous_optimization_results_structvector(
 
         # Try to load as StructVector first (new format)
         if haskey(data, "optimization_results")
-            return data["optimization_results"]
+            return Try.Ok(data["optimization_results"])
         end
 
         @warn "Failed to load the previous results in $load_filepath. Returning an empty StructVector to force the recreation of all scenarios."
-        return StructVector(OptimizationResult[])
+        print("Continue? (y/N): ")
+        response = readline()
+        if lowercase(strip(response)) in ["y", "yes"]
+            return Try.Ok(StructVector(OptimizationResult[]))
+        else
+            return Try.Err("Quitting optimization")
+        end
     catch
         # Try to load checkpoint files as fallback
         @warn checkpoint_warning_message

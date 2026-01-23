@@ -77,10 +77,10 @@ function get_most_recent_hyperparam_filepath(
     optimization_files = readdir(filedir)
 
     if length(optimization_files) == 0
-        return Try.Err("No optimization files found.")
+        return Try.Err("No files found in directory $filedir.")
     end
 
-    filter_regex = Regex("(.*)$(filename_base)\\.jld2\$")
+    filter_regex = Regex("(.*)$(filename_base)\$")
 
     filtered_optimization_files = filter(
         f -> contains(f, filter_regex),
@@ -88,7 +88,11 @@ function get_most_recent_hyperparam_filepath(
     )
 
     if length(filtered_optimization_files) == 0
-        return Try.Err("No optimization files found.")
+        return Try.Err(
+            "No optimization files found using regex '$(filter_regex)'.\n" *
+                "Files in $filedir:\n" *
+                "$(join(optimization_files, "\n"))"
+        )
     end
 
     filtered_optimization_datetimes = Vector{Union{Try.Ok, Try.Err}}(
@@ -130,7 +134,7 @@ function get_most_recent_hyperparam_filepath(
     most_recent_filepath = joinpath(
         filedir,
         string(most_recent_optimization_datetime) *
-            "_$(filename_base).jld2",
+            "_$(filename_base)",
     )
     return Try.Ok(most_recent_filepath)
 end

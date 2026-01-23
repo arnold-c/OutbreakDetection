@@ -53,7 +53,7 @@ function run_scenario_threshold_optimization(
         mkpath(filedir)
     end
     @assert scheduler in [:dynamic, :static, :greedy, :serial]
-
+    @assert endswith(optimization_filename_base, ".jld2")
 
     # Create all grid search scenarios as StructVector
     # This includes all combinations with grid parameters
@@ -69,7 +69,9 @@ function run_scenario_threshold_optimization(
     existing_results = if force
         StructVector(OptimizationResult[])
     else
-        load_previous_optimization_results_structvector(filedir, gridsearch_filename_base)
+        Try.unwrap(
+            load_previous_optimization_results_structvector(filedir, optimization_filename_base)
+        )
     end
 
     n_existing = length(existing_results)
