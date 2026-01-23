@@ -2,9 +2,11 @@
     using OutbreakDetectionCore
     using StructArrays
     using Test
+    using Dates
 
     # Helper function to create minimal test data
     function create_test_ensemble_spec(label::String)
+
         state_params = StateParameters(;
             N = 100_000,
             s_prop = 0.05,
@@ -18,20 +20,39 @@
             tstep = 1.0
         )
 
-        dynamics_params = TargetDiseaseDynamicsParameters(
+        target_dynamics = TargetDiseaseDynamicsParameters(;
             R_0 = 16.0,
-            latent_period_days = 10.0,
-            infectious_duration_days = 8.0,
+            latent_period = Day(10),
+            infectious_duration = Day(8),
             beta_force = 0.2
         )
 
+        common_dynamics = CommonDiseaseDynamicsParameters(;
+            births_per_k_pop = 12.0,
+            nsims = 10
+        )
+
+        dynamics_params = DynamicsParameterSpecification(
+            state_params,
+            target_dynamics,
+            common_dynamics
+        )
+
+        noise_params = DynamicalNoiseParameters(;
+            R_0 = 0.1,
+            latent_period = Day(1),
+            infectious_duration = Day(1),
+            correlation = "none",
+            poisson_component = 0.0
+        )
+
         return EnsembleSpecification(
-            label = label,
-            state_parameters = state_params,
-            time_parameters = time_params,
-            dynamics_parameter_specification = dynamics_params,
-            n_simulations = 10,
-            seasonality_func = cos
+            label,
+            state_params,
+            time_params,
+            dynamics_params,
+            noise_params,
+            10  # nsims
         )
     end
 
@@ -55,9 +76,9 @@
         accuracy_metric = AccuracyMetric(F1())
 
         outbreak_spec = OutbreakSpecification(
-            outbreak_threshold = 0.01,
-            minimum_outbreak_duration = 7,
-            minimum_outbreak_size = 10
+            1,  # outbreak_threshold (must be Integer)
+            7,  # minimum_outbreak_duration
+            10  # minimum_outbreak_size
         )
 
         return OptimizationScenario(
@@ -82,16 +103,16 @@
             percent_tested = scenario.percent_tested,
             alert_method = scenario.alert_method,
             accuracy_metric = scenario.accuracy_metric,
-            thresholds_bounds = scenario.threshold_bounds,
+            threshold_bounds = scenario.threshold_bounds,
             outbreak_specification = scenario.outbreak_specification,
             optimal_threshold = optimal_threshold,
             accuracies = [0.9, 0.85, 0.88],
             proportion_alerts_correct = [0.92, 0.88, 0.9],
             proportion_outbreaks_detected = [0.88, 0.82, 0.86],
-            detection_delays = [5, 6, 4],
-            unavoidable_cases = [100, 120, 110],
-            alert_durations = [10, 12, 11],
-            outbreak_durations = [20, 22, 21],
+            detection_delays = [[5], [6], [4]],
+            unavoidable_cases = [[100], [120], [110]],
+            alert_durations = [[10], [12], [11]],
+            outbreak_durations = [[20], [22], [21]],
             proportion_timeseries_in_alert = [0.1, 0.12, 0.11],
             proportion_timeseries_in_outbreak = [0.2, 0.22, 0.21]
         )

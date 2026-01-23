@@ -17,7 +17,7 @@ Specification for outbreak detection thresholds.
 
 Creates an `OutbreakSpecification` with automatically generated directory path.
 """
-struct OutbreakSpecification{T1 <: Integer, T2 <: AbstractString}
+AutoHashEquals.@auto_hash_equals struct OutbreakSpecification{T1 <: Integer, T2 <: AbstractString}
     outbreak_threshold::T1
     minimum_outbreak_duration::T1
     minimum_outbreak_size::T1

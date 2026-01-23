@@ -60,13 +60,13 @@ spec = DynamicalNoiseParameters(
 - [`DynamicalNoiseSpecification`](@ref): Concrete instance with specific vaccination coverage
 - [`PoissonNoiseSpecification`](@ref): Simple Poisson noise alternative
 """
-Base.@kwdef struct DynamicalNoiseParameters
+AutoHashEquals.@auto_hash_equals struct DynamicalNoiseParameters
     R_0::Float64
     latent_period::Dates.Day
     infectious_duration::Dates.Day
     correlation::String
     poisson_component::Float64
-    vaccination_bounds::Vector{Float64} = [0.0, 1.0]
+    vaccination_bounds::Vector{Float64}
 
     function DynamicalNoiseParameters(
             R_0,
@@ -93,6 +93,25 @@ Base.@kwdef struct DynamicalNoiseParameters
             vaccination_bounds
         )
     end
+end
+
+# Keyword constructor
+function DynamicalNoiseParameters(;
+        R_0,
+        latent_period,
+        infectious_duration,
+        correlation,
+        poisson_component,
+        vaccination_bounds = [0.0, 1.0]
+    )
+    return DynamicalNoiseParameters(
+        R_0,
+        latent_period,
+        infectious_duration,
+        correlation,
+        poisson_component,
+        vaccination_bounds
+    )
 end
 
 """

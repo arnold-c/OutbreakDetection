@@ -49,9 +49,11 @@ exceeds the threshold.
 - [`DailyThreshold`](@ref)
 - [`DailyThresholdMovingAverage`](@ref)
 """
-Base.@kwdef struct MovingAverage
-    window::Int64 = 7
+AutoHashEquals.@auto_hash_equals struct MovingAverage
+    window::Int64
 end
+
+MovingAverage(; window::Int64 = 7) = MovingAverage(window)
 
 """
     DailyThresholdMovingAverage
@@ -68,9 +70,11 @@ average meets or exceeds the threshold.
 - [`DailyThreshold`](@ref)
 - [`MovingAverage`](@ref)
 """
-Base.@kwdef struct DailyThresholdMovingAverage
-    window::Int64 = 7
+AutoHashEquals.@auto_hash_equals struct DailyThresholdMovingAverage
+    window::Int64
 end
+
+DailyThresholdMovingAverage(; window::Int64 = 7) = DailyThresholdMovingAverage(window)
 
 """
     AlertMethod
