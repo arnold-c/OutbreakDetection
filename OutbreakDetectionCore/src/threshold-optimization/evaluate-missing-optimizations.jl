@@ -154,14 +154,17 @@ function evaluate_missing_optimizations(
 
                         BangBang.append!!(all_results, results_batch)
 
-                        if save_results && save_checkpoints && checkpoint_num % save_checkpoint_num == 0 && !isempty(checkpoint_dir)
-                            save_optimization_checkpoint(
-                                StructVector(all_results),
-                                checkpoint_dir,
-                                checkpoint_output_filename_base,
-                                checkpoint_num
-                            )
-                            verbose && @info "Saved checkpoint $checkpoint_num"
+                        verbose && println("checkpoint number $checkpoint_num, result batch length: $(length(results_batch))")
+                        if save_results && save_checkpoints && isdir(checkpoint_dir)
+                            if checkpoint_num % save_checkpoint_num == 0
+                                save_optimization_checkpoint(
+                                    StructVector(all_results),
+                                    checkpoint_dir,
+                                    checkpoint_output_filename_base,
+                                    checkpoint_num
+                                )
+                                verbose && @info "Saved checkpoint $checkpoint_num"
+                            end
                             checkpoint_num += 1
                         end
 
