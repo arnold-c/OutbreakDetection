@@ -1,4 +1,5 @@
 #%%
+using OutbreakDetection
 using OutbreakDetectionCore
 using Dates
 using StructArrays
@@ -107,9 +108,20 @@ specification_vecs = ScenarioSpecificationVecs(;
 #%%
 optimized_threshold_results = run_scenario_threshold_optimization(
     specification_vecs;
-    force = true,
+    force = false,
     save_results = true,
     save_checkpoints = true,
     save_checkpoint_num = 2,
     disable_time_check = true,
 );
+
+#%%
+display(
+    line_plot(
+        optimized_threshold_results;
+        outcome = :accuracies,
+        ylabel = "Detection Accuracy",
+        ylims = (0.5, 1.0),
+        percentiles = [0.1, 0.9]
+    )
+)

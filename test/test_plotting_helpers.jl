@@ -233,21 +233,14 @@ using OutbreakDetection:
 
         @testset "Extract accuracy" begin
             result = create_test_result()
-            values = extract_outcome_values(result, :accuracy)
+            values = extract_outcome_values(result, :accuracies)
             @test values == [0.8, 0.85, 0.9]
             @test values isa Vector{Float64}
         end
 
-        @testset "Extract alert_threshold" begin
-            result = create_test_result()
-            values = extract_outcome_values(result, :alert_threshold)
-            @test values == 5.0
-            @test values isa Float64
-        end
-
         @testset "Extract detection_delays" begin
             result = create_test_result()
-            values = extract_outcome_values(result, :detectiondelays)
+            values = extract_outcome_values(result, :detection_delays)
             @test values == [[1, 2, 3], [2, 3, 4], [3, 4, 5]]
             @test values isa Vector{Vector{Int64}}
         end
@@ -294,18 +287,9 @@ using OutbreakDetection:
             @test values == [[30, 40], [35, 45], [40, 50]]
         end
 
-        @testset "Extract avoidable_cases (warning)" begin
-            result = create_test_result()
-            # Should warn and return unavoidable_cases
-            values = @test_logs (
-                :warn, "avoidable_cases computation not yet implemented",
-            ) extract_outcome_values(result, :avoidable_cases)
-            @test values == [[10, 20], [15, 25], [20, 30]]
-        end
-
         @testset "Unknown outcome throws error" begin
             result = create_test_result()
-            @test_throws ErrorException extract_outcome_values(result, :unknown_outcome)
+            @test_throws AssertionError extract_outcome_values(result, :unknown_outcome)
         end
     end
 

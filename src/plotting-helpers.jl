@@ -40,20 +40,171 @@ function reshape_optimization_results_to_matrix(
                 sorted_group.group
             )
 
-            # Sort by test specification for consistent ordering
-            # Sort by: test_result_lag (descending), then sensitivity (ascending), then specificity (ascending)
-            test_specs = cell_results.test_specification
-            sort_order = sortperm(
-                collect(enumerate(test_specs));
-                by = x -> (-x[2].test_result_lag, x[2].sensitivity, x[2].specificity)
+            # Sort results by test specification and percent_tested for consistent ordering
+            # Uses the same ordering as sort_test_specifications:
+            # test_result_lag (descending), then (sensitivity, specificity) (ascending),
+            # then percent_tested (ascending)
+            sorted_indices = sort_structvector_by_test_specification_and_percent(
+                cell_results.test_specification,
+                cell_results.percent_tested
             )
-            sort_indices = [x[1] for x in sort_order]
 
-            result_matrix[i, j] = cell_results[sort_indices]
+            # Show unique test specifications (unsorted)
+            unique_specs_unsorted = unique(cell_results.test_specification)
+
+            # Show unique test specifications (sorted)
+            unique_specs_sorted = get_unique_test_specifications_in_sorted_order(
+                cell_results.test_specification
+            )
+            sorted_results = cell_results[sorted_indices]
+
+            result_matrix[i, j] = sorted_results
         end
     end
 
     return result_matrix, unique_noise_types
+end
+
+"""
+    sort_structvector_by_test_specification_and_percent(
+        test_specifications,
+        percent_tested
+    )
+
+Sort indices of optimization results by test specification and then by percent_tested.
+Groups by (sensitivity, specificity) descending, then test_result_lag ascending,
+followed by percent_tested (ascending).
+
+This ensures perfect tests (sens=1.0, spec=1.0) come first, with lag=0 before lag=14,
+followed by imperfect tests in descending order of accuracy.
+
+# Arguments
+- `test_specifications`: Collection of test specifications from a StructVector
+- `percent_tested`: Collection of percent_tested values from a StructVector
+
+# Returns
+- Vector of indices representing the sorted order
+
+# Example
+```julia
+# Reorder a StructVector by test specification and percent_tested
+results = # ... StructVector{OptimizationResult}
+sorted_indices = sort_structvector_by_test_specification_and_percent(
+    results.test_specification,
+    results.percent_tested
+)
+sorted_results = results[sorted_indices]
+```
+"""
+function sort_structvector_by_test_specification_and_percent(
+        test_specifications,
+        percent_tested
+    )
+    # Sort by (sensitivity, specificity) ascending, then test_result_lag descending,
+    # then percent_tested (ascending)
+    # This gives: 0.85, 0.9, 1.0 (lag=14), 1.0 (lag=0)
+    return sortperm(
+        collect(zip(test_specifications, percent_tested));
+        by = x -> (
+            x[1].sensitivity,  # Ascending order (0.85, 0.9, 1.0)
+            x[1].specificity,  # Ascending order (0.85, 0.9, 1.0)
+            -x[1].test_result_lag,  # Descending order (14 before 0)
+            x[2],  # percent_tested in ascending order
+        )
+    )
+end
+
+
+"""
+    sort_structvector_by_test_specification(test_specifications)
+
+Sort indices of test specifications for reordering a StructVector.
+Uses the same ordering as `sort_test_specifications`: test_result_lag (descending),
+then (sensitivity, specificity) (ascending).
+
+This function differs from `sort_test_specifications` in that it returns the sorted
+**indices** rather than the sorted collection itself, which is needed for reordering
+StructVectors while maintaining their structure.
+
+# Arguments
+- `test_specifications`: Collection of test specifications from a StructVector
+
+# Returns
+- Vector of indices representing the sorted order
+
+# Example
+```julia
+# Reorder a StructVector by test specification
+results = # ... StructVector{OptimizationResult}
+sorted_indices = sort_structvector_by_test_specification(results.test_specification)
+sorted_results = results[sorted_indices]
+```
+"""
+function sort_structvector_by_test_specification(test_specifications)
+    # Use sortperm with the same comparison logic as sort_test_specifications
+    # First sort by test_result_lag (descending), then by (sensitivity, specificity) (ascending)
+
+    # First sort those indices by test_result_lag (descending)
+    indices_by_lag = sortperm(
+        test_specifications;
+        by = t -> t.test_result_lag,
+        rev = true
+    )
+
+    # Then indices sorted by (sensitivity, specificity)
+    final_indices = sortperm(
+        test_specifications[indices_by_lag];
+        by = t -> (t.sensitivity, t.specificity),
+        rev = false
+
+    )
+
+    # Map back to original indices
+    return indices_by_lag[final_indices]
+end
+
+"""
+    get_unique_test_specifications_in_sorted_order(
+        test_specifications
+    )
+
+Extract unique test specifications in the canonical sorted order.
+Groups by (sensitivity, specificity) first (descending), then sorts by test_result_lag
+(descending) within each group.
+
+This ensures perfect tests (sens=1.0, spec=1.0) come first, with lag=0 before lag=14,
+followed by imperfect tests in descending order of accuracy.
+
+# Arguments
+- `test_specifications`: Collection of test specifications (may contain duplicates)
+
+# Returns
+- Vector of unique test specifications in sorted order
+
+# Example
+```julia
+results = # ... StructVector{OptimizationResult}
+unique_specs = get_unique_test_specifications_in_sorted_order(
+    results.test_specification
+)
+```
+"""
+function get_unique_test_specifications_in_sorted_order(
+        test_specifications
+    )
+    unique_specs = unique(test_specifications)
+
+    # Sort by (sensitivity, specificity) ascending, then test_result_lag descending
+    # This gives: 0.85, 0.9, 1.0 (lag=14), 1.0 (lag=0)
+    # Which when reversed in the legend gives: 1.0 (lag=0), 1.0 (lag=14), 0.9, 0.85
+    return sort(
+        unique_specs;
+        by = spec -> (
+            spec.sensitivity,  # Ascending order (0.85, 0.9, 1.0)
+            spec.specificity,  # Ascending order (0.85, 0.9, 1.0)
+            -spec.test_result_lag,  # Descending order (14 before 0)
+        )
+    )
 end
 
 """
@@ -105,35 +256,19 @@ function extract_outcome_values(
         result::OutbreakDetectionCore.OptimizationResult,
         outcome::Symbol
     )
-    if outcome == :accuracy
-        return result.accuracies
-    elseif outcome == :alert_threshold
-        return result.optimal_threshold
-    elseif outcome == :detectiondelays
-        return result.detection_delays
-    elseif outcome == :proportion_timeseries_in_alert
-        return result.proportion_timeseries_in_alert
-    elseif outcome == :proportion_timeseries_in_outbreak
-        return result.proportion_timeseries_in_outbreak
-    elseif outcome == :proportion_alerts_correct
-        return result.proportion_alerts_correct
-    elseif outcome == :proportion_outbreaks_detected
-        return result.proportion_outbreaks_detected
-    elseif outcome == :unavoidable_cases
-        return result.unavoidable_cases
-    elseif outcome == :avoidable_cases
-        # Compute avoidable cases from unavoidable cases
-        # This would need the total cases, which we don't have directly
-        # For now, return unavoidable_cases as placeholder
-        @warn "avoidable_cases computation not yet implemented"
-        return result.unavoidable_cases
-    elseif outcome == :alert_durations
-        return result.alert_durations
-    elseif outcome == :outbreak_durations
-        return result.outbreak_durations
-    else
-        error("Unknown outcome: $outcome")
-    end
+    available_metrics = [
+        :accuracies,
+        :detection_delays,
+        :proportion_timeseries_in_alert,
+        :proportion_timeseries_in_outbreak,
+        :proportion_alerts_correct,
+        :proportion_outbreaks_detected,
+        :unavoidable_cases,
+        :alert_durations,
+        :outbreak_durations,
+    ]
+    @assert outcome in available_metrics "Unknown outcome: :$outcome. Available metrics: $available_metrics"
+    return getproperty(result, outcome)
 end
 
 """

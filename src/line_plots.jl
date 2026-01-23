@@ -10,7 +10,7 @@ lineplot_colors = [
 
 function line_plot(
         results::StructVector{OutbreakDetectionCore.OptimizationResult};
-        outcome = :accuracy,
+        outcome = :accuracies,
         plotdirpath = DrWatson.plotsdir(),
         plotname = "line_accuracy_plot",
         plotformat = "png",
@@ -32,7 +32,7 @@ function line_plot(
         nbanks = 1,
         legend_rowsize = Makie.Relative(0.05),
         xlabel_rowsize = Makie.Relative(0.03),
-        force = false,
+        force = true,
         save_plot = true,
         dots = false,
         percentiles = [0.1, 0.9],
@@ -51,9 +51,9 @@ function line_plot(
 
         num_noise_types = length(unique_noise_types)
 
-        # Get unique test specifications from first cell
-        unique_test_specifications = sort_test_specifications(
-            unique(result_matrix[1, 1].test_specification)
+        # # Get unique test specifications from first cell in sorted order
+        unique_test_specifications = get_unique_test_specifications_in_sorted_order(
+            result_matrix[1, 1].test_specification
         )
 
         for i in axes(result_matrix, 1)
@@ -112,12 +112,15 @@ function line_plot(
             map(
                 enumerate(reverse(unique_test_specifications))
             ) do (i, test_spec)
+                # Calculate the original index (before reversal) to get correct color
+                original_idx = length(unique_test_specifications) - i + 1
+
                 if outcome == :alert_threshold
                     markerstyle =
                         test_spec.test_result_lag == 0 ? :circle : :utriangle
                     return [
                         MarkerElement(;
-                            color = reverse(colors)[i],
+                            color = colors[original_idx],
                             marker = markerstyle,
                             markersize = markersize * 2,
                         ),
@@ -125,9 +128,9 @@ function line_plot(
                 else
                     linestyle = test_spec.test_result_lag == 0 ? :solid : :dot
                     return [
-                        PolyElement(; color = (reverse(colors)[i], 0.3)),
+                        PolyElement(; color = (colors[original_idx], 0.3)),
                         LineElement(;
-                            color = reverse(colors)[i], linestyle = linestyle
+                            color = colors[original_idx], linestyle = linestyle
                         ),
                     ]
                 end
@@ -164,7 +167,7 @@ function _line_plot(
         cell_results::StructVector{OutbreakDetectionCore.OptimizationResult},
         i,
         j;
-        outcome = :accuracy,
+        outcome = :accuracies,
         colors = lineplot_colors,
         alpha = 0.3,
         markersize = 15,
