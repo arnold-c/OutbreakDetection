@@ -47,7 +47,7 @@ function run_scenario_threshold_optimization(
         save_checkpoint_num = 5,
         verbose = true,
         disable_time_check = false,
-        seconds_per_scenario = 0.025
+        seconds_per_scenario = 1.7
     )
     if !isdir(filedir)
         mkpath(filedir)
