@@ -6,7 +6,7 @@ using StructArrays
 #%%
 time_parameters = SimTimeParameters(;
     tmin = 0.0,
-    tmax = 365.0 * 20.0,
+    tmax = 365.0 * 50.0,
     tstep = 1.0,
 )
 
