@@ -130,7 +130,7 @@ function run_scenario_threshold_optimization(
 
     # Save final results - reuse function from multistart
     if save_results
-        save_results_structvector(existing_results, gridsearch_output_filepath)
+        save_optimization_results(existing_results, gridsearch_output_filepath)
 
         # Clean up checkpoints after successful save
         cleanup_checkpoints(checkpoint_dir)
