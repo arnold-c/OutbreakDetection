@@ -111,8 +111,9 @@ optimized_threshold_results = run_scenario_threshold_optimization(
     force = false,
     save_results = true,
     save_checkpoints = true,
-    save_checkpoint_num = 2,
-    disable_time_check = true,
+    save_checkpoint_num = 5,
+    verbose = false,
+    disable_time_check = false,
 );
 
 #%%
