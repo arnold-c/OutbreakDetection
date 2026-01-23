@@ -65,7 +65,7 @@ function evaluate_missing_optimizations(
 
                 noise_vecs = if noise_trim_key.noise_type_description == :static
                     return create_noise_vecs(
-                        PoissonNoise(noise_trim_key.noise_level),
+                        PoissonNoiseSpecification(noise_trim_key.noise_level),
                         ensemble_key.ensemble_specification,
                         ensemble_simulation,
                         seed = seed
