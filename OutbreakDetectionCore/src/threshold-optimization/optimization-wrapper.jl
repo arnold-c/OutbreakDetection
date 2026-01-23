@@ -44,7 +44,7 @@ function run_scenario_threshold_optimization(
         return_results = true,
         save_results = true,
         save_checkpoints = true,
-        save_checkpoint_num = 1,
+        save_checkpoint_num = 5,
         verbose = true,
         disable_time_check = false,
         seconds_per_scenario = 0.025

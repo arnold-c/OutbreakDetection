@@ -99,9 +99,6 @@ specification_vecs = ScenarioSpecificationVecs(;
 )
 
 #%%
-create_scenarios_structvector(specification_vecs)
-
-#%%
 optimized_threshold_results = run_scenario_threshold_optimization(
     specification_vecs;
     force = true,
