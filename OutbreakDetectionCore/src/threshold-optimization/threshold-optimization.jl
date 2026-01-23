@@ -99,8 +99,8 @@ function threshold_optimization(
     )
 
     # Configure local optimization method
-    local_method = MultistartOptimization.NLopt_local_method(
-        local_algorithm;
+    local_method = MultistartOptimization.NLoptLocalMethod(
+        opt_params.local_algorithm;
         xtol_rel = opt_params.xtol_rel,
         xtol_abs = opt_params.xtol_abs,
         maxeval = opt_params.maxeval,
