@@ -105,6 +105,7 @@ include("./detection/threshold-bounds-calculation.jl")
 
 # Threshold Optimization
 include("./threshold-optimization/checkpoint-loading.jl")
+include("./threshold-optimization/checkpoint-save.jl")
 include("./threshold-optimization/confirm-proceed-with-optimization.jl")
 include("./threshold-optimization/evaluate-missing-optimizations.jl")
 include("./threshold-optimization/missing-results.jl")

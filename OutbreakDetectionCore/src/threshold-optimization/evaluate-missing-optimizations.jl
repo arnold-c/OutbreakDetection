@@ -155,7 +155,7 @@ function evaluate_missing_optimizations(
                         BangBang.append!!(all_results, results_batch)
 
                         if save_results && save_checkpoints && checkpoint_num % save_checkpoint_num == 0 && !isempty(checkpoint_dir)
-                            save_checkpoint_structvector(
+                            save_optimization_checkpoint(
                                 StructVector(all_results),
                                 checkpoint_dir,
                                 checkpoint_output_filename_base,
