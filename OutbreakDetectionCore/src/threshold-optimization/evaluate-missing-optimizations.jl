@@ -6,9 +6,9 @@ function evaluate_missing_optimizations(
         save_results = true,
         save_checkpoints = false,
         save_checkpoint_num = 5,
-        checkpoint_dir::String = "",
+        checkpoint_dir::String = "checkpoint",
         checkpoint_output_filename_base = joinpath(
-            filedir,
+            checkpoint_dir,
             string(Dates.now()) * "_" * "checkpoint_batch_",
         ),
         verbose::Bool = true,

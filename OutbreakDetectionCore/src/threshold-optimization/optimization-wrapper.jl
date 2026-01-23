@@ -33,9 +33,9 @@ function run_scenario_threshold_optimization(
             filedir,
             string(Dates.now()) * "_" * optimization_filename_base,
         ),
-        checkpoint_dir = outdir("ensemble", "threshold-optimization", "checkpoints"),
+        checkpoint_dir = joinpath(filedir, "checkpoints"),
         checkpoint_output_filename_base = joinpath(
-            filedir,
+            checkpoint_dir,
             string(Dates.now()) * "_" * "checkpoint_batch_",
         ),
         # Control options

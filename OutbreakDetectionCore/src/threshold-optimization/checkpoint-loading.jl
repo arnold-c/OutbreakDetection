@@ -1,13 +1,12 @@
 export load_checkpoint_results_structvector
 
 """
-    load_checkpoint_results_structvector(filedir)
+    load_checkpoint_results_structvector(checkpoint_dir)
 
 Load the most recent valid checkpoint file from the directory as StructVector.
 Falls back to older checkpoints if the most recent one is corrupted.
 """
-function load_checkpoint_results_structvector(filedir::String)
-    checkpoint_dir = joinpath(filedir, "checkpoints")
+function load_checkpoint_results_structvector(checkpoint_dir::String)
 
     if !isdir(checkpoint_dir)
         @warn "$checkpoint_dir isn't a directory. Returning an empty StructVector to force the recreation of all scenarios."
