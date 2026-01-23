@@ -1,7 +1,7 @@
-export get_most_recent_hyperparam_filepath
+export get_most_recent_optimization_filepath
 
 """
-    get_most_recent_hyperparam_filepath(
+    get_most_recent_optimization_filepath(
         filename_base,
         filedir,
     ) -> Try.Result{String}
@@ -40,7 +40,7 @@ The function expects files to follow the naming convention:
 
 ```julia
 # Search for most recent hyperparameter file
-result = get_most_recent_hyperparam_filepath(
+result = get_most_recent_optimization_filepath(
     "threshold_optimization",
     "/path/to/results"
 )
@@ -69,7 +69,7 @@ Returns `Try.Err` in the following situations:
   - [`Try.unwrap`](@ref): Extract value from `Try.Ok`
   - [`Try.unwrap_err`](@ref): Extract error message from `Try.Err`
 """
-function get_most_recent_hyperparam_filepath(
+function get_most_recent_optimization_filepath(
         filename_base,
         filedir,
     )

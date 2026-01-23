@@ -33,7 +33,7 @@ by returning an empty `StructVector` when no valid results can be found.
 # Load previous optimization results
 results = load_previous_optimization_results_structvector(
     "/path/to/results",
-    "threshold-gridsearch-structvector"
+    "threshold-optimization"
 )
 
 # Check if any results were loaded
@@ -51,7 +51,7 @@ end
 - Warns when falling back to checkpoint files
 
 # See Also
-- [`get_most_recent_hyperparam_filepath`](@ref): Finds the most recent optimization file
+- [`get_most_recent_optimization_filepath`](@ref): Finds the most recent optimization file
 - [`load_checkpoint_results_structvector`](@ref): Loads results from checkpoint files
 - [`OptimizationResult`](@ref): Type of results stored in the returned `StructVector`
 """
@@ -64,7 +64,7 @@ function load_previous_optimization_results_structvector(
     end
 
     # Get most recent file - reuse function from multistart
-    load_filepath = get_most_recent_hyperparam_filepath(filename_base, filedir)
+    load_filepath = get_most_recent_optimization_filepath(filename_base, filedir)
 
     checkpoint_warning_message = "Failed to load previous completed results so attempting to load the most recent checkpoint file"
 

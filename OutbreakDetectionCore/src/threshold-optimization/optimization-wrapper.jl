@@ -1,7 +1,7 @@
 export run_scenario_threshold_optimization
 
 """
-    gridsearch_structvector(specification_vecs, data_arrs; kwargs...)
+    run_scenario_threshold_optimization(specification_vecs, data_arrs; kwargs...)
 
 Grid search optimization using StructVector for efficient parallel processing.
 Reuses functions from multistart optimization where possible.
@@ -12,7 +12,7 @@ Reuses functions from multistart optimization where possible.
 
 # Keyword Arguments
 - `filedir`: Directory for saving results
-- `gridsearch_filename_base`: Base filename for results
+- `optimization_filename_base`: Base filename for results
 - `executor`: Executor for loops (default: `FLoops.ThreadedEx()`)
 - `batch_size`: Batch size for processing scenarios (default: 50)
 - `force`: Force recomputation even if results exist (default: false)
@@ -27,13 +27,13 @@ function run_scenario_threshold_optimization(
         dynamic_noise_optimization_parameters::NoiseVaccinationOptimizationParameters = NoiseVaccinationOptimizationParameters(),
         threshold_optimization_parameters::ThresholdOptimizationParameters = ThresholdOptimizationParameters(),
         # File management
-        filedir = outdir("ensemble", "threshold-gridsearch"),
-        gridsearch_filename_base = "threshold-gridsearch-structvector.jld2",
-        gridsearch_output_filepath = joinpath(
+        filedir = outdir("ensemble", "threshold-optimization"),
+        optimization_filename_base = "threshold-optimization.jld2",
+        optimization_output_filepath = joinpath(
             filedir,
-            string(Dates.now()) * "_" * gridsearch_filename_base,
+            string(Dates.now()) * "_" * optimization_filename_base,
         ),
-        checkpoint_dir = outdir("ensemble", "threshold-gridsearch", "checkpoints"),
+        checkpoint_dir = outdir("ensemble", "threshold-optimization", "checkpoints"),
         checkpoint_output_filename_base = joinpath(
             filedir,
             string(Dates.now()) * "_" * "checkpoint_batch_",
@@ -132,7 +132,7 @@ function run_scenario_threshold_optimization(
 
     # Save final results - reuse function from multistart
     if save_results
-        save_optimization_results(existing_results, gridsearch_output_filepath)
+        save_optimization_results(existing_results, optimization_output_filepath)
 
         # Clean up checkpoints after successful save
         cleanup_checkpoints(checkpoint_dir)
