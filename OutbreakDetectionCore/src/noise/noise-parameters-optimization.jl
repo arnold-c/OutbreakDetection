@@ -160,7 +160,7 @@ function optimize_dynamic_noise_params(
     )
 
     # Configure local method
-    local_method = MultistartOptimization.NLopt_local_method(
+    local_method = MultistartOptimization.NLoptLocalMethod(
         optimization_params.local_algorithm;
         xtol_rel = optimization_params.xtol_rel,
         xtol_abs = optimization_params.xtol_abs,

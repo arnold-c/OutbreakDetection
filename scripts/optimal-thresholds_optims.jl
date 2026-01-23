@@ -68,8 +68,7 @@ measles_ensemble_specification = create_ensemble_specifications(
 #%%
 # noise_level_vec = [1.0, 2.0, 4.0, 8.0]
 noise_level_vec = [1.0]
-# noise_type_description_vec = [:static, :dynamic]
-noise_type_description_vec = [:static]
+noise_type_description_vec = [:static, :dynamic]
 
 test_specification_vec = [
     IndividualTestSpecification(val, val, lag) for
