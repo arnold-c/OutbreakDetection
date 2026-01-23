@@ -70,7 +70,11 @@ function run_scenario_threshold_optimization(
         StructVector(OptimizationResult[])
     else
         Try.unwrap(
-            load_previous_optimization_results_structvector(filedir, optimization_filename_base)
+            load_previous_optimization_results_structvector(
+                filedir,
+                optimization_filename_base,
+                checkpoint_dir
+            )
         )
     end
 

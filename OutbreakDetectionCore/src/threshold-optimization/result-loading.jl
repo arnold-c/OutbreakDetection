@@ -57,7 +57,8 @@ end
 """
 function load_previous_optimization_results_structvector(
         filedir::String,
-        filename_base::String
+        filename_base::String,
+        checkpoint_dir::String
     )
     if !isdir(filedir)
         error("The provided file directory $filedir isn't a valid directory. Check `filedir` again.")
@@ -71,8 +72,8 @@ function load_previous_optimization_results_structvector(
     if Try.iserr(load_filepath)
         # Try to load checkpoint files
         @warn checkpoint_warning_message
-        @warn Try.unwrap_err(load_filepath)
-        return load_checkpoint_results_structvector(filedir)
+        println(Try.unwrap_err(load_filepath))
+        return load_checkpoint_results_structvector(checkpoint_dir)
     end
 
     try
