@@ -64,7 +64,7 @@ function evaluate_missing_optimizations(
                 verbose && println("\tNoise level: $(noise_trim_key.noise_level)\n\tNoise type: $(noise_trim_key.noise_type_description)")
 
                 noise_vecs = if noise_trim_key.noise_type_description == :static
-                    return create_noise_vecs(
+                    create_noise_vecs(
                         PoissonNoiseSpecification(noise_trim_key.noise_level),
                         ensemble_key.ensemble_specification,
                         ensemble_simulation,
@@ -81,7 +81,7 @@ function evaluate_missing_optimizations(
                         seed = seed
                     )
 
-                    return recreate_noise_vecs(
+                    recreate_noise_vecs(
                         ensemble_key.ensemble_specification,
                         optim_res.location[1],
                     )
