@@ -1,4 +1,6 @@
 name = "OutbreakDetection"
+uuid = "693d1b0e-d345-4dda-a1e2-0569e4749b26"
+version = "1.0.0-DEV"
 authors = ["Callum Arnold"]
 
 [deps]
