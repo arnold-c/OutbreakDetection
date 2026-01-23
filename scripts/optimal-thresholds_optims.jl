@@ -41,8 +41,8 @@ measles_dynamics_parameters = TargetDiseaseDynamicsParameters(;
     infectious_duration = Day(8.0),
     beta_force = 0.2,
     seasonality = SeasonalityFunction(CosineSeasonality()),
-    min_vaccination_coverage = 0.7,
-    max_vaccination_coverage = 0.9,
+    min_vaccination_coverage = 0.75,
+    max_vaccination_coverage = 0.85,
 )
 
 # Choose Rubella-like parameters for the dynamic noise in the measles simulations
@@ -66,8 +66,16 @@ measles_ensemble_specification = create_ensemble_specifications(
 )
 
 #%%
-noise_level_vec = [1.0, 2.0, 4.0, 8.0]
-noise_type_description_vec = [:static, :dynamic]
+noise_level_vec = [
+    1.0,
+    2.0,
+    4.0,
+    7.0,
+]
+noise_type_description_vec = [
+    :static,
+    :dynamic,
+]
 
 test_specification_vec = [
     IndividualTestSpecification(val, val, lag) for
