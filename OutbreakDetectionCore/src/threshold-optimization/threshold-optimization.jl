@@ -123,17 +123,6 @@ function threshold_optimization(
         ensemble_simulation,
         outbreak_thresholds,
     )
-    (;
-        accuracies,
-        proportion_alerts_correct,
-        proportion_outbreaks_detected,
-        detection_delays,
-        unavoidable_cases,
-        alert_durations,
-        outbreak_durations,
-        proportion_timeseries_in_alert,
-        proportion_timeseries_in_outbreak,
-    )
 
     return OptimizationResult(
         # From scenario
