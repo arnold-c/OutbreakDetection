@@ -61,8 +61,8 @@ function run_scenario_threshold_optimization(
 
     if verbose
         n_total_scenarios = length(all_scenarios)
-        println(StyledStrings.styled"{green:Starting Grid Search with StructVector}")
-        println(StyledStrings.styled"Total grid points: {yellow:$n_total_scenarios}")
+        println(StyledStrings.styled"{green:Starting optimization with StructVector}")
+        println(StyledStrings.styled"Total scenarios: {yellow:$n_total_scenarios}")
     end
 
     # Load existing results (including checkpoints)
@@ -82,7 +82,7 @@ function run_scenario_threshold_optimization(
     n_missing = length(missing_scenarios)
 
     if verbose
-        println(StyledStrings.styled"Missing grid points to evaluate: {yellow:$n_missing}")
+        println(StyledStrings.styled"Missing scenarios to optimize: {yellow:$n_missing}")
     end
 
     # Check with user if needed
@@ -138,7 +138,7 @@ function run_scenario_threshold_optimization(
 
     if verbose
         n_final = length(existing_results)
-        println(StyledStrings.styled"{green:Grid search complete! Total results: {yellow:$n_final}}")
+        println(StyledStrings.styled"{green:Optimizations complete! Total scenarios: {yellow:$n_final}}")
     end
 
     return return_results ? existing_results : nothing

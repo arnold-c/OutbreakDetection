@@ -27,7 +27,7 @@ function evaluate_missing_optimizations(
     all_results = OptimizationResult[]
 
     if verbose
-        prog = ProgressMeter.Progress(n_missing; desc = "Evaluating grid points: ", showspeed = true)
+        prog = ProgressMeter.Progress(n_missing; desc = "Optimizing scenarios: ", showspeed = true)
     end
 
     checkpoint_num = 1
