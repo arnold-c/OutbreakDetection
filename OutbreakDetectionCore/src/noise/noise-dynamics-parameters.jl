@@ -1,4 +1,4 @@
-export recreate_noise_dynamics_spec
+export recreate_noise_dynamics_parameters
 
 """
     create_noise_dynamics_parameters(noise_specification, dynamics_parameter_specification, population_N)
@@ -70,7 +70,7 @@ noise_dynamics = create_noise_dynamics_parameters(
 - [`DynamicsParameterSpecification`](@ref): Base dynamics type
 - [`SeasonalityFunction`](@ref): Seasonality sum type
 """
-function recreate_noise_dynamics_spec(
+function recreate_noise_dynamics_parameter_specification(
         noise_specification::DynamicalNoiseSpecification,
         ensemble_specification::EnsembleSpecification
     )
@@ -117,7 +117,7 @@ function recreate_noise_dynamics_spec(
         state_parameters.init_states.N
     )
 
-    return DynamicsParameters(
+    return DynamicsParameterSpecification(;
         beta_mean = noise_beta_mean,
         beta_force = noise_beta_force,
         seasonality = noise_seasonality,
@@ -127,6 +127,7 @@ function recreate_noise_dynamics_spec(
         annual_births_per_k = dynamics_parameter_specification.annual_births_per_k,
         epsilon = noise_epsilon,
         R_0 = noise_specification.R_0,
-        vaccination_coverage = noise_specification.vaccination_coverage,
+        min_vaccination_coverage = noise_specification.vaccination_coverage,
+        max_vaccination_coverage = noise_specification.vaccination_coverage,
     )
 end

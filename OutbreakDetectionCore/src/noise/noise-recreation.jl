@@ -74,14 +74,14 @@ function recreate_noise_vecs(
     UnPack.@unpack init_states, init_state_props = state_parameters
     UnPack.@unpack N = init_states
 
-    updated_dynamical_noise = DynamicalNoiseSpecification(
+    updated_dynamical_noise_specification = DynamicalNoiseSpecification(
         ensemble_specification.dynamical_noise_params,
         vaccination_coverage
     )
 
     # Create noise-specific dynamics
-    updated_dynamics_parameter_specification = recreate_noise_dynamics_spec(
-        updated_dynamical_noise,
+    updated_dynamics_parameter_specification = recreate_noise_dynamics_parameter_specification(
+        updated_dynamical_noise_specification,
         ensemble_specification
     )
 
@@ -120,7 +120,6 @@ function recreate_noise_vecs(
         updated_state_parameters,
         ensemble_specification.time_parameters,
         updated_dynamics_parameter_specification,
-        updated_dynamics_parameter_specification,
         ensemble_specification.dynamical_noise_params,
         ensemble_specification.nsims,
         ensemble_specification.dirpath
@@ -140,7 +139,7 @@ function recreate_noise_vecs(
     )
 
     noise_result = create_noise_vecs(
-        updated_dynamical_noise,
+        updated_dynamical_noise_specification,
         updated_ensemble_specification,
         updated_dynamics_parameters;
         seed = seed
