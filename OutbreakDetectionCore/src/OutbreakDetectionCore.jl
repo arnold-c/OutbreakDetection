@@ -84,6 +84,7 @@ include("./utilities/group-structvectors.jl")
 include("./utilities/calculate-mean-incidence.jl")
 include("./utilities/vaccination-distribution-sample.jl")
 include("./utilities/test-descriptions.jl")
+include("./utilities/verify-perfect-test-consistency.jl")
 # TODO: update to work with current structvector implementation
 include("./utilities/results-reshaping.jl")
 

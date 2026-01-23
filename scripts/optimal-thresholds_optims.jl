@@ -126,3 +126,6 @@ display(
         percentiles = [0.1, 0.9]
     )
 )
+
+#%%
+OutbreakDetectionCore.verify_perfect_test_consistency(optimized_threshold_results)
