@@ -6,7 +6,7 @@ using StructArrays
 #%%
 time_parameters = SimTimeParameters(;
     tmin = 0.0,
-    tmax = 365.0 * 50.0,
+    tmax = 365.0 * 100.0,
     tstep = 1.0,
 )
 
@@ -16,7 +16,7 @@ burnin_target_Reff = 0.9
 
 common_disease_dynamics_parameters = CommonDiseaseDynamicsParameters(;
     births_per_k_pop = births_per_k_pop,
-    nsims = 10,
+    nsims = 100,
 )
 
 #%%
@@ -66,8 +66,7 @@ measles_ensemble_specification = create_ensemble_specifications(
 )
 
 #%%
-# noise_level_vec = [1.0, 2.0, 4.0, 8.0]
-noise_level_vec = [1.0]
+noise_level_vec = [1.0, 2.0, 4.0, 8.0]
 noise_type_description_vec = [:static, :dynamic]
 
 test_specification_vec = [
@@ -78,7 +77,7 @@ percent_tested_vec = collect(0.1:0.1:1.0)
 
 #%%
 alert_method_vec = AlertMethod[AlertMethod(MovingAverage())]
-accuracy_metric_vec = AccuracyMetric[AccuracyMetric(BalancedAccuracy())]
+accuracy_metric_vec = AccuracyMetric[AccuracyMetric(BalancedAccuracy()), AccuracyMetric(F1())]
 threshold_bounds = (; lower = 0.0, upper = 20.0)
 outbreak_specification_vec = [
     OutbreakSpecification(5, 30, 500),
@@ -100,8 +99,9 @@ specification_vecs = ScenarioSpecificationVecs(;
 #%%
 optimized_threshold_results = run_scenario_threshold_optimization(
     specification_vecs;
-    force = false,
+    force = true,
     save_results = true,
     save_checkpoints = true,
+    save_checkpoint_num = 2,
     disable_time_check = true,
 );
