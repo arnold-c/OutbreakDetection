@@ -5,6 +5,7 @@ authors = ["Callum Arnold <24391445+arnold-c@users.noreply.github.com> and contr
 
 [deps]
 AutoHashEquals = "15f4f7f2-30c1-5605-9d31-71845cf9641f"
+BangBang = "198e06fe-97b7-11e9-32a5-e1d131e6ad66"
 Bootstrap = "e28b5b4c-05e8-5b66-bc03-6f0c0a0a06e0"
 Bumper = "8ce10254-0962-460f-a3d8-1f77fea1446e"
 Chain = "8be319e6-bccf-4806-a6f7-6fae938471bc"
@@ -39,6 +40,7 @@ XLSX = "fdbf4ff8-1666-58a4-91e7-1b58723a45e0"
 
 [compat]
 AutoHashEquals = "2.2.0"
+BangBang = "0.4.6"
 Bootstrap = "2.4"
 Bumper = "0.7"
 Chain = "1.0"

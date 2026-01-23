@@ -3,6 +3,7 @@ module OutbreakDetectionCore
 # Package imports
 
 using AutoHashEquals: AutoHashEquals
+using BangBang: BangBang
 using Bootstrap: Bootstrap
 using Bumper: Bumper, @no_escape, @alloc
 using Chain: Chain
