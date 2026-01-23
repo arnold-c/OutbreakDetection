@@ -3,6 +3,7 @@ using OutbreakDetection
 using OutbreakDetectionCore
 using Dates
 using StructArrays
+using DrWatson
 
 #%%
 time_parameters = SimTimeParameters(;
@@ -117,15 +118,30 @@ optimized_threshold_results = run_scenario_threshold_optimization(
 );
 
 #%%
-# display(
-#     line_plot(
-#         optimized_threshold_results;
-#         outcome = :accuracies,
-#         ylabel = "Detection Accuracy",
-#         ylims = (0.5, 1.0),
-#         percentiles = [0.1, 0.9]
-#     )
-# )
+OutbreakDetectionCore.verify_perfect_test_consistency(optimized_threshold_results)
 
 #%%
-OutbreakDetectionCore.verify_perfect_test_consistency(optimized_threshold_results)
+include(
+    DrWatson.scriptsdir("plotting-setup.jl")
+)
+
+display(
+    line_plot(
+        optimized_threshold_results;
+        alert_method = OutbreakDetectionCore.AlertMethod(OutbreakDetectionCore.MovingAverage()),
+        accuracy_metric = OutbreakDetectionCore.AccuracyMetric(OutbreakDetectionCore.BalancedAccuracy()),
+        threshold_bounds = threshold_bounds,
+        outcome = :accuracies,
+        ylabel = "Detection Accuracy",
+        ylims = (0.5, 1.0),
+        percentiles = [0.1, 0.9],
+        alpha = alpha,
+        nbanks = nbanks,
+        facet_fontsize = facet_fontsize,
+        legendsize = legendsize,
+        xlabelsize = xlabelsize,
+        ylabelsize = ylabelsize,
+        legend_rowsize = legend_rowsize,
+        xlabel_rowsize = xlabelsize
+    )
+)

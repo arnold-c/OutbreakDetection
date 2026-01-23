@@ -1,4 +1,4 @@
-using CairoMakie
+using GLMakie
 
 function theme_adjustments()
     return Theme(;
@@ -19,12 +19,12 @@ custom_theme = merge(theme_adjustments(), theme_minimal())
 
 set_theme!(
     custom_theme;
-    # fontsize = 16,
+    fontsize = 16,
     linewidth = 6,
 )
 
 update_theme!(; size = (1300, 800))
-CairoMakie.activate!(; type = "svg", px_per_unit = 1.0)
+GLMakie.activate!()
 
 alpha = 0.4
 nbanks = 1

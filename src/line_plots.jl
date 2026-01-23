@@ -11,6 +11,9 @@ lineplot_colors = [
 function line_plot(
         results::StructVector{OutbreakDetectionCore.OptimizationResult};
         outcome = :accuracies,
+        alert_method = OutbreakDetectionCore.AlertMethod(OutbreakDetectionCore.MovingAverage()),
+        accuracy_metric = OutbreakDetectionCore.AccuracyMetric(OutbreakDetectionCore.BalancedAccuracy()),
+        threshold_bounds = (; lower = 0.0, upper = 20.0),
         plotdirpath = DrWatson.plotsdir(),
         plotname = "line_accuracy_plot",
         plotformat = "png",
@@ -44,8 +47,12 @@ function line_plot(
     local_colors = colors
 
     if !isfile(plotpath) || force
+        filtered_results = filter(
+            r -> r.alert_method == alert_method && r.accuracy_metric == accuracy_metric && r.threshold_bounds == threshold_bounds,
+            results
+        )
         # Reshape results into matrix structure
-        result_matrix, unique_noise_types = reshape_optimization_results_to_matrix(results)
+        result_matrix, unique_noise_types = reshape_optimization_results_to_matrix(filtered_results)
 
         fig = Figure()
 
@@ -169,7 +176,7 @@ function _line_plot(
         j;
         outcome = :accuracies,
         colors = lineplot_colors,
-        alpha = 0.3,
+        alpha = 0.5,
         markersize = 15,
         ylabel = "Accuracy",
         ylabelsize = 28,
@@ -286,7 +293,7 @@ function _line_plot_facet(
         data_by_test;
         outcome = :accuracy,
         colors = lineplot_colors,
-        alpha = 0.3,
+        alpha = 0.5,
         markersize = 15,
         xlabel = "Proportion Tested",
         ylabel = "Accuracy",
