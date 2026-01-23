@@ -101,8 +101,8 @@ specification_vecs = ScenarioSpecificationVecs(;
 #%%
 optimized_threshold_results = run_scenario_threshold_optimization(
     specification_vecs;
-    force = true,
+    force = false,
     save_results = true,
     save_checkpoints = true,
     disable_time_check = true,
-)
+);
