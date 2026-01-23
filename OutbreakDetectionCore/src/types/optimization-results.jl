@@ -31,10 +31,10 @@ Base.@kwdef struct OptimizationResult
     accuracies::Vector{Float64}
     proportion_alerts_correct::Vector{Float64}
     proportion_outbreaks_detected::Vector{Float64}
-    detection_delays::Vector{Int64}
-    unavoidable_cases::Vector{Int64}
-    alert_durations::Vector{Int64}
-    outbreak_durations::Vector{Int64}
+    detection_delays::Vector{Vector{Int64}}
+    unavoidable_cases::Vector{Vector{Int64}}
+    alert_durations::Vector{Vector{Int64}}
+    outbreak_durations::Vector{Vector{Int64}}
     proportion_timeseries_in_alert::Vector{Float64}
     proportion_timeseries_in_outbreak::Vector{Float64}
 end
