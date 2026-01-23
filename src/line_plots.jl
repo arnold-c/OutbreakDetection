@@ -1,86 +1,15 @@
+export line_plot
+
 lineplot_colors = [
     "#56B4E9"
     "#E69F00"
     repeat(["#483248"], 2)...
 ]
 
-function line_plot(
-        noise_spec_vec,
-        ensemble_percent_clinic_tested_vec,
-        optimal_threshold_test_spec_vec,
-        optimal_threshold_core_params;
-        outcome = :accuracy,
-        plotdirpath = DrWatson.plotsdir(),
-        plotname = "line_accuracy_plot",
-        plotformat = "png",
-        size = (1300, 800),
-        colors = lineplot_colors,
-        alpha = 0.5,
-        xlabel = "Proportion Of Infected Individuals Tested",
-        ylabel = "Outbreak Detection\nAccuracy",
-        facet_fontsize = 24,
-        legendsize = 28,
-        xlabelsize = 28,
-        ylabelsize = 28,
-        show_x_facet_label = true,
-        show_y_facet_label = true,
-        ylims = (nothing, nothing),
-        hidedecorations = (true, true),
-        clinical_hline = true,
-        hlines = nothing,
-        nbanks = 1,
-        legend_rowsize = Makie.Relative(0.05),
-        xlabel_rowsize = Makie.Relative(0.03),
-        force = false,
-        save_plot = true,
-        kwargs...,
-    )
-    mkpath(plotdirpath)
-    plotpath = joinpath(plotdirpath, "$plotname.$plotformat")
-
-    if !isfile(plotpath) || force
-        optimal_threshold_characteristics = collect_OptimalThresholdCharacteristics(
-            noise_spec_vec,
-            ensemble_percent_clinic_tested_vec,
-            optimal_threshold_test_spec_vec,
-            optimal_threshold_core_params;
-            clinical_hline = clinical_hline,
-        )
-
-        return line_plot(
-            optimal_threshold_characteristics;
-            outcome = outcome,
-            plotdirpath = plotdirpath,
-            plotname = plotname,
-            plotformat = plotformat,
-            size = size,
-            colors = colors,
-            xlabel = xlabel,
-            ylabel = ylabel,
-            facet_fontsize = facet_fontsize,
-            legendsize = legendsize,
-            xlabelsize = xlabelsize,
-            ylabelsize = ylabelsize,
-            show_x_facet_label = show_x_facet_label,
-            show_y_facet_label = show_y_facet_label,
-            ylims = ylims,
-            hidedecorations = hidedecorations,
-            clinical_hline = clinical_hline,
-            hlines = hlines,
-            nbanks = nbanks,
-            legend_rowsize = legend_rowsize,
-            xlabel_rowsize = xlabel_rowsize,
-            force = force,
-            save_plot = save_plot,
-            kwargs...,
-        )
-    end
-
-    return nothing
-end
+# Main plotting functions
 
 function line_plot(
-        optimal_thresholds_chars_array;
+        results::StructVector{OutbreakDetectionCore.OptimizationResult};
         outcome = :accuracy,
         plotdirpath = DrWatson.plotsdir(),
         plotname = "line_accuracy_plot",
@@ -99,7 +28,6 @@ function line_plot(
         show_y_facet_label = true,
         ylims = (nothing, nothing),
         hidedecorations = (true, true),
-        clinical_hline = true,
         hlines = nothing,
         nbanks = 1,
         legend_rowsize = Makie.Relative(0.05),
@@ -107,6 +35,7 @@ function line_plot(
         force = false,
         save_plot = true,
         dots = false,
+        percentiles = [0.1, 0.9],
         kwargs...,
     )
     mkpath(plotdirpath)
@@ -115,58 +44,36 @@ function line_plot(
     local_colors = colors
 
     if !isfile(plotpath) || force
-        if in(outcome, [:avoidable_cases, :unavoidable_cases])
-            kwargs_dict = Dict{Symbol, Any}(kwargs)
-            if !haskey(kwargs_dict, :cases_scaling)
-                @error "Cases scaling not provided. Please provide kwarg `cases_scaling`"
-            end
-        end
+        # Reshape results into matrix structure
+        result_matrix, unique_noise_types = reshape_optimization_results_to_matrix(results)
 
         fig = Figure()
 
-        unique_noise_descriptions = unique(
-            map(
-                char -> get_noise_description(char[1].noise_specification),
-                optimal_thresholds_chars_array,
-            ),
-        )
-        num_noise_descriptions = length(unique_noise_descriptions)
-        unique_test_specifications = sort(
-            sort(
-                unique(
-                    optimal_thresholds_chars_array[
-                        1, 1,
-                    ].individual_test_specification,
-                );
-                by = t -> t.test_result_lag,
-                rev = true,
-            );
-            by = t -> (t.sensitivity, t.specificity),
-            rev = false,
+        num_noise_types = length(unique_noise_types)
+
+        # Get unique test specifications from first cell
+        unique_test_specifications = sort_test_specifications(
+            unique(result_matrix[1, 1].test_specification)
         )
 
-        for i in axes(optimal_thresholds_chars_array, 1)
-            noise_description = get_noise_description(
-                optimal_thresholds_chars_array[i, 1].noise_specification[1]
-            )
-            label_noise_description = Match.@match noise_description begin
-                "poisson" => "Static Noise"
-                "dynamical, in-phase" => "Dynamical Noise"
-                _ => "Other Noise"
-            end
+        for i in axes(result_matrix, 1)
+            noise_type = unique_noise_types[i]
+            label_noise_description = get_noise_label(noise_type)
 
-            for j in axes(optimal_thresholds_chars_array, 2)
-                noise_spec = optimal_thresholds_chars_array[i, j].noise_specification[1]
+            for j in axes(result_matrix, 2)
+                cell_results = result_matrix[i, j]
+                noise_level = cell_results[1].noise_level
 
                 _line_plot(
                     fig,
-                    noise_spec,
+                    noise_level,
+                    noise_type,
                     unique_test_specifications,
-                    optimal_thresholds_chars_array[i, j],
+                    cell_results,
                     i,
                     j;
                     outcome = outcome,
-                    num_noise_descriptions = num_noise_descriptions,
+                    num_noise_descriptions = num_noise_types,
                     colors = colors,
                     alpha = alpha,
                     markersize = markersize,
@@ -178,17 +85,18 @@ function line_plot(
                     show_x_facet_label = show_x_facet_label,
                     hlines = hlines,
                     dots = dots,
+                    percentiles = percentiles,
                     kwargs...,
                 )
             end
         end
 
         if show_y_facet_label
-            map(enumerate(unique_noise_descriptions)) do (i, noise_description)
+            map(enumerate(unique_noise_types)) do (i, noise_type)
                 Box(fig[i, 0]; color = :lightgray, strokevisible = false)
                 Label(
                     fig[i, 0],
-                    titlecase(noise_description);
+                    get_noise_label(noise_type);
                     fontsize = 16,
                     rotation = pi / 2,
                     padding = (0, 0, 0, 0),
@@ -198,10 +106,7 @@ function line_plot(
             end
             colsize!(fig.layout, 0, Relative(0.03))
         end
-        if clinical_hline
-            push!(local_colors, "green")
-        end
-        rg = r"\((.*)(\% .*\))"
+
         Legend(
             fig[0, :],
             map(
@@ -227,12 +132,12 @@ function line_plot(
                     ]
                 end
             end,
-            plot_test_description.(reverse(unique_test_specifications));
+            OutbreakDetectionCore.plot_test_description.(reverse(unique_test_specifications));
             labelsize = legendsize,
             orientation = :horizontal,
             nbanks = nbanks,
         )
-        xlabel_position = num_noise_descriptions + 1
+        xlabel_position = num_noise_types + 1
         Label(
             fig[xlabel_position, :],
             xlabel;
@@ -253,9 +158,10 @@ end
 
 function _line_plot(
         fig,
-        noise_spec,
+        noise_level,
+        noise_type,
         unique_test_specifications,
-        optimal_thresholds_vec,
+        cell_results::StructVector{OutbreakDetectionCore.OptimizationResult},
         i,
         j;
         outcome = :accuracy,
@@ -271,63 +177,68 @@ function _line_plot(
         hidedecorations = (true, true),
         hlines = nothing,
         dots = false,
+        percentiles = [0.1, 0.9],
         kwargs...,
     )
     kwargs_dict = Dict{Symbol, Any}(kwargs)
 
-    if outcome != :alert_threshold
-        long_df = create_optimal_threshold_summary_df(
-            optimal_thresholds_vec,
-            outcome;
-            percentiles = [0.1, 0.9],
-            nboots = nothing,
-        )
+    # Organize data by test specification
+    data_by_test = map(unique_test_specifications) do test_spec
+        # Filter results for this test specification
+        matching_indices = findall(cell_results.test_specification) do ts
+            ts.sensitivity == test_spec.sensitivity &&
+                ts.specificity == test_spec.specificity &&
+                ts.test_result_lag == test_spec.test_result_lag
+        end
 
-        DataFrames.select!(
-            long_df,
-            DataFrames.Cols(
-                :percent_clinic_tested,
-                :sensitivity,
-                :specificity,
-                :test_lag,
-                string(outcome) * "_mean",
-                x -> endswith(x, "th"),
-            ),
-        )
+        matching_results = cell_results[matching_indices]
 
-    else
-        long_df = create_optimal_thresholds_df(optimal_thresholds_vec)
-        DataFrames.select!(
-            long_df,
-            DataFrames.Not(:accuracy),
-        )
-    end
+        # Extract x values (percent tested)
+        x_values = matching_results.percent_tested
 
-    if in(outcome, [:avoidable_cases, :unavoidable_cases])
-        DataFrames.transform!(
-            long_df,
-            DataFrames.Cols(r".*_mean", r".*_[0-9]+th") .=>
-                (
-                x ->
-                Int64.(
-                    round.(
-                        x * kwargs_dict[:cases_scaling];
-                        digits = 0,
-                    ),
-                )
-            );
-            renamecols = false,
-        )
+        # Extract and compute statistics for outcome
+        if outcome == :alert_threshold
+            # For alert threshold, just use the optimal threshold value
+            y_values = matching_results.optimal_threshold
+            return (
+                test_spec = test_spec,
+                x = x_values,
+                y = y_values,
+                is_scalar = true,
+            )
+        else
+            # For other outcomes, compute statistics from vectors
+            outcome_data = extract_outcome_values.(matching_results, outcome)
+
+            # Determine if this is nested data (Vector{Vector{T}})
+            is_nested = !isempty(outcome_data) &&
+                outcome_data[1] isa AbstractVector{<:AbstractVector}
+
+            # Compute statistics for each result
+            stats = if is_nested
+                compute_nested_summary_statistics.(outcome_data; percentiles = percentiles)
+            else
+                compute_summary_statistics.(outcome_data; percentiles = percentiles)
+            end
+
+            y_mean = [s.mean for s in stats]
+            y_lower = [s.percentiles[1] for s in stats]
+            y_upper = [s.percentiles[2] for s in stats]
+
+            return (
+                test_spec = test_spec,
+                x = x_values,
+                y_mean = y_mean,
+                y_lower = y_lower,
+                y_upper = y_upper,
+                is_scalar = false,
+            )
+        end
     end
 
     if show_x_facet_label && i == 1
-        x_facet_label = L"\Lambda(%$(Int64(round(
-            StatsBase.mean(
-                optimal_thresholds_vec[1].outbreak_threshold_chars.mean_noise_incidence_ratio
-            );
-            digits = 0,
-        ))))"
-
+        # Create facet label with noise level
+        x_facet_label = L"\Lambda(%$(Int64(round(noise_level; digits = 0))))"
         kwargs_dict[:x_facet_label] = x_facet_label
     end
 
@@ -343,9 +254,7 @@ function _line_plot(
 
     _line_plot_facet(
         gl,
-        noise_spec,
-        unique_test_specifications,
-        long_df;
+        data_by_test;
         outcome = outcome,
         colors = colors,
         alpha = alpha,
@@ -371,9 +280,7 @@ end
 
 function _line_plot_facet(
         gl,
-        noise_spec,
-        unique_test_specifications,
-        long_df;
+        data_by_test;
         outcome = :accuracy,
         colors = lineplot_colors,
         alpha = 0.3,
@@ -391,14 +298,6 @@ function _line_plot_facet(
 
     ypos = haskey(kwargs_dict, :x_facet_label) ? 2 : 1
     xpos = 1
-
-    if outcome != :alert_threshold
-        outcome_mean = string(outcome) * "_mean"
-        outcome_10th = string(outcome) * "_10th"
-        outcome_90th = string(outcome) * "_90th"
-    else
-        outcome_mean = string(outcome)
-    end
 
     ax = Axis(
         gl[ypos, xpos];
@@ -419,23 +318,12 @@ function _line_plot_facet(
         rowsize!(gl, 2, Relative(0.9))
     end
 
-    for (i, test) in pairs(unique_test_specifications)
-        subsetted_df = DataFrames.subset(
-            long_df,
-            :sensitivity =>
-                x -> x .== test.sensitivity,
-            :specificity =>
-                x -> x .== test.specificity,
-            :test_lag => x -> x .== test.test_result_lag,
-        )
-
-        if test == CLINICAL_CASE_TEST_SPEC
-            hlines!(ax, subsetted_df[!, outcome_mean][1]; color = colors[end])
-            continue
-        end
+    for (i, test_data) in pairs(data_by_test)
+        test_spec = test_data.test_spec
 
         if outcome == :alert_threshold
-            if test.test_result_lag == 0
+            # Plot scatter with lines for alert threshold
+            if test_spec.test_result_lag == 0
                 markerstyle = :circle
                 msize = markersize
             else
@@ -445,41 +333,40 @@ function _line_plot_facet(
 
             scatterlines!(
                 ax,
-                subsetted_df.percent_clinic_tested,
-                subsetted_df[!, outcome_mean];
+                test_data.x,
+                test_data.y;
                 color = (colors[i], alpha),
                 strokecolor = colors[i],
                 marker = markerstyle,
                 markersize = msize,
             )
-        end
-
-        if outcome != :alert_threshold
-            linestyle = test.test_result_lag == 0 ? :solid : :dash
+        else
+            # Plot lines with confidence bands for other outcomes
+            linestyle = test_spec.test_result_lag == 0 ? :solid : :dash
 
             lines!(
                 ax,
-                subsetted_df.percent_clinic_tested,
-                subsetted_df[!, outcome_mean];
+                test_data.x,
+                test_data.y_mean;
                 color = colors[i],
                 linestyle = linestyle,
             )
 
             band!(
                 ax,
-                subsetted_df.percent_clinic_tested,
-                subsetted_df[!, outcome_10th],
-                subsetted_df[!, outcome_90th];
+                test_data.x,
+                test_data.y_lower,
+                test_data.y_upper;
                 color = (colors[i], alpha),
             )
         end
-
-        ylims!(ax, ylims)
     end
 
     if !isnothing(hlines)
         hlines!(ax, hlines; color = :black, linewidth = 1)
     end
+
+    ylims!(ax, ylims)
 
     return nothing
 end

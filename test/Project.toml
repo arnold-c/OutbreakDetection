@@ -1,0 +1,13 @@
+[deps]
+NaNMath = "77ba4419-2d1f-58cd-9bb1-8ffee604a2e3"
+OutbreakDetection = "693d1b0e-d345-4dda-a1e2-0569e4749b26"
+OutbreakDetectionCore = "f998a708-2341-46f4-85c5-02aab2fba5ed"
+StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
+StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
+StructArrays = "09ab397b-f2b6-538f-b94a-2f83cf4a842a"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[sources]
+OutbreakDetection = {path = ".."}
+OutbreakDetectionCore = {path = "../OutbreakDetectionCore"}
+

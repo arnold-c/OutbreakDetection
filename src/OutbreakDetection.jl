@@ -16,17 +16,17 @@ using ColorSchemes
 
 
 include("plotting-helpers.jl")
+include("sort_test_specifications.jl")
 include("schematic-plot/simulation-setup.jl")
 include("schematic-plot/plot.jl")
 
 include("line_plots.jl")
-export line_plot,
-    collect_OptimalThresholdCharacteristics
 
 @static if false
     # Include manuscript scripts for LSP support
     # These scripts are not loaded at runtime but help the LSP
     # recognize plotting functions and provide autocomplete
+    include("../scripts/optimal-thresholds_optims.jl")
     include("../scripts/manuscript/optimal-thresholds_plots.jl")
     include("../scripts/manuscript/optimal-thresholds_checks.jl")
     include("../scripts/manuscript/optimal-thresholds_tables.jl")
