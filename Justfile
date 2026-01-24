@@ -8,6 +8,8 @@ optimizations:
 plots: optimizations
 	{{ julia_script }} ./scripts/optimal-thresholds_plots.jl
 
+supplemental-plots: optimizations
+	{{ julia_script }} ./scripts/supplemental_plots.jl
 
 manuscript:
 	julia ./scripts/manuscript/optimal-thresholds.jl

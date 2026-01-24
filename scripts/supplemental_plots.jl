@@ -1,6 +1,35 @@
 #%%
+using DrWatson: DrWatson
+using OutbreakDetectionCore: OutbreakDetectionCore
+using OutbreakDetection
+using Try: Try
+
+include(
+    DrWatson.scriptsdir("plotting-setup.jl")
+)
+
+# Make sure these values are present in the optimization script
+alert_method = OutbreakDetectionCore.AlertMethod(OutbreakDetectionCore.MovingAverage())
+accuracy_metric = OutbreakDetectionCore.AccuracyMetric(OutbreakDetectionCore.BalancedAccuracy())
+threshold_bounds = (; lower = 0.0, upper = 20.0)
+plotdirpath = DrWatson.plotsdir("appendix")
+
+#%%
+optimized_filedir = OutbreakDetectionCore.outdir("ensemble", "threshold-optimization")
+optimized_threshold_results = Try.unwrap(
+    OutbreakDetectionCore.load_previous_optimization_results_structvector(
+        optimized_filedir,
+        "threshold-optimization.jld2",
+        joinpath(optimized_filedir, "checkpoints"),
+    )
+)
+
+#%%
 prop_outbreak_plot = line_plot(
-    optimal_threshold_characteristics;
+    optimized_threshold_results;
+    alert_method = alert_method,
+    accuracy_metric = accuracy_metric,
+    threshold_bounds = threshold_bounds,
     outcome = :proportion_timeseries_in_outbreak,
     ylabel = "Proportion of Time\nSeries In Outbreak",
     alpha = alpha,
@@ -8,48 +37,50 @@ prop_outbreak_plot = line_plot(
     legendsize = legendsize,
     xlabelsize = xlabelsize,
     ylabelsize = ylabelsize,
-    show_x_facet_label = true,
-    show_y_facet_label = false,
-    force = true,
-    save_plot = false,
-    clinical_hline = clinical_hline,
+    show_x_facet_label = show_x_facet_label,
+    show_y_facet_label = show_y_facet_label,
+    plotdirpath = plotdirpath,
+    plotname = "optimal-thresholds_prop-outbreak-plot",
+    plotformat = "svg",
+    save_plot = true,
     nbanks = nbanks,
     legend_rowsize = legend_rowsize,
-)
-
-save(
-    appendix_plotdir("optimal-thresholds_prop-outbreak-plot.svg"),
-    prop_outbreak_plot,
+    xlabel_rowsize = xlabel_rowsize,
+    size = (1300, 800),
 )
 
 #%%
 alert_duration_plot = line_plot(
-    optimal_threshold_characteristics;
-    outcome = :alert_duration_vec,
+    optimized_threshold_results;
+    alert_method = alert_method,
+    accuracy_metric = accuracy_metric,
+    threshold_bounds = threshold_bounds,
+    outcome = :alert_durations,
     ylabel = "Alert Duration\n(Days)",
     alpha = alpha,
     facet_fontsize = facet_fontsize,
     legendsize = legendsize,
     xlabelsize = xlabelsize,
     ylabelsize = ylabelsize,
-    show_x_facet_label = true,
-    show_y_facet_label = false,
+    show_x_facet_label = show_x_facet_label,
+    show_y_facet_label = show_y_facet_label,
     ylims = (0, 170),
-    force = true,
-    save_plot = false,
-    clinical_hline = clinical_hline,
+    plotdirpath = plotdirpath,
+    plotname = "optimal-thresholds_alert-duration-plot",
+    plotformat = "svg",
+    save_plot = true,
     nbanks = nbanks,
     legend_rowsize = legend_rowsize,
-)
-
-save(
-    appendix_plotdir("optimal-thresholds_alert-duration-plot.svg"),
-    alert_duration_plot,
+    xlabel_rowsize = xlabel_rowsize,
+    size = (1300, 800),
 )
 
 #%%
 nalerts_plot = line_plot(
-    optimal_threshold_characteristics;
+    optimized_threshold_results;
+    alert_method = alert_method,
+    accuracy_metric = accuracy_metric,
+    threshold_bounds = threshold_bounds,
     outcome = :nalerts,
     ylabel = "Number of Alerts",
     alpha = alpha,
@@ -57,48 +88,25 @@ nalerts_plot = line_plot(
     legendsize = legendsize,
     xlabelsize = xlabelsize,
     ylabelsize = ylabelsize,
-    show_x_facet_label = true,
-    show_y_facet_label = false,
+    show_x_facet_label = show_x_facet_label,
+    show_y_facet_label = show_y_facet_label,
     ylims = (0, 250),
-    force = true,
-    save_plot = false,
-    clinical_hline = clinical_hline,
-    nbanks = nbanks,
-    legend_rowsize = legend_rowsize,
-)
-
-save(
-    appendix_plotdir("optimal-thresholds_n-alerts-plot.svg"),
-    nalerts_plot,
-)
-
-#%%
-unavoidable_plot = line_plot(
-    optimal_threshold_characteristics;
-    outcome = :unavoidable_cases,
-    ylabel = "Unavoidable Cases",
-    alpha = alpha,
-    facet_fontsize = facet_fontsize,
-    legendsize = legendsize,
-    xlabelsize = xlabelsize,
-    ylabelsize = ylabelsize,
-    show_x_facet_label = true,
-    show_y_facet_label = false,
-    ylims = (0, 2.4e4),
-    force = true,
-    plotdirpath = appendix_plotdir(),
-    plotname = "optimal-thresholds_unavoidable-plot",
+    plotdirpath = plotdirpath,
+    plotname = "optimal-thresholds_n-alerts-plot",
     plotformat = "svg",
     save_plot = true,
-    clinical_hline = clinical_hline,
-    cases_scaling = gha_2022_scale_population_per_annum,
     nbanks = nbanks,
     legend_rowsize = legend_rowsize,
+    xlabel_rowsize = xlabel_rowsize,
+    size = (1300, 800),
 )
 
 #%%
 perc_alerts_correct_plot = line_plot(
-    optimal_threshold_characteristics;
+    optimized_threshold_results;
+    alert_method = alert_method,
+    accuracy_metric = accuracy_metric,
+    threshold_bounds = threshold_bounds,
     outcome = :perc_alerts_correct,
     ylabel = "Proportion of\nAlerts Correct",
     alpha = alpha,
@@ -106,22 +114,26 @@ perc_alerts_correct_plot = line_plot(
     legendsize = legendsize,
     xlabelsize = xlabelsize,
     ylabelsize = ylabelsize,
-    show_x_facet_label = true,
-    show_y_facet_label = false,
+    show_x_facet_label = show_x_facet_label,
+    show_y_facet_label = show_y_facet_label,
     ylims = (0, 1.0),
     force = true,
-    plotdirpath = appendix_plotdir(),
+    plotdirpath = plotdirpath,
     plotname = "optimal-thresholds_perc-alerts-correct-plot",
     plotformat = "svg",
     save_plot = true,
-    clinical_hline = clinical_hline,
     nbanks = nbanks,
     legend_rowsize = legend_rowsize,
+    xlabel_rowsize = xlabel_rowsize,
+    size = (1300, 800),
 )
 
 #%%
 perc_outbreaks_detected_plot = line_plot(
-    optimal_threshold_characteristics;
+    optimized_threshold_results;
+    alert_method = alert_method,
+    accuracy_metric = accuracy_metric,
+    threshold_bounds = threshold_bounds,
     outcome = :perc_true_outbreaks_detected,
     ylabel = "Proportion of\nOutbreaks Detected",
     alpha = alpha,
@@ -129,22 +141,30 @@ perc_outbreaks_detected_plot = line_plot(
     legendsize = legendsize,
     xlabelsize = xlabelsize,
     ylabelsize = ylabelsize,
-    show_x_facet_label = true,
-    show_y_facet_label = false,
+    show_x_facet_label = show_x_facet_label,
+    show_y_facet_label = show_y_facet_label,
     ylims = (0, 1.0),
     force = true,
-    plotdirpath = appendix_plotdir(),
+    plotdirpath = plotdirpath,
     plotname = "optimal-thresholds_perc-outbreaks-detected-plot",
     plotformat = "svg",
     save_plot = true,
-    clinical_hline = clinical_hline,
     nbanks = nbanks,
     legend_rowsize = legend_rowsize,
+    xlabel_rowsize = xlabel_rowsize,
+    size = (1300, 800),
 )
 
 #%%
+# F1 metrics for supplement
+accuracy_metric = OutbreakDetectionCore.AccuracyMetric(OutbreakDetectionCore.F1())
+
+#%%
 f1_accuracy_plot = line_plot(
-    f1_optimal_threshold_characteristics;
+    optimized_threshold_results;
+    alert_method = alert_method,
+    accuracy_metric = accuracy_metric,
+    threshold_bounds = threshold_bounds,
     outcome = :accuracy,
     ylabel = "Detection Accuracy",
     alpha = alpha,
@@ -152,15 +172,14 @@ f1_accuracy_plot = line_plot(
     legendsize = legendsize,
     xlabelsize = xlabelsize,
     ylabelsize = ylabelsize,
-    show_x_facet_label = true,
-    show_y_facet_label = false,
+    show_x_facet_label = show_x_facet_label,
+    show_y_facet_label = show_y_facet_label,
     ylims = (0.5, 1.0),
     force = true,
-    plotdirpath = appendix_plotdir(),
+    plotdirpath = plotdirpath,
     plotname = "f1_optimal-thresholds_accuracy-plot",
     plotformat = "svg",
     save_plot = true,
-    clinical_hline = clinical_hline,
     nbanks = nbanks,
     legend_rowsize = legend_rowsize,
     xlabel_rowsize = xlabel_rowsize,
@@ -169,7 +188,10 @@ f1_accuracy_plot = line_plot(
 
 #%%
 f1_delays_plot = line_plot(
-    f1_optimal_threshold_characteristics;
+    optimized_threshold_results;
+    alert_method = alert_method,
+    accuracy_metric = accuracy_metric,
+    threshold_bounds = threshold_bounds,
     outcome = :detectiondelays,
     ylabel = "Detection Delays\n(Days)",
     alpha = alpha,
@@ -178,22 +200,26 @@ f1_delays_plot = line_plot(
     legendsize = legendsize,
     xlabelsize = xlabelsize,
     ylabelsize = ylabelsize,
-    show_x_facet_label = true,
-    show_y_facet_label = false,
+    show_x_facet_label = show_x_facet_label,
+    show_y_facet_label = show_y_facet_label,
     ylims = (-100, 100),
     force = true,
-    plotdirpath = appendix_plotdir(),
+    plotdirpath = plotdirpath,
     plotname = "f1_optimal-thresholds_delays-plot",
     plotformat = "svg",
     save_plot = true,
-    clinical_hline = clinical_hline,
     nbanks = nbanks,
     legend_rowsize = legend_rowsize,
+    xlabel_rowsize = xlabel_rowsize,
+    size = (1300, 800),
 )
 
 #%%
 f1_prop_alert_plot = line_plot(
-    f1_optimal_threshold_characteristics;
+    optimized_threshold_results;
+    alert_method = alert_method,
+    accuracy_metric = accuracy_metric,
+    threshold_bounds = threshold_bounds,
     outcome = :proportion_timeseries_in_alert,
     ylabel = "Proportion of Time\nIn Alert",
     alpha = alpha,
@@ -202,15 +228,16 @@ f1_prop_alert_plot = line_plot(
     legendsize = legendsize,
     xlabelsize = xlabelsize,
     ylabelsize = ylabelsize,
-    show_x_facet_label = true,
-    show_y_facet_label = false,
+    show_x_facet_label = show_x_facet_label,
+    show_y_facet_label = show_y_facet_label,
     ylims = (0, 0.35),
     force = true,
-    plotdirpath = appendix_plotdir(),
+    plotdirpath = plotdirpath,
     plotname = "f1_optimal-thresholds_prop-alert-plot",
     plotformat = "svg",
     save_plot = true,
-    clinical_hline = clinical_hline,
     nbanks = nbanks,
     legend_rowsize = legend_rowsize,
+    xlabel_rowsize = xlabel_rowsize,
+    size = (1300, 800),
 )

@@ -129,3 +129,32 @@ prop_alert_plot = line_plot(
     nbanks = nbanks,
     legend_rowsize = legend_rowsize,
 )
+
+#%%
+unavoidable_plot = line_plot(
+    optimized_threshold_results;
+    alert_method = alert_method,
+    accuracy_metric = accuracy_metric,
+    threshold_bounds = threshold_bounds,
+    outcome = :unavoidable_cases,
+    ylabel = "Unavoidable Cases",
+    alpha = alpha,
+    facet_fontsize = facet_fontsize,
+    legendsize = legendsize,
+    xlabelsize = xlabelsize,
+    ylabelsize = ylabelsize,
+    show_x_facet_label = show_x_facet_label,
+    show_y_facet_label = show_y_facet_label,
+    ylims = (0, 2.4e4),
+    force = true,
+    # TODO: previously had a scaling factor for pop size
+    # Look into and confirm not needed
+    plotdirpath = plotdirpath,
+    plotname = "optimal-thresholds_unavoidable-plot",
+    plotformat = "svg",
+    save_plot = true,
+    nbanks = nbanks,
+    legend_rowsize = legend_rowsize,
+    xlabel_rowsize = xlabel_rowsize,
+    size = (1300, 800),
+)
