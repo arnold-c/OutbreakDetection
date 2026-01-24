@@ -154,7 +154,7 @@ function _create_test_positive_vec!(
         calculate_tested_vec!(noise_tested, noise_incidence, percent_tested; rng = noise_rng)
 
         # Calculate true positives (from infected individuals) using SEIR RNG
-        calculate_positives_vec!(
+        calculate_true_positives_vec!(
             true_positives,
             seir_tested,
             sim_length,
@@ -164,7 +164,7 @@ function _create_test_positive_vec!(
         )
 
         # Calculate false positives (from noise individuals) using noise RNG
-        calculate_positives_vec!(
+        calculate_false_positives_vec!(
             false_positives,
             noise_tested,
             sim_length,

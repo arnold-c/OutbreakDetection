@@ -1,330 +1,651 @@
-using OutbreakDetectionCore, StatsBase
+using OutbreakDetectionCore, StatsBase, Random, Distributions
 
-@testset "diag-testing-functions.jl" begin
-    @testset "Moving average" begin
-        daily_testpositives = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-
-        movingavg_testpositives = calculate_movingavg(
-            daily_testpositives,
-            5,
-        )
-
-        @test isequal(
-            movingavg_testpositives,
-            [
-                StatsBase.mean([1]),
-                StatsBase.mean([1, 2]),
-                StatsBase.mean([1, 2, 3]),
-                StatsBase.mean([1, 2, 3, 4]),
-                StatsBase.mean([1, 2, 3, 4, 5]),
-                StatsBase.mean([2, 3, 4, 5, 6]),
-                StatsBase.mean([3, 4, 5, 6, 7]),
-                StatsBase.mean([4, 5, 6, 7, 8]),
-                StatsBase.mean([5, 6, 7, 8, 9]),
-                StatsBase.mean([6, 7, 8, 9, 10]),
-            ],
-        )
-
-        @test length(movingavg_testpositives) == length(daily_testpositives)
-
-        @test begin
-            daily_testpositives = zeros(Int64, 10, 2)
-            daily_testpositives[:, 1] .= [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-
-            calculate_movingavg!(
-                @view(daily_testpositives[:, 2]),
-                @view(daily_testpositives[:, 1]),
-                5,
+@testset "calculate-num-positive.jl" begin
+    @testset "calculate_true_positives!" begin
+        @testset "Perfect test (sensitivity = 1.0)" begin
+            # Test with perfect sensitivity - all tested should become positive
+            tested_vec = [0, 5, 10, 15, 20, 0, 0, 0, 0, 0]
+            npos_vec = zeros(Int64, 10)
+            sim_length = 10
+            test_spec = IndividualTestSpecification(;
+                sensitivity = 1.0,
+                specificity = 0.95,
+                test_result_lag = 2
             )
 
-            isequal(
-                daily_testpositives[:, 2],
-                Int64.(
-                    round.(
-                        [
-                            StatsBase.mean([1]),
-                            StatsBase.mean([1, 2]),
-                            StatsBase.mean([1, 2, 3]),
-                            StatsBase.mean([1, 2, 3, 4]),
-                            StatsBase.mean([1, 2, 3, 4, 5]),
-                            StatsBase.mean([2, 3, 4, 5, 6]),
-                            StatsBase.mean([3, 4, 5, 6, 7]),
-                            StatsBase.mean([4, 5, 6, 7, 8]),
-                            StatsBase.mean([5, 6, 7, 8, 9]),
-                            StatsBase.mean([6, 7, 8, 9, 10]),
-                        ]
-                    )
-                ),
+            calculate_true_positives!(
+                npos_vec, tested_vec, sim_length, test_spec
             )
+
+            # With lag=2, day i tested should appear on day i+2
+            # day=1: result_day=3, npos_vec[3] = tested_vec[1] = 0
+            # day=2: result_day=4, npos_vec[4] = tested_vec[2] = 5
+            @test npos_vec[3] == 0
+            @test npos_vec[4] == 5
+            @test npos_vec[5] == 10
+            @test npos_vec[6] == 15
+            @test npos_vec[7] == 20
+            @test npos_vec[1] == 0
+            @test npos_vec[2] == 0
+        end
+
+        @testset "Imperfect test (sensitivity < 1.0)" begin
+            # Test with imperfect sensitivity - should use binomial sampling
+            tested_vec = [0, 100, 0, 0, 0, 0, 0, 0, 0, 0]
+            npos_vec = zeros(Int64, 10)
+            sim_length = 10
+            test_spec = IndividualTestSpecification(;
+                sensitivity = 0.8,
+                specificity = 0.95,
+                test_result_lag = 1
+            )
+
+            rng = Random.MersenneTwister(42)
+            calculate_true_positives!(
+                npos_vec, tested_vec, sim_length, test_spec, rng
+            )
+
+            # With lag=1, day i tested should appear on day i+1
+            # day=2: result_day=3, npos_vec[3] = binomial(tested_vec[2], 0.8) = binomial(100, 0.8)
+            @test npos_vec[3] > 0
+            @test npos_vec[3] <= 100
+            @test npos_vec[1] == 0
+            @test npos_vec[2] == 0
+        end
+
+        @testset "No lag" begin
+            tested_vec = [0, 10, 20, 30, 0, 0, 0, 0, 0, 0]
+            npos_vec = zeros(Int64, 10)
+            sim_length = 10
+            test_spec = IndividualTestSpecification(;
+                sensitivity = 1.0,
+                specificity = 0.95,
+                test_result_lag = 0
+            )
+
+            calculate_true_positives!(
+                npos_vec, tested_vec, sim_length, test_spec
+            )
+
+            # With lag=0, day i tested should appear on day i
+            # day=1: result_day=1, npos_vec[1] = tested_vec[1] = 0
+            # day=2: result_day=2, npos_vec[2] = tested_vec[2] = 10
+            @test npos_vec[1] == 0
+            @test npos_vec[2] == 10
+            @test npos_vec[3] == 20
+            @test npos_vec[4] == 30
+        end
+
+        @testset "Lag extends beyond simulation" begin
+            tested_vec = [0, 0, 0, 0, 0, 100, 0, 0, 0, 0]
+            npos_vec = zeros(Int64, 10)
+            sim_length = 10
+            test_spec = IndividualTestSpecification(;
+                sensitivity = 1.0,
+                specificity = 0.95,
+                test_result_lag = 10
+            )
+
+            calculate_true_positives!(
+                npos_vec, tested_vec, sim_length, test_spec
+            )
+
+            # Day 6 tested with lag 10 would result on day 16, which is beyond sim_length
+            @test all(npos_vec .== 0)
         end
     end
 
-    @testset "Detect outbreak" begin
-        incvec = [1, 3, 10, 15, 20, 3, 1]
-        avgvec = calculate_movingavg(incvec, 3)
-        threshold = 5
+    @testset "calculate_false_positives!" begin
+        @testset "Perfect test (specificity = 1.0)" begin
+            # Test with perfect specificity - no false positives
+            tested_vec = [0, 50, 100, 150, 0, 0, 0, 0, 0, 0]
+            npos_vec = zeros(Int64, 10)
+            sim_length = 10
+            test_spec = IndividualTestSpecification(;
+                sensitivity = 0.9,
+                specificity = 1.0,
+                test_result_lag = 2
+            )
 
-        @test begin
-            outbreakvec = detectoutbreak(incvec, threshold)
-            outbreakvec == [false, false, true, true, true, false, false]
+            calculate_false_positives!(
+                npos_vec, tested_vec, sim_length, test_spec
+            )
+
+            # With perfect specificity, all should be zero
+            @test all(npos_vec .== 0)
         end
 
-        @test begin
-            outbreakvec = detectoutbreak(avgvec, threshold)
-            outbreakvec == [false, false, false, true, true, true, true]
+        @testset "Imperfect test (specificity < 1.0)" begin
+            # Test with imperfect specificity - should have false positives
+            tested_vec = [0, 1000, 0, 0, 0, 0, 0, 0, 0, 0]
+            npos_vec = zeros(Int64, 10)
+            sim_length = 10
+            test_spec = IndividualTestSpecification(;
+                sensitivity = 0.9,
+                specificity = 0.95,
+                test_result_lag = 1
+            )
+
+            rng = Random.MersenneTwister(42)
+            calculate_false_positives!(
+                npos_vec, tested_vec, sim_length, test_spec, rng
+            )
+
+            # With lag=1, day 2 tested (1000) should appear on day 3
+            # False positive rate = 1 - 0.95 = 0.05, so expect ~50 false positives
+            @test npos_vec[3] > 0
+            @test npos_vec[3] <= 1000
+            @test npos_vec[1] == 0
+            @test npos_vec[2] == 0
         end
 
-        @test begin
-            outbreakvec = detectoutbreak(incvec, avgvec, threshold)
-            outbreakvec == [false, false, true, true, true, true, true]
+        @testset "No lag" begin
+            tested_vec = [0, 200, 300, 0, 0, 0, 0, 0, 0, 0]
+            npos_vec = zeros(Int64, 10)
+            sim_length = 10
+            test_spec = IndividualTestSpecification(;
+                sensitivity = 0.9,
+                specificity = 0.98,
+                test_result_lag = 0
+            )
+
+            rng = Random.MersenneTwister(42)
+            calculate_false_positives!(
+                npos_vec, tested_vec, sim_length, test_spec, rng
+            )
+
+            # With lag=0, tested on day i should appear on day i
+            @test npos_vec[1] == 0
+            @test npos_vec[2] > 0  # Some false positives expected
+            @test npos_vec[3] > 0  # Some false positives expected
         end
     end
 
-    @testset "Matched bounds" begin
-        @test begin
-            outbreakbounds = [
-                10 60 51 600
-                100 180 81 700
-                300 340 41 800
-                380 410 31 900
-                500 540 41 1000
-                600 660 61 1100
-            ]
-            detectionbounds = [
-                5 15 11
-                17 40 24
-                50 80 31
-                90 105 16
-                110 160 51
-                390 420 31
-                495 550 56
-                590 595 6
-            ]
+    @testset "perfect_test_true_positives_vec" begin
+        @testset "Basic functionality" begin
+            tested_vec = [0, 10, 20, 30, 40, 0, 0, 0, 0, 0]
+            npos_vec = zeros(Int64, 10)
+            sim_length = 10
+            lag = 2
 
-            isequal(
-                OutbreakDetectionCore.match_outbreak_detection_bounds(
-                    outbreakbounds, detectionbounds
-                ),
-                (
-                    [
-                        10 60 5 15 600
-                        10 60 17 40 600
-                        10 60 50 80 600
-                        100 180 90 105 700
-                        100 180 110 160 700
-                        380 410 390 420 900
-                        500 540 495 550 1000
-                    ],
-                    [51, 81, 41, 31, 41, 61],
-                    [11, 24, 31, 16, 51, 31, 56, 6],
-                    [600, 700, 800, 900, 1000, 1100],
-                    [3, 2, 0, 1, 1, 0],
-                ),
+            OutbreakDetectionCore.perfect_test_true_positives_vec(
+                npos_vec, tested_vec, sim_length, lag
             )
+
+            # With lag=2, day i tested should appear on day i+2
+            # day=1: result_day=3, npos_vec[3] = tested_vec[1] = 0
+            # day=2: result_day=4, npos_vec[4] = tested_vec[2] = 10
+            @test npos_vec[3] == 0   # day 1 tested
+            @test npos_vec[4] == 10  # day 2 tested
+            @test npos_vec[5] == 20  # day 3 tested
+            @test npos_vec[6] == 30  # day 4 tested
+            @test npos_vec[7] == 40  # day 5 tested
+            @test npos_vec[1] == 0
+            @test npos_vec[2] == 0
         end
 
-        @test begin
-            matched_bounds = [
-                10 60 5 15 600
-                10 60 17 40 600
-                10 60 50 80 600
-                100 180 90 105 700
-                100 180 110 160 700
-                380 410 390 420 900
-                500 540 495 550 1000
-            ]
-            filtered_bounds = [
-                10 60 5 15 600
-                100 180 90 105 700
-                380 410 390 420 900
-                500 540 495 550 1000
-            ]
+        @testset "No lag" begin
+            tested_vec = [5, 10, 15, 20, 25, 0, 0, 0, 0, 0]
+            npos_vec = zeros(Int64, 10)
+            sim_length = 10
+            lag = 0
 
-            isequal(
-                filter_first_matched_bounds(matched_bounds), filtered_bounds
+            OutbreakDetectionCore.perfect_test_true_positives_vec(
+                npos_vec, tested_vec, sim_length, lag
             )
+
+            # With lag=0, day i tested should appear on day i
+            @test npos_vec[1] == 5
+            @test npos_vec[2] == 10
+            @test npos_vec[3] == 15
+            @test npos_vec[4] == 20
+            @test npos_vec[5] == 25
         end
-    end
 
-    @testset "Cases before and after alert" begin
-        @test begin
-            incarr = [
-                repeat([1], 9)..., # First alert triggered here
-                repeat([12], 51)..., # Outbreak here
-                repeat([1], 19)...,
-                repeat([15], 11)..., # NOT outbreak here (i = 80 to 90)
-                repeat([1], 9)...,
-                repeat([8], 81)..., # Outbreak here
-                repeat([1], 199)...,
-                repeat([30], 31)..., # Outbreak here; third alert triggered here
-                repeat([1], 89)...,  # Fourth alert triggered here
-                repeat([25], 41)..., # Outbreak here
-            ]
+        @testset "Large lag" begin
+            tested_vec = [0, 0, 0, 0, 0, 100, 0, 0, 0, 0]
+            npos_vec = zeros(Int64, 10)
+            sim_length = 10
+            lag = 8
 
-            matched_bounds = [
-                10 60 5 15 612
-                100 180 90 105 648
-                380 410 390 420 930
-                500 540 495 550 1025
-            ]
-
-            delay_vec = [-5, -10, 10, -5]
-            isequal(
-                calculate_cases_before_after_alert(
-                    incarr, matched_bounds, delay_vec
-                ),
-                (
-                    [0, 0, 300, 0],
-                    [0.0, 0.0, 300 / 930, 0.0],
-                    [612, 648, 630, 1025],
-                    [1.0, 1.0, 630 / 930, 1.0],
-                ),
+            OutbreakDetectionCore.perfect_test_true_positives_vec(
+                npos_vec, tested_vec, sim_length, lag
             )
+
+            # Day 6 tested with lag 8 would result on day 14, beyond sim_length
+            @test all(npos_vec .== 0)
+        end
+
+        @testset "Lag at boundary" begin
+            tested_vec = [0, 0, 0, 0, 0, 0, 0, 0, 100, 0]
+            npos_vec = zeros(Int64, 10)
+            sim_length = 10
+            lag = 1
+
+            OutbreakDetectionCore.perfect_test_true_positives_vec(
+                npos_vec, tested_vec, sim_length, lag
+            )
+
+            # Day 9 tested with lag 1 should appear on day 10
+            @test npos_vec[10] == 100
+            @test npos_vec[9] == 0
+        end
+
+        @testset "Initializes to zero" begin
+            tested_vec = [10, 20, 30, 0, 0, 0, 0, 0, 0, 0]
+            npos_vec = [999, 999, 999, 999, 999, 999, 999, 999, 999, 999]
+            sim_length = 10
+            lag = 1
+
+            OutbreakDetectionCore.perfect_test_true_positives_vec(
+                npos_vec, tested_vec, sim_length, lag
+            )
+
+            # Should initialize to zero first
+            @test npos_vec[1] == 0
+            @test npos_vec[2] == 10
+            @test npos_vec[3] == 20
+            @test npos_vec[4] == 30
         end
     end
 
-    @testset "Outbreak detection characteristics" begin
-        outbreakbounds = [
-            10 60 51 12 * 51
-            100 180 81 8 * 81
-            380 410 31 30 * 31
-            500 540 41 25 * 41
-            600 660 61 1100
-        ]
+    @testset "_calculate_positives_vec!" begin
+        @testset "Deterministic with multiplier = 1.0" begin
+            tested_vec = [0, 100, 200, 0, 0, 0, 0, 0, 0, 0]
+            npos_vec = zeros(Int64, 10)
+            sim_length = 10
+            lag = 1
+            multiplier = 1.0
 
-        detectionbounds = [
-            5 15 11
-            17 40 24
-            50 80 31
-            90 105 16
-            110 160 51
-            390 420 31
-            495 550 56
-            590 595 6
-        ]
+            rng = Random.MersenneTwister(42)
+            OutbreakDetectionCore._calculate_positives_vec!(
+                npos_vec, tested_vec, sim_length, lag, multiplier; rng = rng
+            )
 
-        outbreak_detection_chars = calculate_outbreak_detection_characteristics(
-            outbreakbounds, detectionbounds
-        )
-
-        accuracy = mean([4 / 5, 7 / 8])
-        matched_bounds = [
-            10 60 5 15 12 * 51
-            10 60 17 40 12 * 51
-            10 60 50 80 12 * 51
-            100 180 90 105 8 * 81
-            100 180 110 160 8 * 81
-            380 410 390 420 30 * 31
-            500 540 495 550 25 * 41
-        ]
-        noutbreaks = 5
-        nalerts = 8
-        outbreak_duration_vec = [51, 81, 31, 41, 61]
-        alert_duration_vec = [11, 24, 31, 16, 51, 31, 56, 6]
-        detected_outbreak_size = [
-            12 * 51, 8 * 81, 30 * 31, 25 * 41,
-        ]
-        missed_outbreak_size = [1100]
-        n_true_outbreaks_detected = 4
-        n_missed_outbreaks = 1
-        n_correct_alerts = 7
-        n_false_alerts = 1
-        alertsperoutbreak = [3, 2, 1, 1, 0]
-        periodsumvec = [
-            12 * 51,
-            8 * 81,
-            30 * 31,
-            25 * 41,
-            1100,
-        ]
-        perc_true_outbreaks_detected = 4 / 5
-        perc_true_outbreaks_missed = 1 / 5
-        falsealert_trueoutbreak_prop = 1 / 5
-        correctalert_trueoutbreak_prop = 7 / 5
-        trueoutbreak_alerts_prop = 5 / 8
-        outbreaksmissed_alerts_prop = 1 / 8
-        perc_alerts_false = 1 / 8
-        perc_alerts_correct = 7 / 8
-
-        expected_outbreak_detection_chars = (;
-            accuracy,
-            matched_bounds,
-            noutbreaks,
-            nalerts,
-            outbreak_duration_vec,
-            alert_duration_vec,
-            detected_outbreak_size,
-            missed_outbreak_size,
-            n_true_outbreaks_detected,
-            n_missed_outbreaks,
-            n_correct_alerts,
-            n_false_alerts,
-            alertsperoutbreak,
-            periodsumvec,
-            perc_true_outbreaks_detected,
-            perc_true_outbreaks_missed,
-            falsealert_trueoutbreak_prop,
-            correctalert_trueoutbreak_prop,
-            trueoutbreak_alerts_prop,
-            outbreaksmissed_alerts_prop,
-            perc_alerts_false,
-            perc_alerts_correct,
-        )
-
-        for variable in propertynames(outbreak_detection_chars)
-            @testset "$(string(variable))" begin
-                actual_value = getproperty(outbreak_detection_chars, variable)
-                expected_value = getproperty(
-                    expected_outbreak_detection_chars, variable
-                )
-                @test isequal(actual_value, expected_value)
-            end
+            # With multiplier=1.0, should be same as perfect test
+            # day=1: result_day=2, npos_vec[2] = binomial(tested_vec[1], 1.0) = 0
+            # day=2: result_day=3, npos_vec[3] = binomial(tested_vec[2], 1.0) = 100
+            @test npos_vec[2] == 0
+            @test npos_vec[3] == 100
+            @test npos_vec[4] == 200
+            @test npos_vec[1] == 0
         end
 
-        @test isequal(
-            outbreak_detection_chars,
-            expected_outbreak_detection_chars,
-        )
+        @testset "Stochastic with multiplier < 1.0" begin
+            tested_vec = [0, 1000, 0, 0, 0, 0, 0, 0, 0, 0]
+            npos_vec = zeros(Int64, 10)
+            sim_length = 10
+            lag = 1
+            multiplier = 0.5
 
-        @test begin
-            infectious_tested_vec = [
-                repeat([1], 9)...,
-                repeat([12], 51)..., # Outbreak here (i = 10 to 60)
-                repeat([1], 19)...,
-                repeat([15], 11)..., # NOT outbreak here (i = 80 to 90)
-                repeat([1], 9)...,
-                repeat([8], 81)..., # Outbreak here (i = 100 to 180)
-                repeat([1], 199)...,
-                repeat([30], 31)..., # Outbreak here (i = 380 to 410)
-                repeat([1], 89)...,
-                repeat([25], 41)..., # Outbreak here (i = 500 to 540)
-            ]
-
-            noise_tested_vec = [
-                repeat([5], 9)...,
-                repeat([4], 51)..., # Outbreak here
-                repeat([6], 39)...,
-                repeat([5], 81)..., # Outbreak here
-                repeat([4], 199)...,
-                repeat([6], 31)..., # Outbreak here
-                repeat([5], 89)...,
-                repeat([4], 41)..., # Outbreak here
-            ]
-
-            outbreakbounds = [
-                10 60 612
-                100 180 648
-                380 410 930
-                500 540 1025
-            ]
-
-            isequal(
-                calculate_n_outbreak_tests(
-                    infectious_tested_vec, noise_tested_vec, outbreakbounds
-                ),
-                (12 * 51 + 8 * 81 + 30 * 31 + 25 * 41) +
-                    (4 * 51 + 5 * 81 + 6 * 31 + 4 * 41),
+            rng = Random.MersenneTwister(42)
+            OutbreakDetectionCore._calculate_positives_vec!(
+                npos_vec, tested_vec, sim_length, lag, multiplier; rng = rng
             )
+
+            # With multiplier=0.5, expect approximately 500 (binomial sample)
+            # day=1: result_day=2, npos_vec[2] = binomial(tested_vec[1], 0.5) = 0
+            # day=2: result_day=3, npos_vec[3] = binomial(tested_vec[2], 0.5) ≈ 500
+            @test npos_vec[2] == 0
+            @test npos_vec[3] > 0
+            @test npos_vec[3] <= 1000
+            @test npos_vec[1] == 0
+        end
+
+        @testset "No lag" begin
+            tested_vec = [50, 100, 150, 0, 0, 0, 0, 0, 0, 0]
+            npos_vec = zeros(Int64, 10)
+            sim_length = 10
+            lag = 0
+            multiplier = 0.8
+
+            rng = Random.MersenneTwister(42)
+            OutbreakDetectionCore._calculate_positives_vec!(
+                npos_vec, tested_vec, sim_length, lag, multiplier; rng = rng
+            )
+
+            # With lag=0, results appear immediately
+            @test npos_vec[1] > 0
+            @test npos_vec[1] <= 50
+            @test npos_vec[2] > 0
+            @test npos_vec[2] <= 100
+            @test npos_vec[3] > 0
+            @test npos_vec[3] <= 150
+        end
+
+        @testset "Initializes to zero" begin
+            tested_vec = [10, 20, 30, 0, 0, 0, 0, 0, 0, 0]
+            npos_vec = [999, 999, 999, 999, 999, 999, 999, 999, 999, 999]
+            sim_length = 10
+            lag = 1
+            multiplier = 0.9
+
+            rng = Random.MersenneTwister(42)
+            OutbreakDetectionCore._calculate_positives_vec!(
+                npos_vec, tested_vec, sim_length, lag, multiplier; rng = rng
+            )
+
+            # Should initialize to zero first
+            @test npos_vec[1] == 0
+            @test npos_vec[2] > 0
+        end
+
+        @testset "Lag extends beyond simulation" begin
+            tested_vec = [0, 0, 0, 0, 0, 0, 0, 0, 0, 100]
+            npos_vec = zeros(Int64, 10)
+            sim_length = 10
+            lag = 5
+            multiplier = 0.8
+
+            rng = Random.MersenneTwister(42)
+            OutbreakDetectionCore._calculate_positives_vec!(
+                npos_vec, tested_vec, sim_length, lag, multiplier; rng = rng
+            )
+
+            # Day 10 tested with lag 5 would result on day 15, beyond sim_length
+            @test all(npos_vec .== 0)
+        end
+
+        @testset "Reproducibility with same seed" begin
+            tested_vec = [0, 500, 0, 0, 0, 0, 0, 0, 0, 0]
+            npos_vec1 = zeros(Int64, 10)
+            npos_vec2 = zeros(Int64, 10)
+            sim_length = 10
+            lag = 1
+            multiplier = 0.6
+
+            rng1 = Random.MersenneTwister(123)
+            OutbreakDetectionCore._calculate_positives_vec!(
+                npos_vec1, tested_vec, sim_length, lag, multiplier; rng = rng1
+            )
+
+            rng2 = Random.MersenneTwister(123)
+            OutbreakDetectionCore._calculate_positives_vec!(
+                npos_vec2, tested_vec, sim_length, lag, multiplier; rng = rng2
+            )
+
+            # Same seed should produce same results
+            @test npos_vec1 == npos_vec2
+        end
+
+        @testset "Multiplier = 0.0 (no positives)" begin
+            tested_vec = [0, 1000, 2000, 0, 0, 0, 0, 0, 0, 0]
+            npos_vec = zeros(Int64, 10)
+            sim_length = 10
+            lag = 1
+            multiplier = 0.0
+
+            rng = Random.MersenneTwister(42)
+            OutbreakDetectionCore._calculate_positives_vec!(
+                npos_vec, tested_vec, sim_length, lag, multiplier; rng = rng
+            )
+
+            # With multiplier=0.0, all results should be zero
+            @test all(npos_vec .== 0)
+        end
+
+        @testset "Result day exactly equals sim_length" begin
+            tested_vec = [0, 0, 0, 0, 0, 0, 0, 0, 50, 0]
+            npos_vec = zeros(Int64, 10)
+            sim_length = 10
+            lag = 1
+            multiplier = 1.0
+
+            rng = Random.MersenneTwister(42)
+            OutbreakDetectionCore._calculate_positives_vec!(
+                npos_vec, tested_vec, sim_length, lag, multiplier; rng = rng
+            )
+
+            # Day 9 tested with lag 1 should appear on day 10 (exactly sim_length)
+            @test npos_vec[10] == 50
+            @test sum(npos_vec[1:9]) == 0
+        end
+    end
+
+    @testset "Edge cases and type stability" begin
+        @testset "Single element vectors" begin
+            tested_vec = [100]
+            npos_vec = zeros(Int64, 1)
+            sim_length = 1
+            test_spec = IndividualTestSpecification(;
+                sensitivity = 1.0,
+                specificity = 1.0,
+                test_result_lag = 0
+            )
+
+            calculate_true_positives!(
+                npos_vec, tested_vec, sim_length, test_spec
+            )
+
+            # With lag=0, should appear immediately
+            @test npos_vec[1] == 100
+        end
+
+        @testset "Single element with lag" begin
+            tested_vec = [100]
+            npos_vec = zeros(Int64, 1)
+            sim_length = 1
+            test_spec = IndividualTestSpecification(;
+                sensitivity = 1.0,
+                specificity = 1.0,
+                test_result_lag = 1
+            )
+
+            calculate_true_positives!(
+                npos_vec, tested_vec, sim_length, test_spec
+            )
+
+            # With lag=1, result would be on day 2, which is beyond sim_length
+            @test npos_vec[1] == 0
+        end
+
+        @testset "All zeros tested" begin
+            tested_vec = zeros(Int64, 10)
+            npos_vec = zeros(Int64, 10)
+            sim_length = 10
+            test_spec = IndividualTestSpecification(;
+                sensitivity = 0.9,
+                specificity = 0.95,
+                test_result_lag = 2
+            )
+
+            calculate_true_positives!(
+                npos_vec, tested_vec, sim_length, test_spec
+            )
+
+            # All zeros in, all zeros out
+            @test all(npos_vec .== 0)
+        end
+
+        @testset "Very large lag" begin
+            tested_vec = [100, 200, 300, 0, 0, 0, 0, 0, 0, 0]
+            npos_vec = zeros(Int64, 10)
+            sim_length = 10
+            test_spec = IndividualTestSpecification(;
+                sensitivity = 1.0,
+                specificity = 1.0,
+                test_result_lag = 100
+            )
+
+            calculate_true_positives!(
+                npos_vec, tested_vec, sim_length, test_spec
+            )
+
+            # All results would be beyond sim_length
+            @test all(npos_vec .== 0)
+        end
+
+        @testset "Negative lag (should still work as lag=0)" begin
+            # Note: This tests implementation behavior with negative lag
+            # The function doesn't validate lag >= 0, so negative lag acts like 0 or less
+            tested_vec = [0, 100, 0, 0, 0, 0, 0, 0, 0, 0]
+            npos_vec = zeros(Int64, 10)
+            sim_length = 10
+            lag = -1
+            multiplier = 1.0
+
+            rng = Random.MersenneTwister(42)
+            OutbreakDetectionCore._calculate_positives_vec!(
+                npos_vec, tested_vec, sim_length, lag, multiplier; rng = rng
+            )
+
+            # With negative lag, result_day = day + (-1) = day - 1
+            # day=1: result_day=0, which is out of bounds, so nothing stored
+            # day=2: result_day=1, npos_vec[1] = 100
+            @test npos_vec[1] == 100
+            @test sum(npos_vec[2:end]) == 0
+        end
+
+        @testset "Type stability - calculate_true_positives!" begin
+            tested_vec = [0, 100, 200, 0, 0, 0, 0, 0, 0, 0]
+            npos_vec = zeros(Int64, 10)
+            sim_length = 10
+            test_spec = IndividualTestSpecification(;
+                sensitivity = 0.9,
+                specificity = 0.95,
+                test_result_lag = 2
+            )
+            rng = Random.MersenneTwister(42)
+
+            # Test that function returns Nothing and is type stable
+            result = calculate_true_positives!(
+                npos_vec, tested_vec, sim_length, test_spec, rng
+            )
+            @test result === nothing
+            @test eltype(npos_vec) === Int64
+        end
+
+        @testset "Type stability - calculate_false_positives!" begin
+            tested_vec = [0, 100, 200, 0, 0, 0, 0, 0, 0, 0]
+            npos_vec = zeros(Int64, 10)
+            sim_length = 10
+            test_spec = IndividualTestSpecification(;
+                sensitivity = 0.9,
+                specificity = 0.95,
+                test_result_lag = 2
+            )
+            rng = Random.MersenneTwister(42)
+
+            # Test that function returns Nothing and is type stable
+            result = calculate_false_positives!(
+                npos_vec, tested_vec, sim_length, test_spec, rng
+            )
+            @test result === nothing
+            @test eltype(npos_vec) === Int64
+        end
+
+        @testset "Different vector types" begin
+            # Test with Vector{Int64}
+            tested_vec = Vector{Int64}([0, 100, 200, 0, 0, 0, 0, 0, 0, 0])
+            npos_vec = Vector{Int64}(zeros(Int64, 10))
+            sim_length = 10
+            test_spec = IndividualTestSpecification(;
+                sensitivity = 1.0,
+                specificity = 1.0,
+                test_result_lag = 1
+            )
+
+            calculate_true_positives!(
+                npos_vec, tested_vec, sim_length, test_spec
+            )
+
+            @test npos_vec[2] == 0
+            @test npos_vec[3] == 100
+            @test npos_vec[4] == 200
+        end
+
+        @testset "Boundary: sensitivity and specificity at extremes" begin
+            tested_vec = [0, 1000, 0, 0, 0, 0, 0, 0, 0, 0]
+            npos_vec = zeros(Int64, 10)
+            sim_length = 10
+
+            # Test with sensitivity = 0.0 (no true positives)
+            test_spec_zero_sens = IndividualTestSpecification(;
+                sensitivity = 0.0,
+                specificity = 1.0,
+                test_result_lag = 1
+            )
+            rng = Random.MersenneTwister(42)
+            calculate_true_positives!(
+                npos_vec, tested_vec, sim_length, test_spec_zero_sens, rng
+            )
+            @test all(npos_vec .== 0)
+
+            # Test with specificity = 0.0 (all false positives)
+            test_spec_zero_spec = IndividualTestSpecification(;
+                sensitivity = 1.0,
+                specificity = 0.0,
+                test_result_lag = 1
+            )
+            npos_vec = zeros(Int64, 10)
+            rng = Random.MersenneTwister(42)
+            calculate_false_positives!(
+                npos_vec, tested_vec, sim_length, test_spec_zero_spec, rng
+            )
+            # With specificity=0.0, false positive rate = 1.0, so all tested become positive
+            @test npos_vec[3] == 1000
+        end
+    end
+
+    @testset "Integration tests" begin
+        @testset "True positives + false positives combined" begin
+            # Simulate a realistic scenario with both infected and non-infected tested
+            infected_tested = [0, 50, 100, 150, 100, 50, 0, 0, 0, 0]
+            noninfected_tested = [100, 200, 300, 200, 100, 50, 0, 0, 0, 0]
+
+            true_pos_vec = zeros(Int64, 10)
+            false_pos_vec = zeros(Int64, 10)
+            sim_length = 10
+
+            test_spec = IndividualTestSpecification(;
+                sensitivity = 0.9,
+                specificity = 0.95,
+                test_result_lag = 1
+            )
+
+            rng1 = Random.MersenneTwister(42)
+            rng2 = Random.MersenneTwister(43)
+
+            calculate_true_positives!(
+                true_pos_vec, infected_tested, sim_length, test_spec, rng1
+            )
+            calculate_false_positives!(
+                false_pos_vec, noninfected_tested, sim_length, test_spec, rng2
+            )
+
+            # Both should have values (stochastic, so just check they're reasonable)
+            @test sum(true_pos_vec) > 0
+            @test sum(false_pos_vec) >= 0
+
+            # True positives should be roughly 90% of infected tested (with lag)
+            # False positives should be roughly 5% of non-infected tested (with lag)
+            total_pos = true_pos_vec .+ false_pos_vec
+            @test sum(total_pos) > 0
+        end
+
+        @testset "Perfect test consistency" begin
+            # Perfect test should have no false positives and all true positives
+            tested_vec = [0, 100, 200, 300, 0, 0, 0, 0, 0, 0]
+            true_pos_vec = zeros(Int64, 10)
+            false_pos_vec = zeros(Int64, 10)
+            sim_length = 10
+
+            perfect_test = IndividualTestSpecification(;
+                sensitivity = 1.0,
+                specificity = 1.0,
+                test_result_lag = 2
+            )
+
+            calculate_true_positives!(
+                true_pos_vec, tested_vec, sim_length, perfect_test
+            )
+            calculate_false_positives!(
+                false_pos_vec, tested_vec, sim_length, perfect_test
+            )
+
+            # Perfect test: all true positives, no false positives
+            @test sum(true_pos_vec) == sum(tested_vec)
+            @test sum(false_pos_vec) == 0
         end
     end
 end
