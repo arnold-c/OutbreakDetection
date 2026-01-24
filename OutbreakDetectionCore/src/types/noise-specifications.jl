@@ -82,7 +82,7 @@ AutoHashEquals.@auto_hash_equals struct DynamicalNoiseParameters
         @assert correlation in ["in-phase", "out-of-phase", "none"] "Invalid correlation type"
         @assert poisson_component >= 0 "Poisson component must be non-negative"
         @assert length(vaccination_bounds) == 2 "Vaccination bounds must have 2 elements"
-        @assert 0 <= vaccination_bounds[1] < vaccination_bounds[2] <= 1 "Invalid vaccination bounds"
+        @assert 0 <= vaccination_bounds[1] <= vaccination_bounds[2] <= 1 "Invalid vaccination bounds"
 
         return new(
             R_0,
