@@ -1,4 +1,4 @@
-using GLMakie
+using CairoMakie
 
 function theme_adjustments()
     return Theme(;
@@ -24,7 +24,7 @@ set_theme!(
 )
 
 update_theme!(; size = (1300, 800))
-GLMakie.activate!()
+CairoMakie.activate!()
 
 alpha = 0.4
 nbanks = 1
@@ -33,4 +33,6 @@ legendsize = 24
 xlabelsize = 28
 ylabelsize = 26
 legend_rowsize = Makie.Relative(0.05)
-xlabel_rowsize = Makie.Relative(0.01);
+xlabel_rowsize = Makie.Relative(0.01)
+show_x_facet_label = true
+show_y_facet_label = false
