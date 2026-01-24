@@ -136,6 +136,8 @@ function threshold_optimization(
         threshold_bounds = scenario.threshold_bounds,
         outbreak_specification = scenario.outbreak_specification,
         # From optimized values
+        n_alerts = optimal_results.n_alerts,
+        n_outbreaks = optimal_results.n_outbreaks,
         optimal_threshold = tracker.optimal_threshold,
         accuracies = optimal_results.accuracies,
         proportion_alerts_correct = optimal_results.proportion_alerts_correct,

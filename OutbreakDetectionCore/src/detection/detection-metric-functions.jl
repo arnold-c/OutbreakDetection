@@ -1,4 +1,6 @@
-export calculate_accuracy,
+export calculate_n_alerts,
+    calculate_n_outbreaks,
+    calculate_accuracy,
     calculate_sensitivity,
     calculate_ppv,
     arithmetic_mean,
@@ -9,6 +11,14 @@ export calculate_accuracy,
     get_outbreak_duration,
     calculate_proportion_timeseries_in_alert,
     calculate_proportion_timeseries_in_outbreak
+
+function calculate_n_alerts(alert_thresholds::Thresholds)
+    return length(alert_thresholds.lower_bounds)
+end
+
+function calculate_n_outbreaks(outbreak_thresholds::OutbreakThresholds)
+    return length(outbreak_thresholds.lower_bounds)
+end
 
 # Dispatch for accuracy metric
 function calculate_accuracy(metric::AccuracyMetric, ppv, sensitivity)

@@ -61,6 +61,8 @@ function calculate_optimal_results(
     nsims = length(outbreak_thresholds)
 
     # Accumulators for metrics
+    n_alerts = Vector{Int64}(undef, nsims)
+    n_outbreaks = similar(n_alerts)
     accuracies = Vector{Float64}(undef, nsims)
     proportion_alerts_correct = similar(accuracies)
     proportion_outbreaks_detected = similar(accuracies)
@@ -80,10 +82,13 @@ function calculate_optimal_results(
 
         # Get pre-computed outbreak bounds for this simulation
         outbreak_bounds = outbreak_thresholds[sim]
+        n_outbreaks[sim] = calculate_n_outbreaks(outbreak_bounds)
 
         # Get alert bounds using RLE
         alert_rle = StatsBase.rle(alert_vec)
         alert_bounds = calculate_above_threshold_bounds(alert_rle)
+
+        n_alerts[sim] = calculate_n_alerts(alert_bounds)
 
         matched_outbreak_threshold_indices = match_outbreak_detection_bounds(
             outbreak_bounds,
@@ -129,6 +134,8 @@ function calculate_optimal_results(
     end
 
     return (;
+        n_alerts,
+        n_outbreaks,
         accuracies,
         proportion_alerts_correct,
         proportion_outbreaks_detected,
