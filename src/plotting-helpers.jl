@@ -266,6 +266,8 @@ function extract_outcome_values(
         :unavoidable_cases,
         :alert_durations,
         :outbreak_durations,
+        :n_alerts,
+        :n_outbreaks,
     ]
     @assert outcome in available_metrics "Unknown outcome: :$outcome. Available metrics: $available_metrics"
     return getproperty(result, outcome)

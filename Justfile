@@ -1,15 +1,29 @@
-default: tests manuscript
+default: optimizations plots_worker supplemental-plots_worker
 
 julia_script := "julia --project=. --startup-file=no --history-file=no"
+
+
 
 optimizations:
 	{{ julia_script }}  ./scripts/optimal-thresholds_optims.jl
 
-plots: optimizations
+
+
+plots: optimizations plots_worker
+
+plots_worker:
 	{{ julia_script }} ./scripts/optimal-thresholds_plots.jl
 
-supplemental-plots: optimizations
+
+
+
+supplemental-plots: optimizations supplemental-plots_worker
+
+supplemental-plots_worker:
 	{{ julia_script }} ./scripts/supplemental_plots.jl
+
+
+
 
 manuscript:
 	julia ./scripts/manuscript/optimal-thresholds.jl
