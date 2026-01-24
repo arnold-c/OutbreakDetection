@@ -14,6 +14,9 @@ using JET
     #     JET.test_package(OutbreakDetectionCore; target_defined_modules = true)
     # end
 
+    # Utilities tests
+    include("utilities/struct-version-hash.jl")
+
     # Simulation tests
     include("simulation/seir-model.jl")
     # include("simulation/simulate-ensemble-seir-results.jl")  # Empty test file

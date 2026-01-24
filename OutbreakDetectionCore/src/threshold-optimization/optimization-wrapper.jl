@@ -67,13 +67,19 @@ function run_scenario_threshold_optimization(
     existing_results = if force
         StructVector(OptimizationResult[])
     else
-        Try.unwrap(
-            load_previous_optimization_results_structvector(
-                filedir,
-                optimization_filename_base,
-                checkpoint_dir
-            )
+        load_result = load_previous_optimization_results_structvector(
+            filedir,
+            optimization_filename_base,
+            checkpoint_dir
         )
+
+        if Try.iserr(load_result)
+            error_msg = Try.unwrap_err(load_result)
+            @info "Optimization cancelled: $error_msg"
+            return nothing
+        end
+
+        Try.unwrap(load_result)
     end
 
     n_existing = length(existing_results)

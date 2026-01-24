@@ -72,6 +72,7 @@ noise_level_vec = [
     1.0,
     2.0,
     4.0,
+    6.0,
     7.0,
 ]
 noise_type_description_vec = [

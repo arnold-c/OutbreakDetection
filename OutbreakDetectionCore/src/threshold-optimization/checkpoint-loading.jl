@@ -49,10 +49,30 @@ function load_checkpoint_results_structvector(checkpoint_dir::String)
             if haskey(data, "optimization_results")
                 results = data["optimization_results"]
                 if results isa StructVector{OptimizationResult}
+                    # Validate struct hashes and get results
+                    validation_result = validate_struct_hashes_and_get_results(
+                        data,
+                        "checkpoint file"
+                    )
+
+                    # If validation failed or user declined, return the error
+                    if Try.iserr(validation_result)
+                        return validation_result
+                    end
+
+                    # If validation succeeded, get the results
+                    validated_results = Try.unwrap(validation_result)
+
+                    # Check if results were invalidated (empty StructVector means re-optimize)
+                    if isempty(validated_results)
+                        return validation_result
+                    end
+
+                    # Results are valid, inform user if we're using a fallback checkpoint
                     if file != sorted_files[1]
                         @info "Loaded checkpoint from $file (most recent checkpoint failed)"
                     end
-                    return Try.Ok(results)
+                    return Try.Ok(validated_results)
                 end
             end
         catch e

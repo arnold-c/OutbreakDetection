@@ -3,7 +3,12 @@ export save_optimization_results
 """
     save_results_structvector(results, filepath)
 
-Save StructVector results directly to JLD2 file.
+Save StructVector results directly to JLD2 file with struct version hashes.
+
+This function saves optimization results along with hash values of the
+OptimizationScenario and OptimizationResult struct definitions. These hashes
+enable detection of struct changes when loading results, ensuring that cached
+results are invalidated if the struct definitions have been modified.
 """
 function save_optimization_results(
         results::StructVector{OptimizationResult},
@@ -17,8 +22,15 @@ function save_optimization_results(
     temp_filepath = filepath * ".tmp.jld2"
 
     return try
-        # Save StructVector directly to JLD2
-        JLD2.jldsave(temp_filepath; optimization_results = results)
+        # Get current struct hashes
+        struct_hashes = get_optimization_struct_hashes()
+
+        # Save StructVector and struct hashes to JLD2
+        JLD2.jldsave(
+            temp_filepath;
+            optimization_results = results,
+            struct_hashes = struct_hashes
+        )
 
         # Atomic rename
         mv(temp_filepath, filepath; force = true)
