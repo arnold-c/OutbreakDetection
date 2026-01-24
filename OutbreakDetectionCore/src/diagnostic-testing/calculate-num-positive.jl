@@ -1,5 +1,5 @@
-export calculate_true_positives!,
-    calculate_false_positives!,
+export calculate_true_positives_vec!,
+    calculate_false_positives_vec!,
     _calculate_positives_vec!
 
 """
@@ -37,11 +37,11 @@ The function:
 - [`calculate_false_positives`](@ref): Calculate false positive results
 - [`calculate_positives_vec!`](@ref): Core calculation function
 """
-function calculate_true_positives!(
+function calculate_true_positives_vec!(
         npos_vec::AbstractVector{Int64},
         tested_vec::AbstractVector{Int64},
         sim_length::Int64,
-        test_specification::IndividualTestSpecification,
+        test_specification::IndividualTestSpecification;
         rng::Random.AbstractRNG = Random.default_rng()
     )
 
@@ -152,11 +152,11 @@ The function:
 - [`calculate_true_positives`](@ref): Calculate true positive results
 - [`calculate_positives_vec!`](@ref): Core calculation function
 """
-function calculate_false_positives!(
+function calculate_false_positives_vec!(
         npos_vec::AbstractVector{Int64},
         tested_vec::AbstractVector{Int64},
         sim_length::Int64,
-        test_specification::IndividualTestSpecification,
+        test_specification::IndividualTestSpecification;
         rng::Random.AbstractRNG = Random.default_rng()
     )
 

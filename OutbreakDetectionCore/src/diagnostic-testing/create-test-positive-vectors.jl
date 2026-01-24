@@ -158,8 +158,7 @@ function _create_test_positive_vec!(
             true_positives,
             seir_tested,
             sim_length,
-            test_specification.test_result_lag,
-            test_specification.sensitivity;
+            test_specification;
             rng = seir_rng
         )
 
@@ -168,8 +167,7 @@ function _create_test_positive_vec!(
             false_positives,
             noise_tested,
             sim_length,
-            test_specification.test_result_lag,
-            1.0 - test_specification.specificity;
+            test_specification;
             rng = noise_rng
         )
 
