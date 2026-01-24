@@ -34,28 +34,31 @@ function get_outbreak_status(
 
     abovethresholdrle = StatsBase.rle(abovethreshold_vec)
 
-    all_outbreak_bounds = OutbreakDetectionCore.calculate_outbreak_thresholds(
+    threshold_bounds = OutbreakDetectionCore.calculate_above_threshold_bounds(
         abovethresholdrle
     )
 
-    OutbreakDetectionCore.classify_all_outbreaks!(
-        abovethreshold_vec,
-        all_outbreak_bounds,
+    outbreak_thresholds = OutbreakDetectionCore.classify_all_outbreaks(
         inc_vec,
+        threshold_bounds,
         outbreak_specification.minimum_outbreak_duration,
         outbreak_specification.minimum_outbreak_size,
     )
 
-    outbreak_bounds = OutbreakDetectionCore.filter_only_outbreaks(
-        all_outbreak_bounds
-    )
-
     outbreak_status = zeros(Bool, length(inc_vec))
 
-    for (lower, upper) in eachrow(outbreak_bounds)
-        # @show lower, upper
+    for i in eachindex(outbreak_thresholds.lower_bounds)
+        lower = outbreak_thresholds.lower_bounds[i]
+        upper = outbreak_thresholds.upper_bounds[i]
         outbreak_status[lower:upper] .= true
     end
+
+    # Create a matrix with [lower, upper] for compatibility with plot function
+    outbreak_bounds = hcat(
+        outbreak_thresholds.lower_bounds,
+        outbreak_thresholds.upper_bounds
+    )
+
     return outbreak_status, outbreak_bounds
 end
 
@@ -97,11 +100,10 @@ function shift_vec(invec, shift::T) where {T <: Integer}
 end
 
 """
-    create_schematic_simulation(states_p, dynamics_p, noise_states_p,
-        noise_dynamics_p, test_specification, time_p; seed = 1234,
+    create_schematic_simulation(states_p, dynamics_p, dynamics_spec,
+        noise_spec, test_specification, time_p; seed = 1234,
         outbreak_specification = OutbreakSpecification(5, 30, 500),
-        outbreak_detection_specification = OutbreakDetectionSpecification(
-            5, 7, 1.0, 0.5, "movingavg"),
+        outbreak_detection_specification = OutbreakDetectionSpecification(...),
         noise_scaling = 10, shift_noise = 0, movingavg_window = 20)
 
 Creates a complete outbreak detection simulation for schematic visualization.
@@ -116,8 +118,8 @@ that illustrate the outbreak detection process.
 - `states_p`: StateParameters containing initial SEIR compartment states for
   the main epidemic
 - `dynamics_p`: DynamicsParameters for the main epidemic transmission dynamics
-- `noise_states_p`: StateParameters for the noise/background process
-- `noise_dynamics_p`: DynamicsParameters for the noise process
+- `dynamics_spec`: DynamicsParameterSpecification for the main epidemic
+- `noise_spec`: DynamicalNoiseSpecification for the noise process
 - `test_specification`: IndividualTestSpecification containing test
   characteristics (sensitivity, specificity, result lag)
 - `time_p`: Time parameters specifying simulation duration and time step
@@ -127,8 +129,7 @@ that illustrate the outbreak detection process.
 - `outbreak_specification`: OutbreakSpecification defining outbreak criteria
   (default: threshold=5, duration=30, size=500)
 - `outbreak_detection_specification`: OutbreakDetectionSpecification defining
-  detection parameters (default: threshold=5, lag=7, clinic_visit=1.0,
-  clinic_tested=0.5, method="movingavg")
+  detection parameters
 - `noise_scaling`: Multiplicative factor for noise intensity (default: 10)
 - `shift_noise`: Number of time steps to shift noise signal (default: 0)
 - `movingavg_window`: Window size for smoothing incidence data (default: 20)
@@ -146,28 +147,30 @@ A tuple containing:
 function create_schematic_simulation(
         states_p,
         dynamics_p,
-        noise_states_p,
-        noise_dynamics_p,
+        dynamics_spec,
+        noise_spec,
         test_specification,
         time_p;
         seed = 1234,
         outbreak_specification = OutbreakDetectionCore.OutbreakSpecification(5, 30, 500),
-        outbreak_detection_specification = OutbreakDetectionCore.OutbreakDetectionSpecification(5, 7, 1.0, 0.5, "movingavg"),
+        outbreak_detection_specification = nothing,
         noise_scaling = 10,
         shift_noise = 0,
         movingavg_window = 20
     )
-    inc_sv = OutbreakDetectionCore.seir_mod(
-        states_p.init_states,
+    # Run main epidemic simulation
+    seir_run = OutbreakDetectionCore.seir_mod(
+        StaticArrays.SVector(states_p.init_states),
         dynamics_p,
         time_p;
         seed = seed,
-    )[2]
+    )
+    inc_vec = seir_run.incidence
 
     inc_vec =
         round.(
         OutbreakDetectionCore.calculate_movingavg(
-            vec(convert_svec_to_matrix(inc_sv)),
+            inc_vec,
             movingavg_window,
         )
     )
@@ -176,16 +179,62 @@ function create_schematic_simulation(
         inc_vec, outbreak_specification
     )
 
-    noise_sv = OutbreakDetectionCore.seir_mod(
-        noise_states_p.init_states,
-        noise_dynamics_p,
-        time_p;
-        seed = seed,
-    )[2]
+    # Generate noise using proper framework
+    # Convert DynamicalNoiseSpecification back to DynamicalNoiseParameters for ensemble spec
+    vac_cov = noise_spec.vaccination_coverage
+    noise_params = OutbreakDetectionCore.DynamicalNoiseParameters(;
+        R_0 = noise_spec.R_0,
+        latent_period = Dates.Day(round(Int, noise_spec.latent_period)),
+        infectious_duration = Dates.Day(round(Int, noise_spec.infectious_duration)),
+        correlation = noise_spec.correlation,
+        poisson_component = noise_spec.poisson_component,
+        vaccination_bounds = [vac_cov, vac_cov]  # Equal bounds for fixed vaccination coverage
+    )
+
+    # Create a minimal ensemble specification for noise generation
+    ensemble_spec = OutbreakDetectionCore.EnsembleSpecification(
+        "schematic",
+        states_p,
+        time_p,
+        dynamics_spec,
+        noise_params,
+        1,  # nsims
+        ""  # dirpath
+    )
+
+    # Recreate noise dynamics
+    noise_dynamics_spec = OutbreakDetectionCore.recreate_noise_dynamics_parameter_specification(
+        noise_spec,
+        ensemble_spec
+    )
+
+    noise_dynamics_p = OutbreakDetectionCore.DynamicsParameters(;
+        beta_mean = noise_dynamics_spec.beta_mean,
+        beta_force = noise_dynamics_spec.beta_force,
+        seasonality = noise_dynamics_spec.seasonality,
+        sigma = noise_dynamics_spec.sigma,
+        gamma = noise_dynamics_spec.gamma,
+        mu = noise_dynamics_spec.mu,
+        annual_births_per_k = noise_dynamics_spec.annual_births_per_k,
+        epsilon = noise_dynamics_spec.epsilon,
+        R_0 = noise_dynamics_spec.R_0,
+        vaccination_coverage = noise_spec.vaccination_coverage
+    )
+
+    # Generate noise
+    noise_result = OutbreakDetectionCore.create_noise_vecs(
+        noise_spec,
+        ensemble_spec,
+        noise_dynamics_p;
+        seed = seed
+    )
+
+    # Extract noise incidence (first simulation)
+    noise_vec_raw = LightSumTypes.variant(noise_result).incidence[1]
 
     noise_vec_tmp = OutbreakDetectionCore.calculate_movingavg(
-        vec(OutbreakDetectionCore.convert_svec_to_matrix(noise_sv)) .*
-            noise_scaling, movingavg_window
+        noise_vec_raw .* noise_scaling,
+        movingavg_window
     )
 
     noise_vec = shift_vec(noise_vec_tmp, shift_noise)
@@ -194,20 +243,28 @@ function create_schematic_simulation(
         outbreak_detection_specification.percent_visit_clinic *
         outbreak_detection_specification.percent_clinic_tested
 
-    true_positives = OutbreakDetectionCore.calculate_positives(
-        calculate_true_positives!,
-        inc_vec .* perc_tested,
+    # Calculate number tested (convert to Int)
+    tested_inc_vec = round.(Int, inc_vec .* perc_tested)
+    tested_noise_vec = round.(Int, noise_vec .* perc_tested)
+
+    # Allocate output vectors
+    true_positives = Vector{Int64}(undef, time_p.tlength)
+    false_positives = Vector{Int64}(undef, time_p.tlength)
+
+    # Calculate true positives from incidence
+    OutbreakDetectionCore.calculate_true_positives_vec!(
+        true_positives,
+        tested_inc_vec,
         time_p.tlength,
-        test_specification.test_result_lag,
-        test_specification.sensitivity,
+        test_specification,
     )
 
-    false_positives = OutbreakDetectionCore.calculate_positives(
-        calculate_noise_positives!,
-        noise_vec .* perc_tested,
+    # Calculate false positives from noise
+    OutbreakDetectionCore.calculate_false_positives_vec!(
+        false_positives,
+        tested_noise_vec,
         time_p.tlength,
-        test_specification.test_result_lag,
-        test_specification.specificity,
+        test_specification,
     )
 
     test_positives = true_positives .+ false_positives
@@ -218,14 +275,17 @@ function create_schematic_simulation(
         outbreak_detection_specification.moving_average_lag,
     )
 
-    alertstatus_vec = OutbreakDetectionCore.detectoutbreak(
-        movingavg_testpositives,
-        outbreak_detection_specification.alert_threshold,
+    # Detect alerts where moving average exceeds threshold
+    alertstatus_vec = movingavg_testpositives .>= outbreak_detection_specification.alert_threshold
+    alert_rle = StatsBase.rle(alertstatus_vec)
+    alert_thresholds = OutbreakDetectionCore.calculate_above_threshold_bounds(alert_rle)
+
+    # Create a matrix with [lower, upper, duration] for compatibility with plot function
+    alert_bounds = hcat(
+        alert_thresholds.lower_bounds,
+        alert_thresholds.upper_bounds,
+        alert_thresholds.duration
     )
-    alert_bounds = OutbreakDetectionCore.calculate_outbreak_thresholds(
-        rle(alertstatus_vec); ncols = 3
-    )
-    OutbreakDetectionCore.calculate_outbreak_duration!(alert_bounds)
 
     return inc_vec,
         outbreak_status,

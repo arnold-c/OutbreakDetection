@@ -14,8 +14,6 @@ time_parameters = SimTimeParameters(;
 
 births_per_k_pop = 27.0
 
-burnin_target_Reff = 0.9
-
 common_disease_dynamics_parameters = CommonDiseaseDynamicsParameters(;
     births_per_k_pop = births_per_k_pop,
     nsims = 100,

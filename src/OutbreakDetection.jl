@@ -13,6 +13,9 @@ using StructArrays: StructVector, StructArray
 using LaTeXStrings
 using GLMakie
 using ColorSchemes
+using StaticArrays: StaticArrays
+using Dates: Dates
+using LightSumTypes: LightSumTypes
 
 
 include("plotting-helpers.jl")

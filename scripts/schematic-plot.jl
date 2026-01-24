@@ -1,77 +1,118 @@
 #%%
+using DrWatson
+@quickactivate "OutbreakDetection"
+
 using StatsBase: StatsBase
+
 using OutbreakDetection: create_schematic_simulation,
     plot_schematic
-using OutbreakDetectionCore: StateParameters, DynamicsParameters, IndividualTestSpecification, OutbreakSpecification, OutbreakDetectionSpecification
+
+using OutbreakDetectionCore
+using Dates: Day
+using CairoMakie: save
 
 #%%
-states_p = StateParameters(
-    ; N = 500_000,
-    s_prop = 0.05,
-    e_prop = 0.0,
-    i_prop = 0.0
+time_parameters = SimTimeParameters(;
+    tmin = 0.0,
+    tmax = 365.0 * 100.0,
+    tstep = 1.0,
 )
 
-dynamics_p = DynamicsParameters(
-    BETA_MEAN,
-    BETA_FORCE,
-    cos,
-    SIGMA,
-    GAMMA,
-    MU,
-    ANNUAL_BIRTHS_PER_K,
-    EPSILON,
-    R0,
-    VACCINATION_COVERAGE,
+births_per_k_pop = 27.0
+
+common_disease_dynamics_parameters = CommonDiseaseDynamicsParameters(;
+    births_per_k_pop = births_per_k_pop,
+    nsims = 1,
 )
 
-noise_states_p = StateParameters(
-    ; N = 500_000,
-    s_prop = 0.15,
-    e_prop = 0.0,
-    i_prop = 0.0
-)
+#%%
+measles_R0 = 16.0
+measles_initial_s_prop = 0.05
 
-noise_dynamics_p = DynamicsParameters(
+# Set initial population proportions so that initial Reff = 0.8
+measles_population_state_parameters = StateParameters(
     500_000,
-    27,
-    0.2,
-    1 / 7,
-    1 / 14,
-    5.0,
-    0.65;
-    seasonality = sin,
+    Dict(
+        :s_prop => measles_initial_s_prop,
+        :e_prop => 0.0,
+        :i_prop => 0.0,
+        :r_prop => 1.0 - measles_initial_s_prop,
+    ),
 )
 
+# @guerraBasicReproductionNumber2017 @gastanaduyMeasles2019
+measles_dynamics_parameters = TargetDiseaseDynamicsParameters(;
+    R_0 = measles_R0,
+    latent_period = Day(10.0),
+    infectious_duration = Day(8.0),
+    beta_force = 0.2,
+    seasonality = SeasonalityFunction(CosineSeasonality()),
+    min_vaccination_coverage = 0.8,
+    max_vaccination_coverage = 0.8,
+)
+
+
+# Choose Rubella-like parameters for the dynamic noise in the measles simulations
+# @papadopoulosEstimatesBasicReproduction2022 @RubellaCDCYellow.
+rubella_dynamical_noise_parameters = DynamicalNoiseParameters(;
+    R_0 = 5.0,
+    latent_period = Day(7.0),
+    infectious_duration = Day(14.0),
+    correlation = "in-phase",
+    poisson_component = 0.15,
+)
+
+dynamics_spec = DynamicsParameterSpecification(
+    measles_population_state_parameters,
+    measles_dynamics_parameters,
+    common_disease_dynamics_parameters
+)
+
+dynamics_parameters = DynamicsParameters(dynamics_spec; seed = 12345)
+
+# Create noise specification with fixed vaccination coverage
+noise_spec = DynamicalNoiseSpecification(
+    rubella_dynamical_noise_parameters,
+    0.6  # vaccination_coverage
+)
 test_specification = IndividualTestSpecification(
     0.85, 0.85, 0
 )
 
-time_p = SimTimeParameters(;
-    tmin = 0.0, tmax = 365.0 * 20, tstep = 1.0
-)
-
 outbreak_specification = OutbreakSpecification(5, 30, 500)
 
-movingavg_window = 20
+# Manually construct OutbreakDetectionSpecification with all fields
+alert_threshold = 8
+percent_visit_clinic = 1.0
+percent_clinic_tested = 0.75
+alert_method = OutbreakDetectionCore.AlertMethod(OutbreakDetectionCore.MovingAverage(28))
+percent_tested = percent_visit_clinic * percent_clinic_tested
+dirpath = joinpath(
+    "alertmethod_MovingAverage",
+    "alertthreshold_$(alert_threshold)",
+    "moveavglag_$(alert_method.window)",
+    "perc_visit_clinic_$(percent_visit_clinic)",
+    "perc_clinic_tested_$(percent_clinic_tested)"
+)
 
 outbreak_detection_specification = OutbreakDetectionSpecification(
-    8,
-    movingavg_window,
-    1.0,
-    0.75,
-    "movingavg",
+    alert_threshold,
+    alert_method.window,
+    percent_visit_clinic,
+    percent_clinic_tested,
+    percent_tested,
+    alert_method,
+    dirpath,
 )
 
 #%%
-#%%
 inc_vec, outbreak_status, outbreak_bounds, noise_vec, movingavg_testpositives, alertstatus_vec, alert_bounds = create_schematic_simulation(
-    states_p,
-    dynamics_p,
-    noise_states_p,
-    noise_dynamics_p,
+    measles_population_state_parameters,
+    dynamics_parameters,
+    dynamics_spec,
+    noise_spec,
     test_specification,
-    time_p;
+    time_parameters;
     seed = 12345,
     outbreak_specification = outbreak_specification,
     outbreak_detection_specification = outbreak_detection_specification,
@@ -90,7 +131,7 @@ schematic_with_shade_fig = plot_schematic(
     alertstatus_vec,
     alert_bounds,
     outbreak_detection_specification.alert_threshold;
-    time_p = time_p,
+    time_p = time_parameters,
     shade_alert_outbreak_overlap = true,
     xlims = (5, 13),
     measlesalpha = 0.4,
@@ -106,6 +147,6 @@ schematic_with_shade_fig = plot_schematic(
 )
 
 save(
-    plotsdir("schematic-plot.svg"),
+    DrWatson.plotsdir("schematic-plot.svg"),
     schematic_with_shade_fig,
 )
