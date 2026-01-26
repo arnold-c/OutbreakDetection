@@ -41,9 +41,9 @@ hash_v1 != hash_v2  # true
 - [`get_optimization_struct_hashes`](@ref): Get hashes for both optimization structs
 """
 function struct_definition_hash(::Type{T}) where {T}
-    struct_name = nameof(T)
-    fields = fieldnames(T)
-    types = fieldtypes(T)
+    struct_name = string(nameof(T))
+    fields = string.(fieldnames(T))
+    types = string.(fieldtypes(T))
     return hash((struct_name, fields, types))
 end
 

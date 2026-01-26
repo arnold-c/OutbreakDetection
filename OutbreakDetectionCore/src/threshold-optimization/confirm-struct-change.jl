@@ -5,15 +5,14 @@ export confirm_struct_change_reoptimization
         n_existing::Int,
         stored_hashes::NamedTuple,
         current_hashes::NamedTuple
-    ) -> Bool
+    ) -> Symbol
 
-Prompt user to confirm re-optimization when struct definitions have changed.
+Prompt user for action when struct definitions have changed.
 
 This function is called when loading optimization results reveals that the
 OptimizationScenario or OptimizationResult struct definitions have changed
 since the results were saved. It displays detailed information about what
-changed and asks the user to confirm whether to proceed with re-optimizing
-all scenarios.
+changed and asks the user to choose how to proceed.
 
 # Arguments
 - `n_existing::Int`: Number of existing results that will be invalidated
@@ -21,7 +20,10 @@ all scenarios.
 - `current_hashes::NamedTuple`: Current hash values of struct definitions
 
 # Returns
-- `Bool`: `true` if user confirms re-optimization, `false` otherwise
+- `Symbol`: User's choice, one of:
+  - `:continue` - Use existing results despite struct changes (risky)
+  - `:force` - Force re-optimization of all scenarios
+  - `:quit` - Exit without proceeding
 
 # Example
 ```julia
@@ -29,9 +31,11 @@ stored = (scenario_hash = 0x123..., result_hash = 0x456...)
 current = get_optimization_struct_hashes()
 
 if stored != current
-    proceed = confirm_struct_change_reoptimization(100, stored, current)
-    if proceed
+    action = confirm_struct_change_reoptimization(100, stored, current)
+    if action == :force
         # Re-run all optimizations
+    elseif action == :continue
+        # Use existing results (risky)
     else
         # Exit without running
     end
@@ -80,19 +84,28 @@ function confirm_struct_change_reoptimization(
     end
 
     println(
-        StyledStrings.styled"This means the {cyan:$n_existing} existing results are incompatible"
+        StyledStrings.styled"This means the {cyan:$n_existing} existing results {yellow:may be incompatible}"
     )
     println(
-        StyledStrings.styled"with the current struct definitions and {red:all scenarios}"
+        StyledStrings.styled"with the current struct definitions."
     )
-    println(StyledStrings.styled"{red:must be re-optimized}.")
     println()
     println(
         StyledStrings.styled"{bold:Possible causes:} Added/removed fields, changed field types, or reordered fields"
     )
     println()
 
-    print(StyledStrings.styled"{bold:Proceed with re-optimization of all scenarios?} (y/N): ")
-    response = readline()
-    return lowercase(strip(response)) in ["y", "yes"]
+    print(StyledStrings.styled"{bold:Continue using these results, force re-optimization of all scenarios, or quit?} (continue/force/quit): ")
+    response = lowercase(strip(readline()))
+
+    if response in ["quit", "q", "n", "no"]
+        return :quit
+    elseif response in ["force", "f", "reoptimize", "optimization"]
+        return :force
+    elseif response in ["continue", "c", "y", "yes"]
+        return :continue
+    else
+        @warn "Invalid response '$response'. Defaulting to 'quit' for safety."
+        return :quit
+    end
 end

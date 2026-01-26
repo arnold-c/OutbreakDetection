@@ -10,8 +10,13 @@ This function checks if the loaded JLD2 data contains struct version hashes and
 validates them against the current struct definitions. It handles three cases:
 
 1. **Hashes match**: Returns the results
-2. **Hashes don't match**: Prompts user to confirm re-optimization
+2. **Hashes don't match**: Prompts user to continue, force re-optimization, or quit
 3. **No hashes (old format)**: Prompts user to continue, force re-optimization, or quit
+
+When struct hashes don't match, the user is given three options:
+- **continue**: Use existing results despite struct changes (may cause errors)
+- **force**: Force re-optimization of all scenarios
+- **quit**: Exit without proceeding
 
 # Arguments
 - `data::Dict`: Loaded JLD2 data containing "optimization_results" and optionally "struct_hashes"
@@ -19,7 +24,7 @@ validates them against the current struct definitions. It handles three cases:
   for user-facing messages
 
 # Returns
-- `Try.Ok(results)`: If validation passes and user confirms to continue
+- `Try.Ok(results)`: If validation passes or user chooses to continue despite warnings
 - `Try.Ok(StructVector{OptimizationResult}[])`: If user requests re-optimization
 - `Try.Err(message)`: If validation fails or user declines to proceed
 
@@ -81,16 +86,22 @@ function validate_struct_hashes_and_get_results(
             # Struct definitions have changed
             n_existing = length(results)
 
-            if confirm_struct_change_reoptimization(
-                    n_existing,
-                    stored_hashes,
-                    current_hashes
-                )
+            action = confirm_struct_change_reoptimization(
+                n_existing,
+                stored_hashes,
+                current_hashes
+            )
+
+            if action == :force
                 @info "User confirmed re-optimization. Invalidating all existing results from $source_description."
                 return Try.Ok(StructVector(OptimizationResult[]))
-            else
+            elseif action == :continue
+                @warn "Continuing with existing results from $source_description despite struct changes."
+                @warn "This may cause errors if struct definitions are incompatible."
+                # Fall through to return results below
+            else  # :quit
                 return Try.Err(
-                    "User declined re-optimization after struct changes detected in $source_description"
+                    "User declined to proceed after struct changes detected in $source_description"
                 )
             end
         end
