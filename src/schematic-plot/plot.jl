@@ -74,24 +74,30 @@ function plot_schematic(
     optimal_threshold = optimization_result.optimal_threshold
 
     # Get time parameters from ensemble specification
-    time_p = ensemble_spec.time_p
+    time_p = ensemble_spec.time_parameters
 
     # Extract state and dynamics parameters for main epidemic
-    states_p = ensemble_spec.target_disease_states_p
-    dynamics_p = ensemble_spec.target_disease_dynamics_p
+    states_p = ensemble_spec.state_parameters
+    dynamics_spec = ensemble_spec.dynamics_parameter_specification
+    dynamics_p = OutbreakDetectionCore.DynamicsParameters(
+        dynamics_spec;
+        seed = seed
+    )
 
     # Extract noise parameters
-    noise_spec = ensemble_spec.noise_specification
-    noise_states_p = noise_spec.noise_states_p
-    noise_dynamics_p = noise_spec.noise_dynamics_p
+    noise_spec = OutbreakDetectionCore.DynamicalNoiseSpecification(
+        ensemble_spec.dynamical_noise_params,
+        0.6  # vaccination_coverage
+    )
+
 
     # Calculate percent tested
     percent_tested = optimization_result.percent_tested
 
     # Create outbreak detection specification from alert method and optimal threshold
     # Extract moving average lag from alert method
-    moving_avg_lag = if alert_method.method isa OutbreakDetectionCore.MovingAverage
-        alert_method.method.lag
+    moving_avg_lag = if alert_method isa OutbreakDetectionCore.MovingAverage
+        alert_method.window
     else
         movingavg_window  # fallback to default
     end
@@ -101,7 +107,9 @@ function plot_schematic(
         moving_avg_lag,
         1.0,  # percent_visit_clinic (assumed, as not stored in OptimizationResult)
         percent_tested,
-        "movingavg"
+        percent_tested,
+        alert_method,
+        ""
     )
 
     # Generate simulation data
@@ -109,8 +117,8 @@ function plot_schematic(
         alertstatus_vec, alert_bounds = create_schematic_simulation(
         states_p,
         dynamics_p,
-        noise_states_p,
-        noise_dynamics_p,
+        dynamics_spec,
+        noise_spec,
         test_spec,
         time_p;
         seed = seed,
