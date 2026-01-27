@@ -99,6 +99,7 @@
             ensemble_specification = scenario.ensemble_specification,
             noise_level = scenario.noise_level,
             noise_type_description = scenario.noise_type_description,
+            vaccination_coverage = scenario.noise_type_description == :static ? NaN : 0.6,
             test_specification = scenario.test_specification,
             percent_tested = scenario.percent_tested,
             alert_method = scenario.alert_method,

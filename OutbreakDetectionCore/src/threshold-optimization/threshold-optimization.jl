@@ -78,6 +78,7 @@ function threshold_optimization(
         ensemble_simulation::StructVector{SEIRRun},
         outbreak_thresholds::StructVector{OutbreakThresholds},
         opt_params::ThresholdOptimizationParameters,
+        vaccination_coverage::Float64,
     )
     # Create tracker instance for this scenario
     tracker = OptimizationTracker()
@@ -129,6 +130,7 @@ function threshold_optimization(
         ensemble_specification = scenario.ensemble_specification,
         noise_level = scenario.noise_level,
         noise_type_description = scenario.noise_type_description,
+        vaccination_coverage = vaccination_coverage,
         test_specification = scenario.test_specification,
         percent_tested = scenario.percent_tested,
         alert_method = scenario.alert_method,

@@ -21,6 +21,7 @@ Base.@kwdef struct OptimizationResult
     ensemble_specification::EnsembleSpecification
     noise_level::Float64
     noise_type_description::Symbol
+    vaccination_coverage::Float64
     test_specification::IndividualTestSpecification
     percent_tested::Float64
     alert_method::AlertMethod

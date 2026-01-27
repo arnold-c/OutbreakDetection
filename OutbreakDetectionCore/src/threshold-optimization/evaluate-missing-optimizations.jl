@@ -74,15 +74,12 @@ function evaluate_missing_optimizations(
             for (noise_trim_key, noise_trim_scenarios) in noise_trim_groups
                 verbose && println("\tNoise level: $(noise_trim_key.noise_level)\n\tNoise type: $(noise_trim_key.noise_type_description)")
 
-                noise_vecs = if noise_trim_key.noise_type_description == :static
-                    create_noise_vecs(
-                        PoissonNoiseSpecification(noise_trim_key.noise_level),
-                        ensemble_key.ensemble_specification,
-                        ensemble_simulation,
-                        seed = seed
-                    )
+                # Track vaccination coverage for this noise scenario
+                vaccination_coverage = if noise_trim_key.noise_type_description == :static
+                    # For static noise, vaccination coverage is not applicable (set to NaN)
+                    NaN
                 else
-                    # Call the original optimization function with the computed mean
+                    # For dynamical noise, optimize to find vaccination coverage
                     optim_res = optimize_dynamic_noise_params_wrapper(
                         ensemble_key.ensemble_specification,
                         ensemble_simulation,
@@ -91,10 +88,20 @@ function evaluate_missing_optimizations(
                         verbose = verbose_noise_optimization,
                         seed = seed
                     )
+                    optim_res.location[1]
+                end
 
+                noise_vecs = if noise_trim_key.noise_type_description == :static
+                    create_noise_vecs(
+                        PoissonNoiseSpecification(noise_trim_key.noise_level),
+                        ensemble_key.ensemble_specification,
+                        ensemble_simulation,
+                        seed = seed
+                    )
+                else
                     recreate_noise_vecs(
                         ensemble_key.ensemble_specification,
-                        optim_res.location[1];
+                        vaccination_coverage;
                         seed = seed
                     )
                 end
@@ -153,6 +160,7 @@ function evaluate_missing_optimizations(
                                 ensemble_simulation,
                                 outbreak_thresholds,
                                 threshold_optimization_parameters,
+                                vaccination_coverage,
                             )
 
                             return optimization_result
