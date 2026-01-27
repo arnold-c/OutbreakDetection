@@ -18,6 +18,7 @@ function verify_perfect_test_consistency(results)
                     r.accuracy_metric,
                     r.alert_method,
                     r.threshold_bounds,
+                    r.alert_filtering_strategy,
                 )
                 for r in perfect_results
         ]
@@ -25,13 +26,14 @@ function verify_perfect_test_consistency(results)
 
     all_consistent = true
 
-    for (pct, acc_metric, alert_method, threshold_bounds) in unique_groups
+    for (pct, acc_metric, alert_method, threshold_bounds, alert_filtering_strategy) in unique_groups
         subset = filter(
             r ->
             r.percent_tested == pct &&
                 r.accuracy_metric == acc_metric &&
                 r.alert_method == alert_method &&
-                r.threshold_bounds == threshold_bounds,
+                r.threshold_bounds == threshold_bounds &&
+                r.alert_filtering_strategy == alert_filtering_strategy,
             perfect_results
         )
 
