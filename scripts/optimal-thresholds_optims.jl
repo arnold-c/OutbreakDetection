@@ -91,6 +91,10 @@ threshold_bounds = (; lower = 0.0, upper = 20.0)
 outbreak_specification_vec = [
     OutbreakSpecification(5, 30, 500),
 ]
+alert_filtering_strategy_vec = AlertFilteringStrategy[
+    AlertFilteringStrategy(AllAlerts()),
+    AlertFilteringStrategy(PostOutbreakStartAlerts()),
+]
 
 #%%
 specification_vecs = ScenarioSpecificationVecs(;
@@ -103,7 +107,7 @@ specification_vecs = ScenarioSpecificationVecs(;
     accuracy_metric_vec = accuracy_metric_vec,
     threshold_bounds_vec = [threshold_bounds],
     outbreak_specification_vec = outbreak_specification_vec,
-    alert_filtering_strategy_vec = [AlertFilteringStrategy(AllAlerts())],
+    alert_filtering_strategy_vec = alert_filtering_strategy_vec
 )
 
 #%%
