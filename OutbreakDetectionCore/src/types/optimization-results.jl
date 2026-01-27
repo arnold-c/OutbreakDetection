@@ -28,6 +28,7 @@ Base.@kwdef struct OptimizationResult
     accuracy_metric::AccuracyMetric
     threshold_bounds::@NamedTuple{lower::Float64, upper::Float64}
     outbreak_specification::OutbreakSpecification
+    alert_filtering_strategy::AlertFilteringStrategy
     n_alerts::Vector{Int64}
     n_outbreaks::Vector{Int64}
     optimal_threshold::Float64

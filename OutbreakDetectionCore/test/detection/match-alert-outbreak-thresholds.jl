@@ -361,4 +361,198 @@
         @test issorted(indices)
         @test allunique(indices)
     end
+
+    @testset "AlertFilteringStrategy: AllAlerts (default behavior)" begin
+        # Alert starts before outbreak but extends into it
+        outbreaks = OutbreakThresholds(
+            lower_bounds = [20],
+            upper_bounds = [40],
+            duration = [21],
+            num_infections_during_bounds = [150]
+        )
+
+        alerts = Thresholds(
+            lower_bounds = [15],
+            upper_bounds = [25],
+            duration = [11]
+        )
+
+        # Default (AllAlerts) should match
+        matched_default = match_outbreak_detection_bounds(outbreaks, alerts)
+        @test matched_default.outbreak_indices_with_alerts == [1]
+        @test calculate_sensitivity(matched_default) == 1.0
+        @test calculate_ppv(matched_default) == 1.0
+
+        # Explicit AllAlerts should match
+        matched_all = match_outbreak_detection_bounds(
+            outbreaks, alerts, AlertFilteringStrategy(AllAlerts())
+        )
+        @test matched_all.outbreak_indices_with_alerts == [1]
+        @test calculate_sensitivity(matched_all) == 1.0
+        @test calculate_ppv(matched_all) == 1.0
+    end
+
+    @testset "AlertFilteringStrategy: PostOutbreakStartAlerts excludes pre-outbreak alerts" begin
+        # Alert starts before outbreak but extends into it
+        outbreaks = OutbreakThresholds(
+            lower_bounds = [20],
+            upper_bounds = [40],
+            duration = [21],
+            num_infections_during_bounds = [150]
+        )
+
+        alerts = Thresholds(
+            lower_bounds = [15],
+            upper_bounds = [25],
+            duration = [11]
+        )
+
+        # PostOutbreakStartAlerts should NOT match (alert starts at 15 < outbreak start 20)
+        matched_filtered = match_outbreak_detection_bounds(
+            outbreaks, alerts, AlertFilteringStrategy(PostOutbreakStartAlerts())
+        )
+        @test isempty(matched_filtered.outbreak_indices_with_alerts)
+        @test calculate_sensitivity(matched_filtered) == 0.0
+        @test calculate_ppv(matched_filtered) == 0.0
+    end
+
+    @testset "AlertFilteringStrategy: PostOutbreakStartAlerts includes post-outbreak alerts" begin
+        outbreaks = OutbreakThresholds(
+            lower_bounds = [20],
+            upper_bounds = [40],
+            duration = [21],
+            num_infections_during_bounds = [150]
+        )
+
+        # Alert starts after outbreak start
+        alerts = Thresholds(
+            lower_bounds = [25],
+            upper_bounds = [35],
+            duration = [11]
+        )
+
+        # PostOutbreakStartAlerts should match (alert starts at 25 >= outbreak start 20)
+        matched_filtered = match_outbreak_detection_bounds(
+            outbreaks, alerts, AlertFilteringStrategy(PostOutbreakStartAlerts())
+        )
+        @test matched_filtered.outbreak_indices_with_alerts == [1]
+        @test calculate_sensitivity(matched_filtered) == 1.0
+        @test calculate_ppv(matched_filtered) == 1.0
+    end
+
+    @testset "AlertFilteringStrategy: PostOutbreakStartAlerts boundary - alert at outbreak start" begin
+        outbreaks = OutbreakThresholds(
+            lower_bounds = [20],
+            upper_bounds = [40],
+            duration = [21],
+            num_infections_during_bounds = [150]
+        )
+
+        # Alert starts exactly at outbreak start
+        alerts = Thresholds(
+            lower_bounds = [20],
+            upper_bounds = [30],
+            duration = [11]
+        )
+
+        # PostOutbreakStartAlerts should match (alert starts at 20 == outbreak start 20)
+        matched_filtered = match_outbreak_detection_bounds(
+            outbreaks, alerts, AlertFilteringStrategy(PostOutbreakStartAlerts())
+        )
+        @test matched_filtered.outbreak_indices_with_alerts == [1]
+        @test calculate_sensitivity(matched_filtered) == 1.0
+        @test calculate_ppv(matched_filtered) == 1.0
+    end
+
+    @testset "AlertFilteringStrategy: Mixed alerts with PostOutbreakStartAlerts" begin
+        outbreaks = OutbreakThresholds(
+            lower_bounds = [20, 60],
+            upper_bounds = [40, 80],
+            duration = [21, 21],
+            num_infections_during_bounds = [150, 200]
+        )
+
+        # Mix of pre-outbreak and post-outbreak alerts
+        alerts = Thresholds(
+            lower_bounds = [15, 25, 55, 65],  # 15 < 20, 25 >= 20, 55 < 60, 65 >= 60
+            upper_bounds = [25, 35, 65, 75],
+            duration = [11, 11, 11, 11]
+        )
+
+        # AllAlerts: all 4 alerts match (2 per outbreak)
+        matched_all = match_outbreak_detection_bounds(
+            outbreaks, alerts, AlertFilteringStrategy(AllAlerts())
+        )
+        @test matched_all.outbreak_indices_with_alerts == [1, 2]
+        @test matched_all.alert_indices_per_outbreak == [[1, 2], [3, 4]]
+        @test matched_all.n_matched_alerts == 4
+        @test calculate_sensitivity(matched_all) == 1.0
+        @test calculate_ppv(matched_all) == 1.0
+
+        # PostOutbreakStartAlerts: only alerts 2 and 4 match
+        matched_filtered = match_outbreak_detection_bounds(
+            outbreaks, alerts, AlertFilteringStrategy(PostOutbreakStartAlerts())
+        )
+        @test matched_filtered.outbreak_indices_with_alerts == [1, 2]
+        @test matched_filtered.alert_indices_per_outbreak == [[2], [4]]
+        @test matched_filtered.n_matched_alerts == 2
+        @test calculate_sensitivity(matched_filtered) == 1.0 # all outbreaks detected
+        @test calculate_ppv(matched_filtered) == 0.5  # 2 matched out of 4 total alerts
+    end
+
+    @testset "AlertFilteringStrategy: PostOutbreakStartAlerts with missed outbreaks" begin
+        outbreaks = OutbreakThresholds(
+            lower_bounds = [20, 60],
+            upper_bounds = [40, 80],
+            duration = [21, 21],
+            num_infections_during_bounds = [150, 200]
+        )
+
+        # Only pre-outbreak alerts for first outbreak, post-outbreak for second
+        alerts = Thresholds(
+            lower_bounds = [15, 65],  # 15 < 20 (pre-outbreak), 65 >= 60 (post-outbreak)
+            upper_bounds = [25, 75],
+            duration = [11, 11]
+        )
+
+        # AllAlerts: both outbreaks detected
+        matched_all = match_outbreak_detection_bounds(
+            outbreaks, alerts, AlertFilteringStrategy(AllAlerts())
+        )
+        @test matched_all.outbreak_indices_with_alerts == [1, 2]
+        @test calculate_sensitivity(matched_all) == 1.0
+
+        # PostOutbreakStartAlerts: only second outbreak detected
+        matched_filtered = match_outbreak_detection_bounds(
+            outbreaks, alerts, AlertFilteringStrategy(PostOutbreakStartAlerts())
+        )
+        @test matched_filtered.outbreak_indices_with_alerts == [2]
+        @test matched_filtered.alert_indices_per_outbreak == [[2]]
+        @test calculate_sensitivity(matched_filtered) == 0.5  # 1 out of 2 outbreaks
+        @test calculate_ppv(matched_filtered) == 0.5  # 1 matched out of 2 total alerts
+    end
+
+    @testset "AlertFilteringStrategy: PostOutbreakStartAlerts with no valid alerts" begin
+        outbreaks = OutbreakThresholds(
+            lower_bounds = [20, 60],
+            upper_bounds = [40, 80],
+            duration = [21, 21],
+            num_infections_during_bounds = [150, 200]
+        )
+
+        # All alerts start before their respective outbreaks
+        alerts = Thresholds(
+            lower_bounds = [15, 55],
+            upper_bounds = [25, 65],
+            duration = [11, 11]
+        )
+
+        # PostOutbreakStartAlerts: no outbreaks detected
+        matched_filtered = match_outbreak_detection_bounds(
+            outbreaks, alerts, AlertFilteringStrategy(PostOutbreakStartAlerts())
+        )
+        @test isempty(matched_filtered.outbreak_indices_with_alerts)
+        @test calculate_sensitivity(matched_filtered) == 0.0
+        @test calculate_ppv(matched_filtered) == 0.0
+    end
 end

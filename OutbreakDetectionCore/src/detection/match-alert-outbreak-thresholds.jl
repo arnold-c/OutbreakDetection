@@ -6,7 +6,8 @@ export match_outbreak_detection_bounds,
 """
     match_outbreak_detection_bounds(
         outbreakbounds::OutbreakThresholds,
-        alertbounds::Thresholds
+        alertbounds::Thresholds,
+        alert_filtering_strategy::AlertFilteringStrategy = AlertFilteringStrategy(AllAlerts())
     ) -> MatchedThresholds
 
 Match outbreak periods to alert periods using memory-efficient sparse representation.
@@ -23,6 +24,9 @@ a clean one-to-one mapping.
 # Arguments
 - `outbreakbounds::OutbreakThresholds`: Outbreak periods with infection counts
 - `alertbounds::Thresholds`: Alert periods from the detection system
+- `alert_filtering_strategy::AlertFilteringStrategy`: Strategy for filtering alerts
+  (default: `AllAlerts()`). Use `PostOutbreakStartAlerts()` to exclude alerts that
+  start before the outbreak begins.
 
 # Returns
 - `MatchedThresholds`: Sparse representation containing:
@@ -36,6 +40,9 @@ An alert matches an outbreak if there is temporal overlap:
 2. Alert starts before outbreak but extends into it (alert_lower <= outbreak_lower AND alert_upper > outbreak_lower)
 
 If an alert overlaps multiple outbreaks, it is matched only to the first outbreak encountered.
+
+When `PostOutbreakStartAlerts` filtering is used, only alerts where `alert_lower >= outbreak_lower`
+are considered for matching (Case 1 only), ensuring all detection delays are non-negative.
 
 # Example
 ```julia
@@ -59,16 +66,37 @@ matched = match_outbreak_detection_bounds(outbreaks, alerts)
 
 sensitivity = calculate_sensitivity(matched)  # 2/3 = 0.667
 ppv = calculate_ppv(matched)                  # 2/3 = 0.667
+
+# With PostOutbreakStartAlerts filtering (excludes pre-outbreak alerts)
+matched_filtered = match_outbreak_detection_bounds(
+    outbreaks, alerts, AlertFilteringStrategy(PostOutbreakStartAlerts())
+)
 ```
 
 # See Also
 - [`MatchedThresholds`](@ref): Return type with sparse representation
 - [`calculate_sensitivity`](@ref): Calculate proportion of outbreaks detected
 - [`calculate_ppv`](@ref): Calculate proportion of alerts that are correct
+- [`AlertFilteringStrategy`](@ref): Sum type for alert filtering strategies
 """
 function match_outbreak_detection_bounds(
         outbreakbounds::OutbreakThresholds,
-        alertbounds::Thresholds
+        alertbounds::Thresholds,
+        alert_filtering_strategy::AlertFilteringStrategy = AlertFilteringStrategy(
+            AllAlerts()
+        ),
+    )
+    return _match_outbreak_detection_bounds(
+        outbreakbounds,
+        alertbounds,
+        LightSumTypes.variant(alert_filtering_strategy),
+    )
+end
+
+function _match_outbreak_detection_bounds(
+        outbreakbounds::OutbreakThresholds,
+        alertbounds::Thresholds,
+        ::AllAlerts,
     )
     n_outbreaks = length(outbreakbounds.lower_bounds)
     n_alerts = length(alertbounds.lower_bounds)
@@ -97,6 +125,60 @@ function match_outbreak_detection_bounds(
                     # Case 2: Alert starts before outbreak but extends into it
                     (alert_lower <= outbreak_lower && alert_upper > outbreak_lower)
 
+                push!(alert_indices_per_outbreak[outbreak_idx], alert_idx)
+                push!(matched_alerts, alert_idx)
+            end
+        end
+    end
+
+    # Filter to only outbreaks with at least one alert (sparse representation)
+    outbreak_indices_with_alerts = findall(!isempty, alert_indices_per_outbreak)
+    alert_indices_per_outbreak_filtered = alert_indices_per_outbreak[outbreak_indices_with_alerts]
+
+    # Calculate matched counts for clarity (with n_outbreaks/alerts)
+    # Also required for accuracy calculations so cache for performance
+    n_matched_outbreaks = length(outbreak_indices_with_alerts)
+    n_matched_alerts = length(matched_alerts)
+
+    return MatchedThresholds(;
+        outbreak_indices_with_alerts = outbreak_indices_with_alerts,
+        alert_indices_per_outbreak = alert_indices_per_outbreak_filtered,
+        n_matched_outbreaks = n_matched_outbreaks,
+        n_matched_alerts = n_matched_alerts,
+        n_outbreaks = n_outbreaks,
+        n_alerts = n_alerts
+    )
+end
+
+function _match_outbreak_detection_bounds(
+        outbreakbounds::OutbreakThresholds,
+        alertbounds::Thresholds,
+        ::PostOutbreakStartAlerts,
+    )
+    n_outbreaks = length(outbreakbounds.lower_bounds)
+    n_alerts = length(alertbounds.lower_bounds)
+
+    # Track which alerts have been matched (first outbreak only rule)
+    matched_alerts = Set{Int64}()
+
+    # For each outbreak, collect matching alert indices
+    alert_indices_per_outbreak = [Int64[] for _ in eachindex(outbreakbounds.lower_bounds)]
+
+    for outbreak_idx in eachindex(outbreakbounds.lower_bounds)
+        outbreak_lower = outbreakbounds.lower_bounds[outbreak_idx]
+        outbreak_upper = outbreakbounds.upper_bounds[outbreak_idx]
+
+        for alert_idx in eachindex(alertbounds.lower_bounds)
+            # Skip if alert already matched to a previous outbreak
+            if alert_idx in matched_alerts
+                continue
+            end
+
+            alert_lower = alertbounds.lower_bounds[alert_idx]
+
+            # PostOutbreakStartAlerts: Only match alerts that start on or after outbreak start
+            # This ensures all detection delays are non-negative
+            if alert_lower >= outbreak_lower && alert_lower <= outbreak_upper
                 push!(alert_indices_per_outbreak[outbreak_idx], alert_idx)
                 push!(matched_alerts, alert_idx)
             end

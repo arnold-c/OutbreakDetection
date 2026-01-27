@@ -5,8 +5,8 @@ export calculate_mean_ensemble_accuracy
         alert_threshold,
         accuracy_metric,
         test_positives_container,
-        outbreak_status_vecs,
-        outbreak_bounds_vecs
+        outbreak_thresholds,
+        alert_filtering_strategy = AlertFilteringStrategy(AllAlerts())
     )
 
 Calculate accuracy metrics across all simulations in the ensemble.
@@ -15,8 +15,10 @@ Calculate accuracy metrics across all simulations in the ensemble.
 - `alert_threshold`: Threshold for generating alerts
 - `accuracy_metric`: AccuracyMetric for evaluation
 - `test_positives_container`: TestPositiveContainer with test data
-- `outbreak_status_vecs`: Vector of outbreak status vectors
-- `outbreak_bounds_vecs`: Vector of outbreak bounds matrices
+- `outbreak_thresholds`: StructVector of OutbreakThresholds for each simulation
+- `alert_filtering_strategy`: Strategy for filtering alerts during matching
+  (default: `AllAlerts()`). Use `PostOutbreakStartAlerts()` to exclude alerts
+  that start before the outbreak begins.
 
 # Returns
 - `mean_accuracy`: Mean accuracy across simulations
@@ -26,6 +28,9 @@ function calculate_mean_ensemble_accuracy(
         accuracy_metric::AccuracyMetric,
         test_positives_container::StructVector{TestPositiveContainer},
         outbreak_thresholds::StructVector{OutbreakThresholds},
+        alert_filtering_strategy::AlertFilteringStrategy = AlertFilteringStrategy(
+            AllAlerts()
+        ),
     )
     nsims = length(outbreak_thresholds)
 
@@ -46,7 +51,8 @@ function calculate_mean_ensemble_accuracy(
         sim_accuracy = calculate_simulation_accuracy(
             alert_vec,
             outbreak_bounds,
-            accuracy_metric
+            accuracy_metric,
+            alert_filtering_strategy,
         )
 
         accuracies[sim] = sim_accuracy

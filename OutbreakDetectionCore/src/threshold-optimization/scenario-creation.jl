@@ -32,6 +32,7 @@ The function performs the following steps:
       - `accuracy_metric_vec`: Performance metrics for optimization
       - `threshold_bounds_vec`: Search bounds for threshold optimization
       - `outbreak_specification_vec`: Outbreak detection criteria
+      - `alert_filtering_strategy_vec`: Alert filtering strategies
 
 # Returns
 
@@ -52,11 +53,12 @@ spec_vecs = ScenarioSpecificationVecs(;
     accuracy_metric_vec = [F1Score()],
     threshold_bounds_vec = [(lower = 0.0, upper = 1.0)],
     outbreak_specification_vec = [outbreak_spec],
+    alert_filtering_strategy_vec = [AlertFilteringStrategy(AllAlerts())],
 )
 
 # Create all scenario combinations
 scenarios = create_scenarios_structvector(spec_vecs)
-# Returns 2 × 2 × 2 × 1 × 2 × 1 × 1 × 1 × 1 = 16 scenarios
+# Returns 2 × 2 × 2 × 1 × 2 × 1 × 1 × 1 × 1 × 1 = 16 scenarios
 ```
 
 # See Also
@@ -74,7 +76,8 @@ function create_scenarios_structvector(specification_vecs::ScenarioSpecification
         alert_method_vec,
         accuracy_metric_vec,
         threshold_bounds_vec,
-        outbreak_specification_vec = specification_vecs
+        outbreak_specification_vec,
+        alert_filtering_strategy_vec = specification_vecs
 
     combinations = Iterators.product(
         ensemble_specification_vec,
@@ -86,6 +89,7 @@ function create_scenarios_structvector(specification_vecs::ScenarioSpecification
         accuracy_metric_vec,
         threshold_bounds_vec,
         outbreak_specification_vec,
+        alert_filtering_strategy_vec,
     )
     n_combinations = length(combinations)
 
@@ -102,6 +106,7 @@ function create_scenarios_structvector(specification_vecs::ScenarioSpecification
                 accuracy_metric,
                 threshold_bounds,
                 outbreak_spec,
+                alert_filtering_strategy,
             ),
         ) in enumerate(combinations)
 
@@ -115,6 +120,7 @@ function create_scenarios_structvector(specification_vecs::ScenarioSpecification
             accuracy_metric = accuracy_metric,
             threshold_bounds = threshold_bounds,
             outbreak_specification = outbreak_spec,
+            alert_filtering_strategy = alert_filtering_strategy,
         )
     end
 

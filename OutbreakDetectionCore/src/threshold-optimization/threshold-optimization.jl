@@ -123,6 +123,7 @@ function threshold_optimization(
         test_positives_container,
         ensemble_simulation,
         outbreak_thresholds,
+        scenario.alert_filtering_strategy,
     )
 
     return OptimizationResult(
@@ -137,6 +138,7 @@ function threshold_optimization(
         accuracy_metric = scenario.accuracy_metric,
         threshold_bounds = scenario.threshold_bounds,
         outbreak_specification = scenario.outbreak_specification,
+        alert_filtering_strategy = scenario.alert_filtering_strategy,
         # From optimized values
         n_alerts = optimal_results.n_alerts,
         n_outbreaks = optimal_results.n_outbreaks,

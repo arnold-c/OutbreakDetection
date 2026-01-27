@@ -29,6 +29,8 @@ creating a comprehensive set of optimization scenarios for threshold optimizatio
     Search space bounds for threshold optimization
   - `outbreak_specification_vec::Vector{OutbreakSpecification}`: Outbreak detection
     criteria and definitions
+  - `alert_filtering_strategy_vec::Vector{AlertFilteringStrategy}`: Strategies for
+    filtering alerts during outbreak matching (e.g., all alerts or only post-outbreak)
 
 # Example
 
@@ -43,6 +45,7 @@ spec_vecs = ScenarioSpecificationVecs(;
     accuracy_metric_vec = [F1Score()],
     threshold_bounds_vec = [(lower = 0.0, upper = 1.0)],
     outbreak_specification_vec = [outbreak_spec],
+    alert_filtering_strategy_vec = [AlertFilteringStrategy(AllAlerts())],
 )
 ```
 
@@ -52,6 +55,7 @@ spec_vecs = ScenarioSpecificationVecs(;
     generate scenario combinations
   - [`OptimizationScenario`](@ref): Individual scenario struct created from these
     vectors
+  - [`AlertFilteringStrategy`](@ref): Sum type for alert filtering strategies
 """
 Base.@kwdef struct ScenarioSpecificationVecs
     ensemble_specification_vec::Vector{EnsembleSpecification}
@@ -63,6 +67,7 @@ Base.@kwdef struct ScenarioSpecificationVecs
     accuracy_metric_vec::Vector{AccuracyMetric}
     threshold_bounds_vec::Vector{@NamedTuple{lower::Float64, upper::Float64}}
     outbreak_specification_vec::Vector{OutbreakSpecification}
+    alert_filtering_strategy_vec::Vector{AlertFilteringStrategy}
 end
 
 """
@@ -97,6 +102,8 @@ The inner constructor validates that:
   - `threshold_bounds::@NamedTuple{lower::Float64, upper::Float64}`: Search space
     bounds for threshold optimization
   - `outbreak_specification::OutbreakSpecification`: Outbreak detection criteria
+  - `alert_filtering_strategy::AlertFilteringStrategy`: Strategy for filtering
+    alerts during outbreak matching (default: `AllAlerts`)
 
 # Example
 
@@ -111,6 +118,7 @@ scenario = OptimizationScenario(;
     accuracy_metric = F1Score(),
     threshold_bounds = (lower = 0.0, upper = 1.0),
     outbreak_specification = outbreak_spec,
+    alert_filtering_strategy = AlertFilteringStrategy(AllAlerts()),
 )
 ```
 
@@ -120,6 +128,7 @@ scenario = OptimizationScenario(;
     multiple scenarios
   - [`create_scenarios_structvector`](@ref): Function that creates scenario
     combinations
+  - [`AlertFilteringStrategy`](@ref): Sum type for alert filtering strategies
 """
 Base.@kwdef struct OptimizationScenario
     ensemble_specification::EnsembleSpecification
@@ -131,6 +140,7 @@ Base.@kwdef struct OptimizationScenario
     accuracy_metric::AccuracyMetric
     threshold_bounds::@NamedTuple{lower::Float64, upper::Float64}
     outbreak_specification::OutbreakSpecification
+    alert_filtering_strategy::AlertFilteringStrategy
 
     function OptimizationScenario(
             ensemble_specification,
@@ -142,6 +152,7 @@ Base.@kwdef struct OptimizationScenario
             accuracy_metric,
             threshold_bounds,
             outbreak_specification,
+            alert_filtering_strategy,
         )
         @assert noise_type_description in [:static, :dynamic] "The noise type must be either :static or :dynamic. Received $noise_type_description"
         @assert threshold_bounds.lower < threshold_bounds.upper
@@ -155,7 +166,8 @@ Base.@kwdef struct OptimizationScenario
             alert_method,
             accuracy_metric,
             threshold_bounds,
-            outbreak_specification
+            outbreak_specification,
+            alert_filtering_strategy
         )
     end
 end

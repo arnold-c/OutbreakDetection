@@ -6,7 +6,8 @@ export calculate_optimal_results
         accuracy_metric,
         test_positives_container,
         ensemble_simulation,
-        outbreak_thresholds
+        outbreak_thresholds,
+        alert_filtering_strategy = AlertFilteringStrategy(AllAlerts())
     )
 
 Calculate comprehensive detection performance metrics at a given alert threshold.
@@ -23,6 +24,9 @@ detection delays, unavoidable cases, and temporal characteristics.
   - `test_positives_container::StructVector{TestPositiveContainer}`: Container with test positive data for each simulation, structured according to the alert method
   - `ensemble_simulation::StructVector{SEIRRun}`: Collection of SEIR simulation runs containing incidence trajectories
   - `outbreak_thresholds::StructVector{OutbreakThresholds}`: Pre-computed outbreak threshold bounds for each simulation
+  - `alert_filtering_strategy::AlertFilteringStrategy`: Strategy for filtering alerts during matching
+    (default: `AllAlerts()`). Use `PostOutbreakStartAlerts()` to exclude alerts that start before
+    the outbreak begins.
 
 # Returns
 
@@ -57,6 +61,9 @@ function calculate_optimal_results(
         test_positives_container::StructVector{TestPositiveContainer},
         ensemble_simulation::StructVector{SEIRRun},
         outbreak_thresholds::StructVector{OutbreakThresholds},
+        alert_filtering_strategy::AlertFilteringStrategy = AlertFilteringStrategy(
+            AllAlerts()
+        ),
     )
     nsims = length(outbreak_thresholds)
 
@@ -92,7 +99,8 @@ function calculate_optimal_results(
 
         matched_outbreak_threshold_indices = match_outbreak_detection_bounds(
             outbreak_bounds,
-            alert_bounds
+            alert_bounds,
+            alert_filtering_strategy,
         )
 
         ppv = calculate_ppv(matched_outbreak_threshold_indices)

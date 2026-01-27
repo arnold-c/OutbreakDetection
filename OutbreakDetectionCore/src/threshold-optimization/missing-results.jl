@@ -125,6 +125,7 @@ for efficient lookup and comparison operations when identifying missing scenario
   - `accuracy_metric`: Metric used to evaluate accuracy
   - `threshold_bounds`: Bounds for threshold optimization
   - `outbreak_specification`: Outbreak parameters
+  - `alert_filtering_strategy`: Strategy for filtering alerts during matching
 
 # See Also
 - [`result_key`](@ref): Generates equivalent keys from optimization results
@@ -142,6 +143,7 @@ function scenario_key(scenario::OptimizationScenario)
         scenario.accuracy_metric,
         scenario.threshold_bounds,
         scenario.outbreak_specification,
+        scenario.alert_filtering_strategy,
     )
 end
 
@@ -169,6 +171,7 @@ between completed results and pending scenarios.
   - `accuracy_metric`: Metric used to evaluate accuracy
   - `threshold_bounds`: Bounds for threshold optimization
   - `outbreak_specification`: Outbreak parameters
+  - `alert_filtering_strategy`: Strategy for filtering alerts during matching
 
 # See Also
 - [`scenario_key`](@ref): Generates equivalent keys from optimization scenarios
@@ -186,5 +189,6 @@ function result_key(result::OptimizationResult)
         result.accuracy_metric,
         result.threshold_bounds,
         result.outbreak_specification,
+        result.alert_filtering_strategy,
     )
 end

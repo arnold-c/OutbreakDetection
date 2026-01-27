@@ -90,7 +90,8 @@
             alert_method = alert_method,
             accuracy_metric = accuracy_metric,
             threshold_bounds = (lower = threshold_lower, upper = threshold_upper),
-            outbreak_specification = outbreak_spec
+            outbreak_specification = outbreak_spec,
+            alert_filtering_strategy = AlertFilteringStrategy(AllAlerts())
         )
     end
 
@@ -106,6 +107,9 @@
             accuracy_metric = scenario.accuracy_metric,
             threshold_bounds = scenario.threshold_bounds,
             outbreak_specification = scenario.outbreak_specification,
+            alert_filtering_strategy = scenario.alert_filtering_strategy,
+            n_alerts = [10, 12, 11],
+            n_outbreaks = [5, 6, 5],
             optimal_threshold = optimal_threshold,
             accuracies = [0.9, 0.85, 0.88],
             proportion_alerts_correct = [0.92, 0.88, 0.9],
@@ -129,7 +133,7 @@
 
             @test key1 == key2
             @test key1 isa Tuple
-            @test length(key1) == 9
+            @test length(key1) == 10
         end
 
         @testset "generates different keys for different scenarios" begin
@@ -155,6 +159,7 @@
             @test key[7] == scenario.accuracy_metric
             @test key[8] == scenario.threshold_bounds
             @test key[9] == scenario.outbreak_specification
+            @test key[10] == scenario.alert_filtering_strategy
         end
     end
 
@@ -169,7 +174,7 @@
 
             @test key1 == key2
             @test key1 isa Tuple
-            @test length(key1) == 9
+            @test length(key1) == 10
         end
 
         @testset "generates different keys for different results" begin

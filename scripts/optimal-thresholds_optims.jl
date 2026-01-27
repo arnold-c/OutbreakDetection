@@ -103,6 +103,7 @@ specification_vecs = ScenarioSpecificationVecs(;
     accuracy_metric_vec = accuracy_metric_vec,
     threshold_bounds_vec = [threshold_bounds],
     outbreak_specification_vec = outbreak_specification_vec,
+    alert_filtering_strategy_vec = [AlertFilteringStrategy(AllAlerts())],
 )
 
 #%%
