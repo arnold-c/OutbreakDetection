@@ -61,7 +61,7 @@ fig = plot_schematic(filtered_results[1])
 function plot_schematic(
         optimization_result::OutbreakDetectionCore.OptimizationResult;
         seed = 1234,
-        noise_scaling = 10.0,
+        noise_scaling = nothing,
         shift_noise = 0,
         movingavg_window = 20,
         kwargs...
@@ -72,6 +72,9 @@ function plot_schematic(
     outbreak_spec = optimization_result.outbreak_specification
     alert_method = optimization_result.alert_method
     optimal_threshold = optimization_result.optimal_threshold
+
+    # Use noise_level from optimization_result if noise_scaling not provided
+    noise_scaling = isnothing(noise_scaling) ? optimization_result.noise_level : noise_scaling
 
     # Get time parameters from ensemble specification
     time_p = ensemble_spec.time_parameters
@@ -85,9 +88,12 @@ function plot_schematic(
     )
 
     # Extract noise parameters
+    # Use vaccination_coverage from optimization_result if available (for dynamical noise)
+    # For static noise, vaccination_coverage will be NaN, so we use a default value
+    vac_cov = isnan(optimization_result.vaccination_coverage) ? 0.6 : optimization_result.vaccination_coverage
     noise_spec = OutbreakDetectionCore.DynamicalNoiseSpecification(
         ensemble_spec.dynamical_noise_params,
-        0.6  # vaccination_coverage
+        vac_cov
     )
 
 
@@ -369,7 +375,7 @@ function visualize_timeseries(
         optimization_result::OutbreakDetectionCore.OptimizationResult;
         sim_number = 1,
         seed = 1234,
-        noise_scaling = 10.0,
+        noise_scaling = nothing,
         shift_noise = 0,
         movingavg_window = 20,
         kwargs...
@@ -381,6 +387,9 @@ function visualize_timeseries(
     alert_method = optimization_result.alert_method
     optimal_threshold = optimization_result.optimal_threshold
 
+    # Use noise_level from optimization_result if noise_scaling not provided
+    noise_scaling = isnothing(noise_scaling) ? optimization_result.noise_level : noise_scaling
+
     # Get time parameters from ensemble specification
     time_p = ensemble_spec.time_parameters
 
@@ -389,9 +398,12 @@ function visualize_timeseries(
     dynamics_spec = ensemble_spec.dynamics_parameter_specification
 
     # Extract noise parameters
+    # Use vaccination_coverage from optimization_result if available (for dynamical noise)
+    # For static noise, vaccination_coverage will be NaN, so we use a default value
+    vac_cov = isnan(optimization_result.vaccination_coverage) ? 0.6 : optimization_result.vaccination_coverage
     noise_spec = OutbreakDetectionCore.DynamicalNoiseSpecification(
         ensemble_spec.dynamical_noise_params,
-        0.6  # vaccination_coverage
+        vac_cov
     )
 
     # Calculate percent tested
