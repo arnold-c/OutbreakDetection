@@ -37,7 +37,15 @@
         min_vaccination_coverage = 0.8,
         max_vaccination_coverage = 0.8
     )
-    dynamics_spec = DynamicsParameterSpecification(target_dynamics)
+    common_dynamics = CommonDiseaseDynamicsParameters(
+        births_per_k_pop = 16.0,
+        nsims = 100
+    )
+    dynamics_spec = DynamicsParameterSpecification(
+        state_parameters,
+        target_dynamics,
+        common_dynamics
+    )
     dynamics_parameters = DynamicsParameters(dynamics_spec; seed = 1234)
 
     time_parameters = SimTimeParameters(;
@@ -48,10 +56,11 @@
     nsims = 100
     seed = 1234
     ensemble_spec = EnsembleSpecification(
-        ("seasonal-infectivity-import", "tau-leaping"),
+        "test-label",
         state_parameters,
-        dynamics_parameters,
         time_parameters,
+        dynamics_spec,
+        dynamical_noise_parameters,
         nsims,
     )
 
@@ -72,11 +81,11 @@
 
     # Test Dynamical Noise
     # Create noise dynamics parameters for the test
-    noise_dynamics_params = create_noise_dynamics_parameters(
+    noise_dynamics_spec = recreate_noise_dynamics_parameter_specification(
         dynamical_noise,
-        dynamics_spec,
-        state_parameters.init_states.N
+        ensemble_spec
     )
+    noise_dynamics_params = DynamicsParameters(noise_dynamics_spec; seed = seed)
 
     noise_run = create_noise_vecs(
         dynamical_noise,

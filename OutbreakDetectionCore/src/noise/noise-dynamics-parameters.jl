@@ -1,4 +1,4 @@
-export recreate_noise_dynamics_parameters
+export recreate_noise_dynamics_parameter_specification
 
 """
     create_noise_dynamics_parameters(noise_specification, dynamics_parameter_specification, population_N)
@@ -116,6 +116,8 @@ function recreate_noise_dynamics_parameter_specification(
         noise_specification.R_0,
         state_parameters.init_states.N
     )
+
+    @assert noise_epsilon >= 0.0 "Calculated noise import rate is non-positive ($noise_epsilon). Ensure noise R_0 >= 1."
 
     return DynamicsParameterSpecification(;
         beta_mean = noise_beta_mean,

@@ -107,12 +107,21 @@ function recreate_noise_vecs(
         )
     end
 
+    # Adjust proportions to seed outbreaks earlier
+    # Move 5% of R to S to increase initial Reff
+    r_prop_shift = 0.05 * endemic_props.r_prop
+    s_prop_adjusted = endemic_props.s_prop + r_prop_shift
+
+    # Ensure at least 5 infected individuals
+    min_i_prop = 5.0 / N
+    i_prop_adjusted = max(endemic_props.i_prop, min_i_prop)
+
     # Create updated state parameters with endemic equilibrium
     updated_state_parameters = StateParameters(;
         N = N,
-        s_prop = endemic_props.s_prop,
+        s_prop = s_prop_adjusted,
         e_prop = endemic_props.e_prop,
-        i_prop = endemic_props.i_prop,
+        i_prop = i_prop_adjusted,
     )
 
     updated_ensemble_specification = EnsembleSpecification(
