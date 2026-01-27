@@ -23,7 +23,10 @@ println("Loaded $(length(optimized_threshold_results)) optimization results")
 println("First result has $(optimized_threshold_results[1].ensemble_specification.nsims) simulations")
 
 #%%
-dynamic_optimized_results = filter(res -> res.noise_type_description == :dynamic, optimized_threshold_results)
+dynamic_optimized_results = filter(
+    res -> res.noise_type_description == :dynamic && res.alert_filtering_strategy == AlertFilteringStrategy(AllAlerts()),
+    optimized_threshold_results
+)
 for noise_level in unique(optimized_threshold_results.noise_level)
     noise_filtered_results = filter(res -> res.noise_level == noise_level, dynamic_optimized_results)
     noise_plotpath = DrWatson.plotsdir("noise-type_$(string(noise_type))", "noise-level_$noise_level")
