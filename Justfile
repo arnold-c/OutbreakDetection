@@ -24,6 +24,12 @@ supplemental-plots_worker:
 
 
 
+plot-timeseries: optimizations plot-timeseries_worker
+
+plot-timeseries_worker:
+	{{ julia_script }} ./scripts/visualize-timeseries.jl
+
+
 
 manuscript:
 	julia ./scripts/manuscript/optimal-thresholds.jl

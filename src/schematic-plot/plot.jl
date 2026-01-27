@@ -400,7 +400,7 @@ function visualize_timeseries(
     # Extract noise parameters
     # Use vaccination_coverage from optimization_result if available (for dynamical noise)
     # For static noise, vaccination_coverage will be NaN, so we use a default value
-    vac_cov = isnan(optimization_result.vaccination_coverage) ? 0.6 : optimization_result.vaccination_coverage
+    vac_cov = isnan(optimization_result.vaccination_coverage) ? error("This function is only set up to visualize dynamic noise - you have passed in a static noise optimized result") : optimization_result.vaccination_coverage
     noise_spec = OutbreakDetectionCore.DynamicalNoiseSpecification(
         ensemble_spec.dynamical_noise_params,
         vac_cov
@@ -577,14 +577,15 @@ function visualize_timeseries(
         kwargs...
     )
 
-    # Add description with noise type, noise level, and test characteristics
+    # Add description with noise type, noise level, test characteristics, accuracy metric, and sim number
     noise_type = optimization_result.noise_type_description
     noise_lvl = optimization_result.noise_level
     sens = test_spec.sensitivity
     spec = test_spec.specificity
     lag = test_spec.test_result_lag
+    acc_metric = LightSumTypes.variant(optimization_result.accuracy_metric)
 
-    description_text = "Noise: $(noise_type), Level: $(noise_lvl) | Test: Sens=$(sens), Spec=$(spec), Lag=$(lag)d"
+    description_text = "Noise: $(noise_type), Level: $(noise_lvl) | Test: Sens=$(sens), Spec=$(spec), Lag=$(lag)d | Metric: $(acc_metric) | Sim: $(sim_number)"
 
     Label(
         fig[0, 1],
