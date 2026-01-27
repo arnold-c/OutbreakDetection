@@ -3,7 +3,9 @@ export load_previous_optimization_results_structvector
 """
     load_previous_optimization_results_structvector(
         filedir::String,
-        filename_base::String
+        filename_base::String,
+        checkpoint_dir::String;
+        default_action::Union{Symbol, Nothing} = nothing
     ) -> Try.Result{StructVector{OptimizationResult}}
 
 Load previously completed optimization results from the most recent file or checkpoint.
@@ -19,6 +21,10 @@ saved. If struct changes are detected, it prompts the user to confirm re-optimiz
 - `filename_base::String`: Base name of the optimization file (without datetime prefix or extension)
 - `checkpoint_dir::String`: Directory path containing checkpoint files
 
+# Keyword Arguments
+- `default_action::Union{Symbol, Nothing}`: Default action to take when struct changes are detected.
+  Must be one of `:continue`, `:force`, or `:quit`. If `nothing` (default), prompts user.
+
 # Returns
 - `Try.Result{StructVector{OptimizationResult}}`: Previously completed optimization results.
   Returns an empty `StructVector` if no valid results are found or if struct changes
@@ -28,18 +34,28 @@ saved. If struct changes are detected, it prompts the user to confirm re-optimiz
 1. Validates that the directory exists (errors if not)
 2. Attempts to find and load the most recent completed results file
 3. Checks if struct hashes match current struct definitions
-4. If struct changes detected, prompts user for confirmation
+4. If struct changes detected, prompts user for confirmation (or uses default_action)
 5. If no completed results file exists or loading fails, attempts to load from checkpoint files
 6. Returns loaded results or an empty `StructVector` if all attempts fail
 
 # Example
 ```julia
-# Load previous optimization results
+# Load previous optimization results (prompts user if struct changes detected)
 results = Try.unwrap(
     load_previous_optimization_results_structvector(
         "/path/to/results",
         "threshold-optimization",
         "/path/to/checkpoints"
+    )
+)
+
+# Load with default action to continue despite struct changes
+results = Try.unwrap(
+    load_previous_optimization_results_structvector(
+        "/path/to/results",
+        "threshold-optimization",
+        "/path/to/checkpoints";
+        default_action = :continue
     )
 )
 
@@ -69,7 +85,8 @@ end
 function load_previous_optimization_results_structvector(
         filedir::String,
         filename_base::String,
-        checkpoint_dir::String
+        checkpoint_dir::String;
+        default_action::Union{Symbol, Nothing} = nothing
     )
     if !isdir(filedir)
         error("The provided file directory $filedir isn't a valid directory. Check `filedir` again.")
@@ -84,7 +101,7 @@ function load_previous_optimization_results_structvector(
         # Try to load checkpoint files
         @warn checkpoint_warning_message
         println(Try.unwrap_err(load_filepath))
-        return load_checkpoint_results_structvector(checkpoint_dir)
+        return load_checkpoint_results_structvector(checkpoint_dir; default_action = default_action)
     end
 
     try
@@ -92,10 +109,24 @@ function load_previous_optimization_results_structvector(
 
         # Validate struct hashes and get results
         if haskey(data, "optimization_results")
-            return validate_struct_hashes_and_get_results(data, "results file")
+            return validate_struct_hashes_and_get_results(
+                data, "results file";
+                default_action = default_action
+            )
         end
 
         @warn "Failed to load the previous results in $load_filepath. Returning an empty StructVector to force the recreation of all scenarios."
+
+        # Handle default action if provided
+        if !isnothing(default_action)
+            if default_action == :continue || default_action == :force
+                @info "Using default action: returning empty StructVector"
+                return Try.Ok(StructVector(OptimizationResult[]))
+            else  # :quit
+                return Try.Err("Default action :quit - failed to load results")
+            end
+        end
+
         print("Continue? (y/N): ")
         response = readline()
         if lowercase(strip(response)) in ["y", "yes"]
@@ -106,6 +137,6 @@ function load_previous_optimization_results_structvector(
     catch
         # Try to load checkpoint files as fallback
         @warn checkpoint_warning_message
-        return load_checkpoint_results_structvector(checkpoint_dir)
+        return load_checkpoint_results_structvector(checkpoint_dir; default_action = default_action)
     end
 end

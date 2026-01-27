@@ -1,7 +1,8 @@
 """
     validate_struct_hashes_and_get_results(
         data::Dict,
-        source_description::String
+        source_description::String;
+        default_action::Union{Symbol, Nothing} = nothing
     ) -> Try.Result{StructVector{OptimizationResult}}
 
 Validate struct hashes in loaded data and return results or prompt user for action.
@@ -23,6 +24,10 @@ When struct hashes don't match, the user is given three options:
 - `source_description::String`: Description of the data source (e.g., "results file", "checkpoint")
   for user-facing messages
 
+# Keyword Arguments
+- `default_action::Union{Symbol, Nothing}`: Default action to take without prompting.
+  Must be one of `:continue`, `:force`, or `:quit`. If `nothing` (default), prompts user.
+
 # Returns
 - `Try.Ok(results)`: If validation passes or user chooses to continue despite warnings
 - `Try.Ok(StructVector{OptimizationResult}[])`: If user requests re-optimization
@@ -32,7 +37,15 @@ When struct hashes don't match, the user is given three options:
 ```julia
 data = JLD2.load(filepath)
 if haskey(data, "optimization_results")
+    # Prompt user
     result = validate_struct_hashes_and_get_results(data, "results file")
+    
+    # Or use default action
+    result = validate_struct_hashes_and_get_results(
+        data, "results file";
+        default_action = :continue
+    )
+    
     if Try.isok(result)
         results = Try.unwrap(result)
         # Use results...
@@ -50,7 +63,8 @@ end
 """
 function validate_struct_hashes_and_get_results(
         data::Dict,
-        source_description::String
+        source_description::String;
+        default_action::Union{Symbol, Nothing} = nothing
     )
     if !haskey(data, "optimization_results")
         return Try.Err("Data does not contain 'optimization_results' key")
@@ -63,6 +77,22 @@ function validate_struct_hashes_and_get_results(
         @warn "Loaded $source_description contains incompatible struct definitions."
         @warn "Results are of type $(typeof(results).name.name) instead of StructVector{OptimizationResult}."
         @warn "This indicates the OptimizationResult struct has changed since results were saved."
+
+        # Handle default action if provided
+        if !isnothing(default_action)
+            if default_action == :force
+                @info "Using default action: force re-optimization (incompatible struct type detected)"
+                return Try.Ok(StructVector(OptimizationResult[]))
+            elseif default_action == :quit
+                return Try.Err(
+                    "Default action :quit - incompatible struct type detected in $source_description"
+                )
+            elseif default_action == :continue
+                @warn "Default action :continue not applicable for incompatible struct types. Forcing re-optimization."
+                return Try.Ok(StructVector(OptimizationResult[]))
+            end
+        end
+
         println()
         print("Force re-optimization of all scenarios? (y/N): ")
         response = lowercase(strip(readline()))
@@ -89,7 +119,8 @@ function validate_struct_hashes_and_get_results(
             action = confirm_struct_change_reoptimization(
                 n_existing,
                 stored_hashes,
-                current_hashes
+                current_hashes;
+                default_action = default_action
             )
 
             if action == :force
@@ -109,6 +140,20 @@ function validate_struct_hashes_and_get_results(
         # Old format without struct hashes - warn user
         @warn "Loaded $source_description does not contain struct version hashes (old format)."
         @warn "Cannot verify struct compatibility. Proceeding with caution."
+
+        # Handle default action if provided
+        if !isnothing(default_action)
+            if default_action == :continue
+                @info "Using default action: continue (struct compatibility not verified)"
+                return Try.Ok(results)
+            elseif default_action == :force
+                @info "Using default action: force re-optimization (no struct hashes found)"
+                return Try.Ok(StructVector(OptimizationResult[]))
+            elseif default_action == :quit
+                return Try.Err("Default action :quit - no struct hashes in $source_description")
+            end
+        end
+
         println()
         print("Continue using these results, force re-optimization of all scenarios, or quit? (continue/force/quit): ")
         response = lowercase(strip(readline()))

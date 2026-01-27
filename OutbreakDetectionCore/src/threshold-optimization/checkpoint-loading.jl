@@ -1,15 +1,36 @@
 export load_checkpoint_results_structvector
 
 """
-    load_checkpoint_results_structvector(checkpoint_dir)
+    load_checkpoint_results_structvector(
+        checkpoint_dir::String;
+        default_action::Union{Symbol, Nothing} = nothing
+    )
 
 Load the most recent valid checkpoint file from the directory as StructVector.
 Falls back to older checkpoints if the most recent one is corrupted.
+
+# Keyword Arguments
+- `default_action::Union{Symbol, Nothing}`: Default action to take when struct changes are detected.
+  Must be one of `:continue`, `:force`, or `:quit`. If `nothing` (default), prompts user.
 """
-function load_checkpoint_results_structvector(checkpoint_dir::String)
+function load_checkpoint_results_structvector(
+        checkpoint_dir::String;
+        default_action::Union{Symbol, Nothing} = nothing
+    )
 
     if !isdir(checkpoint_dir)
         @warn "$checkpoint_dir isn't a directory. Returning an empty StructVector to force the recreation of all scenarios."
+
+        # Handle default action if provided
+        if !isnothing(default_action)
+            if default_action == :continue || default_action == :force
+                @info "Using default action: returning empty StructVector"
+                return Try.Ok(StructVector(OptimizationResult[]))
+            else  # :quit
+                return Try.Err("Default action :quit - checkpoint directory not found")
+            end
+        end
+
         print("Continue? (y/N): ")
         response = readline()
         if lowercase(strip(response)) in ["y", "yes"]
@@ -26,6 +47,17 @@ function load_checkpoint_results_structvector(checkpoint_dir::String)
 
     if isempty(checkpoint_files)
         @warn "Failed to load the previous checkpoints in $checkpoint_dir. Returning an empty StructVector to force the recreation of all scenarios."
+
+        # Handle default action if provided
+        if !isnothing(default_action)
+            if default_action == :continue || default_action == :force
+                @info "Using default action: returning empty StructVector"
+                return Try.Ok(StructVector(OptimizationResult[]))
+            else  # :quit
+                return Try.Err("Default action :quit - no checkpoint files found")
+            end
+        end
+
         print("Continue? (y/N): ")
         response = readline()
         if lowercase(strip(response)) in ["y", "yes"]
@@ -52,7 +84,8 @@ function load_checkpoint_results_structvector(checkpoint_dir::String)
                     # Validate struct hashes and get results
                     validation_result = validate_struct_hashes_and_get_results(
                         data,
-                        "checkpoint file"
+                        "checkpoint file";
+                        default_action = default_action
                     )
 
                     # If validation failed or user declined, return the error
@@ -81,6 +114,17 @@ function load_checkpoint_results_structvector(checkpoint_dir::String)
     end
 
     @warn "All checkpoint files failed to load. Returning an empty StructVector to force the recreation of all scenarios."
+
+    # Handle default action if provided
+    if !isnothing(default_action)
+        if default_action == :continue || default_action == :force
+            @info "Using default action: returning empty StructVector"
+            return Try.Ok(StructVector(OptimizationResult[]))
+        else  # :quit
+            return Try.Err("Default action :quit - all checkpoint files failed to load")
+        end
+    end
+
     print("Continue? (y/N): ")
     response = readline()
     if lowercase(strip(response)) in ["y", "yes"]
@@ -88,5 +132,4 @@ function load_checkpoint_results_structvector(checkpoint_dir::String)
     else
         return Try.Err("Quitting optimization")
     end
-    return Try.Err("All checkpoint files failed to load")
 end

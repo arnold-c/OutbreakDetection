@@ -4,7 +4,8 @@ export confirm_struct_change_reoptimization
     confirm_struct_change_reoptimization(
         n_existing::Int,
         stored_hashes::NamedTuple,
-        current_hashes::NamedTuple
+        current_hashes::NamedTuple;
+        default_action::Union{Symbol, Nothing} = nothing
     ) -> Symbol
 
 Prompt user for action when struct definitions have changed.
@@ -19,8 +20,12 @@ changed and asks the user to choose how to proceed.
 - `stored_hashes::NamedTuple`: Hash values stored with the results
 - `current_hashes::NamedTuple`: Current hash values of struct definitions
 
+# Keyword Arguments
+- `default_action::Union{Symbol, Nothing}`: Default action to take without prompting.
+  Must be one of `:continue`, `:force`, or `:quit`. If `nothing` (default), prompts user.
+
 # Returns
-- `Symbol`: User's choice, one of:
+- `Symbol`: User's choice (or default_action if provided), one of:
   - `:continue` - Use existing results despite struct changes (risky)
   - `:force` - Force re-optimization of all scenarios
   - `:quit` - Exit without proceeding
@@ -31,7 +36,15 @@ stored = (scenario_hash = 0x123..., result_hash = 0x456...)
 current = get_optimization_struct_hashes()
 
 if stored != current
+    # Prompt user
     action = confirm_struct_change_reoptimization(100, stored, current)
+    
+    # Or use default action
+    action = confirm_struct_change_reoptimization(
+        100, stored, current;
+        default_action = :continue
+    )
+    
     if action == :force
         # Re-run all optimizations
     elseif action == :continue
@@ -50,8 +63,18 @@ end
 function confirm_struct_change_reoptimization(
         n_existing::Int,
         stored_hashes::NamedTuple,
-        current_hashes::NamedTuple
+        current_hashes::NamedTuple;
+        default_action::Union{Symbol, Nothing} = nothing
     )
+    # If default_action is provided, validate and use it
+    if !isnothing(default_action)
+        if default_action ∉ [:continue, :force, :quit]
+            error("default_action must be one of :continue, :force, or :quit, got: $default_action")
+        end
+        @info "Using default action: $default_action (struct hash mismatch detected)"
+        return default_action
+    end
+
     println(StyledStrings.styled"{red:⚠ WARNING: Struct definition changes detected}")
     println()
 
