@@ -23,7 +23,7 @@ println("Loaded $(length(optimized_threshold_results)) optimization results")
 println("First result has $(optimized_threshold_results[1].ensemble_specification.nsims) simulations")
 
 #%%
-force_plot = false
+force_plot = true
 noise_type = :dynamic
 
 dynamic_optimized_results = filter(
@@ -31,10 +31,15 @@ dynamic_optimized_results = filter(
     optimized_threshold_results
 )
 for noise_level in unique(optimized_threshold_results.noise_level)
+    @show noise_level
+
     noise_filtered_results = filter(res -> res.noise_level == noise_level, dynamic_optimized_results)
     noise_plotpath = DrWatson.plotsdir("noise-type_$(string(noise_type))", "noise-level_$noise_level")
     mkpath(noise_plotpath)
     for test in unique(noise_filtered_results.test_specification), percent_tested in unique(noise_filtered_results.percent_tested)
+        @show test
+        @show percent_tested
+
         test_filtered_results = filter(
             res -> res.test_specification == test && res.percent_tested == percent_tested,
             noise_filtered_results
@@ -46,6 +51,8 @@ for noise_level in unique(optimized_threshold_results.noise_level)
         test_plotpath = joinpath(noise_plotpath, "test-type_$test_type_description", "percent-tested_$percent_tested")
         mkpath(test_plotpath)
         for accuracy_metric in unique(test_filtered_results.accuracy_metric)
+            @show accuracy_metric
+
             accuracy_filtered_results = filter(
                 res -> res.accuracy_metric == accuracy_metric,
                 test_filtered_results
@@ -60,10 +67,10 @@ for noise_level in unique(optimized_threshold_results.noise_level)
             @assert length(accuracy_filtered_results) == 1
             for sim in [1, 10, 49, 100]
                 plotpath = joinpath(accuracy_plotpath, "sim-$(sim)_timeseries.svg")
-                println("Creating visualization for simulation $sim...")
+                println("\tCreating visualization for simulation $sim...")
 
                 if isfile(plotpath) && !force_plot
-                    @warn "Plot at $plotpath already exists and force_plot = $force_plot. Skipping"
+                    @warn "\tPlot at $plotpath already exists and force_plot = $force_plot. Skipping"
                     continue
                 end
 
@@ -75,7 +82,7 @@ for noise_level in unique(optimized_threshold_results.noise_level)
 
                 save(plotpath, sim_fig)
 
-                println("Visualization created successfully!")
+                println("\tVisualization created successfully!")
             end
         end
     end
