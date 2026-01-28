@@ -14,6 +14,7 @@ function line_plot(
         alert_method = OutbreakDetectionCore.AlertMethod(OutbreakDetectionCore.MovingAverage(7)),
         accuracy_metric = OutbreakDetectionCore.AccuracyMetric(OutbreakDetectionCore.BalancedAccuracy()),
         threshold_bounds = (; lower = 0.0, upper = 20.0),
+        alert_filtering_strategy = OutbreakDetectionCore.AlertFilteringStrategy(OutbreakDetectionCore.AllAlerts()),
         plotdirpath = DrWatson.plotsdir(),
         plotname = "line_accuracy_plot",
         plotformat = "png",
@@ -44,11 +45,12 @@ function line_plot(
     mkpath(plotdirpath)
     plotpath = joinpath(plotdirpath, "$plotname.$plotformat")
 
-    local_colors = colors
-
     if !isfile(plotpath) || force
         filtered_results = filter(
-            r -> r.alert_method == alert_method && r.accuracy_metric == accuracy_metric && r.threshold_bounds == threshold_bounds,
+            r -> r.alert_method == alert_method &&
+                r.accuracy_metric == accuracy_metric &&
+                r.threshold_bounds == threshold_bounds &&
+                r.alert_filtering_strategy == alert_filtering_strategy,
             results
         )
         # Reshape results into matrix structure

@@ -12,6 +12,7 @@ include(
 alert_method = OutbreakDetectionCore.AlertMethod(OutbreakDetectionCore.MovingAverage())
 accuracy_metric = OutbreakDetectionCore.AccuracyMetric(OutbreakDetectionCore.BalancedAccuracy())
 threshold_bounds = (; lower = 0.0, upper = 20.0)
+alert_filtering_strategy = OutbreakDetectionCore.AlertFilteringStrategy(OutbreakDetectionCore.AllAlerts())
 plotdirpath = DrWatson.plotsdir("appendix")
 
 #%%
@@ -30,6 +31,7 @@ prop_outbreak_plot = line_plot(
     alert_method = alert_method,
     accuracy_metric = accuracy_metric,
     threshold_bounds = threshold_bounds,
+    alert_filtering_strategy = alert_filtering_strategy,
     outcome = :proportion_timeseries_in_outbreak,
     ylabel = "Proportion of Time\nSeries In Outbreak",
     alpha = alpha,
@@ -56,6 +58,7 @@ alert_duration_plot = line_plot(
     alert_method = alert_method,
     accuracy_metric = accuracy_metric,
     threshold_bounds = threshold_bounds,
+    alert_filtering_strategy = alert_filtering_strategy,
     outcome = :alert_durations,
     ylabel = "Alert Duration\n(Days)",
     alpha = alpha,
@@ -82,6 +85,7 @@ nalerts_plot = line_plot(
     alert_method = alert_method,
     accuracy_metric = accuracy_metric,
     threshold_bounds = threshold_bounds,
+    alert_filtering_strategy = alert_filtering_strategy,
     outcome = :n_alerts,
     ylabel = "Number of Alerts",
     alpha = alpha,
@@ -108,6 +112,7 @@ noutbreaks_plot = line_plot(
     alert_method = alert_method,
     accuracy_metric = accuracy_metric,
     threshold_bounds = threshold_bounds,
+    alert_filtering_strategy = alert_filtering_strategy,
     outcome = :n_outbreaks,
     ylabel = "Number of outbreaks",
     alpha = alpha,
@@ -134,6 +139,7 @@ prop_alerts_correct_plot = line_plot(
     alert_method = alert_method,
     accuracy_metric = accuracy_metric,
     threshold_bounds = threshold_bounds,
+    alert_filtering_strategy = alert_filtering_strategy,
     outcome = :proportion_alerts_correct,
     ylabel = "Proportion of\nAlerts Correct",
     alpha = alpha,
@@ -161,6 +167,7 @@ prop_outbreaks_detected_plot = line_plot(
     alert_method = alert_method,
     accuracy_metric = accuracy_metric,
     threshold_bounds = threshold_bounds,
+    alert_filtering_strategy = alert_filtering_strategy,
     outcome = :proportion_outbreaks_detected,
     ylabel = "Proportion of\nOutbreaks Detected",
     alpha = alpha,
@@ -183,8 +190,210 @@ prop_outbreaks_detected_plot = line_plot(
 )
 
 #%%
+alert_filtering_strategy = OutbreakDetectionCore.AlertFilteringStrategy(OutbreakDetectionCore.AllAlerts())
+
+#%%
+positive_delay_threshold_plot = line_plot(
+    optimized_threshold_results;
+    alert_method = alert_method,
+    accuracy_metric = accuracy_metric,
+    threshold_bounds = threshold_bounds,
+    alert_filtering_strategy = alert_filtering_strategy,
+    outcome = :alert_threshold,
+    ylabel = "Alert Threshold",
+    alpha = alpha,
+    facet_fontsize = facet_fontsize,
+    legendsize = legendsize,
+    xlabelsize = xlabelsize,
+    ylabelsize = ylabelsize,
+    show_x_facet_label = show_x_facet_label,
+    show_y_facet_label = show_y_facet_label,
+    ylims = (0.0, 20.0),
+    force = true,
+    plotdirpath = plotdirpath,
+    plotname = "positive_delay_optimal-thresholds_alert-threshold-plot",
+    plotformat = "svg",
+    save_plot = true,
+    nbanks = nbanks,
+    legend_rowsize = legend_rowsize,
+    xlabel_rowsize = xlabel_rowsize,
+    size = (1300, 800),
+)
+
+
+positive_delay_accuracy_plot = line_plot(
+    optimized_threshold_results;
+    alert_method = alert_method,
+    accuracy_metric = accuracy_metric,
+    threshold_bounds = threshold_bounds,
+    alert_filtering_strategy = alert_filtering_strategy,
+    outcome = :accuracies,
+    ylabel = "Detection Accuracy",
+    alpha = alpha,
+    facet_fontsize = 28,
+    legendsize = legendsize,
+    xlabelsize = xlabelsize,
+    ylabelsize = ylabelsize,
+    show_x_facet_label = show_x_facet_label,
+    show_y_facet_label = show_y_facet_label,
+    ylims = (0.5, 1.0),
+    force = true,
+    plotdirpath = plotdirpath,
+    plotname = "positive_delay_optimal-thresholds_accuracy-plot",
+    plotformat = "svg",
+    save_plot = true,
+    nbanks = nbanks,
+    legend_rowsize = legend_rowsize,
+    xlabel_rowsize = xlabel_rowsize,
+    size = (1300, 800),
+)
+
+#%%
+positive_delay_delays_plot = line_plot(
+    optimized_threshold_results;
+    alert_method = alert_method,
+    accuracy_metric = accuracy_metric,
+    threshold_bounds = threshold_bounds,
+    alert_filtering_strategy = alert_filtering_strategy,
+    outcome = :detection_delays,
+    ylabel = "Detection Delays\n(Days)",
+    alpha = alpha,
+    hlines = (0.0),
+    facet_fontsize = facet_fontsize,
+    legendsize = legendsize,
+    xlabelsize = xlabelsize,
+    ylabelsize = ylabelsize,
+    show_x_facet_label = show_x_facet_label,
+    show_y_facet_label = show_y_facet_label,
+    ylims = (-20, 100),
+    force = true,
+    plotdirpath = plotdirpath,
+    plotname = "positive_delay_optimal-thresholds_delays-plot",
+    plotformat = "svg",
+    save_plot = true,
+    nbanks = nbanks,
+    legend_rowsize = legend_rowsize,
+    xlabel_rowsize = xlabel_rowsize,
+    size = (1300, 800),
+)
+
+#%%
+positive_delay_prop_alert_plot = line_plot(
+    optimized_threshold_results;
+    alert_method = alert_method,
+    accuracy_metric = accuracy_metric,
+    threshold_bounds = threshold_bounds,
+    alert_filtering_strategy = alert_filtering_strategy,
+    outcome = :proportion_timeseries_in_alert,
+    ylabel = "Proportion of Time\nIn Alert",
+    alpha = alpha,
+    hlines = (0.0),
+    facet_fontsize = facet_fontsize,
+    legendsize = legendsize,
+    xlabelsize = xlabelsize,
+    ylabelsize = ylabelsize,
+    show_x_facet_label = show_x_facet_label,
+    show_y_facet_label = show_y_facet_label,
+    ylims = (0, 0.15),
+    force = true,
+    plotdirpath = plotdirpath,
+    plotname = "positive_delay_optimal-thresholds_prop-alert-plot",
+    plotformat = "svg",
+    save_plot = true,
+    nbanks = nbanks,
+    legend_rowsize = legend_rowsize,
+    xlabel_rowsize = xlabel_rowsize,
+    size = (1300, 800),
+)
+
+#%%
+positive_delay_prop_alerts_correct_plot = line_plot(
+    optimized_threshold_results;
+    alert_method = alert_method,
+    accuracy_metric = accuracy_metric,
+    threshold_bounds = threshold_bounds,
+    alert_filtering_strategy = alert_filtering_strategy,
+    outcome = :proportion_alerts_correct,
+    ylabel = "Proportion of\nAlerts Correct",
+    alpha = alpha,
+    facet_fontsize = facet_fontsize,
+    legendsize = legendsize,
+    xlabelsize = xlabelsize,
+    ylabelsize = ylabelsize,
+    show_x_facet_label = show_x_facet_label,
+    show_y_facet_label = show_y_facet_label,
+    ylims = (0, 1.0),
+    force = true,
+    plotdirpath = plotdirpath,
+    plotname = "positive_delay_optimal-thresholds_prop-alerts-correct-plot",
+    plotformat = "svg",
+    save_plot = true,
+    nbanks = nbanks,
+    legend_rowsize = legend_rowsize,
+    xlabel_rowsize = xlabel_rowsize,
+    size = (1300, 800),
+)
+
+#%%
+positive_delay_prop_outbreaks_detected_plot = line_plot(
+    optimized_threshold_results;
+    alert_method = alert_method,
+    accuracy_metric = accuracy_metric,
+    threshold_bounds = threshold_bounds,
+    alert_filtering_strategy = alert_filtering_strategy,
+    outcome = :proportion_outbreaks_detected,
+    ylabel = "Proportion of\nOutbreaks Detected",
+    alpha = alpha,
+    facet_fontsize = facet_fontsize,
+    legendsize = legendsize,
+    xlabelsize = xlabelsize,
+    ylabelsize = ylabelsize,
+    show_x_facet_label = show_x_facet_label,
+    show_y_facet_label = show_y_facet_label,
+    ylims = (0, 1.0),
+    force = true,
+    plotdirpath = plotdirpath,
+    plotname = "positive_delay_optimal-thresholds_prop-outbreaks-detected-plot",
+    plotformat = "svg",
+    save_plot = true,
+    nbanks = nbanks,
+    legend_rowsize = legend_rowsize,
+    xlabel_rowsize = xlabel_rowsize,
+    size = (1300, 800),
+)
+
+#%%
 # F1 metrics for supplement
 accuracy_metric = OutbreakDetectionCore.AccuracyMetric(OutbreakDetectionCore.F1())
+alert_filtering_strategy = OutbreakDetectionCore.AlertFilteringStrategy(OutbreakDetectionCore.AllAlerts())
+
+#%%
+f1_threshold_plot = line_plot(
+    optimized_threshold_results;
+    alert_method = alert_method,
+    accuracy_metric = accuracy_metric,
+    threshold_bounds = threshold_bounds,
+    alert_filtering_strategy = alert_filtering_strategy,
+    outcome = :alert_threshold,
+    ylabel = "Alert Threshold",
+    alpha = alpha,
+    facet_fontsize = facet_fontsize,
+    legendsize = legendsize,
+    xlabelsize = xlabelsize,
+    ylabelsize = ylabelsize,
+    show_x_facet_label = show_x_facet_label,
+    show_y_facet_label = show_y_facet_label,
+    ylims = (0.0, 20.0),
+    force = true,
+    plotdirpath = plotdirpath,
+    plotname = "f1_optimal-thresholds_alert-threshold-plot",
+    plotformat = "svg",
+    save_plot = true,
+    nbanks = nbanks,
+    legend_rowsize = legend_rowsize,
+    xlabel_rowsize = xlabel_rowsize,
+    size = (1300, 800),
+)
 
 #%%
 f1_accuracy_plot = line_plot(
@@ -192,6 +401,7 @@ f1_accuracy_plot = line_plot(
     alert_method = alert_method,
     accuracy_metric = accuracy_metric,
     threshold_bounds = threshold_bounds,
+    alert_filtering_strategy = alert_filtering_strategy,
     outcome = :accuracies,
     ylabel = "Detection Accuracy",
     alpha = alpha,
@@ -219,6 +429,7 @@ f1_delays_plot = line_plot(
     alert_method = alert_method,
     accuracy_metric = accuracy_metric,
     threshold_bounds = threshold_bounds,
+    alert_filtering_strategy = alert_filtering_strategy,
     outcome = :detection_delays,
     ylabel = "Detection Delays\n(Days)",
     alpha = alpha,
@@ -247,6 +458,7 @@ f1_prop_alert_plot = line_plot(
     alert_method = alert_method,
     accuracy_metric = accuracy_metric,
     threshold_bounds = threshold_bounds,
+    alert_filtering_strategy = alert_filtering_strategy,
     outcome = :proportion_timeseries_in_alert,
     ylabel = "Proportion of Time\nIn Alert",
     alpha = alpha,
@@ -275,6 +487,7 @@ f1_prop_alerts_correct_plot = line_plot(
     alert_method = alert_method,
     accuracy_metric = accuracy_metric,
     threshold_bounds = threshold_bounds,
+    alert_filtering_strategy = alert_filtering_strategy,
     outcome = :proportion_alerts_correct,
     ylabel = "Proportion of\nAlerts Correct",
     alpha = alpha,
@@ -287,7 +500,7 @@ f1_prop_alerts_correct_plot = line_plot(
     ylims = (0, 1.0),
     force = true,
     plotdirpath = plotdirpath,
-    plotname = "optimal-thresholds_prop-alerts-correct-plot",
+    plotname = "f1_optimal-thresholds_prop-alerts-correct-plot",
     plotformat = "svg",
     save_plot = true,
     nbanks = nbanks,
@@ -302,6 +515,7 @@ f1_prop_outbreaks_detected_plot = line_plot(
     alert_method = alert_method,
     accuracy_metric = accuracy_metric,
     threshold_bounds = threshold_bounds,
+    alert_filtering_strategy = alert_filtering_strategy,
     outcome = :proportion_outbreaks_detected,
     ylabel = "Proportion of\nOutbreaks Detected",
     alpha = alpha,
@@ -314,7 +528,7 @@ f1_prop_outbreaks_detected_plot = line_plot(
     ylims = (0, 1.0),
     force = true,
     plotdirpath = plotdirpath,
-    plotname = "optimal-thresholds_prop-outbreaks-detected-plot",
+    plotname = "f1_optimal-thresholds_prop-outbreaks-detected-plot",
     plotformat = "svg",
     save_plot = true,
     nbanks = nbanks,

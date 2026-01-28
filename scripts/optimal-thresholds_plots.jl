@@ -12,6 +12,7 @@ include(
 alert_method = OutbreakDetectionCore.AlertMethod(OutbreakDetectionCore.MovingAverage(7))
 accuracy_metric = OutbreakDetectionCore.AccuracyMetric(OutbreakDetectionCore.BalancedAccuracy())
 threshold_bounds = (; lower = 0.0, upper = 20.0)
+alert_filtering_strategy = OutbreakDetectionCore.AlertFilteringStrategy(OutbreakDetectionCore.AllAlerts())
 plotdirpath = DrWatson.plotsdir()
 
 #%%
@@ -30,6 +31,7 @@ threshold_plot = line_plot(
     alert_method = alert_method,
     accuracy_metric = accuracy_metric,
     threshold_bounds = threshold_bounds,
+    alert_filtering_strategy = alert_filtering_strategy,
     outcome = :alert_threshold,
     ylabel = "Alert Threshold",
     alpha = alpha,
@@ -57,6 +59,7 @@ accuracy_plot = line_plot(
     alert_method = alert_method,
     accuracy_metric = accuracy_metric,
     threshold_bounds = threshold_bounds,
+    alert_filtering_strategy = alert_filtering_strategy,
     outcome = :accuracies,
     ylabel = "Detection Accuracy",
     alpha = alpha,
@@ -84,6 +87,7 @@ delays_plot = line_plot(
     alert_method = alert_method,
     accuracy_metric = accuracy_metric,
     threshold_bounds = threshold_bounds,
+    alert_filtering_strategy = alert_filtering_strategy,
     outcome = :detection_delays,
     ylabel = "Detection Delays\n(Days)",
     alpha = alpha,
@@ -110,6 +114,7 @@ prop_alert_plot = line_plot(
     alert_method = alert_method,
     accuracy_metric = accuracy_metric,
     threshold_bounds = threshold_bounds,
+    alert_filtering_strategy = alert_filtering_strategy,
     outcome = :proportion_timeseries_in_alert,
     ylabel = "Proportion of Time\nIn Alert",
     alpha = alpha,
@@ -136,6 +141,7 @@ unavoidable_plot = line_plot(
     alert_method = alert_method,
     accuracy_metric = accuracy_metric,
     threshold_bounds = threshold_bounds,
+    alert_filtering_strategy = alert_filtering_strategy,
     outcome = :unavoidable_cases,
     ylabel = "Unavoidable Cases",
     alpha = alpha,
