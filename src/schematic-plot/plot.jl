@@ -376,8 +376,6 @@ function visualize_timeseries(
         sim_number = 1,
         seed = 1234,
         noise_scaling = nothing,
-        shift_noise = 0,
-        movingavg_window = 20,
         kwargs...
     )
     # Extract parameters from OptimizationResult
@@ -386,9 +384,6 @@ function visualize_timeseries(
     outbreak_spec = optimization_result.outbreak_specification
     alert_method = optimization_result.alert_method
     optimal_threshold = optimization_result.optimal_threshold
-
-    # Use noise_level from optimization_result if noise_scaling not provided
-    noise_scaling = isnothing(noise_scaling) ? optimization_result.noise_level : noise_scaling
 
     # Get time parameters from ensemble specification
     time_p = ensemble_spec.time_parameters
@@ -411,15 +406,10 @@ function visualize_timeseries(
 
     # Create outbreak detection specification from alert method and optimal threshold
     # Extract moving average lag from alert method
-    moving_avg_lag = if alert_method isa OutbreakDetectionCore.MovingAverage
-        alert_method.window
-    else
-        movingavg_window  # fallback to default
-    end
 
     outbreak_detection_spec = OutbreakDetectionCore.OutbreakDetectionSpecification(
         optimal_threshold,
-        moving_avg_lag,
+        alert_method.window,
         1.0,  # percent_visit_clinic (assumed, as not stored in OptimizationResult)
         percent_tested,
         percent_tested,
@@ -439,15 +429,7 @@ function visualize_timeseries(
     end
 
     # Extract incidence from the specified simulation
-    inc_vec_raw = ensemble_results[sim_number].incidence
-
-    # Apply moving average smoothing
-    inc_vec = round.(
-        OutbreakDetectionCore.calculate_movingavg(
-            inc_vec_raw,
-            movingavg_window,
-        )
-    )
+    inc_vec = ensemble_results[sim_number].incidence
 
     # Get outbreak status
     outbreak_status, outbreak_bounds = get_outbreak_status(
@@ -457,102 +439,57 @@ function visualize_timeseries(
     # Generate noise using proper framework
     # Convert DynamicalNoiseSpecification back to DynamicalNoiseParameters for ensemble spec
     vac_cov = noise_spec.vaccination_coverage
-    noise_params = OutbreakDetectionCore.DynamicalNoiseParameters(;
-        R_0 = noise_spec.R_0,
-        latent_period = Dates.Day(round(Int, noise_spec.latent_period)),
-        infectious_duration = Dates.Day(round(Int, noise_spec.infectious_duration)),
-        correlation = noise_spec.correlation,
-        poisson_component = noise_spec.poisson_component,
-        vaccination_bounds = [vac_cov, vac_cov]  # Equal bounds for fixed vaccination coverage
-    )
-
-    # Create a minimal ensemble specification for noise generation
-    noise_ensemble_spec = OutbreakDetectionCore.EnsembleSpecification(
-        "timeseries_viz",
-        states_p,
-        time_p,
-        dynamics_spec,
-        noise_params,
-        ensemble_spec.nsims,  # Generate same number of noise simulations
-        ""  # dirpath
-    )
-
-    # Recreate noise dynamics
-    noise_dynamics_spec = OutbreakDetectionCore.recreate_noise_dynamics_parameter_specification(
-        noise_spec,
-        noise_ensemble_spec
-    )
-
-    noise_dynamics_p = OutbreakDetectionCore.DynamicsParameters(;
-        beta_mean = noise_dynamics_spec.beta_mean,
-        beta_force = noise_dynamics_spec.beta_force,
-        seasonality = noise_dynamics_spec.seasonality,
-        sigma = noise_dynamics_spec.sigma,
-        gamma = noise_dynamics_spec.gamma,
-        mu = noise_dynamics_spec.mu,
-        annual_births_per_k = noise_dynamics_spec.annual_births_per_k,
-        epsilon = noise_dynamics_spec.epsilon,
-        R_0 = noise_dynamics_spec.R_0,
-        vaccination_coverage = noise_spec.vaccination_coverage
-    )
-
-    # Generate noise
-    noise_result = OutbreakDetectionCore.create_noise_vecs(
-        noise_spec,
-        noise_ensemble_spec,
-        noise_dynamics_p;
+    noise_vecs = OutbreakDetectionCore.recreate_noise_vecs(
+        ensemble_spec,
+        vac_cov;
+        verbose = false,
         seed = seed
     )
 
-    # Extract noise incidence for the specified simulation
-    noise_vec_raw = LightSumTypes.variant(noise_result).incidence[sim_number]
-
-    noise_vec_tmp = OutbreakDetectionCore.calculate_movingavg(
-        noise_vec_raw .* noise_scaling,
-        movingavg_window
+    # Calculate test positives for entire ensemble using shared function
+    # This ensures consistency with the optimization code in evaluate-missing-optimizations.jl
+    test_positives_ensemble = OutbreakDetectionCore.create_test_positive_vecs(
+        ensemble_results,
+        noise_vecs,
+        percent_tested,
+        test_spec
     )
 
-    noise_vec = shift_vec(noise_vec_tmp, shift_noise)
-
-    perc_tested =
-        outbreak_detection_spec.percent_visit_clinic *
-        outbreak_detection_spec.percent_clinic_tested
-
-    # Calculate number tested (convert to Int)
-    tested_inc_vec = round.(Int, inc_vec .* perc_tested)
-    tested_noise_vec = round.(Int, noise_vec .* perc_tested)
-
-    # Allocate output vectors
-    true_positives = Vector{Int64}(undef, time_p.tlength)
-    false_positives = Vector{Int64}(undef, time_p.tlength)
-
-    # Calculate true positives from incidence
-    OutbreakDetectionCore.calculate_true_positives_vec!(
-        true_positives,
-        tested_inc_vec,
-        time_p.tlength,
-        test_spec,
+    # Create test positive container using shared function (same as optimization code)
+    # This automatically calculates moving averages if needed based on alert_method
+    test_positives_container = OutbreakDetectionCore.create_test_positive_container(
+        alert_method,
+        test_positives_ensemble
     )
 
-    # Calculate false positives from noise
-    OutbreakDetectionCore.calculate_false_positives_vec!(
-        false_positives,
-        tested_noise_vec,
-        time_p.tlength,
-        test_spec,
-    )
+    # Extract single simulation results for plotting
+    noise_vec = noise_vecs.incidence[sim_number]
+    test_positives = test_positives_ensemble[sim_number]
 
-    test_positives = true_positives .+ false_positives
-
-    # Calculate moving average of TOTAL test positives
-    movingavg_testpositives = OutbreakDetectionCore.calculate_movingavg(
-        test_positives,
-        outbreak_detection_spec.moving_average_lag,
-    )
+    # Extract moving average from container for the specific simulation
+    # The container structure depends on the alert method type
+    container_variant = LightSumTypes.variant(test_positives_container[sim_number])
+    movingavg_testpositives = if container_variant isa OutbreakDetectionCore.SingleAlertTestPositiveContainer
+        # For MovingAverage method, the container stores moving averages
+        container_variant.test_positive_results
+    elseif container_variant isa OutbreakDetectionCore.DualAlertTestPositiveContainer
+        # For DailyThresholdMovingAverage method, extract the moving average field
+        container_variant.movingavg_test_positives
+    else
+        # For DailyThreshold method, calculate moving average manually as fallback
+        OutbreakDetectionCore.calculate_movingavg(
+            test_positives,
+            outbreak_detection_spec.moving_average_lag
+        )
+    end
 
     # Detect alerts where moving average exceeds threshold
-    alertstatus_vec = movingavg_testpositives .>= outbreak_detection_spec.alert_threshold
-    alert_rle = StatsBase.rle(alertstatus_vec)
+    alert_vec = OutbreakDetectionCore.generate_alerts(
+        test_positives_container[sim_number],
+        outbreak_detection_spec.alert_threshold
+    )
+
+    alert_rle = StatsBase.rle(alert_vec)
     alert_thresholds = OutbreakDetectionCore.calculate_above_threshold_bounds(alert_rle)
 
     # Create a matrix with [lower, upper, duration] for compatibility with plot function
@@ -570,7 +507,7 @@ function visualize_timeseries(
         outbreak_spec,
         noise_vec,
         movingavg_testpositives,
-        alertstatus_vec,
+        alert_vec,
         alert_bounds,
         optimal_threshold;
         time_p = time_p,
