@@ -23,8 +23,9 @@ println("Loaded $(length(optimized_threshold_results)) optimization results")
 println("First result has $(optimized_threshold_results[1].ensemble_specification.nsims) simulations")
 
 #%%
+noise_type = :dynamic
 dynamic_optimized_results = filter(
-    res -> res.noise_type_description == :dynamic && res.alert_filtering_strategy == AlertFilteringStrategy(AllAlerts()),
+    res -> res.noise_type_description == noise_type && res.alert_filtering_strategy == AlertFilteringStrategy(AllAlerts()),
     optimized_threshold_results
 )
 for noise_level in unique(optimized_threshold_results.noise_level)
