@@ -23,7 +23,9 @@ println("Loaded $(length(optimized_threshold_results)) optimization results")
 println("First result has $(optimized_threshold_results[1].ensemble_specification.nsims) simulations")
 
 #%%
+force_plot = false
 noise_type = :dynamic
+
 dynamic_optimized_results = filter(
     res -> res.noise_type_description == noise_type && res.alert_filtering_strategy == AlertFilteringStrategy(AllAlerts()),
     optimized_threshold_results
@@ -54,18 +56,24 @@ for noise_level in unique(optimized_threshold_results.noise_level)
             )
             accuracy_plotpath = joinpath(test_plotpath, "accuracy_metric_$accuracy_metric_description")
             mkpath(accuracy_plotpath)
+
             @assert length(accuracy_filtered_results) == 1
             for sim in [1, 10, 49, 100]
+                plotpath = joinpath(accuracy_plotpath, "sim-$(sim)_timeseries.svg")
                 println("Creating visualization for simulation $sim...")
+
+                if isfile(plotpath) && !force_plot
+                    @warn "Plot at $plotpath already exists and force_plot = $force_plot. Skipping"
+                    continue
+                end
+
+
                 sim_fig = visualize_timeseries(
                     accuracy_filtered_results[1];
                     sim_number = sim,
                 )
 
-                save(
-                    joinpath(accuracy_plotpath, "sim-$(sim)_timeseries.svg"),
-                    sim_fig
-                )
+                save(plotpath, sim_fig)
 
                 println("Visualization created successfully!")
             end
