@@ -246,6 +246,14 @@ function seir_mod_loop(
     )
 end
 
+"""
+    convert_rate_to_prob(rate)
+
+A simple function to ensure that no rate is greater than 1.
+Rests on the assumption that the rate and timestep are both sufficiently small,
+therefore, the probability ≈ rate within a very small tolerance, so just return
+the rate.
+"""
 @inline function convert_rate_to_prob(rate)
     return min(rate, 1.0)
 end
