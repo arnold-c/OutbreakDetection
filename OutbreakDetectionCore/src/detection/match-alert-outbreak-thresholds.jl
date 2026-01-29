@@ -17,9 +17,9 @@ returning a `MatchedThresholds` struct that uses sparse representation to minimi
 memory usage.
 
 # Matching Rule
-Each alert is matched to **at most one outbreak** - specifically, the first outbreak
-it overlaps with. This prevents double-counting alerts in PPV calculations and ensures
-a clean one-to-one mapping.
+Each alert is matched to at most one outbreak (the first outbreak it overlaps with).
+This ensures a clean one-to-one mapping and prevents double-counting alerts in
+PPV calculations.
 
 # Arguments
 - `outbreakbounds::OutbreakThresholds`: Outbreak periods with infection counts
@@ -38,8 +38,6 @@ a clean one-to-one mapping.
 An alert matches an outbreak if there is temporal overlap:
 1. Alert starts within outbreak period (alert_lower >= outbreak_lower AND alert_lower <= outbreak_upper), OR
 2. Alert starts before outbreak but extends into it (alert_lower <= outbreak_lower AND alert_upper > outbreak_lower)
-
-If an alert overlaps multiple outbreaks, it is matched only to the first outbreak encountered.
 
 When `PostOutbreakStartAlerts` filtering is used, only alerts where `alert_lower >= outbreak_lower`
 are considered for matching (Case 1 only), ensuring all detection delays are non-negative.
@@ -101,32 +99,53 @@ function _match_outbreak_detection_bounds(
     n_outbreaks = length(outbreakbounds.lower_bounds)
     n_alerts = length(alertbounds.lower_bounds)
 
-    # Track which alerts have been matched (first outbreak only rule)
-    matched_alerts = Set{Int64}()
-
     # For each outbreak, collect matching alert indices
     alert_indices_per_outbreak = [Int64[] for _ in eachindex(outbreakbounds.lower_bounds)]
+
+    # Use a single counter that persists across outbreaks
+    # This replicates the old version behavior where:
+    # - alert_rownumber is used as the starting index for iterating over alerts
+    # - alert_rownumber is incremented by 1 when a match is found (not by alert_idx + 1)
+    # - An alert can match multiple outbreaks if it spans across them (via Case 2)
+    #
+    # The key insight is that alert_rownumber is the WRITE index, not the READ index.
+    # The loop iterates over all alerts starting from alert_rownumber, and when a match
+    # is found, alert_rownumber is incremented by 1. This means alerts can be re-visited
+    # if they weren't matched in the previous outbreak.
+    alert_rownumber = 1
+
+    # Count total matches (can be > n_alerts if an alert matches multiple outbreaks)
+    total_matches = 0
 
     for outbreak_idx in eachindex(outbreakbounds.lower_bounds)
         outbreak_lower = outbreakbounds.lower_bounds[outbreak_idx]
         outbreak_upper = outbreakbounds.upper_bounds[outbreak_idx]
 
-        for alert_idx in eachindex(alertbounds.lower_bounds)
-            # Skip if alert already matched to a previous outbreak
-            if alert_idx in matched_alerts
-                continue
-            end
-
+        # Process alerts starting from alert_rownumber
+        # This mimics: for (alertlower, alertupper) in eachrow(@view(alertbounds[alert_rownumber:end, 1:2]))
+        for alert_idx in alert_rownumber:n_alerts
             alert_lower = alertbounds.lower_bounds[alert_idx]
             alert_upper = alertbounds.upper_bounds[alert_idx]
 
-            # Case 1: Alert starts within outbreak period
-            if (alert_lower >= outbreak_lower && alert_lower <= outbreak_upper) ||
-                    # Case 2: Alert starts before outbreak but extends into it
-                    (alert_lower <= outbreak_lower && alert_upper > outbreak_lower)
+            # If alert starts after outbreak ends, move to next outbreak
+            if alert_lower > outbreak_upper
+                break
+            end
 
+            # Case 1: Alert starts within outbreak period
+            if alert_lower >= outbreak_lower
                 push!(alert_indices_per_outbreak[outbreak_idx], alert_idx)
-                push!(matched_alerts, alert_idx)
+                total_matches += 1
+                alert_rownumber += 1
+                continue
+            end
+
+            # Case 2: Alert starts before outbreak but extends into it
+            if alert_lower <= outbreak_lower && alert_upper > outbreak_lower
+                push!(alert_indices_per_outbreak[outbreak_idx], alert_idx)
+                total_matches += 1
+                alert_rownumber += 1
+                continue
             end
         end
     end
@@ -135,10 +154,10 @@ function _match_outbreak_detection_bounds(
     outbreak_indices_with_alerts = findall(!isempty, alert_indices_per_outbreak)
     alert_indices_per_outbreak_filtered = alert_indices_per_outbreak[outbreak_indices_with_alerts]
 
-    # Calculate matched counts for clarity (with n_outbreaks/alerts)
-    # Also required for accuracy calculations so cache for performance
+    # Calculate matched counts
+    # n_matched_alerts is the total number of matches (can include duplicates)
     n_matched_outbreaks = length(outbreak_indices_with_alerts)
-    n_matched_alerts = length(matched_alerts)
+    n_matched_alerts = total_matches
 
     return MatchedThresholds(;
         outbreak_indices_with_alerts = outbreak_indices_with_alerts,
@@ -158,29 +177,36 @@ function _match_outbreak_detection_bounds(
     n_outbreaks = length(outbreakbounds.lower_bounds)
     n_alerts = length(alertbounds.lower_bounds)
 
-    # Track which alerts have been matched (first outbreak only rule)
-    matched_alerts = Set{Int64}()
-
     # For each outbreak, collect matching alert indices
     alert_indices_per_outbreak = [Int64[] for _ in eachindex(outbreakbounds.lower_bounds)]
+
+    # Use a single counter that persists across outbreaks
+    # This replicates the old version behavior
+    alert_rownumber = 1
+
+    # Count total matches
+    total_matches = 0
 
     for outbreak_idx in eachindex(outbreakbounds.lower_bounds)
         outbreak_lower = outbreakbounds.lower_bounds[outbreak_idx]
         outbreak_upper = outbreakbounds.upper_bounds[outbreak_idx]
 
-        for alert_idx in eachindex(alertbounds.lower_bounds)
-            # Skip if alert already matched to a previous outbreak
-            if alert_idx in matched_alerts
-                continue
-            end
-
+        # Process alerts starting from alert_rownumber
+        for alert_idx in alert_rownumber:n_alerts
             alert_lower = alertbounds.lower_bounds[alert_idx]
+
+            # If alert starts after outbreak ends, move to next outbreak
+            if alert_lower > outbreak_upper
+                break
+            end
 
             # PostOutbreakStartAlerts: Only match alerts that start on or after outbreak start
             # This ensures all detection delays are non-negative
-            if alert_lower >= outbreak_lower && alert_lower <= outbreak_upper
+            # Note: Unlike AllAlerts, this only uses Case 1, so alerts cannot match multiple outbreaks
+            if alert_lower >= outbreak_lower
                 push!(alert_indices_per_outbreak[outbreak_idx], alert_idx)
-                push!(matched_alerts, alert_idx)
+                total_matches += 1
+                alert_rownumber += 1
             end
         end
     end
@@ -189,10 +215,9 @@ function _match_outbreak_detection_bounds(
     outbreak_indices_with_alerts = findall(!isempty, alert_indices_per_outbreak)
     alert_indices_per_outbreak_filtered = alert_indices_per_outbreak[outbreak_indices_with_alerts]
 
-    # Calculate matched counts for clarity (with n_outbreaks/alerts)
-    # Also required for accuracy calculations so cache for performance
+    # Calculate matched counts
     n_matched_outbreaks = length(outbreak_indices_with_alerts)
-    n_matched_alerts = length(matched_alerts)
+    n_matched_alerts = total_matches
 
     return MatchedThresholds(;
         outbreak_indices_with_alerts = outbreak_indices_with_alerts,

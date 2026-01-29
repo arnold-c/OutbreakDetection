@@ -150,10 +150,11 @@ function evaluate_missing_optimizations(
                             @assert length(opt_scenario_sv) == 1
                             optimization_scenario = opt_scenario_sv[1]
 
-                            # Seed the RNG to ensure consistent optimization results across different
-                            # noise scenarios, as create_test_positive_vecs modifies the global RNG state
+                            # Seed the task-local RNG to ensure consistent optimization results across different
+                            # scenarios. Shouldn't be an issue in practice as none of the called functions do
+                            # any sampling, but set to ensure that all Sobol sequences and local optimization
+                            # steps are reproducible, regardless of the other scenarios being optimized
                             Random.seed!(seed)
-
 
                             optimization_result = threshold_optimization(
                                 optimization_scenario,
