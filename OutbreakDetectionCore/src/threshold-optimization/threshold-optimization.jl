@@ -114,7 +114,8 @@ function threshold_optimization(
     MultistartOptimization.multistart_minimization(
         multistart_method,
         local_method,
-        problem
+        problem;
+        use_threads = false
     )
 
     optimal_results = calculate_optimal_results(
