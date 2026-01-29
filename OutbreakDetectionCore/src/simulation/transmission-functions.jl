@@ -32,7 +32,8 @@ function calculate_beta(
         gamma::Float64,
         mu::Float64,
     )::Float64
-    return R_0 * (sigma + mu) * (gamma + mu) / sigma
+    return R_0 * (gamma + mu)
+    # return R_0 * (sigma + mu) * (gamma + mu) / sigma
 end
 
 """

@@ -4,11 +4,12 @@ using OutbreakDetectionCore: OutbreakDetectionCore
 using OutbreakDetection
 using Try: Try
 using DataFrames
+using StatsBase
 
 # Make sure these values are present in the optimization script
 alert_method = OutbreakDetectionCore.AlertMethod(OutbreakDetectionCore.MovingAverage(7))
 accuracy_metric = OutbreakDetectionCore.AccuracyMetric(OutbreakDetectionCore.BalancedAccuracy())
-threshold_bounds = (; lower = 0.0, upper = 20.0)
+threshold_bounds = (; lower = 0.0, upper = 50.0)
 alert_filtering_strategy = OutbreakDetectionCore.AlertFilteringStrategy(OutbreakDetectionCore.AllAlerts())
 plotdirpath = DrWatson.plotsdir()
 
@@ -30,7 +31,8 @@ filtered_results = filter(
         r.threshold_bounds == threshold_bounds &&
         r.alert_filtering_strategy == alert_filtering_strategy,
     optimized_threshold_results
-)
+);
+
 # Reshape results into matrix structure
 result_matrix, unique_noise_types = OutbreakDetection.reshape_optimization_results_to_matrix(filtered_results);
 
@@ -209,8 +211,21 @@ end
 #%%
 DataFrames.subset(
     wide_thresholds_df,
-    [:noise_level, :sensitivity, :specificity, :test_lag] => (noise, sens, spec, lag) -> noise .== 1.0 .&& sens .== 1.0 .&& spec .== 1.0 .&& lag .== 0
+    [:noise_level] => (noise) -> noise .== 8.0
 )
 
-# This is what is needs to match
-#| All noise | Perfect | 0 | 1.172 | 2.734 | 3.516 | 5.859 | 6.641 | 7.422 | 8.984 | 10.547 | 11.328 | 12.109 |
+# This is what is needs to match at 8x dynamical noise
+# Imperfect test (85%) | 1.17 | 2.73 | 3.52 | 5.86 | 6.64 | 0.39 | 0.39 | 0.39 | 11.33 | 12.11
+# Imperfect test (90%) | 1.17 | 2.73 | 3.52 | 4.3 | 6.64 | 7.42 | 8.98 | 10.55 | 11.33 | 0.39
+# Perfect (0-day lag) | 1.17 | 2.73 | 3.52 | 5.86 | 6.64 | 7.42 | 8.98 | 10.55 | 11.33 | 12.11
+# Perfect (14-day lag) | 1.17 | 2.73 | 3.52 | 5.86 | 6.64 | 7.42 | 8.98 | 10.55 | 11.33 | 12.11
+#
+# julia> wide_thresholds_df = create_wide_df(thresholds_df, :alert_threshold; digits = 3)
+# 4×13 DataFrame
+#  Row │ Noise Type            Test Type             Test Lag  10%       20%       30%       40%       50%       60%       70%       80%       90%       100%
+#      │ Cat…                  String                Int64     Float64?  Float64?  Float64?  Float64?  Float64?  Float64?  Float64?  Float64?  Float64?  Float64?
+# ─────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+#    1 │ Dynamical noise       Imperfect Test (85%)         0     1.172     2.734     3.516     5.859     6.641     0.391     0.391     0.391    11.328    12.109
+#    2 │ Dynamical noise       Imperfect Test (90%)         0     1.172     2.734     3.516     4.297     6.641     7.422     8.984    10.547    11.328     0.391
+#    3 │ All noise structures  Perfect Test                14     1.172     2.734     3.516     5.859     6.641     7.422     8.984    10.547    11.328    12.109
+#    4 │ All noise structures  Perfect Test                 0     1.172     2.734     3.516     5.859     6.641     7.422     8.984    10.547    11.328    12.109

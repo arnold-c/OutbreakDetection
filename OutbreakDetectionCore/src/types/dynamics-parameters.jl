@@ -285,7 +285,7 @@ function DynamicsParameterSpecification(
         sigma,
         gamma,
         mu
-    )
+    ) / state_specification.init_states.N
 
     epsilon = calculate_import_rate(
         mu,

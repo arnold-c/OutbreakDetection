@@ -41,8 +41,10 @@ measles_dynamics_parameters = TargetDiseaseDynamicsParameters(;
     infectious_duration = Day(8.0),
     beta_force = 0.2,
     seasonality = SeasonalityFunction(CosineSeasonality()),
-    min_vaccination_coverage = 0.75,
-    max_vaccination_coverage = 0.85,
+    min_vaccination_coverage = 0.8,
+    max_vaccination_coverage = 0.8,
+    # min_vaccination_coverage = 0.75,
+    # max_vaccination_coverage = 0.85,
 )
 
 # Choose Rubella-like parameters for the dynamic noise in the measles simulations
@@ -71,10 +73,10 @@ noise_level_vec = [
     2.0,
     4.0,
     6.0,
-    7.0,
+    8.0,
 ]
 noise_type_description_vec = [
-    :static,
+    # :static,
     :dynamic,
 ]
 
@@ -86,14 +88,17 @@ percent_tested_vec = collect(0.1:0.1:1.0)
 
 #%%
 alert_method_vec = AlertMethod[AlertMethod(MovingAverage())]
-accuracy_metric_vec = AccuracyMetric[AccuracyMetric(BalancedAccuracy()), AccuracyMetric(F1())]
-threshold_bounds = (; lower = 0.0, upper = 20.0)
+accuracy_metric_vec = AccuracyMetric[
+    AccuracyMetric(BalancedAccuracy()),
+    # AccuracyMetric(F1())
+]
+threshold_bounds = (; lower = 0.0, upper = 50.0)
 outbreak_specification_vec = [
     OutbreakSpecification(5, 30, 500),
 ]
 alert_filtering_strategy_vec = AlertFilteringStrategy[
     AlertFilteringStrategy(AllAlerts()),
-    AlertFilteringStrategy(PostOutbreakStartAlerts()),
+    # AlertFilteringStrategy(PostOutbreakStartAlerts()),
 ]
 
 #%%
@@ -113,12 +118,12 @@ specification_vecs = ScenarioSpecificationVecs(;
 #%%
 optimized_threshold_results = run_scenario_threshold_optimization(
     specification_vecs;
-    force = false,
+    force = true,
     save_results = true,
     save_checkpoints = true,
     save_checkpoint_num = 5,
     verbose = false,
-    disable_time_check = false,
+    disable_time_check = true,
 );
 
 #%%

@@ -24,7 +24,7 @@ function calculate_tested_vec!(
     )
     @assert length(outvec) == length(invec)
     @inbounds for i in eachindex(invec)
-        outvec[i] = rand(rng, Distributions.Binomial(invec[i], perc_tested))
+        outvec[i] = Int64(round(invec[i] * perc_tested))
     end
 
     return nothing

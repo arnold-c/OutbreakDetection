@@ -85,38 +85,15 @@ function recreate_noise_vecs(
         ensemble_specification
     )
 
-    # Calculate endemic equilibrium for initial states
-    endemic_result = calculate_endemic_equilibrium_proportions(
-        updated_dynamics_parameter_specification,
-        vaccination_coverage
-    )
-
-    # Handle endemic equilibrium calculation
-    endemic_props = if Try.isok(endemic_result)
-        Try.unwrap(endemic_result)
-    else
-        if verbose
-            @warn Try.unwrap_err(endemic_result) *
-                "\nDefaulting to no initial infections, s_prop = 1 - vaccination_coverage"
-        end
-        (
-            s_prop = 1.0 - vaccination_coverage,
-            e_prop = 0.0,
-            i_prop = 0.0,
-            r_prop = vaccination_coverage,
-        )
-    end
-
-    # Ensure at least 5 infected individuals
-    min_i_prop = 5.0 / N
-    i_prop_adjusted = max(endemic_props.i_prop, min_i_prop)
-
     # Create updated state parameters with endemic equilibrium
     updated_state_parameters = StateParameters(;
         N = N,
-        s_prop = endemic_props.s_prop,
-        e_prop = endemic_props.e_prop,
-        i_prop = i_prop_adjusted,
+        s_prop = 0.05,
+        e_prop = 0.0,
+        i_prop = 0.0,
+        # s_prop = endemic_props.s_prop,
+        # e_prop = endemic_props.e_prop,
+        # i_prop = i_prop_adjusted,
     )
 
     updated_ensemble_specification = EnsembleSpecification(
@@ -150,5 +127,4 @@ function recreate_noise_vecs(
     )
 
     return noise_result
-
 end

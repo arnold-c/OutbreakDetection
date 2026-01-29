@@ -104,12 +104,7 @@ function recreate_noise_dynamics_parameter_specification(
     noise_gamma = calculate_gamma(dynamical_noise_params)
     noise_sigma = calculate_sigma(dynamical_noise_params)
 
-    noise_beta_mean = calculate_beta(
-        noise_specification.R_0,
-        noise_sigma,
-        noise_gamma,
-        dynamics_parameter_specification.mu,
-    )
+    noise_beta_mean = dynamics_parameter_specification.beta_mean
 
     noise_epsilon = calculate_import_rate(
         dynamics_parameter_specification.mu,

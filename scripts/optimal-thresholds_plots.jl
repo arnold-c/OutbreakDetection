@@ -11,7 +11,7 @@ include(
 # Make sure these values are present in the optimization script
 alert_method = OutbreakDetectionCore.AlertMethod(OutbreakDetectionCore.MovingAverage(7))
 accuracy_metric = OutbreakDetectionCore.AccuracyMetric(OutbreakDetectionCore.BalancedAccuracy())
-threshold_bounds = (; lower = 0.0, upper = 20.0)
+threshold_bounds = (; lower = 0.0, upper = 50.0)
 alert_filtering_strategy = OutbreakDetectionCore.AlertFilteringStrategy(OutbreakDetectionCore.AllAlerts())
 plotdirpath = DrWatson.plotsdir()
 

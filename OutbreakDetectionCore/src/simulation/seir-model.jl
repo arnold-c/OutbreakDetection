@@ -110,6 +110,7 @@ function seir_mod!(
         sigma = dynamics_params.sigma
         gamma = dynamics_params.gamma
         timestep = time_params.tstep
+        R_0 = dynamics_params.R_0
         tlength = length(inc_vec)
 
         state_vec[1] = states
@@ -133,11 +134,12 @@ function seir_mod!(
 
         state_vec[i], inc_vec[i] = seir_mod_loop(
             state_vec[i - 1],
-            beta_vec[i - 1],
+            beta_vec[i],
             mu_timestep,
             epsilon_timestep,
             sigma_timestep,
             gamma_timestep,
+            R_0,
             vaccination_coverage,
             timestep,
         )
@@ -164,6 +166,7 @@ function seir_mod_loop(
         epsilon_timestep::Float64,
         sigma_timestep::Float64,
         gamma_timestep::Float64,
+        R_0::Float64,
         vaccination_coverage::Float64,
         timestep::Float64,
     )::Tuple{StaticArrays.SVector{5, Int64}, Int64}
@@ -175,62 +178,26 @@ function seir_mod_loop(
         R = state_vec[4]
         N = state_vec[5]
 
-        # Pre-compute common terms and probabilities (reuse these!)
-        mu_N_timestep = mu_timestep * N
-
-        # Pre-compute all probabilities once
-        contact_prob = convert_rate_to_prob(beta_t * I * timestep / N)
-        import_prob = convert_rate_to_prob(epsilon_timestep)
-        death_prob = convert_rate_to_prob(mu_timestep)  # Reuse for all death processes
-        latent_prob = convert_rate_to_prob(sigma_timestep)
-        recovery_prob = convert_rate_to_prob(gamma_timestep)
-
-        # Births (Poisson since external arrivals)
-        S_births = rand(Distributions.Poisson(mu_N_timestep * (1 - vaccination_coverage)))
-        R_births = rand(Distributions.Poisson(mu_N_timestep * vaccination_coverage))
-
-        # For S compartment: handle competing outflows sequentially
-        remaining_S = S
-
-        # Contact infections: S -> E (use smart transition)
-        contact_rate = remaining_S * contact_prob
-        contact_inf = remaining_S > 0 ?
-            _smart_transition(remaining_S, contact_prob, contact_rate) :
-            0
-        remaining_S = max(0, remaining_S - contact_inf)
-
-        # Import infections: S -> E (use smart transition)
-        import_rate = remaining_S * import_prob
-        import_inf = remaining_S > 0 ?
-            _smart_transition(remaining_S, import_prob, import_rate) :
-            0
-        remaining_S = max(0, remaining_S - import_inf)
-
-        # S deaths (use smart transition with pre-computed death_prob)
-        S_death_rate = remaining_S * death_prob
-        S_death = remaining_S > 0 ?
-            _smart_transition(remaining_S, death_prob, S_death_rate) :
-            0
-
-        # E compartment transitions
-        latent_rate = E * latent_prob
-        latent = _smart_transition(E, latent_prob, latent_rate)
-
-        remaining_E = E - latent
-        E_death_rate = remaining_E * death_prob  # Reuse death_prob
-        E_death = _smart_transition(remaining_E, death_prob, E_death_rate)
-
-        # I compartment transitions
-        recovery_rate = I * recovery_prob
-        recovery = _smart_transition(I, recovery_prob, recovery_rate)
-
-        remaining_I = I - recovery
-        I_death_rate = remaining_I * death_prob  # Reuse death_prob
-        I_death = _smart_transition(remaining_I, death_prob, I_death_rate)
-
-        # R deaths (use smart transition with pre-computed death_prob)
-        R_death_rate = R * death_prob  # Reuse death_prob
-        R_death = _smart_transition(R, death_prob, R_death_rate)
+        contact_inf = Random.rand(
+            Distributions.Poisson(beta_t * S * I * timestep)
+        ) # Contact: S -> E
+        S_births = Random.rand(
+            Distributions.Poisson(
+                (1 - vaccination_coverage) * N * mu_timestep
+            ),
+        ) # Birth -> S
+        S_death = Random.rand(Distributions.Poisson(S * mu_timestep)) # S -> death
+        R_death = Random.rand(Distributions.Poisson(R * mu_timestep)) # R -> death
+        import_inf = Random.rand(
+            Distributions.Poisson(epsilon_timestep * N / R_0)
+        ) # Import: S -> E
+        R_births = Random.rand(
+            Distributions.Poisson(vaccination_coverage * N * mu_timestep)
+        ) # Birth -> R
+        latent = Random.rand(Distributions.Binomial(E, sigma_timestep)) # E -> I
+        E_death = Random.rand(Distributions.Binomial(E - latent, mu_timestep)) # E -> death
+        recovery = Random.rand(Distributions.Binomial(I, gamma_timestep)) # I -> R
+        I_death = Random.rand(Distributions.Binomial(I - recovery, mu_timestep)) # I -> death
 
         # Calculate changes
         dS = S_births - (contact_inf + import_inf + S_death)
