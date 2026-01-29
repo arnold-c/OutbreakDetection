@@ -336,16 +336,10 @@ function DynamicsParameters(
     )
     Random.seed!(seed)
 
-    vaccination_coverage =
-    if dynamic_parameter_specification.min_vaccination_coverage ==
-            dynamic_parameter_specification.max_vaccination_coverage
-        dynamic_parameter_specification.min_vaccination_coverage
-    else
-        sample_vaccination_coverage(
-            dynamic_parameter_specification.min_vaccination_coverage,
-            dynamic_parameter_specification.max_vaccination_coverage,
-        )
-    end
+    vaccination_coverage = sample_vaccination_coverage(
+        dynamic_parameter_specification.min_vaccination_coverage,
+        dynamic_parameter_specification.max_vaccination_coverage,
+    )
 
     dynamics_parameters = DynamicsParameters(;
         beta_mean = dynamic_parameter_specification.beta_mean,

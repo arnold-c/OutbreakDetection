@@ -22,6 +22,10 @@ function sample_vaccination_coverage(
         max_coverage,
         digits = 4
     )
+    if min_coverage == max_coverage
+        return min_coverage
+    end
+
     return round(
         rand(
             Distributions.Uniform(
