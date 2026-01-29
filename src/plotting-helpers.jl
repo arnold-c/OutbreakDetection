@@ -9,7 +9,9 @@ function reshape_optimization_results_to_matrix(
         results::StructVector{OutbreakDetectionCore.OptimizationResult}
     )
     # Get unique noise types and levels
-    unique_noise_types = unique(results.noise_type_description)
+    unique_noise_types = unique(results.noise_type_description) |>
+        # sort so static noise appears first for reshaped matrix
+        noise_description -> sort(noise_description; rev = true)
 
     # Group results by noise type
     noise_type_groups = map(unique_noise_types) do noise_type
@@ -49,13 +51,6 @@ function reshape_optimization_results_to_matrix(
                 cell_results.percent_tested
             )
 
-            # Show unique test specifications (unsorted)
-            unique_specs_unsorted = unique(cell_results.test_specification)
-
-            # Show unique test specifications (sorted)
-            unique_specs_sorted = get_unique_test_specifications_in_sorted_order(
-                cell_results.test_specification
-            )
             sorted_results = cell_results[sorted_indices]
 
             result_matrix[i, j] = sorted_results

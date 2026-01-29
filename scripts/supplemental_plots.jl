@@ -21,7 +21,8 @@ optimized_threshold_results = Try.unwrap(
     OutbreakDetectionCore.load_previous_optimization_results_structvector(
         optimized_filedir,
         "threshold-optimization.jld2",
-        joinpath(optimized_filedir, "checkpoints"),
+        joinpath(optimized_filedir, "checkpoints");
+        default_action = :continue
     )
 )
 
