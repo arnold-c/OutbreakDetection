@@ -48,27 +48,43 @@ function create_wide_optimal_thresholds_df(df, characteristic_sym)
         DataFrames.select(
             _,
             DataFrames.Cols(
+                x -> contains(x, "noise"),
                 x -> startswith(x, "s"),
                 :test_lag,
                 x -> contains(x, "tested"),
                 characteristic_sym,
             ),
         )
+        sort!(
+            _,
+            :percent_tested
+        )
         DataFrames.unstack(
             _,
-            [:sensitivity, :specificity, :test_lag],
-            :percent_clinic_tested,
+            [:noise_type, :noise_level, :sensitivity, :specificity, :test_lag],
+            :percent_tested,
             characteristic_sym,
         )
         DataFrames.select(
             _,
             DataFrames.Cols(
+                x -> contains(x, "noise"),
                 x -> startswith(x, "s"),
                 "test_lag",
                 :,
             ),
         )
     end
+
+    sort!(
+        maindf,
+        [
+            :noise_level,
+            :sensitivity,
+            :specificity,
+            :test_lag,
+        ],
+    )
 
     clinical_case_df = DataFrames.subset(
         maindf,
