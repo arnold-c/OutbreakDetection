@@ -116,10 +116,9 @@ This struct stores the results of matching alerts to outbreaks, using a sparse
 representation that only stores outbreaks that have at least one matching alert.
 
 # Matching Rule
-An alert can match multiple outbreaks if it spans across them. Specifically, an alert
-that was matched to outbreak N via Case 1 (alert starts within outbreak) can also match
-outbreak N+1 via Case 2 (alert starts before outbreak but extends into it) if the alert
-extends past the end of outbreak N into outbreak N+1.
+Each alert is matched to at most one outbreak (the first outbreak it overlaps with).
+This ensures a clean one-to-one mapping and prevents double-counting alerts in
+PPV calculations.
 
 # Fields
 - `outbreak_indices_with_alerts::Vector{Int64}`: Indices of outbreaks that have ≥1 matching alert
@@ -201,8 +200,7 @@ Base.@kwdef struct MatchedThresholds <: AbstractThresholds
             alert_indices_per_outbreak
         ) "All alert indices must be in range [1, $n_alerts]"
         @assert allunique(outbreak_indices_with_alerts) "There are non-unique outbreak indices"
-        # NOTE: Alert indices can be non-unique because an alert can match multiple outbreaks
-        # if it spans across them (via Case 2: alert starts before outbreak but extends into it)
+        @assert allunique(reduce(vcat, alert_indices_per_outbreak; init = Int64[])) "There are non-unique alert indices"
 
         return new(
             outbreak_indices_with_alerts,
