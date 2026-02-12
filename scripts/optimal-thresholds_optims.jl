@@ -86,7 +86,10 @@ percent_tested_vec = collect(0.1:0.1:1.0)
 
 #%%
 alert_method_vec = AlertMethod[AlertMethod(MovingAverage())]
-accuracy_metric_vec = AccuracyMetric[AccuracyMetric(BalancedAccuracy()), AccuracyMetric(F1())]
+accuracy_metric_vec = AccuracyMetric[
+    AccuracyMetric(BalancedAccuracy()),
+    AccuracyMetric(F1()),
+]
 threshold_bounds = (; lower = 0.0, upper = 20.0)
 outbreak_specification_vec = [
     OutbreakSpecification(5, 30, 500),

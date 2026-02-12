@@ -1,7 +1,3 @@
-# module SEIRModel
-#
-# export calculate_beta_amp, seir_mod, seir_mod!, seir_mod_loop!
-#
 """
 This is a simulation of an SIR model that uses Tau-leaping, with commuter
 imports. All jumps are manually defined.
@@ -281,24 +277,4 @@ end
         # Use exact Binomial for small n or large rate
         return rand(Distributions.Binomial(n, prob))
     end
-end
-
-function convert_svec_to_matrix(svec)
-    arr = Matrix{Int64}(undef, size(svec, 1), length(svec[1]))
-    convert_svec_to_matrix!(arr, svec)
-    return arr
-end
-function convert_svec_to_matrix!(arr, svec)
-    @inbounds for state in eachindex(svec[1]), time in axes(svec, 1)
-        arr[time, state] = svec[time][state]
-    end
-    return nothing
-end
-
-function convert_svec_to_array(svec)
-    arr = Array{Int64}(undef, size(svec, 1), length(svec[1]), size(svec, 2))
-    @inbounds for sim in axes(svec, 2)
-        convert_svec_to_matrix!(@view(arr[:, :, sim]), @view(svec[:, sim]))
-    end
-    return arr
 end
