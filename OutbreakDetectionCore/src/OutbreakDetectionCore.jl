@@ -84,11 +84,8 @@ include("./utilities/create-ensemble-specification.jl")
 include("./utilities/group-structvectors.jl")
 include("./utilities/calculate-mean-incidence.jl")
 include("./utilities/vaccination-distribution-sample.jl")
-include("./utilities/test-descriptions.jl")
 include("./utilities/verify-perfect-test-consistency.jl")
 include("./utilities/struct-version-hash.jl")
-# TODO: update to work with current structvector implementation
-include("./utilities/results-reshaping.jl")
 
 # Diagnostic Testing
 include("./diagnostic-testing/calculate-num-tested.jl")
@@ -125,9 +122,5 @@ include("./threshold-optimization/threshold-optimization.jl")
 
 # Optimal Thresholds
 include("./optimal-thresholds/optimal-metrics-calculation.jl")
-# TODO: Update summaries below to be able to remove these files/adapt the underlying functions
-include("./optimal-thresholds/results-dataframes.jl")
-include("./optimal-thresholds/threshold-calculation.jl")
-include("./optimal-thresholds/threshold-summaries.jl")
 
 end

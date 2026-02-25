@@ -16,7 +16,7 @@ function reshape_optim_df_to_matrix(
         map(unique_noise_descriptions) do noise_description
         filter(
             noise_spec ->
-            noise_description == get_noise_description(noise_spec),
+            noise_description == OutbreakDetectionCore.get_noise_description(noise_spec),
             noise_spec_vec,
         ) |>
             v -> sort_noise_specifications(convert(Vector{typeof(v[1])}, v))
@@ -84,7 +84,7 @@ Sort Poisson noise specifications by noise magnitude.
 """
 function sort_noise_specifications(
         v::AbstractVector{T}
-    ) where {T <: PoissonNoiseSpecification}
+    ) where {T <: OutbreakDetectionCore.PoissonNoiseSpecification}
     noise_magnitudes = getproperty.(v, :noise_mean_scaling)
 
     noise_orders = sortperm(noise_magnitudes)
@@ -99,7 +99,7 @@ Sort dynamical noise specifications by vaccination coverage (descending).
 """
 function sort_noise_specifications(
         v::AbstractVector{T}
-    ) where {T <: DynamicalNoiseSpecification}
+    ) where {T <: OutbreakDetectionCore.DynamicalNoiseSpecification}
     noise_magnitudes = getproperty.(v, :vaccination_coverage)
 
     noise_orders = sortperm(noise_magnitudes; rev = true)

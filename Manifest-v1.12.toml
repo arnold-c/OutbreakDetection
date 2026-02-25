@@ -2,7 +2,7 @@
 
 julia_version = "1.12.4"
 manifest_format = "2.0"
-project_hash = "d096f4171544e36e0d5d9fce4780ccd59380a0c1"
+project_hash = "b20653771acde96f50d05c8896738f13797dd10c"
 
 [[deps.ADTypes]]
 git-tree-sha1 = "f7304359109c768cf32dc5fa2d371565bb63b68a"
@@ -1623,7 +1623,7 @@ uuid = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
 version = "1.8.1"
 
 [[deps.OutbreakDetection]]
-deps = ["CSV", "CairoMakie", "CategoricalArrays", "Chain", "ColorSchemes", "DataFrames", "DataFramesMeta", "Dates", "DrWatson", "FLoops", "GLMakie", "HDF5", "JLD2", "JuliaFormatter", "LaTeXStrings", "LightSumTypes", "LinearAlgebra", "Match", "MultistartOptimization", "NLopt", "NaNMath", "Optim", "OutbreakDetectionCore", "ProgressMeter", "Revise", "StaticArrays", "Statistics", "StatsBase", "StructArrays", "Try", "UnPack"]
+deps = ["CSV", "CairoMakie", "CategoricalArrays", "Chain", "ColorSchemes", "DataFrames", "DataFramesMeta", "Dates", "DrWatson", "FLoops", "GLMakie", "HDF5", "JLD2", "JuliaFormatter", "LaTeXStrings", "LightSumTypes", "LinearAlgebra", "Match", "MultistartOptimization", "NLopt", "NaNMath", "Optim", "OutbreakDetectionCore", "ProgressMeter", "Revise", "StaticArrays", "Statistics", "StatsBase", "StructArrays", "StyledStrings", "Try", "UnPack"]
 path = "."
 uuid = "693d1b0e-d345-4dda-a1e2-0569e4749b26"
 version = "1.0.0-DEV"

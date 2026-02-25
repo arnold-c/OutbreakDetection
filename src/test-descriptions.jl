@@ -7,7 +7,7 @@ export get_test_description,
 
 Get a human-readable description of the test specification.
 """
-function get_test_description(test_specification::IndividualTestSpecification)
+function get_test_description(test_specification::OutbreakDetectionCore.IndividualTestSpecification)
     sens = test_specification.sensitivity
     spec = test_specification.specificity
     lag = test_specification.test_result_lag
@@ -53,7 +53,7 @@ end
 
 Get a plot-formatted test description.
 """
-function plot_test_description(test_specification::IndividualTestSpecification)
+function plot_test_description(test_specification::OutbreakDetectionCore.IndividualTestSpecification)
     sens = test_specification.sensitivity
     spec = test_specification.specificity
     lag = test_specification.test_result_lag
