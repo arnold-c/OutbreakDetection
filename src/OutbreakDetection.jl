@@ -16,12 +16,15 @@ using ColorSchemes
 using StaticArrays: StaticArrays
 using Dates: Dates
 using LightSumTypes: LightSumTypes
+using StyledStrings
 
 
 include("plotting-helpers.jl")
 include("sort_test_specifications.jl")
 include("schematic-plot/simulation-setup.jl")
 include("schematic-plot/plot.jl")
+
+include("./compare-optimal-solution-results.jl")
 
 include("line_plots.jl")
 
