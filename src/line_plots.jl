@@ -146,7 +146,7 @@ function line_plot(
                     ]
                 end
             end,
-            OutbreakDetectionCore.plot_test_description.(reverse(unique_test_specifications));
+            plot_test_description.(reverse(unique_test_specifications));
             labelsize = legendsize,
             orientation = :horizontal,
             nbanks = nbanks,
