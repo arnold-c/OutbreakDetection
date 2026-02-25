@@ -116,16 +116,20 @@ This struct stores the results of matching alerts to outbreaks, using a sparse
 representation that only stores outbreaks that have at least one matching alert.
 
 # Matching Rule
-Each alert is matched to at most one outbreak (the first outbreak it overlaps with).
-This ensures a clean one-to-one mapping and prevents double-counting alerts in
-PPV calculations.
+Depending on matching strategy, alerts may map either to:
+- at most one outbreak (`SingleOutbreakPerAlert`), or
+- multiple outbreaks (`MultipleOutbreaksPerAlert`).
+
+`n_matched_alerts` always represents the number of unique alerts that matched at
+least one outbreak.
 
 # Fields
 - `outbreak_indices_with_alerts::Vector{Int64}`: Indices of outbreaks that have ≥1 matching alert
 - `alert_indices_per_outbreak::Vector{Vector{Int64}}`: For each outbreak in `outbreak_indices_with_alerts`,
   the indices of alerts that matched it (into the original alert bounds)
 - `n_matched_outbreaks::Int64`: Number of outbreaks that have ≥1 matching alert (cached for clarity)
-- `n_matched_alerts::Int64`: Total number of alerts that matched to an outbreak (cached for clarity)
+- `n_matched_alerts::Int64`: Number of unique alerts that matched at least one
+  outbreak (cached for clarity)
 - `n_outbreaks::Int64`: Total number of outbreaks (including those with no alerts)
 - `n_alerts::Int64`: Total number of alerts (including those that didn't match any outbreak)
 
@@ -133,7 +137,7 @@ PPV calculations.
 The struct validates that:
 - `length(outbreak_indices_with_alerts) == length(alert_indices_per_outbreak)`
 - `n_matched_outbreaks == length(outbreak_indices_with_alerts)`
-- `n_matched_alerts == sum(length, alert_indices_per_outbreak)`
+- `n_matched_alerts == length(unique(vcat(alert_indices_per_outbreak...)))`
 
 # Constructor
     MatchedThresholds(; outbreak_indices_with_alerts, alert_indices_per_outbreak, n_matched_outbreaks, n_matched_alerts, n_outbreaks, n_alerts)
@@ -191,7 +195,10 @@ Base.@kwdef struct MatchedThresholds <: AbstractThresholds
         @assert n_matched_outbreaks >= 0 "n_matched_outbreaks must be non-negative, got $n_matched_outbreaks"
         @assert n_matched_alerts >= 0 "n_matched_alerts must be non-negative, got $n_matched_alerts"
         @assert n_matched_outbreaks == length(outbreak_indices_with_alerts) "n_matched_outbreaks ($n_matched_outbreaks) must equal length(outbreak_indices_with_alerts) ($(length(outbreak_indices_with_alerts)))"
-        @assert n_matched_alerts == sum(length, alert_indices_per_outbreak; init = 0) "n_matched_alerts ($n_matched_alerts) must equal sum of alert counts ($(sum(length, alert_indices_per_outbreak; init = 0)))"
+        unique_matched_alerts = length(
+            unique(reduce(vcat, alert_indices_per_outbreak; init = Int64[]))
+        )
+        @assert n_matched_alerts == unique_matched_alerts "n_matched_alerts ($n_matched_alerts) must equal number of unique matched alerts ($unique_matched_alerts)"
         @assert all(
             idx -> 1 <= idx <= n_outbreaks, outbreak_indices_with_alerts
         ) "All outbreak indices must be in range [1, $n_outbreaks]"
@@ -200,8 +207,6 @@ Base.@kwdef struct MatchedThresholds <: AbstractThresholds
             alert_indices_per_outbreak
         ) "All alert indices must be in range [1, $n_alerts]"
         @assert allunique(outbreak_indices_with_alerts) "There are non-unique outbreak indices"
-        @assert allunique(reduce(vcat, alert_indices_per_outbreak; init = Int64[])) "There are non-unique alert indices"
-
         return new(
             outbreak_indices_with_alerts,
             alert_indices_per_outbreak,

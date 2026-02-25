@@ -33,6 +33,7 @@ The function performs the following steps:
       - `threshold_bounds_vec`: Search bounds for threshold optimization
       - `outbreak_specification_vec`: Outbreak detection criteria
       - `alert_filtering_strategy_vec`: Alert filtering strategies
+      - `alert_outbreak_matching_strategy_vec`: Alert-outbreak matching strategies
 
 # Returns
 
@@ -77,7 +78,8 @@ function create_scenarios_structvector(specification_vecs::ScenarioSpecification
         accuracy_metric_vec,
         threshold_bounds_vec,
         outbreak_specification_vec,
-        alert_filtering_strategy_vec = specification_vecs
+        alert_filtering_strategy_vec,
+        alert_outbreak_matching_strategy_vec = specification_vecs
 
     combinations = Iterators.product(
         ensemble_specification_vec,
@@ -90,6 +92,7 @@ function create_scenarios_structvector(specification_vecs::ScenarioSpecification
         threshold_bounds_vec,
         outbreak_specification_vec,
         alert_filtering_strategy_vec,
+        alert_outbreak_matching_strategy_vec,
     )
     n_combinations = length(combinations)
 
@@ -107,6 +110,7 @@ function create_scenarios_structvector(specification_vecs::ScenarioSpecification
                 threshold_bounds,
                 outbreak_spec,
                 alert_filtering_strategy,
+                alert_outbreak_matching_strategy,
             ),
         ) in enumerate(combinations)
 
@@ -121,6 +125,7 @@ function create_scenarios_structvector(specification_vecs::ScenarioSpecification
             threshold_bounds = threshold_bounds,
             outbreak_specification = outbreak_spec,
             alert_filtering_strategy = alert_filtering_strategy,
+            alert_outbreak_matching_strategy = alert_outbreak_matching_strategy,
         )
     end
 

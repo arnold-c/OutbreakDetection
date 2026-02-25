@@ -6,7 +6,10 @@ export calculate_mean_ensemble_accuracy
         accuracy_metric,
         test_positives_container,
         outbreak_thresholds,
-        alert_filtering_strategy = AlertFilteringStrategy(AllAlerts())
+        alert_filtering_strategy = AlertFilteringStrategy(AllAlerts()),
+        alert_outbreak_matching_strategy = AlertOutbreakMatchingStrategy(
+            SingleOutbreakPerAlert(),
+        )
     )
 
 Calculate accuracy metrics across all simulations in the ensemble.
@@ -19,6 +22,8 @@ Calculate accuracy metrics across all simulations in the ensemble.
 - `alert_filtering_strategy`: Strategy for filtering alerts during matching
   (default: `AllAlerts()`). Use `PostOutbreakStartAlerts()` to exclude alerts
   that start before the outbreak begins.
+- `alert_outbreak_matching_strategy`: Strategy for matching alerts to overlapping
+  outbreaks (default: `SingleOutbreakPerAlert()`).
 
 # Returns
 - `mean_accuracy`: Mean accuracy across simulations
@@ -31,6 +36,8 @@ function calculate_mean_ensemble_accuracy(
         alert_filtering_strategy::AlertFilteringStrategy = AlertFilteringStrategy(
             AllAlerts()
         ),
+        alert_outbreak_matching_strategy::AlertOutbreakMatchingStrategy =
+            AlertOutbreakMatchingStrategy(SingleOutbreakPerAlert()),
     )
     nsims = length(outbreak_thresholds)
 
@@ -53,6 +60,7 @@ function calculate_mean_ensemble_accuracy(
             outbreak_bounds,
             accuracy_metric,
             alert_filtering_strategy,
+            alert_outbreak_matching_strategy,
         )
 
         accuracies[sim] = sim_accuracy

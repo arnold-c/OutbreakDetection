@@ -19,6 +19,7 @@ function verify_perfect_test_consistency(results)
                     r.alert_method,
                     r.threshold_bounds,
                     r.alert_filtering_strategy,
+                    r.alert_outbreak_matching_strategy,
                 )
                 for r in perfect_results
         ]
@@ -26,14 +27,15 @@ function verify_perfect_test_consistency(results)
 
     all_consistent = true
 
-    for (pct, acc_metric, alert_method, threshold_bounds, alert_filtering_strategy) in unique_groups
+    for (pct, acc_metric, alert_method, threshold_bounds, alert_filtering_strategy, matching_strategy) in unique_groups
         subset = filter(
             r ->
             r.percent_tested == pct &&
                 r.accuracy_metric == acc_metric &&
                 r.alert_method == alert_method &&
                 r.threshold_bounds == threshold_bounds &&
-                r.alert_filtering_strategy == alert_filtering_strategy,
+                r.alert_filtering_strategy == alert_filtering_strategy &&
+                r.alert_outbreak_matching_strategy == matching_strategy,
             perfect_results
         )
 
@@ -52,7 +54,7 @@ function verify_perfect_test_consistency(results)
 
             # Check optimal threshold
             if !isapprox(res.optimal_threshold, first_res.optimal_threshold; atol = 1.0e-6)
-                @error "Mismatch in optimal_threshold" percent_tested = pct accuracy_metric = acc_metric alert_method = alert_method first =
+                @error "Mismatch in optimal_threshold" percent_tested = pct accuracy_metric = acc_metric alert_method = alert_method alert_outbreak_matching_strategy = matching_strategy first =
                     first_res.optimal_threshold current = res.optimal_threshold first_noise_level =
                     first_res.noise_level first_noise_type = first_res.noise_type_description noise_level = res.noise_level noise_type = res.noise_type_description
                 all_consistent = false
@@ -60,7 +62,7 @@ function verify_perfect_test_consistency(results)
 
             # Check accuracies (mean)
             if !isapprox(StatsBase.mean(res.accuracies), StatsBase.mean(first_res.accuracies); atol = 1.0e-6)
-                @error "Mismatch in mean accuracy" percent_tested = pct accuracy_metric = acc_metric alert_method = alert_method first =
+                @error "Mismatch in mean accuracy" percent_tested = pct accuracy_metric = acc_metric alert_method = alert_method alert_outbreak_matching_strategy = matching_strategy first =
                     StatsBase.mean(first_res.accuracies) current = StatsBase.mean(res.accuracies) first_noise_level =
                     first_res.noise_level first_noise_type = first_res.noise_type_description noise_level = res.noise_level noise_type = res.noise_type_description
                 all_consistent = false

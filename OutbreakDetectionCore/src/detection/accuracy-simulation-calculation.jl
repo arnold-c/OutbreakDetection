@@ -5,7 +5,10 @@ export calculate_simulation_accuracy
         alert_vec,
         outbreak_bounds,
         accuracy_metric,
-        alert_filtering_strategy = AlertFilteringStrategy(AllAlerts())
+        alert_filtering_strategy = AlertFilteringStrategy(AllAlerts()),
+        alert_outbreak_matching_strategy = AlertOutbreakMatchingStrategy(
+            SingleOutbreakPerAlert(),
+        )
     )
 
 Calculate accuracy metrics for a single simulation using pre-computed outbreak bounds.
@@ -17,6 +20,8 @@ Calculate accuracy metrics for a single simulation using pre-computed outbreak b
 - `alert_filtering_strategy`: Strategy for filtering alerts during matching
   (default: `AllAlerts()`). Use `PostOutbreakStartAlerts()` to exclude alerts
   that start before the outbreak begins.
+- `alert_outbreak_matching_strategy`: Strategy for matching alerts to overlapping
+  outbreaks (default: `SingleOutbreakPerAlert()`).
 
 # Returns
 - `accuracy`: Overall accuracy score
@@ -31,6 +36,8 @@ function calculate_simulation_accuracy(
         alert_filtering_strategy::AlertFilteringStrategy = AlertFilteringStrategy(
             AllAlerts()
         ),
+        alert_outbreak_matching_strategy::AlertOutbreakMatchingStrategy =
+            AlertOutbreakMatchingStrategy(SingleOutbreakPerAlert()),
     )
     # Get alert bounds using RLE
     alert_rle = StatsBase.rle(alert_vec)
@@ -40,6 +47,7 @@ function calculate_simulation_accuracy(
         outbreak_thresholds,
         alert_bounds,
         alert_filtering_strategy,
+        alert_outbreak_matching_strategy,
     )
 
     # Calculate accuracy based on metric

@@ -126,6 +126,7 @@ for efficient lookup and comparison operations when identifying missing scenario
   - `threshold_bounds`: Bounds for threshold optimization
   - `outbreak_specification`: Outbreak parameters
   - `alert_filtering_strategy`: Strategy for filtering alerts during matching
+  - `alert_outbreak_matching_strategy`: Strategy for matching alerts to outbreaks
 
 # See Also
 - [`result_key`](@ref): Generates equivalent keys from optimization results
@@ -144,6 +145,7 @@ function scenario_key(scenario::OptimizationScenario)
         scenario.threshold_bounds,
         scenario.outbreak_specification,
         scenario.alert_filtering_strategy,
+        scenario.alert_outbreak_matching_strategy,
     )
 end
 
@@ -172,6 +174,7 @@ between completed results and pending scenarios.
   - `threshold_bounds`: Bounds for threshold optimization
   - `outbreak_specification`: Outbreak parameters
   - `alert_filtering_strategy`: Strategy for filtering alerts during matching
+  - `alert_outbreak_matching_strategy`: Strategy for matching alerts to outbreaks
 
 # See Also
 - [`scenario_key`](@ref): Generates equivalent keys from optimization scenarios
@@ -190,5 +193,6 @@ function result_key(result::OptimizationResult)
         result.threshold_bounds,
         result.outbreak_specification,
         result.alert_filtering_strategy,
+        result.alert_outbreak_matching_strategy,
     )
 end

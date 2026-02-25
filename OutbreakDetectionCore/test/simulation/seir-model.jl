@@ -18,7 +18,11 @@ using StaticArrays
         min_vaccination_coverage = 0.8,
         max_vaccination_coverage = 0.8
     )
-    dynamics_spec = DynamicsParameterSpecification(target_dynamics)
+    common_dynamics = CommonDiseaseDynamicsParameters(;
+        births_per_k_pop = 27.0,
+        nsims = 100,
+    )
+    dynamics_spec = DynamicsParameterSpecification(states, target_dynamics, common_dynamics)
     dynamics_params = DynamicsParameters(dynamics_spec; seed = 1234)
 
     time_params = SimTimeParameters(;

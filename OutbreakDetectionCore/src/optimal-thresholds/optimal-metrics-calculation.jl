@@ -7,7 +7,10 @@ export calculate_optimal_results
         test_positives_container,
         ensemble_simulation,
         outbreak_thresholds,
-        alert_filtering_strategy = AlertFilteringStrategy(AllAlerts())
+        alert_filtering_strategy = AlertFilteringStrategy(AllAlerts()),
+        alert_outbreak_matching_strategy = AlertOutbreakMatchingStrategy(
+            SingleOutbreakPerAlert(),
+        )
     )
 
 Calculate comprehensive detection performance metrics at a given alert threshold.
@@ -27,6 +30,8 @@ detection delays, unavoidable cases, and temporal characteristics.
   - `alert_filtering_strategy::AlertFilteringStrategy`: Strategy for filtering alerts during matching
     (default: `AllAlerts()`). Use `PostOutbreakStartAlerts()` to exclude alerts that start before
     the outbreak begins.
+  - `alert_outbreak_matching_strategy::AlertOutbreakMatchingStrategy`: Strategy for
+    matching alerts to overlapping outbreaks (default: `SingleOutbreakPerAlert()`).
 
 # Returns
 
@@ -64,6 +69,8 @@ function calculate_optimal_results(
         alert_filtering_strategy::AlertFilteringStrategy = AlertFilteringStrategy(
             AllAlerts()
         ),
+        alert_outbreak_matching_strategy::AlertOutbreakMatchingStrategy =
+            AlertOutbreakMatchingStrategy(SingleOutbreakPerAlert()),
     )
     nsims = length(outbreak_thresholds)
 
@@ -101,6 +108,7 @@ function calculate_optimal_results(
             outbreak_bounds,
             alert_bounds,
             alert_filtering_strategy,
+            alert_outbreak_matching_strategy,
         )
 
         ppv = calculate_ppv(matched_outbreak_threshold_indices)

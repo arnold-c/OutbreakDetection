@@ -100,6 +100,37 @@
         @test calculate_ppv(matched) == 1.0  # 1 alert, 1 correct
     end
 
+    @testset "MatchedThresholds: MultipleOutbreaksPerAlert" begin
+        outbreaks = OutbreakThresholds(
+            lower_bounds = [10, 30, 50],
+            upper_bounds = [20, 40, 60],
+            duration = [11, 11, 11],
+            num_infections_during_bounds = [100, 150, 200]
+        )
+
+        # Alert spans all three outbreaks
+        alerts = Thresholds(
+            lower_bounds = [15],
+            upper_bounds = [55],
+            duration = [41]
+        )
+
+        matched = match_outbreak_detection_bounds(
+            outbreaks,
+            alerts,
+            AlertFilteringStrategy(AllAlerts()),
+            AlertOutbreakMatchingStrategy(MultipleOutbreaksPerAlert())
+        )
+
+        # Alert should match all three outbreaks
+        @test matched.outbreak_indices_with_alerts == [1, 2, 3]
+        @test matched.alert_indices_per_outbreak == [[1], [1], [1]]
+        @test matched.n_outbreaks == 3
+        @test matched.n_alerts == 1
+        @test calculate_sensitivity(matched) == 1.0  # All 3 outbreaks detected
+        @test calculate_ppv(matched) == 1.0  # 1 alert, 1 correct
+    end
+
     @testset "MatchedThresholds: Multiple alerts per outbreak" begin
         outbreaks = OutbreakThresholds(
             lower_bounds = [10],

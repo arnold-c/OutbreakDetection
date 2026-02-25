@@ -31,6 +31,9 @@ creating a comprehensive set of optimization scenarios for threshold optimizatio
     criteria and definitions
   - `alert_filtering_strategy_vec::Vector{AlertFilteringStrategy}`: Strategies for
     filtering alerts during outbreak matching (e.g., all alerts or only post-outbreak)
+  - `alert_outbreak_matching_strategy_vec::Vector{AlertOutbreakMatchingStrategy}`:
+    Strategies for mapping overlapping alerts to outbreaks (single-outbreak-per-alert
+    or allow alerts to span multiple outbreaks)
 
 # Example
 
@@ -68,6 +71,8 @@ Base.@kwdef struct ScenarioSpecificationVecs
     threshold_bounds_vec::Vector{@NamedTuple{lower::Float64, upper::Float64}}
     outbreak_specification_vec::Vector{OutbreakSpecification}
     alert_filtering_strategy_vec::Vector{AlertFilteringStrategy}
+    alert_outbreak_matching_strategy_vec::Vector{AlertOutbreakMatchingStrategy} =
+        [AlertOutbreakMatchingStrategy(SingleOutbreakPerAlert())]
 end
 
 """
@@ -104,6 +109,8 @@ The inner constructor validates that:
   - `outbreak_specification::OutbreakSpecification`: Outbreak detection criteria
   - `alert_filtering_strategy::AlertFilteringStrategy`: Strategy for filtering
     alerts during outbreak matching (default: `AllAlerts`)
+  - `alert_outbreak_matching_strategy::AlertOutbreakMatchingStrategy`: Strategy for
+    matching alerts to overlapping outbreaks (default: `SingleOutbreakPerAlert`)
 
 # Example
 
@@ -141,6 +148,8 @@ Base.@kwdef struct OptimizationScenario
     threshold_bounds::@NamedTuple{lower::Float64, upper::Float64}
     outbreak_specification::OutbreakSpecification
     alert_filtering_strategy::AlertFilteringStrategy
+    alert_outbreak_matching_strategy::AlertOutbreakMatchingStrategy =
+        AlertOutbreakMatchingStrategy(SingleOutbreakPerAlert())
 
     function OptimizationScenario(
             ensemble_specification,
@@ -153,6 +162,7 @@ Base.@kwdef struct OptimizationScenario
             threshold_bounds,
             outbreak_specification,
             alert_filtering_strategy,
+            alert_outbreak_matching_strategy,
         )
         @assert noise_type_description in [:static, :dynamic] "The noise type must be either :static or :dynamic. Received $noise_type_description"
         @assert threshold_bounds.lower < threshold_bounds.upper
@@ -167,7 +177,8 @@ Base.@kwdef struct OptimizationScenario
             accuracy_metric,
             threshold_bounds,
             outbreak_specification,
-            alert_filtering_strategy
+            alert_filtering_strategy,
+            alert_outbreak_matching_strategy,
         )
     end
 end

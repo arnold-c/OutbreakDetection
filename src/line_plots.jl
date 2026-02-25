@@ -15,6 +15,7 @@ function line_plot(
         accuracy_metric = OutbreakDetectionCore.AccuracyMetric(OutbreakDetectionCore.BalancedAccuracy()),
         threshold_bounds = (; lower = 0.0, upper = 20.0),
         alert_filtering_strategy = OutbreakDetectionCore.AlertFilteringStrategy(OutbreakDetectionCore.AllAlerts()),
+        alert_outbreak_matching_strategy = OutbreakDetectionCore.AlertOutbreakMatchingStrategy(OutbreakDetectionCore.SingleOutbreakPerAlert()),
         plotdirpath = DrWatson.plotsdir(),
         plotname = "line_accuracy_plot",
         plotformat = "png",
@@ -50,7 +51,8 @@ function line_plot(
             r -> r.alert_method == alert_method &&
                 r.accuracy_metric == accuracy_metric &&
                 r.threshold_bounds == threshold_bounds &&
-                r.alert_filtering_strategy == alert_filtering_strategy,
+                r.alert_filtering_strategy == alert_filtering_strategy &&
+                r.alert_outbreak_matching_strategy == alert_outbreak_matching_strategy,
             results
         )
         # Reshape results into matrix structure

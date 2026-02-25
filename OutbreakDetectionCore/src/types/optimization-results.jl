@@ -29,6 +29,8 @@ Base.@kwdef struct OptimizationResult
     threshold_bounds::@NamedTuple{lower::Float64, upper::Float64}
     outbreak_specification::OutbreakSpecification
     alert_filtering_strategy::AlertFilteringStrategy
+    alert_outbreak_matching_strategy::AlertOutbreakMatchingStrategy =
+        AlertOutbreakMatchingStrategy(SingleOutbreakPerAlert())
     n_alerts::Vector{Int64}
     n_outbreaks::Vector{Int64}
     optimal_threshold::Float64

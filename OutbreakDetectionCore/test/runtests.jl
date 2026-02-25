@@ -25,7 +25,7 @@ using JET
     # include("detection/outbreak-thresholds-calculation.jl")  # API changed significantly
     # include("detection/alert-generation.jl")  # Not tested yet
     # include("detection/accuracy-simulation-calculation.jl")  # Not tested yet
-    # include("detection/match-alert-outbreak-thresholds.jl")  # Not tested yet
+    include("detection/match-alert-outbreak-thresholds.jl")  # Not tested yet
     # include("detection/detection-metric-functions.jl")  # Not tested yet
 
     # Diagnostic testing tests

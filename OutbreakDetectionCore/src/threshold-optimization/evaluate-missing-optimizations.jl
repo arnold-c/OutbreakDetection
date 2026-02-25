@@ -138,7 +138,8 @@ function evaluate_missing_optimizations(
                             alert_method_scenarios,
                             :accuracy_metric,
                             :threshold_bounds,
-                            :alert_filtering_strategy
+                            :alert_filtering_strategy,
+                            :alert_outbreak_matching_strategy,
                         )
 
                         opt_scenarios_vec = collect(values(opt_groups))

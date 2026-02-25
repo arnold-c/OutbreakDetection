@@ -43,6 +43,7 @@ function multistart_objective_function(
         test_positives_container,
         outbreak_thresholds,
         scenario.alert_filtering_strategy,
+        scenario.alert_outbreak_matching_strategy,
     )
 
     # Calculate loss (for minimization)

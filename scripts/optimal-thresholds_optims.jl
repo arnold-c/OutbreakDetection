@@ -98,6 +98,10 @@ alert_filtering_strategy_vec = AlertFilteringStrategy[
     AlertFilteringStrategy(AllAlerts()),
     AlertFilteringStrategy(PostOutbreakStartAlerts()),
 ]
+alert_outbreak_matching_strategy_vec = AlertOutbreakMatchingStrategy[
+    AlertOutbreakMatchingStrategy(SingleOutbreakPerAlert()),
+    AlertOutbreakMatchingStrategy(MultipleOutbreaksPerAlert()),
+]
 
 #%%
 specification_vecs = ScenarioSpecificationVecs(;
@@ -110,7 +114,8 @@ specification_vecs = ScenarioSpecificationVecs(;
     accuracy_metric_vec = accuracy_metric_vec,
     threshold_bounds_vec = [threshold_bounds],
     outbreak_specification_vec = outbreak_specification_vec,
-    alert_filtering_strategy_vec = alert_filtering_strategy_vec
+    alert_filtering_strategy_vec = alert_filtering_strategy_vec,
+    alert_outbreak_matching_strategy_vec = alert_outbreak_matching_strategy_vec
 )
 
 #%%
