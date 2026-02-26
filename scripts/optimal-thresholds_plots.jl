@@ -14,7 +14,8 @@ accuracy_metric = OutbreakDetectionCore.AccuracyMetric(OutbreakDetectionCore.Bal
 threshold_bounds = (; lower = 0.0, upper = 20.0)
 alert_filtering_strategy = OutbreakDetectionCore.AlertFilteringStrategy(OutbreakDetectionCore.AllAlerts())
 alert_outbreak_matching_strategy = OutbreakDetectionCore.AlertOutbreakMatchingStrategy(OutbreakDetectionCore.SingleOutbreakPerAlert())
-plotdirpath = DrWatson.plotsdir()
+
+mkpath(manuscript_plots())
 
 #%%
 optimized_filedir = OutbreakDetectionCore.outdir("ensemble", "threshold-optimization")
@@ -46,7 +47,7 @@ threshold_plot = line_plot(
     show_y_facet_label = show_y_facet_label,
     ylims = (0.0, 20.0),
     force = true,
-    plotdirpath = plotdirpath,
+    plotdirpath = manuscript_plots(),
     plotname = "optimal-thresholds_alert-threshold-plot",
     plotformat = "svg",
     save_plot = true,
@@ -75,7 +76,7 @@ accuracy_plot = line_plot(
     show_y_facet_label = show_y_facet_label,
     ylims = (0.5, 1.0),
     force = true,
-    plotdirpath = plotdirpath,
+    plotdirpath = manuscript_plots(),
     plotname = "optimal-thresholds_accuracy-plot",
     plotformat = "svg",
     save_plot = true,
@@ -105,7 +106,7 @@ delays_plot = line_plot(
     show_y_facet_label = show_y_facet_label,
     ylims = (-20, 100),
     force = true,
-    plotdirpath = plotdirpath,
+    plotdirpath = manuscript_plots(),
     plotname = "optimal-thresholds_delays-plot",
     plotformat = "svg",
     save_plot = true,
@@ -133,41 +134,10 @@ prop_alert_plot = line_plot(
     show_y_facet_label = show_y_facet_label,
     ylims = (0, 0.15),
     force = true,
-    plotdirpath = plotdirpath,
+    plotdirpath = manuscript_plots(),
     plotname = "optimal-thresholds_prop-alert-plot",
     plotformat = "svg",
     save_plot = true,
     nbanks = nbanks,
     legend_rowsize = legend_rowsize,
-)
-
-#%%
-unavoidable_plot = line_plot(
-    optimized_threshold_results;
-    alert_method = alert_method,
-    accuracy_metric = accuracy_metric,
-    threshold_bounds = threshold_bounds,
-    alert_filtering_strategy = alert_filtering_strategy,
-    alert_outbreak_matching_strategy = alert_outbreak_matching_strategy,
-    outcome = :unavoidable_cases,
-    ylabel = "Unavoidable Cases",
-    alpha = alpha,
-    facet_fontsize = facet_fontsize,
-    legendsize = legendsize,
-    xlabelsize = xlabelsize,
-    ylabelsize = ylabelsize,
-    show_x_facet_label = show_x_facet_label,
-    show_y_facet_label = show_y_facet_label,
-    ylims = (0, 1.0e3),
-    force = true,
-    # TODO: previously had a scaling factor for pop size
-    # Look into and confirm not needed
-    plotdirpath = plotdirpath,
-    plotname = "optimal-thresholds_unavoidable-plot",
-    plotformat = "svg",
-    save_plot = true,
-    nbanks = nbanks,
-    legend_rowsize = legend_rowsize,
-    xlabel_rowsize = xlabel_rowsize,
-    size = (1300, 800),
 )

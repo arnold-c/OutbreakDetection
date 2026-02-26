@@ -80,8 +80,8 @@ By examining the combination of the alert threshold and individual test characte
 
 = Results
 The threshold that maximized measles surveillance accuracy depends on the diagnostic test characteristics, the testing rate, and the structure of the non-measles noise (@tbl_od-optimal-thresholds, @fig-alert-threshold).
-When the average noise incidence was 8 times higher than the average measles incidence ($Lambda (8)$), the optimal outbreak alert threshold (T#sub([O])) ranged between 0.39 and 16.80 test positive cases per day.
-Not surprisingly, the biggest driver of this difference was the testing rate; as a larger fraction of suspected cases are tested, the optimal threshold generally increases monotonically for all test and noise types with the exception of high dynamical noise scenarios (@tbl_od-optimal-thresholds, @fig-alert-threshold).
+When the average noise incidence was 7 times higher than the average measles incidence ($Lambda (7)$), the optimal outbreak alert threshold (T#sub([O])) ranged between 1.72 and 18.73 test positive cases per day.
+Not surprisingly, the biggest driver of this difference was the testing rate; as a larger fraction of suspected cases are tested, the optimal threshold increases monotonically for all test and noise types (@tbl_od-optimal-thresholds, @fig-alert-threshold).
 
 The maximal attainable surveillance accuracy at the optimal threshold depends strongly on the structure and magnitude of the background noise (@fig-accuracy).
 For static noise, at all magnitudes, the maximum surveillance accuracy was consistently $approx$ 90% accuracy for all diagnostic tests (@fig-accuracy).
@@ -253,10 +253,10 @@ We also added additional static noise drawn from a Poisson distribution with mea
 The seasonality for the rubella noise was simulated to be in-phase with measles.
 
 For each noise structure, we simulated five magnitudes of noise ($Lambda$), representing the average daily noise incidence.
-$Lambda$ was calculated as a multiple ($c$) of the average daily measles incidence ($angle.l Delta I_M angle.r$): $Lambda = c dot.op angle.l Delta I_M angle.r upright("where") c in { 1, 2, 4, 6, 8 }$.
-Noise magnitudes will be denoted as $Lambda (c)$ for the rest of the manuscript e.g., $Lambda (8)$ to denote scenarios where the average noise incidence is 8 times that of the average measles incidence.
-For the static noise scenarios, independent draws from a Poisson distribution with mean $c dot.op angle.l Delta I_M angle.r$ were simulated to produce the noise time series i.e., $Lambda (c) = upright("Pois")(c dot.op angle.l Delta I_M angle.r)$.
-For the dynamical noise scenarios, the rubella vaccination rate at birth was set to 85.38%, 73.83%, 50.88%, 27.89%, or 4.92% to produce equivalent values of $Lambda$ (to within 2 decimal places): $Lambda (c) = angle.l Delta I_R angle.r + upright("Pois")(0.15 dot.op angle.l Delta I_R angle.r)$.
+$Lambda$ was calculated as a multiple ($c$) of the average daily measles incidence ($chevron.l Delta I_M chevron.r$): $Lambda = c dot.op chevron.l Delta I_M chevron.r upright("where") c in { 1, 2, 4, 6, 8 }$.
+Noise magnitudes will be denoted as $Lambda (c)$ for the rest of the manuscript e.g., $Lambda (7)$ to denote scenarios where the average noise incidence is 7 times that of the average measles incidence.
+For the static noise scenarios, independent draws from a Poisson distribution with mean $c dot.op chevron.l Delta I_M chevron.r$ were simulated to produce the noise time series i.e., $Lambda (c) = upright("Pois")(c dot.op chevron.l Delta I_M chevron.r)$.
+For the dynamical noise scenarios, the rubella vaccination rate at birth was set to 85.38%, 73.83%, 50.88%, 27.89%, or 4.92% to produce equivalent values of $Lambda$ (to within 2 decimal places): $Lambda (c) = chevron.l Delta I_R chevron.r + upright("Pois")(0.15 dot.op chevron.l Delta I_R chevron.r)$.
 We simulated 100 time series of 100 years for each scenario before summarizing the distributions of outbreak detection methods.
 
 == Defining Outbreaks

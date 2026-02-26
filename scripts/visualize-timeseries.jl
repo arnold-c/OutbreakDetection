@@ -2,7 +2,7 @@
 using DrWatson
 @quickactivate "OutbreakDetection"
 
-using OutbreakDetection: visualize_timeseries
+using OutbreakDetection: visualize_timeseries, get_test_description
 using OutbreakDetectionCore
 using Try
 using CairoMakie
@@ -27,7 +27,11 @@ force_plot = true
 noise_type = :dynamic
 
 dynamic_optimized_results = filter(
-    res -> res.noise_type_description == noise_type && res.alert_filtering_strategy == AlertFilteringStrategy(AllAlerts()),
+    res -> (
+        res.noise_type_description == noise_type &&
+            res.alert_filtering_strategy == AlertFilteringStrategy(AllAlerts()) &&
+            res.alert_outbreak_matching_strategy == AlertOutbreakMatchingStrategy(SingleOutbreakPerAlert())
+    ),
     optimized_threshold_results
 )
 for noise_level in unique(optimized_threshold_results.noise_level)

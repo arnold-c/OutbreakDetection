@@ -13,7 +13,7 @@ function compare_optimal_solution_mean_extrema(
         color = :red,
     ) where {T <: Symbol}
     num_perfect_test = sum(
-        contains.(OutbreakDetectionCore.get_test_description.(test_spec_vec), "Perfect test")
+        contains.(get_test_description.(test_spec_vec), "Perfect test")
     )
 
     num_rdt_tests = length(test_spec_vec) - num_perfect_test

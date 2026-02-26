@@ -13,15 +13,19 @@ plots_worker:
 
 supplemental-plots: optimizations supplemental-plots_worker
 supplemental-plots_worker:
-	{{ julia_script }} ./scripts/supplemental_plots.jl
+	{{ julia_script }} ./scripts/optimal-thresholds_supplement-plots.jl
 
-tables: optimizations tables_worker
-tables_worker:
-	{{ julia_script }} ./scripts/optimal-thresholds_tables.jl
+supplemental-tables: optimizations supplemental-tables_worker
+supplemental-tables_worker:
+	{{ julia_script }} ./scripts/optimal-thresholds_supplement-tables.jl
 
 plot-timeseries: optimizations plot-timeseries_worker
 plot-timeseries_worker:
 	{{ julia_script }} ./scripts/visualize-timeseries.jl
+
+plot-schematic: plot-schematic_worker
+plot-schematic_worker:
+	{{ julia_script }} ./scripts/schematic-plot.jl
 
 optimizations-comparison: optimizations optimization-comparison_worker
 optimization-comparison_worker:
@@ -37,7 +41,12 @@ optimization-comparison_worker:
 
 
 
-manuscript: optimizations plots_worker tables_worker plot-timeseries_worker optimization-comparison_worker
+manuscript: optimizations \
+	plots_worker \
+	supplemental-tables_worker \
+	supplemental-plots_worker \
+	plot-schematic_worker \
+	optimization-comparison_worker
 	typst compile ./manuscript/combined-manuscript.typ
 
 tests:

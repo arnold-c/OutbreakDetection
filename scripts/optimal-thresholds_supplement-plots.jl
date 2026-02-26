@@ -14,7 +14,8 @@ accuracy_metric = OutbreakDetectionCore.AccuracyMetric(OutbreakDetectionCore.Bal
 threshold_bounds = (; lower = 0.0, upper = 20.0)
 alert_filtering_strategy = OutbreakDetectionCore.AlertFilteringStrategy(OutbreakDetectionCore.AllAlerts())
 alert_outbreak_matching_strategy = OutbreakDetectionCore.AlertOutbreakMatchingStrategy(OutbreakDetectionCore.SingleOutbreakPerAlert())
-plotdirpath = DrWatson.plotsdir("appendix")
+
+mkpath(supplement_plots())
 
 #%%
 optimized_filedir = OutbreakDetectionCore.outdir("ensemble", "threshold-optimization")
@@ -45,7 +46,7 @@ prop_outbreak_plot = line_plot(
     show_x_facet_label = show_x_facet_label,
     show_y_facet_label = show_y_facet_label,
     ylims = (0.0, 0.3),
-    plotdirpath = plotdirpath,
+    plotdirpath = supplement_plots(),
     plotname = "optimal-thresholds_prop-outbreak-plot",
     plotformat = "svg",
     save_plot = true,
@@ -73,7 +74,7 @@ alert_duration_plot = line_plot(
     show_x_facet_label = show_x_facet_label,
     show_y_facet_label = show_y_facet_label,
     ylims = (0, 130),
-    plotdirpath = plotdirpath,
+    plotdirpath = supplement_plots(),
     plotname = "optimal-thresholds_alert-duration-plot",
     plotformat = "svg",
     save_plot = true,
@@ -101,7 +102,7 @@ nalerts_plot = line_plot(
     show_x_facet_label = show_x_facet_label,
     show_y_facet_label = show_y_facet_label,
     ylims = (0, 450),
-    plotdirpath = plotdirpath,
+    plotdirpath = supplement_plots(),
     plotname = "optimal-thresholds_n-alerts-plot",
     plotformat = "svg",
     save_plot = true,
@@ -129,7 +130,7 @@ noutbreaks_plot = line_plot(
     show_x_facet_label = show_x_facet_label,
     show_y_facet_label = show_y_facet_label,
     ylims = (0, 60),
-    plotdirpath = plotdirpath,
+    plotdirpath = supplement_plots(),
     plotname = "optimal-thresholds_n-outbreaks-plot",
     plotformat = "svg",
     save_plot = true,
@@ -158,7 +159,7 @@ prop_alerts_correct_plot = line_plot(
     show_y_facet_label = show_y_facet_label,
     ylims = (0, 1.0),
     force = true,
-    plotdirpath = plotdirpath,
+    plotdirpath = supplement_plots(),
     plotname = "optimal-thresholds_prop-alerts-correct-plot",
     plotformat = "svg",
     save_plot = true,
@@ -187,7 +188,7 @@ prop_outbreaks_detected_plot = line_plot(
     show_y_facet_label = show_y_facet_label,
     ylims = (0, 1.0),
     force = true,
-    plotdirpath = plotdirpath,
+    plotdirpath = supplement_plots(),
     plotname = "optimal-thresholds_prop-outbreaks-detected-plot",
     plotformat = "svg",
     save_plot = true,
@@ -198,7 +199,38 @@ prop_outbreaks_detected_plot = line_plot(
 )
 
 #%%
-alert_filtering_strategy = OutbreakDetectionCore.AlertFilteringStrategy(OutbreakDetectionCore.AllAlerts())
+unavoidable_plot = line_plot(
+    optimized_threshold_results;
+    alert_method = alert_method,
+    accuracy_metric = accuracy_metric,
+    threshold_bounds = threshold_bounds,
+    alert_filtering_strategy = alert_filtering_strategy,
+    alert_outbreak_matching_strategy = alert_outbreak_matching_strategy,
+    outcome = :unavoidable_cases,
+    ylabel = "Unavoidable Cases",
+    alpha = alpha,
+    facet_fontsize = facet_fontsize,
+    legendsize = legendsize,
+    xlabelsize = xlabelsize,
+    ylabelsize = ylabelsize,
+    show_x_facet_label = show_x_facet_label,
+    show_y_facet_label = show_y_facet_label,
+    ylims = (0, 1.0e3),
+    force = true,
+    # TODO: previously had a scaling factor for pop size
+    # Look into and confirm not needed
+    plotdirpath = supplement_plots(),
+    plotname = "optimal-thresholds_unavoidable-plot",
+    plotformat = "svg",
+    save_plot = true,
+    nbanks = nbanks,
+    legend_rowsize = legend_rowsize,
+    xlabel_rowsize = xlabel_rowsize,
+    size = (1300, 800),
+)
+
+#%%
+alert_filtering_strategy = OutbreakDetectionCore.AlertFilteringStrategy(OutbreakDetectionCore.PostOutbreakStartAlerts())
 
 #%%
 positive_delay_threshold_plot = line_plot(
@@ -219,7 +251,7 @@ positive_delay_threshold_plot = line_plot(
     show_y_facet_label = show_y_facet_label,
     ylims = (0.0, 20.0),
     force = true,
-    plotdirpath = plotdirpath,
+    plotdirpath = supplement_plots(),
     plotname = "positive_delay_optimal-thresholds_alert-threshold-plot",
     plotformat = "svg",
     save_plot = true,
@@ -248,7 +280,7 @@ positive_delay_accuracy_plot = line_plot(
     show_y_facet_label = show_y_facet_label,
     ylims = (0.5, 1.0),
     force = true,
-    plotdirpath = plotdirpath,
+    plotdirpath = supplement_plots(),
     plotname = "positive_delay_optimal-thresholds_accuracy-plot",
     plotformat = "svg",
     save_plot = true,
@@ -278,7 +310,7 @@ positive_delay_delays_plot = line_plot(
     show_y_facet_label = show_y_facet_label,
     ylims = (-20, 100),
     force = true,
-    plotdirpath = plotdirpath,
+    plotdirpath = supplement_plots(),
     plotname = "positive_delay_optimal-thresholds_delays-plot",
     plotformat = "svg",
     save_plot = true,
@@ -308,7 +340,7 @@ positive_delay_prop_alert_plot = line_plot(
     show_y_facet_label = show_y_facet_label,
     ylims = (0, 0.15),
     force = true,
-    plotdirpath = plotdirpath,
+    plotdirpath = supplement_plots(),
     plotname = "positive_delay_optimal-thresholds_prop-alert-plot",
     plotformat = "svg",
     save_plot = true,
@@ -337,7 +369,7 @@ positive_delay_prop_alerts_correct_plot = line_plot(
     show_y_facet_label = show_y_facet_label,
     ylims = (0, 1.0),
     force = true,
-    plotdirpath = plotdirpath,
+    plotdirpath = supplement_plots(),
     plotname = "positive_delay_optimal-thresholds_prop-alerts-correct-plot",
     plotformat = "svg",
     save_plot = true,
@@ -366,7 +398,7 @@ positive_delay_prop_outbreaks_detected_plot = line_plot(
     show_y_facet_label = show_y_facet_label,
     ylims = (0, 1.0),
     force = true,
-    plotdirpath = plotdirpath,
+    plotdirpath = supplement_plots(),
     plotname = "positive_delay_optimal-thresholds_prop-outbreaks-detected-plot",
     plotformat = "svg",
     save_plot = true,
@@ -400,7 +432,7 @@ f1_threshold_plot = line_plot(
     show_y_facet_label = show_y_facet_label,
     ylims = (0.0, 20.0),
     force = true,
-    plotdirpath = plotdirpath,
+    plotdirpath = supplement_plots(),
     plotname = "f1_optimal-thresholds_alert-threshold-plot",
     plotformat = "svg",
     save_plot = true,
@@ -429,7 +461,7 @@ f1_accuracy_plot = line_plot(
     show_y_facet_label = show_y_facet_label,
     ylims = (0.5, 1.0),
     force = true,
-    plotdirpath = plotdirpath,
+    plotdirpath = supplement_plots(),
     plotname = "f1_optimal-thresholds_accuracy-plot",
     plotformat = "svg",
     save_plot = true,
@@ -459,7 +491,7 @@ f1_delays_plot = line_plot(
     show_y_facet_label = show_y_facet_label,
     ylims = (-20, 100),
     force = true,
-    plotdirpath = plotdirpath,
+    plotdirpath = supplement_plots(),
     plotname = "f1_optimal-thresholds_delays-plot",
     plotformat = "svg",
     save_plot = true,
@@ -489,7 +521,7 @@ f1_prop_alert_plot = line_plot(
     show_y_facet_label = show_y_facet_label,
     ylims = (0, 0.15),
     force = true,
-    plotdirpath = plotdirpath,
+    plotdirpath = supplement_plots(),
     plotname = "f1_optimal-thresholds_prop-alert-plot",
     plotformat = "svg",
     save_plot = true,
@@ -518,7 +550,7 @@ f1_prop_alerts_correct_plot = line_plot(
     show_y_facet_label = show_y_facet_label,
     ylims = (0, 1.0),
     force = true,
-    plotdirpath = plotdirpath,
+    plotdirpath = supplement_plots(),
     plotname = "f1_optimal-thresholds_prop-alerts-correct-plot",
     plotformat = "svg",
     save_plot = true,
@@ -547,8 +579,190 @@ f1_prop_outbreaks_detected_plot = line_plot(
     show_y_facet_label = show_y_facet_label,
     ylims = (0, 1.0),
     force = true,
-    plotdirpath = plotdirpath,
+    plotdirpath = supplement_plots(),
     plotname = "f1_optimal-thresholds_prop-outbreaks-detected-plot",
+    plotformat = "svg",
+    save_plot = true,
+    nbanks = nbanks,
+    legend_rowsize = legend_rowsize,
+    xlabel_rowsize = xlabel_rowsize,
+    size = (1300, 800),
+)
+
+#%%
+# Multiple outbreaks per alert matching for supplement
+accuracy_metric = OutbreakDetectionCore.AccuracyMetric(OutbreakDetectionCore.BalancedAccuracy())
+alert_filtering_strategy = OutbreakDetectionCore.AlertFilteringStrategy(OutbreakDetectionCore.AllAlerts())
+alert_outbreak_matching_strategy = OutbreakDetectionCore.AlertOutbreakMatchingStrategy(OutbreakDetectionCore.MultipleOutbreaksPerAlert())
+
+#%%
+multi_outbreak_matching_threshold_plot = line_plot(
+    optimized_threshold_results;
+    alert_method = alert_method,
+    accuracy_metric = accuracy_metric,
+    threshold_bounds = threshold_bounds,
+    alert_filtering_strategy = alert_filtering_strategy,
+    alert_outbreak_matching_strategy = alert_outbreak_matching_strategy,
+    outcome = :alert_threshold,
+    ylabel = "Alert Threshold",
+    alpha = alpha,
+    facet_fontsize = facet_fontsize,
+    legendsize = legendsize,
+    xlabelsize = xlabelsize,
+    ylabelsize = ylabelsize,
+    show_x_facet_label = show_x_facet_label,
+    show_y_facet_label = show_y_facet_label,
+    ylims = (0.0, 20.0),
+    force = true,
+    plotdirpath = supplement_plots(),
+    plotname = "multi-outbreak-matching_optimal-thresholds_alert-threshold-plot",
+    plotformat = "svg",
+    save_plot = true,
+    nbanks = nbanks,
+    legend_rowsize = legend_rowsize,
+    xlabel_rowsize = xlabel_rowsize,
+    size = (1300, 800),
+)
+
+#%%
+multi_outbreak_matching_accuracy_plot = line_plot(
+    optimized_threshold_results;
+    alert_method = alert_method,
+    accuracy_metric = accuracy_metric,
+    threshold_bounds = threshold_bounds,
+    alert_filtering_strategy = alert_filtering_strategy,
+    alert_outbreak_matching_strategy = alert_outbreak_matching_strategy,
+    outcome = :accuracies,
+    ylabel = "Detection Accuracy",
+    alpha = alpha,
+    facet_fontsize = 28,
+    legendsize = legendsize,
+    xlabelsize = xlabelsize,
+    ylabelsize = ylabelsize,
+    show_x_facet_label = show_x_facet_label,
+    show_y_facet_label = show_y_facet_label,
+    ylims = (0.5, 1.0),
+    force = true,
+    plotdirpath = supplement_plots(),
+    plotname = "multi-outbreak-matching_optimal-thresholds_accuracy-plot",
+    plotformat = "svg",
+    save_plot = true,
+    nbanks = nbanks,
+    legend_rowsize = legend_rowsize,
+    xlabel_rowsize = xlabel_rowsize,
+    size = (1300, 800),
+)
+
+#%%
+multi_outbreak_matching_delays_plot = line_plot(
+    optimized_threshold_results;
+    alert_method = alert_method,
+    accuracy_metric = accuracy_metric,
+    threshold_bounds = threshold_bounds,
+    alert_filtering_strategy = alert_filtering_strategy,
+    alert_outbreak_matching_strategy = alert_outbreak_matching_strategy,
+    outcome = :detection_delays,
+    ylabel = "Detection Delays\n(Days)",
+    alpha = alpha,
+    hlines = (0.0),
+    facet_fontsize = facet_fontsize,
+    legendsize = legendsize,
+    xlabelsize = xlabelsize,
+    ylabelsize = ylabelsize,
+    show_x_facet_label = show_x_facet_label,
+    show_y_facet_label = show_y_facet_label,
+    ylims = (-20, 100),
+    force = true,
+    plotdirpath = supplement_plots(),
+    plotname = "multi-outbreak-matching_optimal-thresholds_delays-plot",
+    plotformat = "svg",
+    save_plot = true,
+    nbanks = nbanks,
+    legend_rowsize = legend_rowsize,
+    xlabel_rowsize = xlabel_rowsize,
+    size = (1300, 800),
+)
+
+#%%
+multi_outbreak_matching_prop_alert_plot = line_plot(
+    optimized_threshold_results;
+    alert_method = alert_method,
+    accuracy_metric = accuracy_metric,
+    threshold_bounds = threshold_bounds,
+    alert_filtering_strategy = alert_filtering_strategy,
+    alert_outbreak_matching_strategy = alert_outbreak_matching_strategy,
+    outcome = :proportion_timeseries_in_alert,
+    ylabel = "Proportion of Time\nIn Alert",
+    alpha = alpha,
+    hlines = (0.0),
+    facet_fontsize = facet_fontsize,
+    legendsize = legendsize,
+    xlabelsize = xlabelsize,
+    ylabelsize = ylabelsize,
+    show_x_facet_label = show_x_facet_label,
+    show_y_facet_label = show_y_facet_label,
+    ylims = (0, 0.15),
+    force = true,
+    plotdirpath = supplement_plots(),
+    plotname = "multi-outbreak-matching_optimal-thresholds_prop-alert-plot",
+    plotformat = "svg",
+    save_plot = true,
+    nbanks = nbanks,
+    legend_rowsize = legend_rowsize,
+    xlabel_rowsize = xlabel_rowsize,
+    size = (1300, 800),
+)
+
+#%%
+multi_outbreak_matching_prop_alerts_correct_plot = line_plot(
+    optimized_threshold_results;
+    alert_method = alert_method,
+    accuracy_metric = accuracy_metric,
+    threshold_bounds = threshold_bounds,
+    alert_filtering_strategy = alert_filtering_strategy,
+    alert_outbreak_matching_strategy = alert_outbreak_matching_strategy,
+    outcome = :proportion_alerts_correct,
+    ylabel = "Proportion of\nAlerts Correct",
+    alpha = alpha,
+    facet_fontsize = facet_fontsize,
+    legendsize = legendsize,
+    xlabelsize = xlabelsize,
+    ylabelsize = ylabelsize,
+    show_x_facet_label = show_x_facet_label,
+    show_y_facet_label = show_y_facet_label,
+    ylims = (0, 1.0),
+    force = true,
+    plotdirpath = supplement_plots(),
+    plotname = "multi-outbreak-matching_optimal-thresholds_prop-alerts-correct-plot",
+    plotformat = "svg",
+    save_plot = true,
+    nbanks = nbanks,
+    legend_rowsize = legend_rowsize,
+    xlabel_rowsize = xlabel_rowsize,
+    size = (1300, 800),
+)
+
+#%%
+multi_outbreak_matching_prop_outbreaks_detected_plot = line_plot(
+    optimized_threshold_results;
+    alert_method = alert_method,
+    accuracy_metric = accuracy_metric,
+    threshold_bounds = threshold_bounds,
+    alert_filtering_strategy = alert_filtering_strategy,
+    alert_outbreak_matching_strategy = alert_outbreak_matching_strategy,
+    outcome = :proportion_outbreaks_detected,
+    ylabel = "Proportion of\nOutbreaks Detected",
+    alpha = alpha,
+    facet_fontsize = facet_fontsize,
+    legendsize = legendsize,
+    xlabelsize = xlabelsize,
+    ylabelsize = ylabelsize,
+    show_x_facet_label = show_x_facet_label,
+    show_y_facet_label = show_y_facet_label,
+    ylims = (0, 1.0),
+    force = true,
+    plotdirpath = supplement_plots(),
+    plotname = "multi-outbreak-matching_optimal-thresholds_prop-outbreaks-detected-plot",
     plotformat = "svg",
     save_plot = true,
     nbanks = nbanks,

@@ -5,12 +5,15 @@ using DrWatson
 using StatsBase: StatsBase
 
 using OutbreakDetection: create_schematic_simulation,
-    plot_schematic
+    plot_schematic,
+    manuscript_plots
 
 using OutbreakDetectionCore
 using Dates: Day
 using CairoMakie: save
 using Try
+
+mkpath(manuscript_plots())
 
 #%%
 time_parameters = SimTimeParameters(;
@@ -148,20 +151,20 @@ schematic_with_shade_fig = plot_schematic(
 )
 
 save(
-    DrWatson.plotsdir("schematic-plot.svg"),
+    manuscript_plots("schematic-plot.svg"),
     schematic_with_shade_fig,
 )
 
-#%%
-optimized_filedir = OutbreakDetectionCore.outdir("ensemble", "threshold-optimization")
-optimized_threshold_results = Try.unwrap(
-    OutbreakDetectionCore.load_previous_optimization_results_structvector(
-        optimized_filedir,
-        "threshold-optimization.jld2",
-        joinpath(optimized_filedir, "checkpoints"),
-    )
-)
-
-plot_schematic(
-    optimized_threshold_results[10]
-)
+# #%%
+# optimized_filedir = OutbreakDetectionCore.outdir("ensemble", "threshold-optimization")
+# optimized_threshold_results = Try.unwrap(
+#     OutbreakDetectionCore.load_previous_optimization_results_structvector(
+#         optimized_filedir,
+#         "threshold-optimization.jld2",
+#         joinpath(optimized_filedir, "checkpoints"),
+#     )
+# )
+#
+# plot_schematic(
+#     optimized_threshold_results[10]
+# )

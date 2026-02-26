@@ -12,7 +12,8 @@ accuracy_metric = OutbreakDetectionCore.AccuracyMetric(OutbreakDetectionCore.Bal
 threshold_bounds = (; lower = 0.0, upper = 20.0)
 alert_filtering_strategy = OutbreakDetectionCore.AlertFilteringStrategy(OutbreakDetectionCore.AllAlerts())
 alert_outbreak_matching_strategy = OutbreakDetectionCore.AlertOutbreakMatchingStrategy(OutbreakDetectionCore.SingleOutbreakPerAlert())
-plotdirpath = DrWatson.plotsdir()
+
+mkpath(supplement_tables())
 
 #%%
 optimized_filedir = OutbreakDetectionCore.outdir("ensemble", "threshold-optimization")
@@ -33,15 +34,22 @@ filtered_results = filter(
         r.alert_filtering_strategy == alert_filtering_strategy &&
         r.alert_outbreak_matching_strategy == alert_outbreak_matching_strategy,
     optimized_threshold_results
-)
+);
 
 #%%
 # Create the wide table directly from the vector of optimization results.
 wide_thresholds_df = create_wide_optimal_thresholds_df(
     filtered_results,
-    :detection_delays;
+    :optimal_threshold;
     simplify = true,
 )
+
+wide_accuracy_df = create_wide_optimal_thresholds_df(
+    filtered_results,
+    :accuracies;
+    simplify = true,
+)
+
 
 #%%
 unique_noise_levels = unique(optimized_threshold_results.noise_level)
@@ -49,13 +57,13 @@ unique_noise_levels = unique(optimized_threshold_results.noise_level)
 for noise_level in unique_noise_levels
 
     local df = subset_for_noise_level_with_perfect_tests(wide_thresholds_df, noise_level)
-    Base.display(df)
+    cleaned_df = prepare_wide_optimal_thresholds_df_format(df)
+    Base.display(cleaned_df)
 
     if noise_level == 7.0
-        mkpath(DrWatson.projectdir("manuscript", "tables"))
         CSV.write(
-            DrWatson.projectdir("manuscript", "tables", "optimal-thresholds.csv"),
-            DataFrames.select!(df, DataFrames.Not(:noise_level))
+            supplement_tables("optimal-thresholds.csv"),
+            DataFrames.select!(cleaned_df, DataFrames.Not(:noise_level))
         )
     end
 
