@@ -238,7 +238,7 @@ function plot_schematic(
         inc_vec;
         color = outbreakstatus_vec,
         colormap = outbreakcolormap,
-        linewidth = 3,
+        linewidth = 2,
     )
 
     hlines!(
@@ -254,7 +254,7 @@ function plot_schematic(
         times,
         noise_vec;
         color = outbreakcolormap[1],
-        linewidth = 3,
+        linewidth = 2,
     )
 
     lines!(
@@ -263,7 +263,7 @@ function plot_schematic(
         testpositive_vec;
         color = alertstatus_vec,
         colormap = alertcolormap,
-        linewidth = 3,
+        linewidth = 2,
     )
 
     hlines!(

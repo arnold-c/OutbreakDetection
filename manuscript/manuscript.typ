@@ -87,9 +87,7 @@ The maximal attainable surveillance accuracy at the optimal threshold depends st
 For static noise, at all magnitudes, the maximum surveillance accuracy was consistently $approx$ 90% accuracy for all diagnostic tests (@fig-accuracy).
 For dynamical SEIR noise, the perfect tests perform identically to the static noise case at all magnitudes (@fig-accuracy).
 For imperfect diagnostic tests, which have lower individual sensitivity and specificity, the maximal attainable accuracy is lower than the perfect tests for all testing rates (P) at noise magnitude $gt.eq Lambda (2)$ (@fig-accuracy).
-Notably, the surveillance accuracy typically declines with more noise and is not consistently improved with higher testing rates as the signal becomes increasingly dominated by false positive test results (@fig-accuracy).
-At high levels of dynamical noise ($gt.eq Lambda (6)$), high testing rates ($gt.eq$ 50%) result in a marked increase in outbreak detection accuracy.
-However, in these scenarios the optimal outbreak alert threshold falls to 0.39 (daily) test positive cases in a 7-day moving average: 3 positive test cases in a week would be sufficient to trigger an outbreak alert (@fig-alert-threshold, @fig-accuracy, @tbl_od-optimal-thresholds).
+Notably, the surveillance accuracy typically declines with more noise and is not improved with higher testing rates as the signal becomes increasingly dominated by false positive test results (@fig-accuracy).
 
 #figure(
   image("manuscript_files/plots/optimal-thresholds_alert-threshold-plot.svg"),
@@ -104,9 +102,10 @@ However, in these scenarios the optimal outbreak alert threshold falls to 0.39 (
 <fig-accuracy>
 
 Introducing a lag in test result reporting can decrease surveillance accuracy.
-This will occur if an alert occurs within the duration of the lag (e.g., 14 days) of the end of the outbreak.
-If it is the first alert, then it will be recorded as an outbreak for which there was no alert, reducing the proportion of outbreaks that are correctly identified (our definition of sensitivity).
-If it is a subsequent alert (recall that multiple alerts may occur within a single outbreak), then it will be recorded as an alert for which there was no outbreak, reducing the proportion of alerts that occur during an outbreak (our definition of positive predictive value).
+This will occur if an alert threshold is breached within the duration of the lag (e.g., 14 days) of the end of the outbreak.
+For example, the outbreaks causes the number of test positive results to rise to 6 cases (1 above an alert threshold of 5 cases per day) 10 days before the end of the outbreak, but because of a 14-day test result lag, this does not produce an alert until 4 days #emph[after] the end of the outbreak.
+If it is the first alert since the start of that outbreak, then it will be recorded as an outbreak for which there was no alert, reducing the proportion of outbreaks that are correctly identified (our definition of sensitivity).
+If it is a subsequent alert (recall that multiple alerts may occur within a single outbreak), then it will be recorded as an alert for which there was no associated outbreak, reducing the proportion of alerts that occur during an outbreak (our definition of positive predictive value).
 This will disproportionately affect shorter outbreaks.
 For the conditions simulated here, introducing a 14-day lag in test reporting for a perfect test reduces the surveillance accuracy by $approx$ 3% by reducing the PPV, but not the sensitivity, of the system (@fig-alert-proportion-correct, @fig-outbreak-detect-proportion-correct).
 In a system with static noise, imperfect tests can achieve slightly higher accuracy than perfect, lagged tests (@fig-accuracy).
@@ -114,7 +113,8 @@ Given dynamical background noise, perfect, lagged, tests outperform imperfect te
 
 A delay in test results reporting does not affect the optimized threshold (T#sub([O])) (@fig-alert-threshold).
 However, it always leads to an increase in the median delay from outbreak start to alert, relative to a perfect test with no result delays, as well as imperfect tests (@fig-delay).
-Under high dynamical noise ($gt.eq Lambda (6)$) and high testing rates ($gt.eq$ 50%) with imperfect tests, the extremely low optimal threshold results in a very sensitive alert system and large negative delays i.e., the alerts are triggered by false positive test results before the start of the outbreak (@fig-delay).
+In both static and dynamical noise scenarios, increasing testing rates to a moderate level ($gt.eq$ 20% of the infected individuals) slightly reduced the detection delays, above which level there was not an observable improvement.
+In static noise scenarios, increasing noise levels did not result in a difference in detection delays between perfect and imperfect diagnostic tests, but increasing dynamical noise did cause a divergence, with delays that were more similar to those produced by a perfect diagnostics with a 14-day test result lag ($approx$ 12 days delayed relative to a perfect test with not result lag, @fig-delay).
 
 #figure(
   image("manuscript_files/plots/optimal-thresholds_delays-plot.svg"),
@@ -122,16 +122,19 @@ Under high dynamical noise ($gt.eq Lambda (6)$) and high testing rates ($gt.eq$ 
 )
 <fig-delay>
 
-It is notable that surveillance metrics do not change monotonically with an increase in testing rate, and this holds regardless of the type of test.
-This effect is more exaggerated for some metrics #sym.dash.em detection delays, proportion of time in alert (i.e., the proportion of the simulated time series where the number of test positive cases exceeds the outbreak alert threshold), and number of unavoidable cases (i.e., cases that occur between the outbreak start and its detection) #sym.dash.em than for others (accuracy).
-In general, the increase in accuracy with higher testing rates is accompanied with longer testing delays.
-This reflects the change from highly sensitive systems with low thresholds to more specific systems with higher thresholds at higher testing rates.
-For static noise, similar detection delays are observed for all test and noise magnitudes, with most of the variation attributable to the change in the testing rate (means of 24.0 to 36.3 days).
-Under dynamical noise, a difference in the performance of perfect and imperfect diagnostic tests arise under high magnitudes of dynamical noise ($gt.eq Lambda (6)$) (@fig-delay).
-As the optimal threshold for imperfect tests drops to $approx$ 0, frequent alerts translate to large negative detection delays ($lt.double$ -100 days).
-Negative delays indicate that alerts are being triggered before the start of the outbreak and is correlated with a greater proportion of the time series that is under alert, resulting from fewer, but far longer, alert periods (@fig-alert-proportion, @fig-num-alerts, @fig-alert-duration).
-Long detection delays can manifest as large numbers of unavoidable cases (@fig-unavoidable).
-However, the large negative detection delays associated with high dynamical noise regimes and imperfect diagnostic tests can counter intuitively produce large numbers of unavoidable cases, too, as long, sustained alerts translate to "missed" outbreaks as each alert can only "detect" one outbreak.
+Generally, an increase in testing rate resulted in fewer, longer, alerts, and this holds regardless of the type of test (@fig-num-alerts, @fig-alert-duration).
+While having a limited effect on detection delays, and the number of unavoidable cases (i.e., cases that occur between the outbreak start and its detection, @fig-delay, @fig-unavoidable) it did marginally increase the proportion of time in alert (i.e., the proportion of the simulated time series where the number of test positive cases exceeds the outbreak alert threshold, @fig-alert-proportion) and slightly decrease the proportion of alerts that were correct and outbreaks that were detected (@fig-alert-proportion-correct, @fig-outbreak-detect-proportion-correct).
+// This effect is more exaggerated for some metrics #sym.dash.em detection delays, proportion of time in alert (i.e., the proportion of the simulated time series where the number of test positive cases exceeds the outbreak alert threshold), and number of unavoidable cases (i.e., cases that occur between the outbreak start and its detection) #sym.dash.em than for others (accuracy).
+// In general, the increase in accuracy with higher testing rates is accompanied with longer testing delays.
+These effects are most notable for high dynamical noise scenarios where a binary alert threshold is less able to discern between true positives and the increasing number of false positive test results that produce test-positive time series that resembles those of the target disease's outbreaks.
+While the alert threshold increases with increasing testing rates (@fig-alert-threshold), it is not able to completely compensate for the increase in false test positives, resulting in a minor downward trend to the proportion of alerts that are correct (@fig-alert-proportion-correct), and therefore the detection accuracy (@fig-accuracy).
+// This reflects the change from highly sensitive systems with low thresholds to more specific systems with higher thresholds at higher testing rates.
+// For static noise, similar detection delays are observed for all test and noise magnitudes, with most of the variation attributable to the change in the testing rate (means of 24.0 to 36.3 days).
+// Under dynamical noise, a difference in the performance of perfect and imperfect diagnostic tests arise under high magnitudes of dynamical noise ($gt.eq Lambda (6)$) (@fig-delay).
+// As the optimal threshold for imperfect tests drops to $approx$ 0, frequent alerts translate to large negative detection delays ($lt.double$ -100 days).
+// Negative delays indicate that alerts are being triggered before the start of the outbreak and is correlated with a greater proportion of the time series that is under alert, resulting from fewer, but far longer, alert periods (@fig-alert-proportion, @fig-num-alerts, @fig-alert-duration).
+// Long detection delays can manifest as large numbers of unavoidable cases (@fig-unavoidable).
+// However, the large negative detection delays associated with high dynamical noise regimes and imperfect diagnostic tests can counter intuitively produce large numbers of unavoidable cases, too, as long, sustained alerts translate to "missed" outbreaks as each alert can only "detect" one outbreak.
 
 #figure(
   image("manuscript_files/plots/optimal-thresholds_prop-alert-plot.svg"),
@@ -146,9 +149,9 @@ Despite setting the mean daily noise incidence to equivalent values for the dyna
 
 Under the assumption that non-measles febrile rash is relatively static in time (static noise scenarios), imperfect (RDT-like) diagnostics can perform as well as, if not better than, perfect (ELISA-like) tests, with respect to outbreak detection accuracy, delays, and the number of unavoidable cases, at all testing rates.
 RDTs for measles are expected to be less expensive than ELISAs, which could lead to overall savings in surveillance systems at a given testing rate, and/or may allow for higher testing rates for the same or lower cost in resource limited settings @brownRapidDiagnosticTests2020.
-However, if it is expected that the noise is dynamic and substantially larger in magnitude than the target infection ($gt.eq Lambda (4)$), imperfect tests cannot overcome their accuracy limitations through higher testing rates, saturating at c. 80% accuracy, relative to 93% achieved with perfect tests.
+However, if it is expected that the noise is dynamic and substantially larger in magnitude than the target infection ($gt.eq Lambda (4)$), imperfect tests cannot overcome their accuracy limitations through higher testing rates, seeing values at or below 80% accuracy, relative to 93% achieved with perfect tests.
 This discrepancy occurs because, despite the same average incidence of noise in each (comparable) scenario, the relative proportion of measles to noise on any day varies throughout the dynamical noise time series, exacerbating the increase in false positive and negative test results as the diagnostic's sensitivity and specificity declines.
-Under extremely high dynamical noise levels ($gt.eq Lambda (6)$), the relative paucity of true outbreak periods to non-outbreak periods creates a severely imbalanced data set (c. 14% of the time series is within an outbreak period), such that the optimal detection strategy with imperfect diagnostic tests and moderately high testing rates is to maintain a perpetual alert status. In a realistic scenario, this is clearly not a feasible outbreak detection and response strategy.
+Under extremely high dynamical noise levels ($gt.eq Lambda (6)$), the relative paucity of true outbreak periods to non-outbreak periods creates a severely imbalanced data set (c. 14% of the time series is within an outbreak period), such that distinguishing between a target-disease's outbreak and those of other pathogens becomes an exceedingly difficult task, and increasing testing rates can actually worsen the problem through an increased opportunity for false positive results.
 
 Surveillance is used to inform action @DiseaseSurveillance.
 What actions are taken depend upon the constraints imposed, and the values held, within a particular surveillance context.
@@ -189,11 +192,11 @@ We constructed a stochastic compartmental non-age structured Susceptible-Exposed
 We utilized binomial draws to ensure compartment sizes remained positive valued @chatterjeeBinomialDistributionBased2005.
 We assumed that the transmission rate ($beta_t$) is sinusoidal with a period of one year and 20% seasonal amplitude.
 $R_0$ was set to 16, with a latent period of 10 days and infectious period of 8 days @guerraBasicReproductionNumber2017 @gastanaduyMeasles2019.
-The population was initialized with 500,000 individuals with Ghana-like birth and vaccination rates, and the final results were scaled up to the approximate 2022 population size of Ghana (33 million) @worldbankGhana.
+The population was initialized with 500,000 individuals with Ghana-like birth and vaccination rates @worldbankGhana.
 Ghana was chosen to reflect a setting with a high-performing measles vaccination program that has not yet achieved elimination status (c. 80% coverage for two doses of measles-containing vaccine), and must remain vigilant to outbreaks @WHOImmunizationData @masreshaTrackingMeaslesRubella2024.
 We assumed commuter-style imports at each time step to avoid extinction; the number of imports each day were drawn from a Poisson distribution with mean proportional to the size of the population and $R_0$ @keelingModelingInfectiousDiseases2008.
 The full table of parameters can be found in @tbl_od-model-parameters.
-All simulations and analyses were completed in Julia version 1.11.5 @bezansonJuliaFreshApproach2017, with all code stored at #link("https://github.com/arnold-c/OutbreakDetection").
+All simulations and analyses were completed in Julia version 1.12.3 @bezansonJuliaFreshApproach2017, with all code stored at #link("https://github.com/arnold-c/OutbreakDetection").
 
 #let table_math(inset: 6pt, size: 14pt, content) = table.cell(
   inset: inset,
@@ -253,10 +256,10 @@ We also added additional static noise drawn from a Poisson distribution with mea
 The seasonality for the rubella noise was simulated to be in-phase with measles.
 
 For each noise structure, we simulated five magnitudes of noise ($Lambda$), representing the average daily noise incidence.
-$Lambda$ was calculated as a multiple ($c$) of the average daily measles incidence ($chevron.l Delta I_M chevron.r$): $Lambda = c dot.op chevron.l Delta I_M chevron.r upright("where") c in { 1, 2, 4, 6, 8 }$.
+$Lambda$ was calculated as a multiple ($c$) of the average daily measles incidence ($chevron.l Delta I_M chevron.r$): $Lambda = c dot.op chevron.l Delta I_M chevron.r upright("where") c in { 1, 2, 4, 6, 7 }$.
 Noise magnitudes will be denoted as $Lambda (c)$ for the rest of the manuscript e.g., $Lambda (7)$ to denote scenarios where the average noise incidence is 7 times that of the average measles incidence.
 For the static noise scenarios, independent draws from a Poisson distribution with mean $c dot.op chevron.l Delta I_M chevron.r$ were simulated to produce the noise time series i.e., $Lambda (c) = upright("Pois")(c dot.op chevron.l Delta I_M chevron.r)$.
-For the dynamical noise scenarios, the rubella vaccination rate at birth was set to 85.38%, 73.83%, 50.88%, 27.89%, or 4.92% to produce equivalent values of $Lambda$ (to within 2 decimal places): $Lambda (c) = chevron.l Delta I_R chevron.r + upright("Pois")(0.15 dot.op chevron.l Delta I_R chevron.r)$.
+For the dynamical noise scenarios, the rubella vaccination rate at birth was optimized using the TikTak multi-start algorithm (described in more detail #link(<tiktak>)[below]) to produce equivalent values of $Lambda$ (with a squared error tolerance of $1.0e^(-2)$): $Lambda (c) = chevron.l Delta I_R chevron.r + upright("Pois")(0.15 dot.op chevron.l Delta I_R chevron.r)$.
 We simulated 100 time series of 100 years for each scenario before summarizing the distributions of outbreak detection methods.
 
 == Defining Outbreaks
@@ -296,6 +299,7 @@ We define an "alert" as any consecutive string of 1 or more days where the 7-day
 For each time series of test positive cases, we calculate the percentage of alerts that are "correct", defined as any overlap of 1 or more days between the outbreak and alert periods (@fig-outbreak-schematic\c).
 This is analogous to the PPV of the alert system and will be referred to as such for the rest of the manuscript.
 It is possible to have multiple alerts within a single outbreak if the 7-day moving average of test positive cases drops below, and then re-crosses, the threshold, T, and we count each as correct.
+Each alert can only be correctly associated with a single outbreak i.e., if an alert is triggered near the end of one outbreak and is sustained until after the start of the subsequent outbreak (because there are many false test positives), only the first outbreak would be considered detected.
 For all outbreaks in the measles time series, we calculate the percentage that contain at least 1 alert within the outbreak’s start and end dates (@fig-outbreak-schematic\c).
 We refer to this as the sensitivity of the alert system.
 We also calculate the detection delay as the time from the start of an outbreak to the start of its first alert.
@@ -307,7 +311,7 @@ Avoidable cases are those that occur within an outbreak and after the first aler
 We define the accuracy of the surveillance system for a given time series as the arithmetic mean of the system’s PPV and sensitivity.
 To examine the interaction of the test with the surveillance system's characteristics (i.e., testing rate, noise structure and magnitude), we optimized the alert threshold, T, for a given "testing scenario".
 Each of the 100 simulations per scenario produces an accuracy, and we identified the optimal alert threshold, T#sub([O]), as the value that produced the highest mean accuracy for a given scenario.
-To identify T#sub([O]) we implemented the TikTak multistart optimization algorithm @arnoudBenchmarkingGlobalOptimizers2023, using 100 initial values (alert thresholds) selected from a Sobol' low-discrepancy sequence @sobolDistributionPointsCube1967 initialized with lower and upper bounds of 0.0 and 50.0, respectively.
+To identify T#sub([O]) we implemented the TikTak multistart optimization algorithm #label("tiktak") @arnoudBenchmarkingGlobalOptimizers2023, using 100 initial values (alert thresholds) selected from a Sobol' low-discrepancy sequence @sobolDistributionPointsCube1967 initialized with lower and upper bounds of 0.0 and 20.0, respectively.
 In brief, the Sobol' sequence is a deterministic, quasi-random sequence of numbers that maximizes the uniformity of the explored parameter space by approximately iteratively bisecting the parameter space @sobolDistributionPointsCube1967 @lemieuxQuasiMonteCarlo2009.
 After 100 initial alert thresholds are generated, the accuracy is evaluated and the 10 alert thresholds (points) with the highest accuracy are retained.
 The 10 retained alert thresholds are sorted in descending order of accuracy, creating the sequence of Sobol' points ($upright(bold(s#sub[1])) dots upright(bold(s#sub[10]))$) that are used to calculate the seed points for local optimization that subsequently performed using the BOBYQA derivative-free algorithm @powellBOBYQAAlgorithmBound.
