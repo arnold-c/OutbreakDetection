@@ -81,7 +81,6 @@ function _characteristic_value_for_table(opt, characteristic_sym::Symbol)
     if characteristic_value isa AbstractVector
         result = StatsBase.mean(Iterators.flatten(characteristic_value))
     end
-    @show result
 
     return @sprintf("%.2f", result)
 end

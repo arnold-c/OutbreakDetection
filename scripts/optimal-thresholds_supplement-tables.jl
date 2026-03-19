@@ -44,15 +44,8 @@ wide_thresholds_df = create_wide_optimal_thresholds_df(
     simplify = true,
 )
 
-wide_accuracy_df = create_wide_optimal_thresholds_df(
-    filtered_results,
-    :accuracies;
-    simplify = true,
-)
-
-
 #%%
-unique_noise_levels = unique(optimized_threshold_results.noise_level)
+unique_noise_levels = sort(unique(optimized_threshold_results.noise_level))
 
 for noise_level in unique_noise_levels
 
@@ -67,4 +60,58 @@ for noise_level in unique_noise_levels
         )
     end
 
+end
+
+#%%
+wide_accuracy_df = create_wide_optimal_thresholds_df(
+    filtered_results,
+    :accuracies;
+    simplify = true,
+)
+
+#%%
+for noise_level in unique_noise_levels
+
+    local df = subset_for_noise_level_with_perfect_tests(wide_accuracy_df, noise_level)
+    cleaned_df = prepare_wide_optimal_thresholds_df_format(df)
+    Base.display(cleaned_df)
+end
+
+#%%
+filtered_multi_results = filter(
+    r -> r.alert_method == alert_method &&
+        r.accuracy_metric == accuracy_metric &&
+        r.threshold_bounds == threshold_bounds &&
+        r.alert_filtering_strategy == alert_filtering_strategy &&
+        r.alert_outbreak_matching_strategy == OutbreakDetectionCore.AlertOutbreakMatchingStrategy(OutbreakDetectionCore.MultipleOutbreaksPerAlert()),
+    optimized_threshold_results
+);
+
+#%%
+# Create the wide table directly from the vector of optimization results.
+multi_wide_thresholds_df = create_wide_optimal_thresholds_df(
+    filtered_multi_results,
+    :optimal_threshold;
+    simplify = true,
+)
+
+#%%
+for noise_level in unique_noise_levels
+    local df = subset_for_noise_level_with_perfect_tests(multi_wide_thresholds_df, noise_level)
+    cleaned_df = prepare_wide_optimal_thresholds_df_format(df)
+    Base.display(cleaned_df)
+end
+
+#%%
+multi_wide_accuracy_df = create_wide_optimal_thresholds_df(
+    filtered_multi_results,
+    :accuracies;
+    simplify = true,
+)
+
+#%%
+for noise_level in unique_noise_levels
+    local df = subset_for_noise_level_with_perfect_tests(multi_wide_accuracy_df, noise_level)
+    cleaned_df = prepare_wide_optimal_thresholds_df_format(df)
+    Base.display(cleaned_df)
 end
