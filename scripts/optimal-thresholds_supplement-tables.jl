@@ -47,6 +47,75 @@ wide_thresholds_df = create_wide_optimal_thresholds_df(
 #%%
 unique_noise_levels = sort(unique(optimized_threshold_results.noise_level))
 
+function mean_delay_difference_vs_perfect_test_0_day(df::DataFrame)
+    percent_columns = filter(
+        column_name -> try
+            parse(Float64, string(column_name))
+            return true
+        catch
+            return false
+        end,
+        names(df),
+    )
+
+    baseline_row = only(
+        eachrow(
+            DataFrames.subset(
+                df,
+                :test_type => ByRow(==("Perfect Test")),
+                :test_lag => ByRow(==(0)),
+            ),
+        ),
+    )
+
+    baseline_values = [parse(Float64, string(baseline_row[column])) for column in percent_columns]
+
+    summary_df = DataFrames.subset(
+        df,
+        [:test_type, :test_lag] =>
+            ByRow((test_type, test_lag) -> !(test_type == "Perfect Test" && test_lag == 0)),
+    )
+
+    summary_df[!, :mean_delay_difference_vs_perfect_test_0_day] = map(
+        eachrow(summary_df),
+    ) do row
+        row_values = [parse(Float64, string(row[column])) for column in percent_columns]
+        return sum(row_values .- baseline_values) / length(percent_columns)
+    end
+
+    return DataFrames.select(
+        summary_df,
+        :noise_type,
+        :noise_level,
+        :test_type,
+        :test_lag,
+        :mean_delay_difference_vs_perfect_test_0_day,
+    )
+end
+
+function prepare_delay_difference_summary_format(df::DataFrame)
+    formatted_df = copy(df)
+    formatted_df.noise_type .= String.(formatted_df.noise_type)
+    replace!(
+        formatted_df.noise_type,
+        "static" => "Static Noise",
+        "dynamic" => "Dynamic Noise",
+        "all_noise_structures" => "All noise structures",
+    )
+
+    DataFrames.rename!(
+        formatted_df,
+        :noise_type => "Noise Type",
+        :test_type => "Test Type",
+        :test_lag => "Test Lag",
+        :mean_delay_difference_vs_perfect_test_0_day =>
+            "Mean Delay Difference vs Perfect Test (0-day lag)",
+    )
+
+    return formatted_df
+end
+
+#%%
 for noise_level in unique_noise_levels
 
     local df = subset_for_noise_level_with_perfect_tests(wide_thresholds_df, noise_level)
@@ -74,6 +143,24 @@ for noise_level in unique_noise_levels
 
     local df = subset_for_noise_level_with_perfect_tests(wide_accuracy_df, noise_level)
     cleaned_df = prepare_wide_optimal_thresholds_df_format(df)
+    Base.display(cleaned_df)
+end
+
+#%%
+wide_delay_df = create_wide_optimal_thresholds_df(
+    filtered_results,
+    :detection_delays;
+    simplify = true,
+)
+
+#%%
+for noise_level in unique_noise_levels
+    local df = subset_for_noise_level_with_perfect_tests(wide_delay_df, noise_level)
+    Base.display(prepare_wide_optimal_thresholds_df_format(df))
+
+    cleaned_df = prepare_delay_difference_summary_format(
+        mean_delay_difference_vs_perfect_test_0_day(df),
+    )
     Base.display(cleaned_df)
 end
 
