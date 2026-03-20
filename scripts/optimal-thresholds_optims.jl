@@ -90,7 +90,7 @@ accuracy_metric_vec = AccuracyMetric[
     AccuracyMetric(BalancedAccuracy()),
     AccuracyMetric(F1()),
 ]
-threshold_bounds = (; lower = 0.0, upper = 20.0)
+threshold_bounds = (; lower = 0.0, upper = 50.0)
 outbreak_specification_vec = [
     OutbreakSpecification(5, 30, 500),
 ]
