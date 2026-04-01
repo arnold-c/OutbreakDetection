@@ -26,7 +26,11 @@
 
 3. We have noticed that you have uploaded Supporting Information files, but you have not included a list of legends. Please add a full list of legends for your Supporting Information files after the references list.
 
+#response[Completed.]
+
 4. Please revise your current Competing Interest statement to the standard "The authors have declared that no competing interests exist."
+
+#response[Completed.]
 
 _Note: If the reviewer comments include a recommendation to cite specific previously published works, please review and evaluate these publications to determine whether they are relevant and should be cited. There is no requirement to cite these works unless the editor has indicated otherwise._
 

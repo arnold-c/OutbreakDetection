@@ -325,6 +325,8 @@ We also present results for optimizations based upon the harmonic mean (F-1 scor
 
 #pagebreak()
 
+#set par(first-line-indent: 0pt)
+
 = Author Contributions
 #emph[Conceptualization:] all authors
 
@@ -353,7 +355,7 @@ We also present results for optimizations based upon the harmonic mean (F-1 scor
 #emph[Writing - review and editing:] all authors
 
 == Conflicts of Interest and Financial Disclosures
-The authors declare no conflicts of interest.
+The authors have declared that no competing interest exist.
 
 == Data Access, Responsibility, and Analysis
 Callum Arnold and Dr. Matthew J. Ferrari had full access to all the data in the study and take responsibility for the integrity of the data and the accuracy of the data analysis. Callum Arnold (Department of Biology, Pennsylvania State University) conducted the data analysis.
@@ -366,3 +368,122 @@ All code and data for the simulations can be found at #link("https://github.com/
 #set bibliography(style: "elsevier-vancouver")
 
 #bibliography("./OD.bib")
+
+#pagebreak()
+
+= Supporting Information
+
+== Legends
+
+*S1 Figure. Number of alerts produced at the optimal alert thresholds.* The number of alerts of outbreak detection systems under different testing rates and noise structures, at their respective optimal alert thresholds. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate. Each imperfect test uses the same value for both its sensitivity and specificity (either 85% or 90%). Solid lines represent tests with 0-day turnaround times, and dashed lines represent tests with result delays. $Lambda(4)$ indicates the mean noise incidence is 4 times higher than the mean measles incidence, for example.
+
+*S2 Figure. Duration of alerts at the optimal thresholds.* The duration of alerts of outbreak detection systems under different testing rates and noise structures, at their respective optimal alert thresholds. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate. Each imperfect test uses the same value for both its sensitivity and specificity (either 85% or 90%). Solid lines represent tests with 0-day turnaround times, and dashed lines represent tests with result delays. $Lambda(4)$ indicates the mean noise incidence is 4 times higher than the mean measles incidence, for example.
+
+*S3 Figure. Number of unavoidable cases at the optimal alert thresholds.* The number of unavoidable cases of an outbreak detection systems under different testing rates and noise structures, at their respective optimal alert thresholds. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate. Each imperfect test uses the same value for both its sensitivity and specificity (either 85% or 90%). Solid lines represent tests with 0-day turnaround times, and dashed lines represent tests with result delays. $Lambda(4)$ indicates the mean noise incidence is 4 times higher than the mean measles incidence.
+
+*S4 Figure. Proportion of alerts that are correct, at the optimal alert thresholds.* The proportion of alerts of an outbreak detection system that are correctly associated with an outbreak, under different testing rates and noise structures, at their respective optimal alert thresholds. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate. Each imperfect test uses the same value for both its sensitivity and specificity (either 85% or 90%). Solid lines represent tests with 0-day turnaround times, and dashed lines represent tests with result delays. $Lambda(4)$ indicates the mean noise incidence is 4 times higher than the mean measles incidence.,
+
+*S5 Figure. Proportion of outbreaks correctly identified, at the optimal alert thresholds.* The proportion of outbreaks that are correctly identified by at least one alert of an outbreak detection system, under different testing rates and noise structures, at their respective optimal alert thresholds. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate. Each imperfect test uses the same value for both its sensitivity and specificity (either 85% or 90%). Solid lines represent tests with 0-day turnaround times, and dashed lines represent tests with result delays. $Lambda(4)$ indicates the mean noise incidence is 4 times higher than the mean measles incidence.,
+
+*S6 Figure. Optimal alert thresholds when maximizing F-1 score.* The optimal alert threshold of outbreak detection systems (that maximizes outbreak detection F-1 score) under different testing rates and noise structures. Each imperfect test uses the same value for both its sensitivity and specificity (either 85% or 90%). Circular markers represent tests with 0-day turnaround times, and triangular markers represent tests with result delays. $Lambda(4)$ indicates the mean noise incidence is 4 times higher than the mean measles incidence, for example.
+
+*S7 Figure. Maximum F-1 score of outbreak detection systems.* The accuracy of outbreak detection systems under different testing rates and noise structures, at their respective (F-1 score) optimal alert thresholds. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate. Each imperfect test uses the same value for both its sensitivity and specificity (either 85% or 90%). Solid lines represent tests with 0-day turnaround times, and dashed lines represent tests with result delays. $Lambda(4)$ indicates the mean noise incidence is 4 times higher than the mean measles incidence, for example.
+
+*S8 Figure. Delay in outbreak detection when maximizing F-1 score.* The detection delay of outbreak detection systems under different testing rates and noise structures, at their respective (F-1 score) optimal alert thresholds. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate. Each imperfect test uses the same value for both its sensitivity and specificity (either 85% or 90%). Solid lines represent tests with 0-day turnaround times, and dashed lines represent tests with result delays. $Lambda(4)$ indicates the mean noise incidence is 4 times higher than the mean measles incidence.
+
+*S9 Figure. Proportion of time series in alert when maximizing F-1 score.* The proportion of the time series in alert of outbreak detection systems under different testing rates and noise structures, at their respective (F-1 score) optimal alert thresholds. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate. Each imperfect test uses the same value for both its sensitivity and specificity (either 85% or 90%). Solid lines represent tests with 0-day turnaround times, and dashed lines represent tests with result delays. $Lambda(4)$ indicates the mean noise incidence is 4 times higher than the mean measles incidence.
+
+*S1 Table. Optimal alert thresholds when the daily noise incidence is 7x the average daily measles incidence.* The optimal outbreak alert thresholds for imperfect and perfect diagnostic tests (that maximizes outbreak detection accuracy) under dynamical and static noise structures where the average daily noise incidence is 7 times the average daily measles incidence $Lambda(7)$. Each imperfect test uses the same value for both its sensitivity and specificity (either 85% or 90%).
+
+#pagebreak()
+
+== Figures
+
+#counter(figure.where(kind: image)).update(0)
+#counter(figure.where(kind: table)).update(0)
+#show figure.where(kind: image): set figure(
+  supplement: [],
+  caption: figure.caption([], separator: none),
+  numbering: n => [S#n Figure],
+)
+#show figure.where(kind: table): set figure(
+  supplement: [],
+  caption: figure.caption([], separator: none),
+  numbering: n => [S#n Table],
+)
+#set math.equation(numbering: n => [S#n], supplement: "Equation")
+
+#figure(
+  image("supplemental_files/plots/optimal-thresholds_n-alerts-plot.svg"),
+)
+<fig-num-alerts>
+
+#figure(
+  image("supplemental_files/plots/optimal-thresholds_alert-duration-plot.svg"),
+)
+<fig-alert-duration>
+
+
+#figure(
+  image("supplemental_files/plots/optimal-thresholds_unavoidable-plot.svg"),
+)
+<fig-unavoidable>
+
+#figure(
+  image(
+    "supplemental_files/plots/optimal-thresholds_prop-alerts-correct-plot.svg",
+  ),
+)
+<fig-alert-proportion-correct>
+
+#figure(
+  image(
+    "supplemental_files/plots/optimal-thresholds_prop-outbreaks-detected-plot.svg",
+  ),
+)
+<fig-outbreak-detect-proportion-correct>
+
+#figure(
+  image(
+    "supplemental_files/plots/f1_optimal-thresholds_alert-threshold-plot.svg",
+  ),
+)
+<fig-f1-alert-threshold>
+
+#figure(
+  image("supplemental_files/plots/f1_optimal-thresholds_accuracy-plot.svg"),
+)
+<fig-f1-accuracy>
+
+#figure(
+  image("supplemental_files/plots/f1_optimal-thresholds_delays-plot.svg"),
+)
+<fig-f1-delay>
+
+#figure(
+  image("supplemental_files/plots/f1_optimal-thresholds_prop-alert-plot.svg"),
+)
+<fig-f1-alert-proportion>
+
+== Tables
+
+#let optimal_thresholds = csv(
+  "supplemental_files/tables/optimal-thresholds.csv",
+)
+#figure(
+  table(
+    columns: range(13).map(i => if i == 0 or i == 1 { 20mm } else { auto }),
+    fill: (x, y) => {
+      if y == 0 { gray }
+      if y == 1 { gray }
+    },
+    align: center,
+    [], table.cell(
+      colspan: 2,
+      align: center,
+      "Test Characteristic",
+    ), table.cell(colspan: 10, align: center, "Testing Rate"),
+    ..optimal_thresholds.flatten()
+  ),
+)
+<tbl_od-optimal-thresholds>
