@@ -59,6 +59,15 @@ Figure 1 shows that perfect test with 0-day and 14-days delay performs exactly e
 
 The same figure 2 and for the text that follows it, around line 102. Would be great to have another version of Figure 3 where is clear shown that perfect tests and imperfect test separately. The difference in perfect test with different delay do not yield any clear or statistical significant difference of outbreak alert, not sure if I followed the explanation given to this. Though is clear from figure 3 that imperfect testing can be problematic triggering the surveillance system in unnecessary levels of alert and by chance or seasonality of the disease, such as is for measles.
 
+#response[
+  Thank you for your comment.
+  As you mention, there is not significant difference in outbreak detection accuracy (as well as the other metrics).
+  As such, we feel that showing clear and substantial overlap is helpful in illustrating the point, and producing separate figures that only highlight the differences between perfect tests with 0-day and 14-day delays may lead the reader to believe there more of a difference in outcomes than present.
+  Similarly, given the 10-panel nature of the figures at present, it would be potentially overwhelming to separate the perfect and imperfect test results into (20) separate facets, and harder to compare the relative performance of the tests.
+
+  Regarding the wording, we have expanded upon the explanation to clarify the reasoning behind test result lags affecting outbreak detection accuracy (lines 97-108).
+]
+
 === Comment 1.3 (Line 173, Citations)
 
 The phrase is not completely correct, Larremore et al. 2021 that you cites is an example of modeling characteristics and its consequence for a wider surveillance program, as also Hay et al. 2021. In a more general sense and targeted to non modeling expert, the perspective work of Mina et al. 2020, entitled "Rethinking Covid-19 Test Sensitivity — A Strategy for Containment" addresses this, would recommend to reshape the phrase and cite those works.

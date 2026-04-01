@@ -103,11 +103,13 @@ Notably, the surveillance accuracy typically declines with more noise and is not
 
 Introducing a lag in test result reporting can decrease surveillance accuracy.
 This will occur if an alert threshold is breached within the duration of the lag (e.g., 14 days) of the end of the outbreak.
-For example, the outbreaks causes the number of test positive results to rise to 6 cases (1 above an alert threshold of 5 cases per day) 10 days before the end of the outbreak, but because of a 14-day test result lag, this does not produce an alert until 4 days #emph[after] the end of the outbreak.
+For example, an outbreak that causes the number of test positive results to rise to 6 cases (1 above an alert threshold of 5 cases per day) 10 days before the end of the outbreak.
+In a test without a test result lag, this would produce an alert.
+However, if the test had an associated 14-day test result lag, this would not produce an alert until 4 days #emph[after] the end of the outbreak.
 If it is the first alert since the start of that outbreak, then it will be recorded as an outbreak for which there was no alert, reducing the proportion of outbreaks that are correctly identified (our definition of sensitivity).
 If it is a subsequent alert (recall that multiple alerts may occur within a single outbreak), then it will be recorded as an alert for which there was no associated outbreak, reducing the proportion of alerts that occur during an outbreak (our definition of positive predictive value).
 This will disproportionately affect shorter outbreaks.
-For the conditions simulated here, introducing a 14-day lag in test reporting for a perfect test reduces the surveillance accuracy by $approx$ 3% by reducing the PPV, but not the sensitivity, of the system (@fig-alert-proportion-correct, @fig-outbreak-detect-proportion-correct).
+For the conditions simulated here, introducing a 14-day lag in test reporting for a perfect test reduces the surveillance accuracy by $approx$ 3% by primarily reducing the PPV, and minimally the sensitivity, of the system (@fig-alert-proportion-correct, @fig-outbreak-detect-proportion-correct).
 In a system with static noise, imperfect tests can achieve slightly higher accuracy than perfect, lagged tests (@fig-accuracy).
 Given dynamical background noise, perfect, lagged, tests outperform imperfect tests.
 
