@@ -24,6 +24,8 @@
 
 2. Please upload all main figures as separate Figure files in .tif or .eps format. For more information about how to convert and format your figure files please see our guidelines: https://journals.plos.org/ploscompbiol/s/figures
 
+#response[Completed.]
+
 3. We have noticed that you have uploaded Supporting Information files, but you have not included a list of legends. Please add a full list of legends for your Supporting Information files after the references list.
 
 #response[Completed.]

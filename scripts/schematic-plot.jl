@@ -15,6 +15,11 @@ using Try
 
 mkpath(manuscript_plots())
 
+include(
+    DrWatson.scriptsdir("plotting-setup.jl")
+)
+
+
 #%%
 time_parameters = SimTimeParameters(;
     tmin = 0.0,
@@ -148,6 +153,11 @@ schematic_with_shade_fig = plot_schematic(
         "#5E5C6C",
         "#2B3465",
     ],
+    linewidth = 5,
+    ylabelsize = 28,
+    panelfontsize = 35,
+    thresholdfontsize = 26,
+    yticklabelsize = 26,
 )
 
 save(
@@ -155,16 +165,9 @@ save(
     schematic_with_shade_fig,
 )
 
-# #%%
-# optimized_filedir = OutbreakDetectionCore.outdir("ensemble", "threshold-optimization")
-# optimized_threshold_results = Try.unwrap(
-#     OutbreakDetectionCore.load_previous_optimization_results_structvector(
-#         optimized_filedir,
-#         "threshold-optimization.jld2",
-#         joinpath(optimized_filedir, "checkpoints"),
-#     )
-# )
-#
-# plot_schematic(
-#     optimized_threshold_results[10]
-# )
+save(
+    manuscript_plots("schematic-plot.eps"),
+    schematic_with_shade_fig,
+    size = (2250, 1385),
+    pt_per_unit = 72 / 300
+)

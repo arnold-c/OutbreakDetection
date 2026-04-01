@@ -8,6 +8,7 @@ include(
     DrWatson.scriptsdir("plotting-setup.jl")
 )
 
+
 # Make sure these values are present in the optimization script
 alert_method = OutbreakDetectionCore.AlertMethod(OutbreakDetectionCore.MovingAverage(7))
 accuracy_metric = OutbreakDetectionCore.AccuracyMetric(OutbreakDetectionCore.BalancedAccuracy())
@@ -43,18 +44,18 @@ threshold_plot = line_plot(
     legendsize = legendsize,
     xlabelsize = xlabelsize,
     ylabelsize = ylabelsize,
+    markersize = markersize,
     show_x_facet_label = show_x_facet_label,
     show_y_facet_label = show_y_facet_label,
     ylims = (0.0, 20.0),
     force = true,
     plotdirpath = manuscript_plots(),
     plotname = "optimal-thresholds_alert-threshold-plot",
-    plotformat = "svg",
+    plotformats = ("svg", "eps"),
     save_plot = true,
     nbanks = nbanks,
     legend_rowsize = legend_rowsize,
     xlabel_rowsize = xlabel_rowsize,
-    size = (1300, 800),
 )
 
 #%%
@@ -68,22 +69,22 @@ accuracy_plot = line_plot(
     outcome = :accuracies,
     ylabel = "Detection Accuracy",
     alpha = alpha,
-    facet_fontsize = 28,
+    facet_fontsize = facet_fontsize,
     legendsize = legendsize,
     xlabelsize = xlabelsize,
     ylabelsize = ylabelsize,
+    markersize = markersize,
     show_x_facet_label = show_x_facet_label,
     show_y_facet_label = show_y_facet_label,
     ylims = (0.5, 1.0),
     force = true,
     plotdirpath = manuscript_plots(),
     plotname = "optimal-thresholds_accuracy-plot",
-    plotformat = "svg",
+    plotformats = ("svg", "eps"),
     save_plot = true,
     nbanks = nbanks,
     legend_rowsize = legend_rowsize,
     xlabel_rowsize = xlabel_rowsize,
-    size = (1300, 800),
 )
 
 #%%
@@ -102,13 +103,14 @@ delays_plot = line_plot(
     legendsize = legendsize,
     xlabelsize = xlabelsize,
     ylabelsize = ylabelsize,
+    markersize = markersize,
     show_x_facet_label = show_x_facet_label,
     show_y_facet_label = show_y_facet_label,
     ylims = (-20, 100),
     force = true,
     plotdirpath = manuscript_plots(),
     plotname = "optimal-thresholds_delays-plot",
-    plotformat = "svg",
+    plotformats = ("svg", "eps"),
     save_plot = true,
     nbanks = nbanks,
     legend_rowsize = legend_rowsize,
@@ -130,13 +132,14 @@ prop_alert_plot = line_plot(
     legendsize = legendsize,
     xlabelsize = xlabelsize,
     ylabelsize = ylabelsize,
+    markersize = markersize,
     show_x_facet_label = show_x_facet_label,
     show_y_facet_label = show_y_facet_label,
     ylims = (0, 0.15),
     force = true,
     plotdirpath = manuscript_plots(),
     plotname = "optimal-thresholds_prop-alert-plot",
-    plotformat = "svg",
+    plotformats = ("svg", "eps"),
     save_plot = true,
     nbanks = nbanks,
     legend_rowsize = legend_rowsize,

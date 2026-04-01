@@ -64,6 +64,10 @@ function plot_schematic(
         noise_scaling = nothing,
         shift_noise = 0,
         movingavg_window = 20,
+        linewidth = 5,
+        ylabelsize = 26,
+        thresholdfontsize = 28,
+        panelfontsize = 35,
         kwargs...
     )
     # Extract parameters from OptimizationResult
@@ -147,6 +151,11 @@ function plot_schematic(
         alert_bounds,
         optimal_threshold;
         time_p = time_p,
+        linewidth = linewidth,
+        ylabelsize = ylabelsize,
+        panelfontsize = panelfontsize,
+        thresholdfontsize = thresholdfontsize,
+        yticklabelsize = yticklabelsize,
         kwargs...
     )
 end
@@ -173,6 +182,11 @@ function plot_schematic(
         shade_alert_outbreak_overlap = false,
         measlesalpha = 0.5,
         testalpha = 0.5,
+        linewidth = 4,
+        ylabelsize = 38,
+        thresholdfontsize = 28,
+        panelfontsize = 35,
+        yticklabelsize = 28,
         kwargs...,
     )
     kwargs_dict = Dict(kwargs)
@@ -205,9 +219,25 @@ function plot_schematic(
     incga = fig[1, 1] = GridLayout()
     noisega = fig[2, 1] = GridLayout()
     testga = fig[3, 1] = GridLayout()
-    incax = Axis(incga[1, 1]; ylabel = "Measles Incidence")
-    noiseax = Axis(noisega[1, 1]; ylabel = "Noise Incidence")
-    testax = Axis(testga[1, 1]; xlabel = "Time", ylabel = "Test Positives")
+    incax = Axis(
+        incga[1, 1];
+        ylabel = "Measles Incidence",
+        ylabelsize = ylabelsize,
+        yticklabelsize = yticklabelsize,
+    )
+    noiseax = Axis(
+        noisega[1, 1];
+        ylabel = "Noise Incidence",
+        ylabelsize = ylabelsize,
+        yticklabelsize = yticklabelsize,
+    )
+    testax = Axis(
+        testga[1, 1];
+        xlabel = "Time",
+        ylabel = "Test Positives",
+        ylabelsize = ylabelsize,
+        yticklabelsize = yticklabelsize,
+    )
 
     if shade_alert_outbreak_overlap
         if !isempty(outbreak_bounds_vec)
@@ -238,14 +268,14 @@ function plot_schematic(
         inc_vec;
         color = outbreakstatus_vec,
         colormap = outbreakcolormap,
-        linewidth = 2,
+        linewidth = linewidth,
     )
 
     hlines!(
         incax,
         outbreak_specification.outbreak_threshold;
         color = :black,
-        linewidth = 2,
+        linewidth = linewidth,
         linestyle = :dash,
     )
 
@@ -254,7 +284,7 @@ function plot_schematic(
         times,
         noise_vec;
         color = outbreakcolormap[1],
-        linewidth = 2,
+        linewidth = linewidth,
     )
 
     lines!(
@@ -263,14 +293,14 @@ function plot_schematic(
         testpositive_vec;
         color = alertstatus_vec,
         colormap = alertcolormap,
-        linewidth = 2,
+        linewidth = linewidth,
     )
 
     hlines!(
         testax,
         alertthreshold;
         color = :black,
-        linewidth = 2,
+        linewidth = linewidth,
         linestyle = :dash,
     )
 
@@ -280,13 +310,14 @@ function plot_schematic(
         alertthreshold + 0.5;
         text = "T = $alertthreshold",
         justification = :left,
+        fontsize = thresholdfontsize,
     )
 
     for (label, layout) in
         zip(["a", "b", "c"], [incga[1, 1], noisega[1, 1], testga[1, 1]])
         Label(
             layout[1, 1, TopLeft()], label;
-            fontsize = 30,
+            fontsize = panelfontsize,
             font = :bold,
             padding = (0, 0, 20, 0),
             halign = :right

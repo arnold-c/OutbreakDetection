@@ -70,23 +70,25 @@ for noise_level in unique(optimized_threshold_results.noise_level)
 
             @assert length(accuracy_filtered_results) == 1
             for sim in [1, 10, 49, 100]
-                plotpath = joinpath(accuracy_plotpath, "sim-$(sim)_timeseries.svg")
-                println("\tCreating visualization for simulation $sim...")
+                for format in ("svg",)
+                    plotpath = joinpath(accuracy_plotpath, "sim-$(sim)_timeseries.$format")
+                    println("\tCreating visualization for simulation $sim...")
 
-                if isfile(plotpath) && !force_plot
-                    @warn "\tPlot at $plotpath already exists and force_plot = $force_plot. Skipping"
-                    continue
+                    if isfile(plotpath) && !force_plot
+                        @warn "\tPlot at $plotpath already exists and force_plot = $force_plot. Skipping"
+                        continue
+                    end
+
+
+                    sim_fig = visualize_timeseries(
+                        accuracy_filtered_results[1];
+                        sim_number = sim,
+                    )
+
+                    save(plotpath, sim_fig)
+
+                    println("\tVisualization created successfully!")
                 end
-
-
-                sim_fig = visualize_timeseries(
-                    accuracy_filtered_results[1];
-                    sim_number = sim,
-                )
-
-                save(plotpath, sim_fig)
-
-                println("\tVisualization created successfully!")
             end
         end
     end
