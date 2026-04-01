@@ -72,6 +72,10 @@ The same figure 2 and for the text that follows it, around line 102. Would be gr
 
 The phrase is not completely correct, Larremore et al. 2021 that you cites is an example of modeling characteristics and its consequence for a wider surveillance program, as also Hay et al. 2021. In a more general sense and targeted to non modeling expert, the perspective work of Mina et al. 2020, entitled "Rethinking Covid-19 Test Sensitivity — A Strategy for Containment" addresses this, would recommend to reshape the phrase and cite those works.
 
+#response[
+Thank you for this comment - we have clarified this opening line to state the interaction between the test and the background noise, not a surveillance program in general.
+]
+
 === Comment 1.4 (Simulation Duration)
 
 Minor comment, Why the simulated time series is as long as 100 years? In daily resolution? This is extremely long and somewhat unrealistic. As measles settings around the world varies a lot would be interesting to address some short-term outbreaks and low level of incidence, as some settings are close to elimination. An interesting development would be to understand how effectively different this 4 kind of testing scenarios can affect the elimination of measles. No action needed and not mandatory to be addressed, though would interesting to read some speculation on those scenarios in light of the work developed at the present manuscript. Regarding this, what are the time unit for figure 5?

@@ -162,7 +162,7 @@ These will be country-specific decisions, and they may change throughout time; f
 These trade-offs must be explicitly acknowledged when designing surveillance systems, and we present a framework to account for the deep interconnectedness of individual and population-level uncertainties that arise from necessary categorizations.
 
 == Limitations and Strengths
-To our knowledge, this is one of the first simulation studies to examine the relationship between individual test characteristics and the wider surveillance program.
+To our knowledge, this is one of the first simulation studies to examine the relationship between individual test characteristics and the effect of background noise on a surveillance program.
 By explicitly modeling the interaction between the two, we illustrate the dependency of the performance of the surveillance system at the population level and on the characteristics of the diagnostic tests at the individual level.
 Thus, a change to the latter (e.g., adoption of a new diagnostic with different sensitivity and specificity) without a corresponding change to surveillance frequency or action thresholds, may lead to a reduction in outbreak detection performance.
 Additionally, by defining outbreak bounds concretely we have been able to calculate metrics of outbreak detection performance that draw parallels to those used when evaluating individual diagnostic tests.
