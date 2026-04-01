@@ -1,5 +1,6 @@
 #import "template.typ": article
 #import "metadata.typ": meta
+#show link: underline
 
 #show: article.with(
   ..meta,
@@ -38,16 +39,16 @@
 
 = Background
 
-Infectious disease diagnostics are medical devices and techniques that can be used to detect the presence of a pathogen in a host @DiagnosticsGlobal.
+Infectious disease diagnostics are medical devices and techniques that can be used to detect the presence of a pathogen in a host @worldhealthorganizationDiagnostics2024.
 A clinician may use a physical examination to diagnose a patient with an infection, identifying the signs and symptoms that result from the host’s immune response to the pathogen (e.g., fever, rash).
-Alternatively, #emph[in vitro] tests to quantify the presence of the pathogen itself may be used, e.g., polymerase chain reaction (PCR) to detection pathogen nucleic acids, or the host's immune response to the pathogen e.g., enzyme-linked immunosorbent assays (ELISA) to measure IgM or IgG antibody responses @DiagnosticsGlobal @yangPCRbasedDiagnosticsInfectious2004 @alhajjEnzymeLinkedImmunosorbent2024.
+Alternatively, #emph[in vitro] tests to quantify the presence of the pathogen itself may be used, e.g., polymerase chain reaction (PCR) to detection pathogen nucleic acids, or the host's immune response to the pathogen e.g., enzyme-linked immunosorbent assays (ELISA) to measure IgM or IgG antibody responses @worldhealthorganizationDiagnostics2024 @yangPCRbasedDiagnosticsInfectious2004 @alhajjEnzymeLinkedImmunosorbent2024.
 Any given diagnostic will vary in its ability to correctly identify the presence of the pathogen, which is described by its sensitivity and specificity.
 The sensitivity of a diagnostic is the ability to correctly identify a positive result, conditional on a positive individual being tested i.e., a true positive result @westreichDiagnosticTestingScreening2019 @shrefflerDiagnosticTestingAccuracy2024 @parikhUnderstandingUsingSensitivity2008.
 The specificity is the opposite: the ability to correctly determine a true negative result, conditional on a negative individual being tested @westreichDiagnosticTestingScreening2019 @shrefflerDiagnosticTestingAccuracy2024 @parikhUnderstandingUsingSensitivity2008.
 Due to the translation of quantitative measures e.g., immunoglobulin M (IgM) antibody titers, into a binary outcome (positive/negative), the sensitivity and specificity of a diagnostic are often at odds with one another.
 For example, using a low optical density value to define the threshold for detection for an ELISA will produce a diagnostic that is highly sensitive, as it only requires a small host response to the pathogen and many resulting antibody titers will exceed this value.
 However, this may lead to low specificity due to an increase in spurious false positive results in non-infected individuals.
-To account for these differences, the target product profile (TPP) of a diagnostic provides a minimum set of characteristics that should be met, helping to guide the development and use @worldhealthorganizationTargetProductProfiles.
+To account for these differences, the target product profile (TPP) of a diagnostic provides a minimum set of characteristics that should be met, helping to guide the development and use @worldhealthorganizationTargetProductProfiles2024.
 
 The choice to prioritize sensitivity or specificity will be pathogen and context specific.
 When the cost of a false negative result is disproportionately high relative to a false positive, such as for Ebola @chuaCaseImprovedDiagnostic2015, highly specific tests may be preferred.
@@ -155,7 +156,7 @@ However, if it is expected that the noise is dynamic and substantially larger in
 This discrepancy occurs because, despite the same average incidence of noise in each (comparable) scenario, the relative proportion of measles to noise on any day varies throughout the dynamical noise time series, exacerbating the increase in false positive and negative test results as the diagnostic's sensitivity and specificity declines.
 Under extremely high dynamical noise levels ($gt.eq Lambda (6)$), the relative paucity of true outbreak periods to non-outbreak periods creates a severely imbalanced data set (c. 14% of the time series is within an outbreak period), such that distinguishing between a target-disease's outbreak and those of other pathogens becomes an exceedingly difficult task, and increasing testing rates can actually worsen the problem through an increased opportunity for false positive results.
 
-Surveillance is used to inform action @DiseaseSurveillance.
+Surveillance is used to inform action @worldhealthorganizationSurveillanceEmergencies2024.
 What actions are taken depend upon the constraints imposed, and the values held, within a particular surveillance context.
 This analysis is therefore not a complete optimization, which would require explicit decisions to be made about the preference for increased speed at the cost of higher false alert rates and lower PPV (and vice versa).
 These will be country-specific decisions, and they may change throughout time; for example, favoring RDTs when there are low levels of background infections (either static or dynamical in nature), and ELISAs during large (suspected) non-measles outbreaks of febrile rash illness e.g., rubella.
@@ -180,9 +181,11 @@ Future work should aim to capture these dynamics and characterize the resulting 
 
 Finally, despite numerous scenarios where equivalent outbreak detection accuracy could be achieved, under regimes with high levels of dynamical noise, imperfect tests were not able to appropriately distinguish between outbreak and non-outbreak periods.
 In these situations, the added complexity from large numbers of false positive test results likely warrants a different decision criteria than a binary detection threshold.
+As an example, Médecins Sans Frontières (MSF) routinely respond to measles outbreaks and differentiate their outbreak detection criteria by the recency and completeness of Supplemental Immunization Activities (SIAs) and vaccination coverage within a region, as well as the source of the "test positives", relying on a higher (set of) threshold(s) for clinically suspected cases than for IgM positive test results @danetInvestigatingMeaslesOutbreak.
 Similarly, the optimal threshold depends heavily on the costs ascribed to incorrect actions, be that failing to detect an outbreak or incorrectly mounting a response for an outbreak that does not exist.
 In the simulations we have weighted them equally (as the system's accuracy is defined as the arithmetic mean of the sensitivity and PPV), but it is likely that they should not be deemed equivalent; missing an outbreak may result in many thousands of cases, whereas an unnecessary alert would generally launch an initial low-cost investigation for full determination of the outbreak status.
 This is particularly important in countries with vast heterogeneity in transmission: different weightings should be applied to higher vs. lower priority/risk regions to account for discrepancies in the consequences of incorrect decisions.
+For practitioners that wish to use the paper's associated package to analyze a particular set of scenarios, to redefine the trade-off between the sensitivity and PPV in computing the system's surveillance accuracy, all that should be required would be to overload the `_calculate_accuracy()` function to accept a newly defined sum type (see #link("https://github.com/arnold-c/OutbreakDetection/blob/f6034987dde1c6cafb07a3e14358dd289c69f87b/OutbreakDetectionCore/src/detection/detection-metric-functions.jl#L28-L34")[here] for the current function definitions, and #link("https://github.com/arnold-c/OutbreakDetection/blob/f6034987dde1c6cafb07a3e14358dd289c69f87b/OutbreakDetectionCore/src/types/accuracy-metrics.jl#L7-L10")[here] for the sum type definitions).
 
 Given these limitations, the explicit values (i.e., optimal thresholds, accuracies etc.) should be interpreted with caution, and the exact results observed in the real-world will likely be highly dependent on unseen factors, such as the proportion of measles and non-measles febrile rash patients that seek healthcare.
 However, the general pattern that imperfect tests can produce equivalent outbreak detection capabilities under static or low dynamical noise regimes, should hold.
@@ -194,7 +197,7 @@ We constructed a stochastic compartmental non-age structured Susceptible-Exposed
 We utilized binomial draws to ensure compartment sizes remained positive valued @chatterjeeBinomialDistributionBased2005.
 We assumed that the transmission rate ($beta_t$) is sinusoidal with a period of one year and 20% seasonal amplitude.
 $R_0$ was set to 16, with a latent period of 10 days and infectious period of 8 days @guerraBasicReproductionNumber2017 @gastanaduyMeasles2019.
-The population was initialized with 500,000 individuals with Ghana-like birth and vaccination rates @worldbankGhana.
+The population was initialized with 500,000 individuals with Ghana-like birth and vaccination rates @worldbankGhana2024.
 Ghana was chosen to reflect a setting with a high-performing measles vaccination program that has not yet achieved elimination status (c. 80% coverage for two doses of measles-containing vaccine), and must remain vigilant to outbreaks @WHOImmunizationData @masreshaTrackingMeaslesRubella2024.
 We assumed commuter-style imports at each time step to avoid extinction; the number of imports each day were drawn from a Poisson distribution with mean proportional to the size of the population and $R_0$ @keelingModelingInfectiousDiseases2008.
 The full table of parameters can be found in @tbl_od-model-parameters.
@@ -316,7 +319,7 @@ Each of the 100 simulations per scenario produces an accuracy, and we identified
 To identify T#sub([O]) we implemented the TikTak multistart optimization algorithm #label("tiktak") @arnoudBenchmarkingGlobalOptimizers2023, using 100 initial values (alert thresholds) selected from a Sobol' low-discrepancy sequence @sobolDistributionPointsCube1967 initialized with lower and upper bounds of 0.0 and 20.0, respectively.
 In brief, the Sobol' sequence is a deterministic, quasi-random sequence of numbers that maximizes the uniformity of the explored parameter space by approximately iteratively bisecting the parameter space @sobolDistributionPointsCube1967 @lemieuxQuasiMonteCarlo2009.
 After 100 initial alert thresholds are generated, the accuracy is evaluated and the 10 alert thresholds (points) with the highest accuracy are retained.
-The 10 retained alert thresholds are sorted in descending order of accuracy, creating the sequence of Sobol' points ($upright(bold(s#sub[1])) dots upright(bold(s#sub[10]))$) that are used to calculate the seed points for local optimization that subsequently performed using the BOBYQA derivative-free algorithm @powellBOBYQAAlgorithmBound.
+The 10 retained alert thresholds are sorted in descending order of accuracy, creating the sequence of Sobol' points ($upright(bold(s#sub[1])) dots upright(bold(s#sub[10]))$) that are used to calculate the seed points for local optimization that subsequently performed using the BOBYQA derivative-free algorithm @powellBOBYQAAlgorithmBound2009.
 For each of the 10 local optimizations, the starting seed is computed as the weighted combination of the Sobol' point $upright(bold(s#sub[i]))$ and the alert threshold that produced the maximum accuracy so far, with increasing weight provided to the alert threshold that maximized accuracy; more information can be found in Appendix B.6 of @arnoudBenchmarkingGlobalOptimizers2023.
 The TikTak algorithm is implemented in the #link("https://github.com/tpapp/MultistartOptimization.jl")[MultistartOptimization.jl] package @pappTpappMultistartOptimizationjl2025, with local optimization (BOBYQA) implemented in the #link("https://github.com/jump-dev/NLopt.jl")[NLOpt.jl] package @johnsonNLoptNonlinearoptimizationPackage2025.
 
@@ -369,7 +372,8 @@ All code and data for the simulations can be found at #link("https://github.com/
 
 #set bibliography(style: "elsevier-vancouver")
 
-#bibliography("./OD.bib")
+// #bibliography("./OD.bib")
+#bibliography("./Outbreak-Detection-Paper.bib")
 
 #pagebreak()
 

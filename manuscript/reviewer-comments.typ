@@ -1,4 +1,5 @@
 #show heading.where(level: 1): it => align(center, it)
+#show link: underline
 
 // Function to format the planned response to reviewer comments
 #let responseplan(content) = {
@@ -126,10 +127,14 @@ Regarding trade-offs between true and false alert rates, the authors state in th
 
 How flexible is this framework in allowing a potential user to define their preferred trade-off(s) and identify optimal detection thresholds accordingly? It seems to me that the methods as described should apply to any definition for surveillance accuracy, but I don't see any statements to this effect in the manuscript (they could accompany the text in lines 214-222, for example).
 
-#responseplan[Very flexible - just provide another measure of accuracy. Add comment in lines 214-222.]
 
-#responseplan[Within reason, can get a different answer by changing the objective function. Framework done to illustrate this. We had to define some objective, and we chose to determine negative delays as correct. Objective to be pre-defined before doing the analysis - don't want to do post-hoc alterations to the objective to get a particular result.]
-
+#response[
+  This framework is very flexible, however, at present the code does not allow the user to supply a different objective function.
+  Since the original submission we have substantially reworked the package code to make it more modular and clearer to navigate.
+  As such, redefining the objective function should not be necessary as the surveillance accuracy function can be overloaded to accept a new Sum Type that creates a new balance between the sensitivity and PPV metrics that the current objective function generate.
+  #link("https://github.com/arnold-c/OutbreakDetection/blob/f6034987dde1c6cafb07a3e14358dd289c69f87b/OutbreakDetectionCore/src/detection/detection-metric-functions.jl#L28-L34")[These lines] of the package code illustrate what would need to be defined in the end-user's code.
+  We have added this detail to lines 223-227.
+]
 
 On a related note, when using imperfect tests in the present of high levels of dynamical noise, the authors write (lines 212-214):
 
@@ -137,13 +142,22 @@ On a related note, when using imperfect tests in the present of high levels of d
 
 Are there relevant real-world examples of decision criteria that the authors could suggest here?
 
-#responseplan[MSF multiple thresholds for measles outbreak response in DRC?]
+#response[
+  Médecins Sans Frontières (MSF) routinely responds to outbreaks in the Democratic Republic of the Congo, which also involves sustained surveillance activities in partnership with the Ministry of Health.
+  Because test coverage with ELISA tests is rare relative to the incidence, MSF often relies on clinical suspicion (which could be viewed as the close to equivalent of a diagnostic test with 100% sensitivity and 0% specificity).
+  Depending on the source of the "test" results, in combination with vaccination coverage and recency of a Supplemental Immunization Activity (SIA) in the region, the thresholds used to determine a "suspected outbreak" vary from "5 suspected cases reported by a single geographic unit in a one month period" to "Within a geographic unit: Number of cases or weekly incidence higher than in previous (nonepidemic) years, or the same as in an epidemic year OR If no data from previous years: increase in the number of cases in the last 3 or 4 weeks" to "> 2 confirmed cases (IgM+) in a one-month period" (#link("https://medicalguidelines.msf.org/en/viewport/mme/english/3-3-confirming-the-outbreak-32407880.html")[MSF decision criteria here]).
+  We have added a summary of this to lines 210-214.
+]
 
 ==== Comment 2.3 (Results Section Details)
 
 With the methods section coming at the end of the paper, I think some additional details are needed at the start of the results section to make it easier for the reader to correctly interpret and evaluate the presented results.
 
 (a) Lines 84-85 report the range of optimal alert thresholds as "between 0.39 and 16.80 test positive cases per day" without specifying a time period. The abstract refers to a "7-day rolling average", and this is mentioned two paragraphs later in the results (line 99). But there is no mention of a 7-day window in the main text until after lines 84-85.
+
+#response[
+
+]
 
 #responseplan[Add 7-day rolling average to lines 84-85]
 
