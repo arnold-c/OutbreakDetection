@@ -48,6 +48,13 @@ Though interesting and worth publishing, I have minor comments that should be ad
 
 Figure 1 shows that perfect test with 0-day and 14-days delay performs exactly equal, which is not wrong as the figure only shows proportion of individual tested against alert threshold. It would be interesting to add or to point from that figure to a time series plot of each of the 4 different scenarios showing how the delay in testing would affect the timing of alert, which is of importance in outbreak detection algorithm. As supplementary material is okay.
 
+#response[
+  Thank you for your suggestion.
+  Figure 1 illustrates that perfect tests with 0-day and 14-day delays achieve their optimal outbreak detection at the same alert threshold (for a given proportion of individuals tested),
+  and Figure 2 shows a slightly diminished detection accuracy with the 14-day delay tests.
+  We have attached a comparison of two test-positive time series, resulting from the same measles and rubella simulation, in the supplement (S10 Figure).
+]
+
 === Comment 1.2 (Figure 2 and Line 102)
 
 The same figure 2 and for the text that follows it, around line 102. Would be great to have another version of Figure 3 where is clear shown that perfect tests and imperfect test separately. The difference in perfect test with different delay do not yield any clear or statistical significant difference of outbreak alert, not sure if I followed the explanation given to this. Though is clear from figure 3 that imperfect testing can be problematic triggering the surveillance system in unnecessary levels of alert and by chance or seasonality of the disease, such as is for measles.

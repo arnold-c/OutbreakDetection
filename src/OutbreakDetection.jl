@@ -24,6 +24,7 @@ include("./plotting-helpers.jl")
 include("./sort_test_specifications.jl")
 include("./schematic-plot/simulation-setup.jl")
 include("./schematic-plot/plot.jl")
+include("./schematic-plot/delay-plot.jl")
 
 include("./test-descriptions.jl")
 include("./compare-optimal-solution-results.jl")

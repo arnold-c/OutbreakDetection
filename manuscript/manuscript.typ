@@ -393,6 +393,9 @@ All code and data for the simulations can be found at #link("https://github.com/
 
 *S9 Figure. Proportion of time series in alert when maximizing F-1 score.* The proportion of the time series in alert of outbreak detection systems under different testing rates and noise structures, at their respective (F-1 score) optimal alert thresholds. The shaded bands illustrate the 80% central interval, and the solid/dashed lines represent the mean estimate. Each imperfect test uses the same value for both its sensitivity and specificity (either 85% or 90%). Solid lines represent tests with 0-day turnaround times, and dashed lines represent tests with result delays. $Lambda(4)$ indicates the mean noise incidence is 4 times higher than the mean measles incidence.
 
+*S10 Figure. Comparison of 0-day and 14-day delay perfect test outbreak detection.* A comparison of the outbreak detection performance between 0-day and 14-day delay perfect tests, when 75% of infectious individuals are tested, and uses the same noise structure as the schematic in @fig-outbreak-schematic (dynamical rubella with 60% vaccination rate at birth). The orange bands represent regions of the measles time series that meet the outbreak definition criteria. The dark blue bands represent regions of the test positive time series that breach the alert threshold (the horizontal dashed line), and constitute an alert. In this example time series, the additional test delay does not impact the outbreak detection accuracy, but does result in a delay to the initiation of the alerts.
+
+
 *S1 Table. Optimal alert thresholds when the daily noise incidence is 7x the average daily measles incidence.* The optimal outbreak alert thresholds for imperfect and perfect diagnostic tests (that maximizes outbreak detection accuracy) under dynamical and static noise structures where the average daily noise incidence is 7 times the average daily measles incidence $Lambda(7)$. Each imperfect test uses the same value for both its sensitivity and specificity (either 85% or 90%).
 
 #pagebreak()
@@ -464,6 +467,12 @@ All code and data for the simulations can be found at #link("https://github.com/
   image("supplemental_files/plots/f1_optimal-thresholds_prop-alert-plot.svg"),
 )
 <fig-f1-alert-proportion>
+
+#figure(
+  image("supplemental_files/plots/schematic-plot-test-delay.svg"),
+)
+<fig-test-delay-comparison-schematic>
+
 
 == Tables
 

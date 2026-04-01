@@ -154,7 +154,7 @@ function create_schematic_simulation(
         seed = 1234,
         outbreak_specification = OutbreakDetectionCore.OutbreakSpecification(5, 30, 500),
         outbreak_detection_specification = nothing,
-        noise_scaling = 10,
+        noise_scaling = 1,
         shift_noise = 0,
         movingavg_window = 20
     )

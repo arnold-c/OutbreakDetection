@@ -68,6 +68,8 @@ function plot_schematic(
         ylabelsize = 26,
         thresholdfontsize = 28,
         panelfontsize = 35,
+        xticklabelsize = 38,
+        yticklabelsize = 38,
         kwargs...
     )
     # Extract parameters from OptimizationResult
@@ -156,6 +158,7 @@ function plot_schematic(
         panelfontsize = panelfontsize,
         thresholdfontsize = thresholdfontsize,
         yticklabelsize = yticklabelsize,
+        xticklabelsize = xticklabelsize,
         kwargs...
     )
 end
@@ -183,6 +186,7 @@ function plot_schematic(
         measlesalpha = 0.5,
         testalpha = 0.5,
         linewidth = 4,
+        xticklabelsize = 38,
         ylabelsize = 38,
         thresholdfontsize = 28,
         panelfontsize = 35,
@@ -231,12 +235,19 @@ function plot_schematic(
         ylabelsize = ylabelsize,
         yticklabelsize = yticklabelsize,
     )
+
+    year_ticks = ceil(Int, first(times) / 365):floor(Int, last(times) / 365)
+    year_tick_positions = collect(year_ticks .* 365)
+    year_tick_labels = string.(collect(year_ticks))
+
     testax = Axis(
         testga[1, 1];
-        xlabel = "Time",
+        xlabel = "Time (years)",
         ylabel = "Test Positives",
         ylabelsize = ylabelsize,
         yticklabelsize = yticklabelsize,
+        xticklabelsize = xticklabelsize,
+        xticks = (year_tick_positions, year_tick_labels),
     )
 
     if shade_alert_outbreak_overlap
@@ -329,7 +340,6 @@ function plot_schematic(
         [
             noiseax,
             incax,
-            testax,
         ],
     )
 
