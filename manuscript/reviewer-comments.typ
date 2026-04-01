@@ -109,7 +109,14 @@ And because an alert period may begin before an outbreak and span part of the ou
 
 I appreciate why the authors chose to define alerts in this way. However, I think there's merit in also presenting a brief analysis that distinguishes between alerts with negative delays (i.e., false alarms that persist long enough to become considered correct) and alerts that are only triggered once the surveillance data includes evidence of an outbreak. As the authors emphasise (lines 158-161), maintaining a perpetual alert status is not feasible.
 
-#responseplan[What's the performance loss of retrospectively removing negative delays from true positives? Also think about how to explain using a different objective function and the changes to the results]
+#response[
+  Thank you for your comment - as a result of this we re-examined our assumptions and decided to adjust our algorithm that matches alerts to outbreaks.
+  In our reformulated matching algorithm, we only allow one outbreak to be matched to each alert.
+  Previously, this was not the case, and a single alert could be successfully matched to multiple outbreaks if it is long enough.
+  We have also implemented a new filtering algorithm to the alert threshold optimization to allow for only positive-delay matches to be successfully counted within the optimization phase, although the main results do not have this restriction and this is only an option for the user.
+  Upon re-running the analysis with the new single outbreak per alert matching strategy, all negative delays disappeared.
+  We think that this matching is more intuitive for the reasons highlighted above: a perpetual alert status is not feasible and would certainly be investigated before multiple outbreaks start, finish, and restart.
+]
 
 ==== Comment 2.2 (Framework Flexibility and Trade-offs)
 
