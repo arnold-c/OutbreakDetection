@@ -80,7 +80,12 @@ Thank you for this comment - we have clarified this opening line to state the in
 
 Minor comment, Why the simulated time series is as long as 100 years? In daily resolution? This is extremely long and somewhat unrealistic. As measles settings around the world varies a lot would be interesting to address some short-term outbreaks and low level of incidence, as some settings are close to elimination. An interesting development would be to understand how effectively different this 4 kind of testing scenarios can affect the elimination of measles. No action needed and not mandatory to be addressed, though would interesting to read some speculation on those scenarios in light of the work developed at the present manuscript. Regarding this, what are the time unit for figure 5?
 
-#responseplan[More about producing something with multiple outbreaks to remove influence of initial conditions - cuold have just simulated more smaller outbreaks.]
+#response[
+  We simulated 100 years per time series to ensure multiple outbreaks could be generated within a single simulation run, and to minimize the influence of the initial conditions on the timing of those outbreaks.
+  While it would be possible to simulate shorter, and more, time series, producing the same total number of years, this would likely decrease the variability in when outbreaks were initiated within a timeline and reduce opportunities for overlap between rubella and measles outbreaks.
+  Regarding simulating a daily timescale, we chose to use the Tau-leaping algorithm that is a good approximation of the Gillespie stochastic simulation algorithm, while running at substantially higher speeds, allowing for a greater number of years to be simulated.
+  Equally, a daily resolution allows for a greater exploration of test result delays than an alternative model formulation such as the TSIR model, as well as simplifying the integration of two disease simulations with different latent and infectious periods.
+]
 
 == Reviewer \#2
 
