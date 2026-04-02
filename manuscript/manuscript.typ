@@ -104,7 +104,7 @@ Notably, the surveillance accuracy typically declines with more noise and is not
 <fig-accuracy>
 
 Introducing a lag in test result reporting can decrease surveillance accuracy.
-This will occur if an alert threshold is breached within the duration of the lag (e.g., 14 days) of the end of the outbreak.
+This will occur if an alert threshold is breached within the duration of the lag (e.g., 14 days) after the end of the outbreak.
 For example, an outbreak that causes the number of test positive results to rise to 6 cases (1 above an alert threshold of 5 cases per day) 10 days before the end of the outbreak.
 In a test without a test result lag, this would produce an alert.
 However, if the test had an associated 14-day test result lag, this would not produce an alert until 4 days #emph[after] the end of the outbreak.

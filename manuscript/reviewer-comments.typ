@@ -180,7 +180,10 @@ Regarding Figure 1, the sharp drops and rises in the alert threshold that are sh
 
 I found it difficult to understand the remarks about test result lags decreasing the surveillance accuracy (lines 102-105) and I suspect it's due to a single choice of word. When the authors state "This will occur if an alert occurs within the duration of the lag (e.g., 14 days) of the end of the outbreak", am I correct in thinking that refers to an alert occurring 1 to 14 days *after* the end of the outbreak? I initially interpreted "within the duration of the lag (e.g., 14 days) *of* the end of the outbreak" as referring to a window of 14 days in either direction (before or after the end of the outbreak).
 
-#responseplan[Correct - this is a typo to be corrected]
+#response[
+  Thank you for highlighting this.
+  We have added the word #emph[after], as well further details on lines 102-105 to clarify this process.
+]
 
 ==== Comment 2.6 (Seasonality Assumptions)
 
