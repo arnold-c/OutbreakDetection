@@ -163,9 +163,18 @@ With the methods section coming at the end of the paper, I think some additional
 
 ==== Comment 2.4 (Figure 1 Interpretation)
 
-Regarding Figure 1, the sharp drops and rises in the alert threshold that are shown in the bottom-right panel (Dynamical Noise, Λ(8)) are due to the interplay between false-positives and high testing rates, as the authors describe in the text (lines 98-101). The subsequent rebound in alert threshold for the imperfect test (85%) when 90% of individuals are tested is not explained, and it's not obvious to me whether the false-positives and/or false-negatives could be the cause. Can the authors offer any insights?
+Regarding Figure 1, the sharp drops and rises in the alert threshold that are shown in the bottom-right panel (Dynamical Noise, $Lambda$(8)) are due to the interplay between false-positives and high testing rates, as the authors describe in the text (lines 98-101). The subsequent rebound in alert threshold for the imperfect test (85%) when 90% of individuals are tested is not explained, and it's not obvious to me whether the false-positives and/or false-negatives could be the cause. Can the authors offer any insights?
 
-#responseplan[I believe the rebound is because of an increase in false positive as a result of a larger number of individuals being tested]
+#response[
+  In this revised version of the analysis this artifact is no longer present.
+  In the prior version, the rebound appears to occur due to a combination of simulation choices that when combined result in flat multi-modal minima.
+  Specifically, for computationally efficiency, we originally fixed calculated the proportion of individuals tested and the proportion of test positives by multiplying the integer values by the respective proportions (test sensitivity/specificity for test positives) before rounding to convert back to an integer value.
+  This has been updated to used binomial sampling after extensive refactoring to substantially increase the simulation speed.
+  Previously, we also rounded the moving average of test positive values to generate integer values.
+  We no longer perform this rounding.
+  Both of these prior decisions resulted in flatter minima for the optimizer as they force alert thresholds close to each other (e.g., 8.4 and 7.8 alerts) to produce more similar results than they otherwise would.
+  Details of the binomial sampling have been added to lines 295-297 and line 311-314.
+]
 
 ==== Comment 2.5 (Test Result Lags Clarity)
 

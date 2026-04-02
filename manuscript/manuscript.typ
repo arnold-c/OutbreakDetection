@@ -282,6 +282,7 @@ Only events meeting all 3 criteria are classified as outbreaks.
 The incidence of non-measles febrile rash (i.e., noise) does not affect the outbreak status of a region but may affect the alert status triggered by the testing protocol.
 
 Each day, a percentage (P) of clinically-compatible cases of febrile rash are tested; P is fixed in a given scenario to a value between 10% and 100%, in 10% increments.
+The number of individuals tested is calculated using binomial draws with probability P given the number of clinically compatible cases.
 Each "testing scenario" combines a testing rate (P) with one of the following tests:
 
 - An imperfect test with 85% sensitivity and specificity, and 0-day lag in result return. That is, 85% of true measles cases will be correctly labeled as positive, and 15% of non-measles febrile rash individuals that are tested will be incorrectly labeled as positive for measles. This acts as a lower bound of acceptability for a hypothetical measles RDT @20240613_tpp_measles_rubell_FV_EN
@@ -291,6 +292,7 @@ Each "testing scenario" combines a testing rate (P) with one of the following te
 
 For each time series of true measles cases, we define outbreaks as the range of time that meets the definition above (@fig-outbreak-schematic\a).
 We then add non-measles noise (@fig-outbreak-schematic\b) and test according to the testing scenario, which yields 5 time series of test positive cases (@fig-outbreak-schematic\c): one time series of all clinically compatible cases and 4 reflecting the testing scenarios.
+The number of true and false test positive results is calculated using binomial draws with probability equal to the sensitivity or specificity of the test, given the number of infected or noise individuals, respectively, before being combined to produce the test positive time series.
 
 #figure(
   image("manuscript_files/plots/schematic-plot.svg"),
