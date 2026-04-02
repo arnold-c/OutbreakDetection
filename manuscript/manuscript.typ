@@ -200,7 +200,7 @@ We assumed that the transmission rate ($beta_t$) is sinusoidal with a period of 
 $R_0$ was set to 16, with a latent period of 10 days and infectious period of 8 days @guerraBasicReproductionNumber2017 @gastanaduyMeasles2019.
 The population was initialized with 500,000 individuals with Ghana-like birth and vaccination rates @worldbankGhana2024.
 Ghana was chosen to reflect a setting with a high-performing measles vaccination program that has not yet achieved elimination status (c. 80% coverage for two doses of measles-containing vaccine), and must remain vigilant to outbreaks @WHOImmunizationData @masreshaTrackingMeaslesRubella2024.
-We assumed commuter-style imports at each time step to avoid extinction; the number of imports each day were drawn from a Poisson distribution with mean proportional to the size of the population and $R_0$ @keelingModelingInfectiousDiseases2008.
+We assumed commuter-style imports at each time step to avoid extinction; the number of imports each day were drawn from a Poisson distribution with mean proportional to $R_0$ and the inverse of the population size @keelingModelingInfectiousDiseases2008.
 The full table of parameters can be found in @tbl_od-model-parameters.
 All simulations and analyses were completed in Julia version 1.12.3 @bezansonJuliaFreshApproach2017, with all code stored at #link("https://github.com/arnold-c/OutbreakDetection").
 
@@ -221,7 +221,7 @@ All simulations and analyses were completed in Julia version 1.12.3 @bezansonJul
     [Infectious period (g)], [8 days], [14 days],
     [Seasonal amplitude], [0.2], [0.2],
     [Vaccination rate at birth (r)], [80%], [(5-85)%],
-    [Birth/death rate (m)],
+    [Birth/death rate ($mu$)],
     table.cell(
       colspan: 2,
       align: center,

@@ -203,28 +203,46 @@ I had a look at the code and despite not being particularly familiar with Julia,
 
 In the Discussion section the authors mention a more computationally expensive approach based on now-casting case incidence (lines 184-186). These nowcasts would presumably aim to characterise the dynamics noise process, as the background against which an outbreak detection algorithm would look for signals of an outbreak, right?
 
-#responseplan[Nowcasting could be as simple as estimating the reporting rates and correcting the observed test positive numbers (with some noise), before applying the alert threshold to the estimated number of test positives, or could be more sophisticated and try to infer the background noise shape and magnitude. If successful in the latter approach, it would potentially provide more accurate alert systems.]
+#response[
+  Extending this work to incorporate nowcasting could be as simple as estimating the reporting rates and correcting the observed test positive numbers (with some noise), before applying the alert threshold.
+  Equally, it could be much more sophisticated and try to characterize the background dynamical noise process, as you suggest, and distinguish it from the target disease.
+  If successful, this second approach would potentially lead to a far more accurate alert system with imperfect tests, but becomes less necessary as test sensitivity and specificity improves.
+]
 
 ==== Comment 2.8 (Tau-leaping Algorithm)
 
 At the very start of the Methods section (lines 232-234), the authors mention that they used "a modified Tau-leaping algorithm", but don't explain what modifications were made.
 
-#responseplan[Update lines 232 to mention Binomial for small compartments that could go extinct (maybe update to use new approach in CSDNoise)]
+#response[
+  Thank you for pointing this out.
+  We have updated lines 242-243 to clarify that we use binomial draws to ensure small compartments remain positive valued, as using draws from a Poisson distribution can result in negative compartments if the original size is small (as is the case for the $E$ and $I$ compartments).
+]
 
 ==== Comment 2.9 (Importation Rate)
 
 Regarding the importation rate defined in Table 1 (page 14), what does the mu parameter represent? And the importation rate defined here doesn't appear to be proportional to the population size N (as stated in the text above).
 
-#responseplan[#sym.mu is the birth/death rate. Can update lines 243-244 to reflect that it's inversely proportional to $N$]
+#response[
+  #sym.mu is the birth/death rate.
+  We have update Table 1 to reflect this - thank you for catching this typo.
+  We have update the description of imports in lines 249-251 to clarify that it is proportional to the inverse of $N$.
+]
 
 ==== Comment 2.10 (Testing Selection Process)
 
 For the given percentage P of cases that are tested (lines 286-288), are individuals selected for testing using a binomial process, or is a fixed fraction of all individuals selected?
 
-#responseplan[Currently fixed, but should update this to use binomial process like CSDNoise, as well as the calculation of test positive/negative]
+#response[As part of the refactoring described above we have updated this to change from a fixed fraction to use binomial draws for both the number of individuals tested, as well as the number of test positive results produced.]
 
 ==== Comment 2.11 (Test Result Delay)
 
 A perfect test with a 14-day test result delay represents a best-case test under "more realistic reporting delays in result return". What are the major contributing factors to such a long delay? Is it primarily the delay between symptom onset and production of antibodies to a detectable level?
 
-#responseplan[More that the turnaround time for an ELISA to go from collection to central lab to centralized report. Should comment about mean time to symptom onset (X days? - incubation period) vs detectability (Y days?)]
+#response[
+  In general, the turnaround time for the ELISA to from specimen collection to central lab to centralized report is a substantial component of the reporting lag, and in many regions of the Democratic Republic of the Congo, for example, could be as long as 3+ weeks.
+  As such, we chose to focus on this delay when defining test result lag.
+  However, you raise an excellent point regarding IgM detectability and follows much of the same reasoning we detail in lines 194-208 of the discussion.
+  IgM detectability is at its peak at approximately 3+ days post rash onset (https://www.cdc.gov/mumps/media/pdfs/2025/02/MMRV-Testing-for-Clinicians_Jan2025.pdf), which typically occurs approximately 4 days into an individuals infectious period (that typically lasts about 8 days).
+  As such, in most individuals, they are only detectable via IgM for approximately 25% of their infectious period.
+  Future work should aim to incorporate this aspect into the analysis by either explicitly modeling viral kinetics, or by using an alternative approach to adjust the test sensitivity and specificity through an individuals infectious period.
+]
