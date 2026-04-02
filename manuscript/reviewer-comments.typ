@@ -191,7 +191,11 @@ The seasonality for the rubella noise was simulated to be in-phase with measles 
 
 I had a look at the code and despite not being particularly familiar with Julia, I found it well structured and commented. I noticed that `dynamical_noise_correlation` could be either `"in-phase"`, `"out-of-phase"`, or `"none"`, but that the second and third options were commented out in `scripts/ensemble-sim.jl`. I'm curious why the authors chose not to also explore these scenarios and report the results in this manuscript — but please note that I am *not* suggesting that they should do so in this manuscript.
 
-#responseplan[Initially had simulated and explored this, but it was too complicated to describe within the scope of this paper given the number of other axes of analysis that need to be explained. Didn't really make a lot of difference to the results, particularly to moderately accurate tests (>=90% sens/spec), ultimately. At lower accuracy tests (80-90%), having no seasonality resulted in slightly higher accuracy outbreak detection]
+#response[
+  Thank you for examining the code and for this question.
+  While developing this project we did explore the effect of seasonality on the results presented.
+  Ultimately, there was a relatively minor impact on the quantitative results, an no difference on the qualitative conclusions, so we decided not to include those additional analysis results in the manuscript for brevity and clarity as the main results already required a substantial amount of explanation to build up to and seasonality was secondary to this.
+]
 
 === Minor Comments
 
