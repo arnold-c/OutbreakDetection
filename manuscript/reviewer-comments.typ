@@ -155,15 +155,11 @@ With the methods section coming at the end of the paper, I think some additional
 
 (a) Lines 84-85 report the range of optimal alert thresholds as "between 0.39 and 16.80 test positive cases per day" without specifying a time period. The abstract refers to a "7-day rolling average", and this is mentioned two paragraphs later in the results (line 99). But there is no mention of a 7-day window in the main text until after lines 84-85.
 
-#response[
-
-]
-
-#responseplan[Add 7-day rolling average to lines 84-85]
+#response[Added.]
 
 (b) Optimal alert thresholds were defined as maximising surveillance accuracy, which was defined as "the arithmetic mean of the system's PPV and sensitivity" (Methods, lines 321-322). I would like to see this definition included in the first paragraph of the results section, so that the reader can interpret the results without having to jump to the end of the manuscript.
 
-#responseplan[Add accuracy definition to line 81]
+#response[Added.]
 
 ==== Comment 2.4 (Figure 1 Interpretation)
 

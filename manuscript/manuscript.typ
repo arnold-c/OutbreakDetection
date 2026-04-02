@@ -81,7 +81,8 @@ By examining the combination of the alert threshold and individual test characte
 
 = Results
 The threshold that maximized measles surveillance accuracy depends on the diagnostic test characteristics, the testing rate, and the structure of the non-measles noise (@tbl_od-optimal-thresholds, @fig-alert-threshold).
-When the average noise incidence was 7 times higher than the average measles incidence ($Lambda (7)$), the optimal outbreak alert threshold (T#sub([O])) ranged between 1.72 and 18.73 test positive cases per day.
+Here, we define the outbreak accuracy as the arithmetic mean of the system's sensitivity and positive predictive value (PPV), where sensitivity is the proportion of outbreaks detected, and PPV is the proportion of alerts that are associated with an outbreak.
+When the average noise incidence was 7 times higher than the average measles incidence ($Lambda (7)$), the optimal outbreak alert threshold (T#sub([O])) ranged between 1.72 and 18.73 test positive cases per day on a 7-day rolling average basis.
 Not surprisingly, the biggest driver of this difference was the testing rate; as a larger fraction of suspected cases are tested, the optimal threshold increases monotonically for all test and noise types (@tbl_od-optimal-thresholds, @fig-alert-threshold).
 
 The maximal attainable surveillance accuracy at the optimal threshold depends strongly on the structure and magnitude of the background noise (@fig-accuracy).
