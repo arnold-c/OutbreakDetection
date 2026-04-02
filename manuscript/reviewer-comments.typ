@@ -37,6 +37,14 @@
 
 _Note: If the reviewer comments include a recommendation to cite specific previously published works, please review and evaluate these publications to determine whether they are relevant and should be cited. There is no requirement to cite these works unless the editor has indicated otherwise._
 
+== General Response
+
+We would like to thank the reviewers for their insightful comments; many of them resulted in substantial reflection of our modeling approach and assumptions and have led to improvements to the paper.
+As a result of these comments we have refined the code base to not only increase its speed and modularity for clarity, but have also made a few changes to the logic.
+These changes are detailed at the #link(<logic-changes>)[end of this document].
+We have also make the following changes that were previously bugs in the code.
+Similarly, these have been detailed at the #link(<bug-fixes>)[end of this document].
+
 == Reviewer \#1
 
 Dear Authors,
@@ -98,7 +106,7 @@ The manuscript is well written, the modelling framework and analyses are describ
 
 === Major Comments
 
-==== Comment 2.1 (Alert Definition and Negative Delays)
+==== Comment 2.1 (Alert Definition and Negative Delays) <comment-2-1>
 
 The conditions that trigger an alert are defined in the Methods section ("Triggering Alerts", p17):
 
@@ -168,6 +176,8 @@ Regarding Figure 1, the sharp drops and rises in the alert threshold that are sh
 #response[
   In this revised version of the analysis this artifact is no longer present.
   In the prior version, the rebound appears to occur due to a combination of simulation choices that when combined result in flat multi-modal minima.
+  One is the choice in allowing multiple outbreaks to be correctly matched to a single alert, not penalizing very few but long alert durations, as discussed above.
+  The others relate to how we handled the calculation of test positive individuals.
   Specifically, for computationally efficiency, we originally fixed calculated the proportion of individuals tested and the proportion of test positives by multiplying the integer values by the respective proportions (test sensitivity/specificity for test positives) before rounding to convert back to an integer value.
   This has been updated to used binomial sampling after extensive refactoring to substantially increase the simulation speed.
   Previously, we also rounded the moving average of test positive values to generate integer values.
@@ -246,3 +256,97 @@ A perfect test with a 14-day test result delay represents a best-case test under
   As such, in most individuals, they are only detectable via IgM for approximately 25% of their infectious period.
   Future work should aim to incorporate this aspect into the analysis by either explicitly modeling viral kinetics, or by using an alternative approach to adjust the test sensitivity and specificity through an individuals infectious period.
 ]
+
+== Logic Changes <logic-changes>
+
+=== Calculation of moving averages
+
+`./OutbreakDetectionCore/src/utilities/calculate-moving-average.jl`
+
+The core calculations are the same, but instead of rounding, converting, and returning an Int64 integer for the moving average (of the test positives, principally), return a Float64 floating point value.
+
+=== Parameter sampling
+
+In the previous version, there were not that many parameters that were sampled in each of the simulations of the ensemble.
+In the refactored version, most are sampled.
+
+`./OutbreakDetectionCore/src/diagnostic-testing/calculate-num-tested.jl`
+
+`./OutbreakDetectionCore/src/diagnostic-testing/calculate-num-positive.jl`
+
+`./OutbreakDetectionCore/src/types/dynamics-parameters.jl`
+
+Instead of multiplying the integer number of individuals by the appropriate proportion, rounding and then converting to an integer, sample from a Binomial distribution to calculate the number of individuals tested and test positive.
+This was changed to sampling to reduce the impact of small numbers all being rounded to 0 equally.
+
+=== Fixed noise vaccination coverage
+
+`./OutbreakDetectionCore/src/threshold-optimization/evaluate-missing-optimizations.jl`
+
+`./OutbreakDetectionCore/src/noise/noise-parameters-optimization.jl`
+
+As part of the refactoring, the new implementation uses MultistartOptimization to optimize the vaccination level in the dynamical noise simulations to achieve $Lambda(c)$ noise level.
+The benefit of the refactor is that if any other scenarios need to be run, or a change to the target or noise disease etc. then the optimization will handle those changes.
+
+=== Endemic noise initialization
+
+`./OutbreakDetectionCore/src/noise/noise-recreation.jl`
+
+During the refactoring, a calculation of the endemic state for the dynamical noise was added to seed the noise simulations in an endemic state.
+This was done to avoid always starting with a large outbreak and wasn't present in the original implementation.
+
+=== SEIR model Poisson transitions
+
+`./OutbreakDetectionCore/src/simulation/seir-model.jl`
+
+In the refactored version, we use the `_smart_transition()` function to use Poisson samples when the size of the compartments is large relative to the rate, and Binomial when small.
+This is done for computational efficiency, and makes a negligible difference to the number of individuals moving between compartments.
+
+=== Alert-outbreak matching
+
+`./OutbreakDetectionCore/src/detection/match-alert-outbreak-thresholds.jl`
+
+As mentioned in a response to a #link(<comment-2-1>)[comment 2.1], in the newest analysis we have updated the alert-outbreak matching algorithm.
+Previously, a single alert could be correctly matched to multiple outbreaks.
+Now, the default matching pattern no longer allows this and only matches to the first outbreak it overlaps with.
+As a result, infrequent and long alerts generated by very low alert thresholds are penalized as only the first outbreak is counted as detected.
+Under the prior implementation, all outbreaks would be "detected", resulting in a higher sensitivity than would otherwise be expected, with no penalization to the PPV of the system.
+In the extreme, a single long alert that spans the whole time series would match all outbreaks, and the PPV would be 100% as there is only one alert and it has been matched to at least one outbreak.
+
+In one respect, this accounts for the reality that once an alert has triggered and been investigated, it is likely not going to result in additional follow up if there is not a cessation in alert status.
+
+=== Frequency Dependent Beta value
+
+`./OutbreakDetectionCore/src/types/dynamics-parameters.jl`
+
+The `DynamicsParameterSpecification` constructor used to normalize the value of `beta_mean` by the initial population size `N`, rather than using a strictly frequency-dependent approach where the normalization is included in the simulation of infections.
+This has been changed for consistency reasons.
+
+== Bug Fixes <bug-fixes>
+
+=== Noise dynamics parameters
+
+`./OutbreakDetectionCore/src/noise/noise-dynamics-parameters.jl`
+
+In the previous version, the noise dynamics parameters struct was creating using the target disease's `beta_mean` values i.e,. measles' `beta_mean`, not the value calculated for rubella.
+
+=== Beta value calculation
+
+`./OutbreakDetectionCore/src/simulation/transmission-functions.jl`
+
+The previous version calculated `beta` using the SIR equation, not SEIR equation that includes the movement out of the latent state.
+
+
+=== SEIR model beta value index
+
+`./OutbreakDetectionCore/src/simulation/seir-model.jl`
+
+In the refactored version, the SEIR model loop uses the previous value of the beta to determine how many individuals are infected at the current time step (also using the previous values of the states).
+This is correct as the otherwise the individuals are being affected by the state of a dynamical system that doesn't (quite) exist yet.
+
+=== SEIR model imported infections
+
+`./OutbreakDetectionCore/src/simulation/seir-model.jl`
+
+In the refactored version, we calculate the number of importer individuals as a binomial sample from the number of remaining susceptible individuals (after removing those from direct contact infections).
+The previous version sampled the number of imported individuals from the total population size.

@@ -32,7 +32,6 @@
     When the rate of background infections far exceeds that of the target infection, and are dynamical, such that there are large peaks and troughs of "noise infections", imperfect diagnostic tests are not able to accurately distinguish the "signal" (target infections) from the background "noise".
     If the background "noise" infections are either less cyclical in their dynamics, or do not outnumber true infections by a great deal, imperfect diagnostic tests can perform well.
   ],
-  // word-count: true,
   line-numbers: true,
   line-spacing: 2,
 )
@@ -128,17 +127,8 @@ In static noise scenarios, increasing noise levels did not result in a differenc
 
 Generally, an increase in testing rate resulted in fewer, longer, alerts, and this holds regardless of the type of test (@fig-num-alerts, @fig-alert-duration).
 While having a limited effect on detection delays, and the number of unavoidable cases (i.e., cases that occur between the outbreak start and its detection, @fig-delay, @fig-unavoidable) it did marginally increase the proportion of time in alert (i.e., the proportion of the simulated time series where the number of test positive cases exceeds the outbreak alert threshold, @fig-alert-proportion) and slightly decrease the proportion of alerts that were correct and outbreaks that were detected (@fig-alert-proportion-correct, @fig-outbreak-detect-proportion-correct).
-// This effect is more exaggerated for some metrics #sym.dash.em detection delays, proportion of time in alert (i.e., the proportion of the simulated time series where the number of test positive cases exceeds the outbreak alert threshold), and number of unavoidable cases (i.e., cases that occur between the outbreak start and its detection) #sym.dash.em than for others (accuracy).
-// In general, the increase in accuracy with higher testing rates is accompanied with longer testing delays.
 These effects are most notable for high dynamical noise scenarios where a binary alert threshold is less able to discern between true positives and the increasing number of false positive test results that produce test-positive time series that resembles those of the target disease's outbreaks.
 While the alert threshold increases with increasing testing rates (@fig-alert-threshold), it is not able to completely compensate for the increase in false test positives, resulting in a minor downward trend to the proportion of alerts that are correct (@fig-alert-proportion-correct), and therefore the detection accuracy (@fig-accuracy).
-// This reflects the change from highly sensitive systems with low thresholds to more specific systems with higher thresholds at higher testing rates.
-// For static noise, similar detection delays are observed for all test and noise magnitudes, with most of the variation attributable to the change in the testing rate (means of 24.0 to 36.3 days).
-// Under dynamical noise, a difference in the performance of perfect and imperfect diagnostic tests arise under high magnitudes of dynamical noise ($gt.eq Lambda (6)$) (@fig-delay).
-// As the optimal threshold for imperfect tests drops to $approx$ 0, frequent alerts translate to large negative detection delays ($lt.double$ -100 days).
-// Negative delays indicate that alerts are being triggered before the start of the outbreak and is correlated with a greater proportion of the time series that is under alert, resulting from fewer, but far longer, alert periods (@fig-alert-proportion, @fig-num-alerts, @fig-alert-duration).
-// Long detection delays can manifest as large numbers of unavoidable cases (@fig-unavoidable).
-// However, the large negative detection delays associated with high dynamical noise regimes and imperfect diagnostic tests can counter intuitively produce large numbers of unavoidable cases, too, as long, sustained alerts translate to "missed" outbreaks as each alert can only "detect" one outbreak.
 
 #figure(
   image("manuscript_files/plots/optimal-thresholds_prop-alert-plot.svg"),
