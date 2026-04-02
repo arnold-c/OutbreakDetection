@@ -96,11 +96,10 @@ outbreak_specification_vec = [
 ]
 alert_filtering_strategy_vec = AlertFilteringStrategy[
     AlertFilteringStrategy(AllAlerts()),
-    AlertFilteringStrategy(PostOutbreakStartAlerts()),
+    # AlertFilteringStrategy(PostOutbreakStartAlerts()),
 ]
 alert_outbreak_matching_strategy_vec = AlertOutbreakMatchingStrategy[
     AlertOutbreakMatchingStrategy(SingleOutbreakPerAlert()),
-    AlertOutbreakMatchingStrategy(MultipleOutbreaksPerAlert()),
 ]
 
 #%%
