@@ -11,7 +11,6 @@ using OutbreakDetectionCore: OutbreakDetectionCore
 using Match: Match
 using StructArrays: StructVector, StructArray
 using LaTeXStrings
-using GLMakie
 using ColorSchemes
 using StaticArrays: StaticArrays
 using Dates: Dates
